@@ -1,3 +1,9 @@
+D-BUS 0.23.3 (9 Mar 2005)
+===
+- add back dbus_pending_call_get_reply() which was removed accidentally.
+- fix a memory leak in return messages
+- fix many memory leaks and lifecycle issues in the mono bindings.
+
 D-BUS 0.23.2 (18 Feb 2005)
 ===
 - shuffle some code around in the mono bindings to deterministically

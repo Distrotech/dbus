@@ -1,3 +1,9 @@
+2005-03-9  Joe Shaw  <joeshaw@novell.com>
+
+        * NEWS: Update for 0.23.3
+
+        * configure.in: Release 0.23.3
+
 2005-03-09  Joe Shaw  <joeshaw@novell.com>
 
 	* dbus/dbus-object-tree.c
