@@ -1,3 +1,8 @@
+D-BUS 0.23.4 (11 Mar 2005)
+===
+- fix a failed assertion when trying to get replies from certain
+  pending calls
+
 D-BUS 0.23.3 (9 Mar 2005)
 ===
 - add back dbus_pending_call_get_reply() which was removed accidentally.

@@ -1,4 +1,10 @@
 2005-03-11  Joe Shaw  <joeshaw@novell.com>
+                                                                                
+        * NEWS: Update for 0.23.4
+                                                                                
+        * configure.in: Release 0.23.4
+
+2005-03-11  Joe Shaw  <joeshaw@novell.com>
 
 	* dbus/dbus-connection.c (dbus_connection_send_with_reply): Remove
 	this unref; it doesn't match up evenly in some codepaths.
