@@ -1,3 +1,12 @@
+2005-03-13  Joe Shaw  <joeshaw@novell.com>
+
+	* mono/ProxyBuilder.cs (BuildConstructor): Decalre a local
+	variable for storing our callback in.  Update the allocation
+	comments.
+
+	* mono/Service.cs (Module): Revert some accidentally
+	committed code.
+
 2005-03-12  Joe Shaw  <joeshaw@novell.com>
 
 	* mono/ProxyBuilder.cs (BuildFinalizer): Need to load arg 0
