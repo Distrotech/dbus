@@ -1,3 +1,8 @@
+2005-03-15  Joe Shaw  <joeshaw@novell.com>
+
+	* mono/ProxyBuilder.cs (BuildFinalizer): Fix some invalid IL when
+	generating the finalizer.  Fixes from Ben Maurer.
+
 2005-03-13  Joe Shaw  <joeshaw@novell.com>
 
 	* mono/ProxyBuilder.cs (BuildConstructor): Decalre a local
