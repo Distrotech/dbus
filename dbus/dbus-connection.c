@@ -38,7 +38,7 @@
 #include "dbus-string.h"
 #include "dbus-pending-call.h"
 #include "dbus-object-tree.h"
-#include "dbus-threads-internal.h"
+#include "dbus-marshal.h"
 
 #ifdef DBUS_DISABLE_CHECKS
 #define TOOK_LOCK_CHECK(connection)
@@ -61,14 +61,14 @@
 
 #define CONNECTION_LOCK(connection)   do {                                      \
     if (TRACE_LOCKS) { _dbus_verbose ("  LOCK: %s\n", _DBUS_FUNCTION_NAME); }   \
-    _dbus_mutex_lock ((connection)->mutex);                                      \
+    dbus_mutex_lock ((connection)->mutex);                                      \
     TOOK_LOCK_CHECK (connection);                                               \
   } while (0)
 
 #define CONNECTION_UNLOCK(connection) do {                                              \
     if (TRACE_LOCKS) { _dbus_verbose ("  UNLOCK: %s\n", _DBUS_FUNCTION_NAME);  }        \
     RELEASING_LOCK_CHECK (connection);                                                  \
-    _dbus_mutex_unlock ((connection)->mutex);                                            \
+    dbus_mutex_unlock ((connection)->mutex);                                            \
   } while (0)
 
 #define DISPATCH_STATUS_NAME(s)                                            \
@@ -125,8 +125,8 @@
  *
  * When a connection is disconnected, you are guaranteed to get a
  * signal "Disconnected" from the interface
- * #DBUS_INTERFACE_LOCAL, path
- * #DBUS_PATH_LOCAL.
+ * #DBUS_INTERFACE_ORG_FREEDESKTOP_LOCAL, path
+ * #DBUS_PATH_ORG_FREEDESKTOP_LOCAL.
  *
  * You may not drop the last reference to a #DBusConnection
  * until that connection has been disconnected.
@@ -233,10 +233,6 @@ struct DBusConnection
                          *   for the global linked list mempool lock
                          */
   DBusObjectTree *objects; /**< Object path handlers registered with this connection */
-
-  char *server_guid; /**< GUID of server if we are in shared_connections, #NULL if server GUID is unknown or connection is private */
-
-  unsigned int shareable : 1; /**< #TRUE if connection can go in shared_connections once we know the GUID */
   
   unsigned int dispatch_acquired : 1; /**< Someone has dispatch path (can drain incoming queue) */
   unsigned int io_path_acquired : 1;  /**< Someone has transport io path (can use the transport to read/write messages) */
@@ -927,7 +923,7 @@ _dbus_connection_acquire_io_path (DBusConnection *connection,
   CONNECTION_UNLOCK (connection);
   
   _dbus_verbose ("%s locking io_path_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_lock (connection->io_path_mutex);
+  dbus_mutex_lock (connection->io_path_mutex);
 
   _dbus_verbose ("%s start connection->io_path_acquired = %d timeout = %d\n",
                  _DBUS_FUNCTION_NAME, connection->io_path_acquired, timeout_milliseconds);
@@ -940,16 +936,16 @@ _dbus_connection_acquire_io_path (DBusConnection *connection,
         {
           _dbus_verbose ("%s waiting %d for IO path to be acquirable\n",
                          _DBUS_FUNCTION_NAME, timeout_milliseconds);
-          _dbus_condvar_wait_timeout (connection->io_path_cond,
-                                      connection->io_path_mutex,
-                                      timeout_milliseconds);
+          dbus_condvar_wait_timeout (connection->io_path_cond,
+                                     connection->io_path_mutex,
+                                     timeout_milliseconds);
         }
       else
         {
           while (connection->io_path_acquired)
             {
               _dbus_verbose ("%s waiting for IO path to be acquirable\n", _DBUS_FUNCTION_NAME);
-              _dbus_condvar_wait (connection->io_path_cond, connection->io_path_mutex);
+              dbus_condvar_wait (connection->io_path_cond, connection->io_path_mutex);
             }
         }
     }
@@ -964,7 +960,7 @@ _dbus_connection_acquire_io_path (DBusConnection *connection,
                  _DBUS_FUNCTION_NAME, connection->io_path_acquired, we_acquired);
 
   _dbus_verbose ("%s unlocking io_path_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_unlock (connection->io_path_mutex);
+  dbus_mutex_unlock (connection->io_path_mutex);
 
   CONNECTION_LOCK (connection);
   
@@ -988,7 +984,7 @@ _dbus_connection_release_io_path (DBusConnection *connection)
   HAVE_LOCK_CHECK (connection);
   
   _dbus_verbose ("%s locking io_path_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_lock (connection->io_path_mutex);
+  dbus_mutex_lock (connection->io_path_mutex);
   
   _dbus_assert (connection->io_path_acquired);
 
@@ -996,10 +992,10 @@ _dbus_connection_release_io_path (DBusConnection *connection)
                  _DBUS_FUNCTION_NAME, connection->io_path_acquired);
   
   connection->io_path_acquired = FALSE;
-  _dbus_condvar_wake_one (connection->io_path_cond);
+  dbus_condvar_wake_one (connection->io_path_cond);
 
   _dbus_verbose ("%s unlocking io_path_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_unlock (connection->io_path_mutex);
+  dbus_mutex_unlock (connection->io_path_mutex);
 }
 
 /**
@@ -1118,32 +1114,32 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
   if (connection == NULL)
     goto error;
 
-  mutex = _dbus_mutex_new ();
+  mutex = dbus_mutex_new ();
   if (mutex == NULL)
     goto error;
 
-  io_path_mutex = _dbus_mutex_new ();
+  io_path_mutex = dbus_mutex_new ();
   if (io_path_mutex == NULL)
     goto error;
 
-  dispatch_mutex = _dbus_mutex_new ();
+  dispatch_mutex = dbus_mutex_new ();
   if (dispatch_mutex == NULL)
     goto error;
   
-  message_returned_cond = _dbus_condvar_new ();
+  message_returned_cond = dbus_condvar_new ();
   if (message_returned_cond == NULL)
     goto error;
   
-  dispatch_cond = _dbus_condvar_new ();
+  dispatch_cond = dbus_condvar_new ();
   if (dispatch_cond == NULL)
     goto error;
   
-  io_path_cond = _dbus_condvar_new ();
+  io_path_cond = dbus_condvar_new ();
   if (io_path_cond == NULL)
     goto error;
 
-  disconnect_message = dbus_message_new_signal (DBUS_PATH_LOCAL,
-                                                DBUS_INTERFACE_LOCAL,
+  disconnect_message = dbus_message_new_signal (DBUS_PATH_ORG_FREEDESKTOP_LOCAL,
+                                                DBUS_INTERFACE_ORG_FREEDESKTOP_LOCAL,
                                                 "Disconnected");
   
   if (disconnect_message == NULL)
@@ -1179,7 +1175,6 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
   connection->last_dispatch_status = DBUS_DISPATCH_COMPLETE; /* so we're notified first time there's data */
   connection->objects = objects;
   connection->exit_on_disconnect = FALSE;
-  connection->shareable = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   connection->generation = _dbus_current_generation;
 #endif
@@ -1209,22 +1204,22 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
     _dbus_list_free_link (disconnect_link);
   
   if (io_path_cond != NULL)
-    _dbus_condvar_free (io_path_cond);
+    dbus_condvar_free (io_path_cond);
   
   if (dispatch_cond != NULL)
-    _dbus_condvar_free (dispatch_cond);
+    dbus_condvar_free (dispatch_cond);
   
   if (message_returned_cond != NULL)
-    _dbus_condvar_free (message_returned_cond);
+    dbus_condvar_free (message_returned_cond);
   
   if (mutex != NULL)
-    _dbus_mutex_free (mutex);
+    dbus_mutex_free (mutex);
 
   if (io_path_mutex != NULL)
-    _dbus_mutex_free (io_path_mutex);
+    dbus_mutex_free (io_path_mutex);
 
   if (dispatch_mutex != NULL)
-    _dbus_mutex_free (dispatch_mutex);
+    dbus_mutex_free (dispatch_mutex);
   
   if (connection != NULL)
     dbus_free (connection);
@@ -1368,301 +1363,6 @@ _dbus_connection_handle_watch (DBusWatch                   *watch,
   return retval;
 }
 
-_DBUS_DEFINE_GLOBAL_LOCK (shared_connections);
-static DBusHashTable *shared_connections = NULL;
-
-static void
-shared_connections_shutdown (void *data)
-{
-  _DBUS_LOCK (shared_connections);
-
-  _dbus_assert (_dbus_hash_table_get_n_entries (shared_connections) == 0);
-  _dbus_hash_table_unref (shared_connections);
-  shared_connections = NULL;
-  
-  _DBUS_UNLOCK (shared_connections);
-}
-
-static dbus_bool_t
-connection_lookup_shared (DBusAddressEntry  *entry,
-                          DBusConnection   **result)
-{
-  _dbus_verbose ("checking for existing connection\n");
-  
-  *result = NULL;
-  
-  _DBUS_LOCK (shared_connections);
-
-  if (shared_connections == NULL)
-    {
-      _dbus_verbose ("creating shared_connections hash table\n");
-      
-      shared_connections = _dbus_hash_table_new (DBUS_HASH_STRING,
-                                                 dbus_free,
-                                                 NULL);
-      if (shared_connections == NULL)
-        {
-          _DBUS_UNLOCK (shared_connections);
-          return FALSE;
-        }
-
-      if (!_dbus_register_shutdown_func (shared_connections_shutdown, NULL))
-        {
-          _dbus_hash_table_unref (shared_connections);
-          shared_connections = NULL;
-          _DBUS_UNLOCK (shared_connections);
-          return FALSE;
-        }
-
-      _dbus_verbose ("  successfully created shared_connections\n");
-      
-      _DBUS_UNLOCK (shared_connections);
-      return TRUE; /* no point looking up in the hash we just made */
-    }
-  else
-    {
-      const char *guid;
-
-      guid = dbus_address_entry_get_value (entry, "guid");
-      
-      if (guid != NULL)
-        {
-          *result = _dbus_hash_table_lookup_string (shared_connections,
-                                                    guid);
-
-          if (*result)
-            {
-              /* The DBusConnection can't have been disconnected
-               * between the lookup and this code, because the
-               * disconnection will take the shared_connections lock to
-               * remove the connection. It can't have been finalized
-               * since you have to disconnect prior to finalize.
-               *
-               * Thus it's safe to ref the connection.
-               */
-              dbus_connection_ref (*result);
-
-              _dbus_verbose ("looked up existing connection to server guid %s\n",
-                             guid);
-            }
-        }
-      
-      _DBUS_UNLOCK (shared_connections);
-      return TRUE;
-    }
-}
-
-static dbus_bool_t
-connection_record_shared_unlocked (DBusConnection *connection,
-                                   const char     *guid)
-{
-  char *guid_key;
-  char *guid_in_connection;
-
-  /* A separate copy of the key is required in the hash table, because
-   * we don't have a lock on the connection when we are doing a hash
-   * lookup.
-   */
-  
-  _dbus_assert (connection->server_guid == NULL);
-  _dbus_assert (connection->shareable);
-  
-  guid_key = _dbus_strdup (guid);
-  if (guid_key == NULL)
-    return FALSE;
-
-  guid_in_connection = _dbus_strdup (guid);
-  if (guid_in_connection == NULL)
-    {
-      dbus_free (guid_key);
-      return FALSE;
-    }
-  
-  _DBUS_LOCK (shared_connections);
-  _dbus_assert (shared_connections != NULL);
-  
-  if (!_dbus_hash_table_insert_string (shared_connections,
-                                       guid_key, connection))
-    {
-      dbus_free (guid_key);
-      dbus_free (guid_in_connection);
-      _DBUS_UNLOCK (shared_connections);
-      return FALSE;
-    }
-
-  connection->server_guid = guid_in_connection;
-
-  _dbus_verbose ("stored connection to %s to be shared\n",
-                 connection->server_guid);
-  
-  _DBUS_UNLOCK (shared_connections);
-
-  _dbus_assert (connection->server_guid != NULL);
-  
-  return TRUE;
-}
-
-static void
-connection_forget_shared_unlocked (DBusConnection *connection)
-{
-  HAVE_LOCK_CHECK (connection);
-  
-  if (connection->server_guid == NULL)
-    return;
-
-  _dbus_verbose ("dropping connection to %s out of the shared table\n",
-                 connection->server_guid);
-  
-  _DBUS_LOCK (shared_connections);
-
-  if (!_dbus_hash_table_remove_string (shared_connections,
-                                       connection->server_guid))
-    _dbus_assert_not_reached ("connection was not in the shared table");
-  
-  dbus_free (connection->server_guid);
-  connection->server_guid = NULL;
-
-  _DBUS_UNLOCK (shared_connections);
-}
-
-static DBusConnection*
-connection_try_from_address_entry (DBusAddressEntry *entry,
-                                   DBusError        *error)
-{
-  DBusTransport *transport;
-  DBusConnection *connection;
-
-  transport = _dbus_transport_open (entry, error);
-
-  if (transport == NULL)
-    {
-      _DBUS_ASSERT_ERROR_IS_SET (error);
-      return NULL;
-    }
-
-  connection = _dbus_connection_new_for_transport (transport);
-
-  _dbus_transport_unref (transport);
-  
-  if (connection == NULL)
-    {
-      _DBUS_SET_OOM (error);
-      return NULL;
-    }
-
-#ifndef DBUS_DISABLE_CHECKS
-  _dbus_assert (!connection->have_connection_lock);
-#endif
-  return connection;
-}
-
-/*
- * If the shared parameter is true, then any existing connection will
- * be used (and if a new connection is created, it will be available
- * for use by others). If the shared parameter is false, a new
- * connection will always be created, and the new connection will
- * never be returned to other callers.
- *
- * @param address the address
- * @param shared whether the connection is shared or private
- * @param error error return
- * @returns the connection or #NULL on error
- */
-static DBusConnection*
-_dbus_connection_open_internal (const char     *address,
-                                dbus_bool_t     shared,
-                                DBusError      *error)
-{
-  DBusConnection *connection;
-  DBusAddressEntry **entries;
-  DBusError tmp_error;
-  DBusError first_error;
-  int len, i;
-
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-
-  _dbus_verbose ("opening %s connection to: %s\n",
-                 shared ? "shared" : "private", address);
-  
-  if (!dbus_parse_address (address, &entries, &len, error))
-    return NULL;
-
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-  
-  connection = NULL;
-
-  dbus_error_init (&tmp_error);
-  dbus_error_init (&first_error);
-  for (i = 0; i < len; i++)
-    {
-      if (shared)
-        {
-          if (!connection_lookup_shared (entries[i], &connection))
-            _DBUS_SET_OOM (&tmp_error);
-        }
-
-      if (connection == NULL)
-        {
-          connection = connection_try_from_address_entry (entries[i],
-                                                          &tmp_error);
-          
-          if (connection != NULL && shared)
-            {
-              const char *guid;
-
-              connection->shareable = TRUE;
-              
-              guid = dbus_address_entry_get_value (entries[i], "guid");
-
-              /* we don't have a connection lock but we know nobody
-               * else has a handle to the connection
-               */
-              
-              if (guid &&
-                  !connection_record_shared_unlocked (connection, guid))
-                {
-                  _DBUS_SET_OOM (&tmp_error);
-                  dbus_connection_disconnect (connection);
-                  dbus_connection_unref (connection);
-                  connection = NULL;
-                }
-
-              /* but as of now the connection is possibly shared
-               * since another thread could have pulled it from the table
-               */
-            }
-        }
-      
-      if (connection)
-	break;
-
-      _DBUS_ASSERT_ERROR_IS_SET (&tmp_error);
-      
-      if (i == 0)
-        dbus_move_error (&tmp_error, &first_error);
-      else
-        dbus_error_free (&tmp_error);
-    }
-
-  /* NOTE we don't have a lock on a possibly-shared connection object */
-  
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-  _DBUS_ASSERT_ERROR_IS_CLEAR (&tmp_error);
-  
-  if (connection == NULL)
-    {
-      _DBUS_ASSERT_ERROR_IS_SET (&first_error);
-      dbus_move_error (&first_error, error);
-    }
-  else
-    {
-      dbus_error_free (&first_error);
-    }
-  
-  dbus_address_entries_free (entries);
-  return connection;
-}
-
 /** @} */
 
 /**
@@ -1672,19 +1372,16 @@ _dbus_connection_open_internal (const char     *address,
  */
 
 /**
- * Gets a connection to a remote address. If a connection to the given
- * address already exists, returns the existing connection with its
- * reference count incremented.  Otherwise, returns a new connection
- * and saves the new connection for possible re-use if a future call
- * to dbus_connection_open() asks to connect to the same server.
+ * Opens a new connection to a remote address.
  *
- * Use dbus_connection_open_private() to get a dedicated connection
- * not shared with other callers of dbus_connection_open().
+ * @todo specify what the address parameter is. Right now
+ * it's just the name of a UNIX domain socket. It should be
+ * something more complex that encodes which transport to use.
  *
- * If the open fails, the function returns #NULL, and provides a
- * reason for the failure in the error parameter. Pass #NULL for the
- * error parameter if you aren't interested in the reason for
- * failure.
+ * If the open fails, the function returns #NULL, and provides
+ * a reason for the failure in the result parameter. Pass
+ * #NULL for the result parameter if you aren't interested
+ * in the reason for failure.
  * 
  * @param address the address.
  * @param error address where an error can be returned.
@@ -1695,44 +1392,31 @@ dbus_connection_open (const char     *address,
                       DBusError      *error)
 {
   DBusConnection *connection;
+  DBusTransport *transport;
 
   _dbus_return_val_if_fail (address != NULL, NULL);
   _dbus_return_val_if_error_is_set (error, NULL);
+  
+  transport = _dbus_transport_open (address, error);
+  if (transport == NULL)
+    {
+      _DBUS_ASSERT_ERROR_IS_SET (error);
+      return NULL;
+    }
+  
+  connection = _dbus_connection_new_for_transport (transport);
 
-  connection = _dbus_connection_open_internal (address,
-                                               TRUE,
-                                               error);
+  _dbus_transport_unref (transport);
+  
+  if (connection == NULL)
+    {
+      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+      return NULL;
+    }
 
-  return connection;
-}
-
-/**
- * Opens a new, dedicated connection to a remote address. Unlike
- * dbus_connection_open(), always creates a new connection.
- * This connection will not be saved or recycled by libdbus.
- *
- * If the open fails, the function returns #NULL, and provides a
- * reason for the failure in the error parameter. Pass #NULL for the
- * error parameter if you aren't interested in the reason for
- * failure.
- * 
- * @param address the address.
- * @param error address where an error can be returned.
- * @returns new connection, or #NULL on failure.
- */
-DBusConnection*
-dbus_connection_open_private (const char     *address,
-                              DBusError      *error)
-{
-  DBusConnection *connection;
-
-  _dbus_return_val_if_fail (address != NULL, NULL);
-  _dbus_return_val_if_error_is_set (error, NULL);
-
-  connection = _dbus_connection_open_internal (address,
-                                               FALSE,
-                                               error);
-
+#ifndef DBUS_DISABLE_CHECKS
+  _dbus_assert (!connection->have_connection_lock);
+#endif
   return connection;
 }
 
@@ -1795,8 +1479,7 @@ _dbus_connection_last_unref (DBusConnection *connection)
    * you won't get the disconnected message.
    */
   _dbus_assert (!_dbus_transport_get_is_connected (connection->transport));
-  _dbus_assert (connection->server_guid == NULL);
-  
+
   /* ---- We're going to call various application callbacks here, hope it doesn't break anything... */
   _dbus_object_tree_free_all_unlocked (connection->objects);
   
@@ -1846,7 +1529,7 @@ _dbus_connection_last_unref (DBusConnection *connection)
   _dbus_list_clear (&connection->incoming_messages);
 
   _dbus_counter_unref (connection->outgoing_counter);
-
+  
   _dbus_transport_unref (connection->transport);
 
   if (connection->disconnect_message_link)
@@ -1858,13 +1541,13 @@ _dbus_connection_last_unref (DBusConnection *connection)
 
   _dbus_list_clear (&connection->link_cache);
   
-  _dbus_condvar_free (connection->dispatch_cond);
-  _dbus_condvar_free (connection->io_path_cond);
+  dbus_condvar_free (connection->dispatch_cond);
+  dbus_condvar_free (connection->io_path_cond);
 
-  _dbus_mutex_free (connection->io_path_mutex);
-  _dbus_mutex_free (connection->dispatch_mutex);
+  dbus_mutex_free (connection->io_path_mutex);
+  dbus_mutex_free (connection->dispatch_mutex);
 
-  _dbus_mutex_free (connection->mutex);
+  dbus_mutex_free (connection->mutex);
   
   dbus_free (connection);
 }
@@ -1937,7 +1620,6 @@ dbus_connection_disconnect (DBusConnection *connection)
   _dbus_verbose ("Disconnecting %p\n", connection);
   
   CONNECTION_LOCK (connection);
-  
   _dbus_transport_disconnect (connection->transport);
 
   _dbus_verbose ("%s middle\n", _DBUS_FUNCTION_NAME);
@@ -2459,9 +2141,9 @@ dbus_connection_send_with_reply (DBusConnection     *connection,
   if (!_dbus_connection_attach_pending_call_unlocked (connection,
 						      pending))
     goto error;
- 
+
   dbus_pending_call_unref (pending);
- 
+  
   if (!_dbus_connection_send_unlocked_no_update (connection, message, NULL))
     {
       _dbus_connection_detach_pending_call_and_unlock (connection,
@@ -3079,12 +2761,12 @@ _dbus_connection_acquire_dispatch (DBusConnection *connection)
   CONNECTION_UNLOCK (connection);
   
   _dbus_verbose ("%s locking dispatch_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_lock (connection->dispatch_mutex);
+  dbus_mutex_lock (connection->dispatch_mutex);
 
   while (connection->dispatch_acquired)
     {
       _dbus_verbose ("%s waiting for dispatch to be acquirable\n", _DBUS_FUNCTION_NAME);
-      _dbus_condvar_wait (connection->dispatch_cond, connection->dispatch_mutex);
+      dbus_condvar_wait (connection->dispatch_cond, connection->dispatch_mutex);
     }
   
   _dbus_assert (!connection->dispatch_acquired);
@@ -3092,7 +2774,7 @@ _dbus_connection_acquire_dispatch (DBusConnection *connection)
   connection->dispatch_acquired = TRUE;
 
   _dbus_verbose ("%s unlocking dispatch_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_unlock (connection->dispatch_mutex);
+  dbus_mutex_unlock (connection->dispatch_mutex);
   
   CONNECTION_LOCK (connection);
   _dbus_connection_unref_unlocked (connection);
@@ -3111,15 +2793,15 @@ _dbus_connection_release_dispatch (DBusConnection *connection)
   HAVE_LOCK_CHECK (connection);
   
   _dbus_verbose ("%s locking dispatch_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_lock (connection->dispatch_mutex);
+  dbus_mutex_lock (connection->dispatch_mutex);
   
   _dbus_assert (connection->dispatch_acquired);
 
   connection->dispatch_acquired = FALSE;
-  _dbus_condvar_wake_one (connection->dispatch_cond);
+  dbus_condvar_wake_one (connection->dispatch_cond);
 
   _dbus_verbose ("%s unlocking dispatch_mutex\n", _DBUS_FUNCTION_NAME);
-  _dbus_mutex_unlock (connection->dispatch_mutex);
+  dbus_mutex_unlock (connection->dispatch_mutex);
 }
 
 static void
@@ -3158,9 +2840,7 @@ _dbus_connection_get_dispatch_status_unlocked (DBusConnection *connection)
             {
               _dbus_verbose ("Sending disconnect message from %s\n",
                              _DBUS_FUNCTION_NAME);
-
-              connection_forget_shared_unlocked (connection);
-              
+                             
               /* We haven't sent the disconnect message already,
                * and all real messages have been queued up.
                */
@@ -3537,7 +3217,7 @@ dbus_connection_dispatch (DBusConnection *connection)
       
       if (connection->exit_on_disconnect &&
           dbus_message_is_signal (message,
-                                  DBUS_INTERFACE_LOCAL,
+                                  DBUS_INTERFACE_ORG_FREEDESKTOP_LOCAL,
                                   "Disconnected"))
         {
           _dbus_verbose ("Exiting on Disconnected signal\n");

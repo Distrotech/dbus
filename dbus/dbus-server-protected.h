@@ -25,27 +25,15 @@
 
 #include <config.h>
 #include <dbus/dbus-internals.h>
-#include <dbus/dbus-threads-internal.h>
 #include <dbus/dbus-server.h>
 #include <dbus/dbus-timeout.h>
 #include <dbus/dbus-watch.h>
 #include <dbus/dbus-resources.h>
 #include <dbus/dbus-dataslot.h>
-#include <dbus/dbus-string.h>
 
 DBUS_BEGIN_DECLS
 
 typedef struct DBusServerVTable DBusServerVTable;
-typedef union DBusGUID DBusGUID;
-
-/**
- * A server's globally unique ID
- */
-union DBusGUID
-{
-  dbus_uint32_t as_uint32s[4];
-  unsigned char as_bytes[16];
-};
 
 /**
  * Virtual table to be implemented by all server "subclasses"
@@ -67,11 +55,6 @@ struct DBusServer
   DBusAtomic refcount;                        /**< Reference count. */
   const DBusServerVTable *vtable;             /**< Virtual methods for this instance. */
   DBusMutex *mutex;                           /**< Lock on the server object */
-
-  DBusGUID guid;                              /**< Globally unique ID of server */
-
-  DBusString guid_hex;                        /**< Hex-encoded version of GUID */
-  
   DBusWatchList *watches;                     /**< Our watches */
   DBusTimeoutList *timeouts;                  /**< Our timeouts */  
 
@@ -119,7 +102,6 @@ void        _dbus_server_toggle_timeout (DBusServer             *server,
                                          dbus_bool_t             enabled);
 
 void        _dbus_server_ref_unlocked   (DBusServer             *server);
-void        _dbus_server_unref_unlocked (DBusServer             *server);
 
 #ifdef DBUS_DISABLE_CHECKS
 #define TOOK_LOCK_CHECK(server)
@@ -142,14 +124,14 @@ void        _dbus_server_unref_unlocked (DBusServer             *server);
 
 #define SERVER_LOCK(server)   do {                                              \
     if (TRACE_LOCKS) { _dbus_verbose ("  LOCK: %s\n", _DBUS_FUNCTION_NAME); }   \
-    _dbus_mutex_lock ((server)->mutex);                                          \
+    dbus_mutex_lock ((server)->mutex);                                          \
     TOOK_LOCK_CHECK (server);                                                   \
   } while (0)
 
 #define SERVER_UNLOCK(server) do {                                                      \
     if (TRACE_LOCKS) { _dbus_verbose ("  UNLOCK: %s\n", _DBUS_FUNCTION_NAME);  }        \
     RELEASING_LOCK_CHECK (server);                                                      \
-    _dbus_mutex_unlock ((server)->mutex);                                                \
+    dbus_mutex_unlock ((server)->mutex);                                                \
   } while (0)
 
 DBUS_END_DECLS
