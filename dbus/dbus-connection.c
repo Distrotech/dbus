@@ -38,6 +38,7 @@
 #include "dbus-string.h"
 #include "dbus-pending-call.h"
 #include "dbus-object-tree.h"
+#include "dbus-marshal.h"
 
 #if 0
 #define CONNECTION_LOCK(connection)   do {                      \
@@ -357,7 +358,7 @@ _dbus_connection_queue_received_message_link (DBusConnection  *connection,
 
   _dbus_connection_wakeup_mainloop (connection);
   
-  _dbus_verbose ("Message %p (%d %s %s %s '%s' reply to %u) added to incoming queue %p, %d incoming\n",
+  _dbus_verbose ("Message %p (%d %s %s %s '%s') added to incoming queue %p, %d incoming\n",
                  message,
                  dbus_message_get_type (message),
 		 dbus_message_get_path (message),
@@ -368,7 +369,6 @@ _dbus_connection_queue_received_message_link (DBusConnection  *connection,
                  dbus_message_get_member (message) :
                  "no member",
                  dbus_message_get_signature (message),
-                 dbus_message_get_reply_serial (message),
                  connection,
                  connection->n_incoming);
 }
@@ -1007,8 +1007,8 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
 DBusConnection *
 _dbus_connection_ref_unlocked (DBusConnection *connection)
 {
-  _dbus_assert (connection != NULL);
-  _dbus_assert (connection->generation == _dbus_current_generation);
+  _dbus_return_val_if_fail (connection != NULL, NULL);
+  _dbus_return_val_if_fail (connection->generation == _dbus_current_generation, NULL);
   
 #ifdef DBUS_HAVE_ATOMIC_INT
   _dbus_atomic_inc (&connection->refcount);
@@ -1445,7 +1445,7 @@ _dbus_connection_preallocate_send_unlocked (DBusConnection *connection)
 {
   DBusPreallocatedSend *preallocated;
 
-  _dbus_assert (connection != NULL);
+  _dbus_return_val_if_fail (connection != NULL, NULL);
   
   preallocated = dbus_new (DBusPreallocatedSend, 1);
   if (preallocated == NULL)
@@ -1540,12 +1540,11 @@ dbus_connection_free_preallocated_send (DBusConnection       *connection,
   dbus_free (preallocated);
 }
 
-/* Called with lock held, does not update dispatch status */
 static void
-_dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *connection,
-                                                       DBusPreallocatedSend *preallocated,
-                                                       DBusMessage          *message,
-                                                       dbus_uint32_t        *client_serial)
+_dbus_connection_send_preallocated_unlocked (DBusConnection       *connection,
+                                             DBusPreallocatedSend *preallocated,
+                                             DBusMessage          *message,
+                                             dbus_uint32_t        *client_serial)
 {
   dbus_uint32_t serial;
   const char *sig;
@@ -1565,8 +1564,17 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
   connection->n_outgoing += 1;
 
   sig = dbus_message_get_signature (message);
+#ifndef DBUS_DISABLE_ASSERT
+  {
+    DBusString foo;
+    _dbus_verbose (" validating signature '%s'\n", sig);
+    _dbus_string_init_const (&foo, sig);
+    _dbus_assert (_dbus_string_validate_signature (&foo, 0,
+                                                   _dbus_string_get_length (&foo)));
+  }
+#endif
   
-  _dbus_verbose ("Message %p (%d %s %s %s '%s') for %s added to outgoing queue %p, %d pending to send\n",
+  _dbus_verbose ("Message %p (%d %s %s %s '%s') added to outgoing queue %p, %d pending to send\n",
                  message,
                  dbus_message_get_type (message),
 		 dbus_message_get_path (message),
@@ -1577,9 +1585,6 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
                  dbus_message_get_member (message) :
                  "no member",
                  sig,
-                 dbus_message_get_destination (message) ?
-                 dbus_message_get_destination (message) :
-                 "null",
                  connection,
                  connection->n_outgoing);
 
@@ -1595,9 +1600,6 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
       if (client_serial)
         *client_serial = dbus_message_get_serial (message);
     }
-
-  _dbus_verbose ("Message %p serial is %u\n",
-                 message, dbus_message_get_serial (message));
   
   _dbus_message_lock (message);
 
@@ -1621,9 +1623,9 @@ _dbus_connection_send_preallocated_and_unlock (DBusConnection       *connection,
 {
   DBusDispatchStatus status;
 
-  _dbus_connection_send_preallocated_unlocked_no_update (connection,
-                                                         preallocated,
-                                                         message, client_serial);
+  _dbus_connection_send_preallocated_unlocked (connection,
+                                               preallocated,
+                                               message, client_serial);
 
   status = _dbus_connection_get_dispatch_status_unlocked (connection);
 
@@ -1667,9 +1669,9 @@ dbus_connection_send_preallocated (DBusConnection       *connection,
 }
 
 static dbus_bool_t
-_dbus_connection_send_unlocked_no_update (DBusConnection *connection,
-                                          DBusMessage    *message,
-                                          dbus_uint32_t  *client_serial)
+_dbus_connection_send_unlocked (DBusConnection *connection,
+                                DBusMessage    *message,
+                                dbus_uint32_t  *client_serial)
 {
   DBusPreallocatedSend *preallocated;
 
@@ -1680,14 +1682,15 @@ _dbus_connection_send_unlocked_no_update (DBusConnection *connection,
   if (preallocated == NULL)
     return FALSE;
 
-  _dbus_connection_send_preallocated_unlocked_no_update (connection,
-                                                         preallocated,
-                                                         message,
-                                                         client_serial);
+
+  _dbus_connection_send_preallocated_unlocked (connection,
+                                               preallocated,
+                                               message,
+                                               client_serial);
   return TRUE;
 }
 
-dbus_bool_t
+static dbus_bool_t
 _dbus_connection_send_and_unlock (DBusConnection *connection,
 				  DBusMessage    *message,
 				  dbus_uint32_t  *client_serial)
@@ -1867,7 +1870,7 @@ dbus_connection_send_with_reply (DBusConnection     *connection,
 						      pending))
     goto error;
   
-  if (!_dbus_connection_send_unlocked_no_update (connection, message, NULL))
+  if (!_dbus_connection_send_unlocked (connection, message, NULL))
     {
       _dbus_connection_detach_pending_call_and_unlock (connection,
 						       pending);
@@ -1944,9 +1947,9 @@ _dbus_connection_block_for_reply (DBusConnection     *connection,
   long tv_sec, tv_usec;
   DBusDispatchStatus status;
 
-  _dbus_assert (connection != NULL);
-  _dbus_assert (client_serial != 0);
-  _dbus_assert (timeout_milliseconds >= 0 || timeout_milliseconds == -1);
+  _dbus_return_val_if_fail (connection != NULL, NULL);
+  _dbus_return_val_if_fail (client_serial != 0, NULL);
+  _dbus_return_val_if_fail (timeout_milliseconds >= 0 || timeout_milliseconds == -1, FALSE);
   
   if (timeout_milliseconds == -1)
     timeout_milliseconds = _DBUS_DEFAULT_TIMEOUT_VALUE;
@@ -2788,9 +2791,8 @@ dbus_connection_dispatch (DBusConnection *connection)
         }
               
       if (!_dbus_string_append_printf (&str,
-                                       "Method \"%s\" with signature \"%s\" on interface \"%s\" doesn't exist\n",
+                                       "Method \"%s\" on interface \"%s\" doesn't exist\n",
                                        dbus_message_get_member (message),
-                                       dbus_message_get_signature (message),
                                        dbus_message_get_interface (message)))
         {
           _dbus_string_free (&str);
@@ -2821,8 +2823,8 @@ dbus_connection_dispatch (DBusConnection *connection)
           goto out;
         }
 
-      _dbus_connection_send_preallocated_unlocked_no_update (connection, preallocated,
-                                                             reply, NULL);
+      _dbus_connection_send_preallocated_unlocked (connection, preallocated,
+                                                   reply, NULL);
 
       dbus_message_unref (reply);
       
