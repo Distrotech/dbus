@@ -358,9 +358,10 @@ _dbus_connection_queue_received_message_link (DBusConnection  *connection,
 
   _dbus_connection_wakeup_mainloop (connection);
   
-  _dbus_verbose ("Message %p (%d %s %s '%s') added to incoming queue %p, %d incoming\n",
+  _dbus_verbose ("Message %p (%d %s %s %s '%s') added to incoming queue %p, %d incoming\n",
                  message,
                  dbus_message_get_type (message),
+		 dbus_message_get_path (message),
                  dbus_message_get_interface (message) ?
                  dbus_message_get_interface (message) :
                  "no interface",
@@ -473,9 +474,10 @@ _dbus_connection_message_sent (DBusConnection *connection,
   
   connection->n_outgoing -= 1;
 
-  _dbus_verbose ("Message %p (%d %s %s '%s') removed from outgoing queue %p, %d left to send\n",
+  _dbus_verbose ("Message %p (%d %s %s %s '%s') removed from outgoing queue %p, %d left to send\n",
                  message,
                  dbus_message_get_type (message),
+		 dbus_message_get_path (message),
                  dbus_message_get_interface (message) ?
                  dbus_message_get_interface (message) :
                  "no interface",
@@ -1572,9 +1574,10 @@ _dbus_connection_send_preallocated_unlocked (DBusConnection       *connection,
   }
 #endif
   
-  _dbus_verbose ("Message %p (%d %s %s '%s') added to outgoing queue %p, %d pending to send\n",
+  _dbus_verbose ("Message %p (%d %s %s %s '%s') added to outgoing queue %p, %d pending to send\n",
                  message,
                  dbus_message_get_type (message),
+		 dbus_message_get_path (message),
                  dbus_message_get_interface (message) ?
                  dbus_message_get_interface (message) :
                  "no interface",
@@ -1606,10 +1609,28 @@ _dbus_connection_send_preallocated_unlocked (DBusConnection       *connection,
   _dbus_connection_do_iteration (connection,
                                  DBUS_ITERATION_DO_WRITING,
                                  -1);
-  
+
   /* If stuff is still queued up, be sure we wake up the main loop */
   if (connection->n_outgoing > 0)
     _dbus_connection_wakeup_mainloop (connection);
+}
+
+static void
+_dbus_connection_send_preallocated_and_unlock (DBusConnection       *connection,
+					       DBusPreallocatedSend *preallocated,
+					       DBusMessage          *message,
+					       dbus_uint32_t        *client_serial)
+{
+  DBusDispatchStatus status;
+
+  _dbus_connection_send_preallocated_unlocked (connection,
+                                               preallocated,
+                                               message, client_serial);
+
+  status = _dbus_connection_get_dispatch_status_unlocked (connection);
+
+  /* this calls out to user code */
+  _dbus_connection_update_dispatch_status_and_unlock (connection, status);
 }
 
 /**
@@ -1642,10 +1663,9 @@ dbus_connection_send_preallocated (DBusConnection       *connection,
                          dbus_message_get_member (message) != NULL));
   
   CONNECTION_LOCK (connection);
-  _dbus_connection_send_preallocated_unlocked (connection,
-                                               preallocated,
-                                               message, client_serial);
-  CONNECTION_UNLOCK (connection);  
+  _dbus_connection_send_preallocated_and_unlock (connection,
+						 preallocated,
+						 message, client_serial);
 }
 
 static dbus_bool_t
@@ -1667,6 +1687,27 @@ _dbus_connection_send_unlocked (DBusConnection *connection,
                                                preallocated,
                                                message,
                                                client_serial);
+  return TRUE;
+}
+
+static dbus_bool_t
+_dbus_connection_send_and_unlock (DBusConnection *connection,
+				  DBusMessage    *message,
+				  dbus_uint32_t  *client_serial)
+{
+  DBusPreallocatedSend *preallocated;
+
+  _dbus_assert (connection != NULL);
+  _dbus_assert (message != NULL);
+  
+  preallocated = _dbus_connection_preallocate_send_unlocked (connection);
+  if (preallocated == NULL)
+    return FALSE;
+
+  _dbus_connection_send_preallocated_and_unlock (connection,
+						 preallocated,
+						 message,
+						 client_serial);
   return TRUE;
 }
 
@@ -1698,14 +1739,9 @@ dbus_connection_send (DBusConnection *connection,
 
   CONNECTION_LOCK (connection);
 
-  if (!_dbus_connection_send_unlocked (connection, message, client_serial))
-    {
-      CONNECTION_UNLOCK (connection);
-      return FALSE;
-    }
-
-  CONNECTION_UNLOCK (connection);
-  return TRUE;
+  return _dbus_connection_send_and_unlock (connection,
+					   message,
+					   client_serial);
 }
 
 static dbus_bool_t
@@ -1784,6 +1820,7 @@ dbus_connection_send_with_reply (DBusConnection     *connection,
   DBusMessage *reply;
   DBusList *reply_link;
   dbus_int32_t serial = -1;
+  DBusDispatchStatus status;
 
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (message != NULL, FALSE);
@@ -1845,8 +1882,11 @@ dbus_connection_send_with_reply (DBusConnection     *connection,
   else
     dbus_pending_call_unref (pending);
 
-  CONNECTION_UNLOCK (connection);
-  
+  status = _dbus_connection_get_dispatch_status_unlocked (connection);
+
+  /* this calls out to user code */
+  _dbus_connection_update_dispatch_status_and_unlock (connection, status);
+
   return TRUE;
 
  error:
@@ -2256,9 +2296,10 @@ _dbus_connection_pop_message_link_unlocked (DBusConnection *connection)
       link = _dbus_list_pop_first_link (&connection->incoming_messages);
       connection->n_incoming -= 1;
 
-      _dbus_verbose ("Message %p (%d %s %s '%s') removed from incoming queue %p, %d incoming\n",
+      _dbus_verbose ("Message %p (%d %s %s %s '%s') removed from incoming queue %p, %d incoming\n",
                      link->data,
                      dbus_message_get_type (link->data),
+		     dbus_message_get_path (link->data), 
                      dbus_message_get_interface (link->data) ?
                      dbus_message_get_interface (link->data) :
                      "no interface",
