@@ -1,3 +1,10 @@
+2005-02-22  Joe Shaw  <joeshaw@novell.com>
+
+	* python/dbus_bindings.pyx.in: API changed, so call
+	dbus_pending_call_steal_reply() rather than
+	dbus_pending_call_get_reply().  Bug and patch from
+	Jan de Groot.
+
 2005-02-18  Joe Shaw  <joeshaw@novell.com>
                                                                                 
         * NEWS: Update for 0.23.2
