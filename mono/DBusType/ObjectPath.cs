@@ -28,8 +28,10 @@ namespace DBus.DBusType
     
     public ObjectPath(IntPtr iter, Service service)
     {
-      
-      this.path = Marshal.PtrToStringAnsi(dbus_message_iter_get_object_path(iter));
+      IntPtr raw_str = dbus_message_iter_get_object_path (iter);
+      this.path = Marshal.PtrToStringAnsi (raw_str);
+      dbus_free (raw_str);
+
       this.service = service;
     }
 
@@ -47,7 +49,12 @@ namespace DBus.DBusType
 
     public void Append(IntPtr iter) 
     {
-      if (!dbus_message_iter_append_object_path(iter, Marshal.StringToHGlobalAnsi(Path)))
+      IntPtr raw_str = Marshal.StringToHGlobalAnsi (Path);
+
+      bool success = dbus_message_iter_append_object_path (iter, raw_str);
+      Marshal.FreeHGlobal (raw_str);
+
+      if (!success)
 	throw new ApplicationException("Failed to append OBJECT_PATH argument:" + val);
     }
 
@@ -95,5 +102,8 @@ namespace DBus.DBusType
  
     [DllImport("dbus-1")]
     private extern static bool dbus_message_iter_append_object_path(IntPtr iter, IntPtr path);
+
+    [DllImport("dbus-1")]
+    private extern static void dbus_free (IntPtr raw);
   }
 }

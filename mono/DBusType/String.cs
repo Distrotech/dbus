@@ -25,12 +25,19 @@ namespace DBus.DBusType
     
     public String(IntPtr iter, Service service)
     {
-      this.val = Marshal.PtrToStringAnsi(dbus_message_iter_get_string(iter));
+      IntPtr raw_str = dbus_message_iter_get_string (iter);
+      this.val = Marshal.PtrToStringAnsi (raw_str);
+      dbus_free (raw_str);
     }
 
     public void Append(IntPtr iter) 
     {
-      if (!dbus_message_iter_append_string(iter, Marshal.StringToHGlobalAnsi(val)))
+      IntPtr raw_str = Marshal.StringToHGlobalAnsi (val);
+
+      bool success = dbus_message_iter_append_string (iter, raw_str);
+      Marshal.FreeHGlobal (raw_str);
+
+      if (!success)
 	throw new ApplicationException("Failed to append STRING argument:" + val);
     }
 
@@ -82,5 +89,8 @@ namespace DBus.DBusType
  
     [DllImport("dbus-1")]
     private extern static bool dbus_message_iter_append_string(IntPtr iter, IntPtr value);
+
+    [DllImport("dbus-1")]
+    private extern static void dbus_free (IntPtr raw);
   }
 }

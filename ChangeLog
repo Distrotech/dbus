@@ -1,3 +1,26 @@
+2005-03-08  Joe Shaw  <joeshaw@novell.com>
+
+	* dbus/dbus-connection.c (dbus_connection_send_with_reply):
+	After we attach our pending call to the connection, unref
+	it.  Fixes a leak.
+
+	* dbus/dbus-pending-call.c (dbus_pending_call_get_reply):
+	Add this back.  Accidentally broke API/ABI compat.
+
+	* mono/Connection.cs (set_RawConnection): Disconnect our
+	filter and match callbacks from the old connection and
+	reconnect them to the new connection, if any.
+
+	* mono/DBusType/ObjectPath.cs (ctor): Don't leak the
+	object path that we get back from unmanaged code.
+	(Append): Don't leak the object path that we pass
+	into unmanaged code.
+
+	* mono/DBusType/String.cs (ctor): Don't leak the string
+	that we get back from unmanaged code.
+	(Append): Don't leak the string that we pass into
+	unmanaged code.
+
 2005-02-22  Joe Shaw  <joeshaw@novell.com>
 
 	* python/dbus_bindings.pyx.in: API changed, so call
