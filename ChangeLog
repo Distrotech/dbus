@@ -1,3 +1,9 @@
+2005-02-18  Joe Shaw  <joeshaw@novell.com>
+                                                                                
+        * NEWS: Update for 0.23.2
+                                                                                
+        * configure.in: Release 0.23.2
+
 2005-02-16  Joe Shaw  <joeshaw@novell.com>
 
 	* dbus/dbus-connection-internal.h, dbus/dbus-connection.[ch],
@@ -48,6 +54,15 @@
 	* mono/Service.cs (~Service): Added.  Removes the filter so that
 	we don't get unmanaged code calling back into a GCed delegate.
 	(RemoveFilter); Added.
+
+2005-01-31  Havoc Pennington  <hp@redhat.com>
+                                                                                
+	* bus/policy.c (bus_policy_allow_user): change default "user is
+	allowed" to be "user has same uid as the bus itself"; any
+	allow/deny rules will override.
+
+	* bus/session.conf.in: don't allow all users, since now by default
+	the user that ran the bus can connect.
 
 2005-01-12  Joe Shaw  <joeshaw@novell.com>
 
