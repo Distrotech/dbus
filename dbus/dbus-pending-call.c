@@ -291,6 +291,24 @@ dbus_pending_call_steal_reply (DBusPendingCall *pending)
 }
 
 /**
+ * Gets the reply, or returns #NULL if none has been received yet. The
+ * reference count is not incremented on the returned message, so you
+ * have to keep a reference count on the pending call (or add one
+ * to the message).
+ *
+ * @todo not thread safe? I guess it has to lock though it sucks
+ * @todo maybe to make this threadsafe, it should be steal_reply(), i.e. only one thread can ever get the message
+ *
+ * @param pending the pending call
+ * @returns the reply message or #NULL.
+ */
+DBusMessage*
+dbus_pending_call_get_reply (DBusPendingCall *pending)
+{
+  return pending->reply;
+}
+
+/**
  * Block until the pending call is completed.  The blocking is as with
  * dbus_connection_send_with_reply_and_block(); it does not enter the
  * main loop or process other messages, it simply waits for the reply

@@ -20,9 +20,6 @@ namespace DBus
     private static AssemblyBuilder proxyAssembly;
     private ModuleBuilder module = null;
 
-    // Add a match for signals. FIXME: Can we filter the service?
-    private const string MatchRule = "type='signal'";
-
     internal Service(string name, Connection connection)
     {
       this.name = name;
@@ -38,7 +35,7 @@ namespace DBus
       // This isn't used for now
       uint flags = 0;
 
-      if (dbus_bus_request_name (connection.RawConnection, name, flags, ref error) == -1) {
+      if (dbus_bus_acquire_service(connection.RawConnection, name, flags, ref error) == -1) {
 	throw new DBusException(error);
       }
 
@@ -47,12 +44,12 @@ namespace DBus
       this.local = true;
     }
 
-    public static bool HasOwner(Connection connection, string name)
+    public static bool Exists(Connection connection, string name)
     {
       Error error = new Error();
       error.Init();
       
-      if (dbus_bus_name_has_owner(connection.RawConnection, 
+      if (dbus_bus_service_exists(connection.RawConnection, 
 				  name, 
 				  ref error)) {
 	return true;
@@ -66,10 +63,10 @@ namespace DBus
 
     public static Service Get(Connection connection, string name)
     {
-      if (HasOwner(connection, name)) {
+      if (Exists(connection, name)) {
 	return new Service(name, connection);
       } else {
-	throw new ApplicationException("Name '" + name + "' does not exist.");
+	throw new ApplicationException("Service '" + name + "' does not exist.");
       }
     }
 
@@ -170,7 +167,10 @@ namespace DBus
     {
       get {
 	if (this.module == null) {
-	  this.module = ProxyAssembly.DefineDynamicModule(Name, Name + ".proxy.dll", true);
+          this.module = ProxyAssembly.GetDynamicModule (Name);
+
+          if (this.module == null)
+	    this.module = ProxyAssembly.DefineDynamicModule (Name, true);
 	}
 	
 	return this.module;
@@ -178,14 +178,15 @@ namespace DBus
     }
 
     [DllImport("dbus-1")]
-    private extern static int dbus_bus_request_name(IntPtr rawConnection, 
-						    string serviceName, 
-						    uint flags, ref Error error);
+    private extern static int dbus_bus_acquire_service(IntPtr rawConnection, 
+							string serviceName, 
+							uint flags, ref Error error);
 
     [DllImport("dbus-1")]
-    private extern static bool dbus_bus_name_has_owner(IntPtr rawConnection, 
+    private extern static bool dbus_bus_service_exists(IntPtr rawConnection, 
 						       string serviceName, 
 						       ref Error error);    
+
 
   }
 }

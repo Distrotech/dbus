@@ -1,7 +1,7 @@
 /* -*- mode: C; c-file-style: "gnu" -*- */
 /* dbus-server.c DBusServer object
  *
- * Copyright (C) 2002, 2003, 2004, 2005 Red Hat Inc.
+ * Copyright (C) 2002, 2003, 2004 Red Hat Inc.
  *
  * Licensed under the Academic Free License version 2.1
  * 
@@ -52,55 +52,6 @@
  * @{
  */
 
-static void
-init_guid (DBusGUID *guid)
-{
-  long now;
-  char *p;
-  int ts_size;
-
-  _dbus_get_current_time (&now, NULL);
-
-  guid->as_uint32s[0] = now;
-
-  ts_size = sizeof (guid->as_uint32s[0]);
-  p = ((char*)guid->as_bytes) + ts_size;
-  
-  _dbus_generate_random_bytes_buffer (p,
-                                      sizeof (guid->as_bytes) - ts_size);
-}
-
-/* this is a little fragile since it assumes the address doesn't
- * already have a guid, but it shouldn't
- */
-static char*
-copy_address_with_guid_appended (const DBusString *address,
-                                 const DBusString *guid_hex)
-{
-  DBusString with_guid;
-  char *retval;
-  
-  if (!_dbus_string_init (&with_guid))
-    return NULL;
-
-  if (!_dbus_string_copy (address, 0, &with_guid,
-                          _dbus_string_get_length (&with_guid)) ||
-      !_dbus_string_append (&with_guid, ",guid=") ||
-      !_dbus_string_copy (guid_hex, 0,
-                          &with_guid, _dbus_string_get_length (&with_guid)))
-    {
-      _dbus_string_free (&with_guid);
-      return NULL;
-    }
-
-  retval = NULL;
-  _dbus_string_steal_data (&with_guid, &retval);
-
-  _dbus_string_free (&with_guid);
-      
-  return retval; /* may be NULL if steal_data failed */
-}
-
 /**
  * Initializes the members of the DBusServer base class.
  * Chained up to by subclass constructors.
@@ -115,33 +66,17 @@ _dbus_server_init_base (DBusServer             *server,
                         const DBusServerVTable *vtable,
                         const DBusString       *address)
 {
-  DBusString guid_raw;
-  
   server->vtable = vtable;
   server->refcount.value = 1;
 
   server->address = NULL;
   server->watches = NULL;
   server->timeouts = NULL;
-
-  if (!_dbus_string_init (&server->guid_hex))
-    return FALSE;
-
-  init_guid (&server->guid);
-
-  _dbus_string_init_const_len (&guid_raw, server->guid.as_bytes,
-                               sizeof (server->guid.as_bytes));
-  if (!_dbus_string_hex_encode (&guid_raw, 0,
-                                &server->guid_hex,
-                                _dbus_string_get_length (&server->guid_hex)))
-    goto failed;
   
-  server->address = copy_address_with_guid_appended (address,
-                                                     &server->guid_hex);
-  if (server->address == NULL)
+  if (!_dbus_string_copy_data (address, &server->address))
     goto failed;
-  
-  server->mutex = _dbus_mutex_new ();
+
+  server->mutex = dbus_mutex_new ();
   if (server->mutex == NULL)
     goto failed;
   
@@ -162,7 +97,7 @@ _dbus_server_init_base (DBusServer             *server,
  failed:
   if (server->mutex)
     {
-      _dbus_mutex_free (server->mutex);
+      dbus_mutex_free (server->mutex);
       server->mutex = NULL;
     }
   if (server->watches)
@@ -180,7 +115,6 @@ _dbus_server_init_base (DBusServer             *server,
       dbus_free (server->address);
       server->address = NULL;
     }
-  _dbus_string_free (&server->guid_hex);
   
   return FALSE;
 }
@@ -193,87 +127,23 @@ _dbus_server_init_base (DBusServer             *server,
  */
 void
 _dbus_server_finalize_base (DBusServer *server)
-{
-  /* We don't have the lock, but nobody should be accessing
-   * concurrently since they don't have a ref
-   */
-#ifndef DBUS_DISABLE_CHECKS
-  _dbus_assert (!server->have_server_lock);
-#endif
-  _dbus_assert (server->disconnected);
-  
+{  
   /* calls out to application code... */
   _dbus_data_slot_list_free (&server->slot_list);
 
   dbus_server_set_new_connection_function (server, NULL, NULL, NULL);
 
+  if (!server->disconnected)
+    dbus_server_disconnect (server);
+
   _dbus_watch_list_free (server->watches);
   _dbus_timeout_list_free (server->timeouts);
 
-  _dbus_mutex_free (server->mutex);
+  dbus_mutex_free (server->mutex);
   
   dbus_free (server->address);
 
   dbus_free_string_array (server->auth_mechanisms);
-
-  _dbus_string_free (&server->guid_hex);
-}
-
-
-typedef dbus_bool_t (* DBusWatchAddFunction)     (DBusWatchList *list,
-                                                  DBusWatch     *watch);
-typedef void        (* DBusWatchRemoveFunction)  (DBusWatchList *list,
-                                                  DBusWatch     *watch);
-typedef void        (* DBusWatchToggleFunction)  (DBusWatchList *list,
-                                                  DBusWatch     *watch,
-                                                  dbus_bool_t    enabled);
-
-static dbus_bool_t
-protected_change_watch (DBusServer             *server,
-                        DBusWatch              *watch,
-                        DBusWatchAddFunction    add_function,
-                        DBusWatchRemoveFunction remove_function,
-                        DBusWatchToggleFunction toggle_function,
-                        dbus_bool_t             enabled)
-{
-  DBusWatchList *watches;
-  dbus_bool_t retval;
-  
-  HAVE_LOCK_CHECK (server);
-
-  /* This isn't really safe or reasonable; a better pattern is the "do
-   * everything, then drop lock and call out" one; but it has to be
-   * propagated up through all callers
-   */
-  
-  watches = server->watches;
-  if (watches)
-    {
-      server->watches = NULL;
-      _dbus_server_ref_unlocked (server);
-      SERVER_UNLOCK (server);
-
-      if (add_function)
-        retval = (* add_function) (watches, watch);
-      else if (remove_function)
-        {
-          retval = TRUE;
-          (* remove_function) (watches, watch);
-        }
-      else
-        {
-          retval = TRUE;
-          (* toggle_function) (watches, watch, enabled);
-        }
-      
-      SERVER_LOCK (server);
-      server->watches = watches;
-      _dbus_server_unref_unlocked (server);
-
-      return retval;
-    }
-  else
-    return FALSE;
 }
 
 /**
@@ -288,9 +158,7 @@ _dbus_server_add_watch (DBusServer *server,
                         DBusWatch  *watch)
 {
   HAVE_LOCK_CHECK (server);
-  return protected_change_watch (server, watch,
-                                 _dbus_watch_list_add_watch,
-                                 NULL, NULL, FALSE);
+  return _dbus_watch_list_add_watch (server->watches, watch);
 }
 
 /**
@@ -304,10 +172,7 @@ _dbus_server_remove_watch  (DBusServer *server,
                             DBusWatch  *watch)
 {
   HAVE_LOCK_CHECK (server);
-  protected_change_watch (server, watch,
-                          NULL,
-                          _dbus_watch_list_remove_watch,
-                          NULL, FALSE);
+  _dbus_watch_list_remove_watch (server->watches, watch);
 }
 
 /**
@@ -324,70 +189,11 @@ _dbus_server_toggle_watch (DBusServer  *server,
                            DBusWatch   *watch,
                            dbus_bool_t  enabled)
 {
-  _dbus_assert (watch != NULL);
-
   HAVE_LOCK_CHECK (server);
-  protected_change_watch (server, watch,
-                          NULL, NULL,
-                          _dbus_watch_list_toggle_watch,
-                          enabled);
-}
-
-
-typedef dbus_bool_t (* DBusTimeoutAddFunction)    (DBusTimeoutList *list,
-                                                   DBusTimeout     *timeout);
-typedef void        (* DBusTimeoutRemoveFunction) (DBusTimeoutList *list,
-                                                   DBusTimeout     *timeout);
-typedef void        (* DBusTimeoutToggleFunction) (DBusTimeoutList *list,
-                                                   DBusTimeout     *timeout,
-                                                   dbus_bool_t      enabled);
-
-
-static dbus_bool_t
-protected_change_timeout (DBusServer               *server,
-                          DBusTimeout              *timeout,
-                          DBusTimeoutAddFunction    add_function,
-                          DBusTimeoutRemoveFunction remove_function,
-                          DBusTimeoutToggleFunction toggle_function,
-                          dbus_bool_t               enabled)
-{
-  DBusTimeoutList *timeouts;
-  dbus_bool_t retval;
   
-  HAVE_LOCK_CHECK (server);
-
-  /* This isn't really safe or reasonable; a better pattern is the "do everything, then
-   * drop lock and call out" one; but it has to be propagated up through all callers
-   */
-  
-  timeouts = server->timeouts;
-  if (timeouts)
-    {
-      server->timeouts = NULL;
-      _dbus_server_ref_unlocked (server);
-      SERVER_UNLOCK (server);
-
-      if (add_function)
-        retval = (* add_function) (timeouts, timeout);
-      else if (remove_function)
-        {
-          retval = TRUE;
-          (* remove_function) (timeouts, timeout);
-        }
-      else
-        {
-          retval = TRUE;
-          (* toggle_function) (timeouts, timeout, enabled);
-        }
-      
-      SERVER_LOCK (server);
-      server->timeouts = timeouts;
-      _dbus_server_unref_unlocked (server);
-
-      return retval;
-    }
-  else
-    return FALSE;
+  if (server->watches) /* null during finalize */
+    _dbus_watch_list_toggle_watch (server->watches,
+                                   watch, enabled);
 }
 
 /**
@@ -403,9 +209,9 @@ dbus_bool_t
 _dbus_server_add_timeout (DBusServer  *server,
 			  DBusTimeout *timeout)
 {
-  return protected_change_timeout (server, timeout,
-                                   _dbus_timeout_list_add_timeout,
-                                   NULL, NULL, FALSE);
+  HAVE_LOCK_CHECK (server);
+  
+  return _dbus_timeout_list_add_timeout (server->timeouts, timeout);
 }
 
 /**
@@ -418,10 +224,9 @@ void
 _dbus_server_remove_timeout (DBusServer  *server,
 			     DBusTimeout *timeout)
 {
-  protected_change_timeout (server, timeout,
-                            NULL,
-                            _dbus_timeout_list_remove_timeout,
-                            NULL, FALSE);
+  HAVE_LOCK_CHECK (server);
+  
+  _dbus_timeout_list_remove_timeout (server->timeouts, timeout);  
 }
 
 /**
@@ -438,10 +243,11 @@ _dbus_server_toggle_timeout (DBusServer  *server,
                              DBusTimeout *timeout,
                              dbus_bool_t  enabled)
 {
-  protected_change_timeout (server, timeout,
-                            NULL, NULL,
-                            _dbus_timeout_list_toggle_timeout,
-                            enabled);
+  HAVE_LOCK_CHECK (server);
+  
+  if (server->timeouts) /* null during finalize */
+    _dbus_timeout_list_toggle_timeout (server->timeouts,
+                                       timeout, enabled);
 }
 
 
@@ -506,9 +312,7 @@ dbus_server_listen (const char     *address,
   
   for (i = 0; i < len; i++)
     {
-      const char *method;
-
-      method = dbus_address_entry_get_method (entries[i]);
+      const char *method = dbus_address_entry_get_method (entries[i]);
 
       if (strcmp (method, "unix") == 0)
 	{
@@ -674,7 +478,6 @@ DBusServer *
 dbus_server_ref (DBusServer *server)
 {
   _dbus_return_val_if_fail (server != NULL, NULL);
-  _dbus_return_val_if_fail (server->refcount.value > 0, NULL);
 
 #ifdef DBUS_HAVE_ATOMIC_INT
   _dbus_atomic_inc (&server->refcount);
@@ -691,9 +494,9 @@ dbus_server_ref (DBusServer *server)
 
 /**
  * Decrements the reference count of a DBusServer.  Finalizes the
- * server if the reference count reaches zero.
- *
- * The server must be disconnected before the refcount reaches zero.
+ * server if the reference count reaches zero. The server connection
+ * will be closed as with dbus_server_disconnect() when the server is
+ * finalized.
  *
  * @param server the server.
  */
@@ -703,7 +506,6 @@ dbus_server_unref (DBusServer *server)
   dbus_bool_t last_unref;
   
   _dbus_return_if_fail (server != NULL);
-  _dbus_return_if_fail (server->refcount.value > 0);
 
 #ifdef DBUS_HAVE_ATOMIC_INT
   last_unref = (_dbus_atomic_dec (&server->refcount) == 1);
@@ -720,9 +522,6 @@ dbus_server_unref (DBusServer *server)
   
   if (last_unref)
     {
-      /* lock not held! */
-      _dbus_assert (server->disconnected);
-      
       _dbus_assert (server->vtable->finalize != NULL);
       
       (* server->vtable->finalize) (server);
@@ -737,9 +536,6 @@ dbus_server_unref (DBusServer *server)
 void
 _dbus_server_ref_unlocked (DBusServer *server)
 {
-  _dbus_assert (server != NULL);
-  _dbus_assert (server->refcount.value > 0);
-  
   HAVE_LOCK_CHECK (server);
 
 #ifdef DBUS_HAVE_ATOMIC_INT
@@ -749,42 +545,6 @@ _dbus_server_ref_unlocked (DBusServer *server)
 
   server->refcount.value += 1;
 #endif
-}
-
-/**
- * Like dbus_server_unref() but does not acquire the lock (must already be held)
- *
- * @param server the server.
- */
-void
-_dbus_server_unref_unlocked (DBusServer *server)
-{
-  dbus_bool_t last_unref;
-  
-  _dbus_assert (server != NULL);
-  _dbus_assert (server->refcount.value > 0);
-
-  HAVE_LOCK_CHECK (server);
-  
-#ifdef DBUS_HAVE_ATOMIC_INT
-  last_unref = (_dbus_atomic_dec (&server->refcount) == 1);
-#else
-  _dbus_assert (server->refcount.value > 0);
-
-  server->refcount.value -= 1;
-  last_unref = (server->refcount.value == 0);
-#endif
-  
-  if (last_unref)
-    {
-      _dbus_assert (server->disconnected);
-      
-      SERVER_UNLOCK (server);
-      
-      _dbus_assert (server->vtable->finalize != NULL);
-      
-      (* server->vtable->finalize) (server);
-    }
 }
 
 /**
@@ -799,23 +559,18 @@ void
 dbus_server_disconnect (DBusServer *server)
 {
   _dbus_return_if_fail (server != NULL);
-  _dbus_return_if_fail (server->refcount.value > 0);
 
   SERVER_LOCK (server);
-  _dbus_server_ref_unlocked (server);
   
   _dbus_assert (server->vtable->disconnect != NULL);
 
-  if (!server->disconnected)
-    {
-      /* this has to be first so recursive calls to disconnect don't happen */
-      server->disconnected = TRUE;
-      
-      (* server->vtable->disconnect) (server);
-    }
+  if (server->disconnected)
+    return;
+  
+  (* server->vtable->disconnect) (server);
+  server->disconnected = TRUE;
 
   SERVER_UNLOCK (server);
-  dbus_server_unref (server);
 }
 
 /**
@@ -1180,7 +935,6 @@ _dbus_server_test (void)
       if (server == NULL)
 	_dbus_assert_not_reached ("Failed to listen for valid address.");
 
-      dbus_server_disconnect (server);
       dbus_server_unref (server);
 
       /* Try disconnecting before unreffing */
@@ -1189,6 +943,7 @@ _dbus_server_test (void)
 	_dbus_assert_not_reached ("Failed to listen for valid address.");
 
       dbus_server_disconnect (server);
+
       dbus_server_unref (server);
     }
 

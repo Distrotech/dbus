@@ -61,12 +61,6 @@ unix_finalize (DBusServer *server)
   
   _dbus_server_finalize_base (server);
 
-  if (unix_server->watch)
-    {
-      _dbus_watch_unref (unix_server->watch);
-      unix_server->watch = NULL;
-    }
-  
   dbus_free (unix_server->socket_name);
   dbus_free (server);
 }
@@ -75,9 +69,6 @@ unix_finalize (DBusServer *server)
  * @todo unreffing the connection at the end may cause
  * us to drop the last ref to the connection before
  * disconnecting it. That is invalid.
- *
- * @todo doesn't this leak a server refcount if
- * new_connection_function is NULL?
  */
 /* Return value is just for memory, not other failures. */
 static dbus_bool_t
@@ -99,7 +90,7 @@ handle_new_client_fd_and_unlock (DBusServer *server,
       return TRUE;
     }
   
-  transport = _dbus_transport_new_for_fd (client_fd, &server->guid_hex, NULL);
+  transport = _dbus_transport_new_for_fd (client_fd, TRUE, NULL);
   if (transport == NULL)
     {
       close (client_fd);
@@ -209,8 +200,6 @@ unix_disconnect (DBusServer *server)
 {
   DBusServerUnix *unix_server = (DBusServerUnix*) server;
 
-  HAVE_LOCK_CHECK (server);
-  
   if (unix_server->watch)
     {
       _dbus_server_remove_watch (server,
@@ -228,8 +217,6 @@ unix_disconnect (DBusServer *server)
       _dbus_string_init_const (&tmp, unix_server->socket_name);
       _dbus_delete_file (&tmp, NULL);
     }
-
-  HAVE_LOCK_CHECK (server);
 }
 
 static DBusServerVTable unix_vtable = {
@@ -255,13 +242,12 @@ _dbus_server_new_for_fd (int               fd,
                          const DBusString *address)
 {
   DBusServerUnix *unix_server;
-  DBusServer *server;
   DBusWatch *watch;
   
   unix_server = dbus_new0 (DBusServerUnix, 1);
   if (unix_server == NULL)
     return NULL;
-  
+
   watch = _dbus_watch_new (fd,
                            DBUS_WATCH_READABLE,
                            TRUE,
@@ -281,25 +267,26 @@ _dbus_server_new_for_fd (int               fd,
       return NULL;
     }
 
-  server = (DBusServer*) unix_server;
-
-  SERVER_LOCK (server);
+#ifndef DBUS_DISABLE_CHECKS
+  unix_server->base.have_server_lock = TRUE;
+#endif
   
   if (!_dbus_server_add_watch (&unix_server->base,
                                watch))
     {
-      SERVER_UNLOCK (server);
       _dbus_server_finalize_base (&unix_server->base);
       _dbus_watch_unref (watch);
       dbus_free (unix_server);
       return NULL;
     }
+
+#ifndef DBUS_DISABLE_CHECKS
+  unix_server->base.have_server_lock = FALSE;
+#endif
   
   unix_server->fd = fd;
   unix_server->watch = watch;
 
-  SERVER_UNLOCK (server);
-  
   return (DBusServer*) unix_server;
 }
 
@@ -321,7 +308,6 @@ _dbus_server_new_for_domain_socket (const char     *path,
   int listen_fd;
   DBusString address;
   char *path_copy;
-  DBusString path_str;
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -331,12 +317,11 @@ _dbus_server_new_for_domain_socket (const char     *path,
       return NULL;
     }
 
-  _dbus_string_init_const (&path_str, path);
   if ((abstract &&
        !_dbus_string_append (&address, "unix:abstract=")) ||
       (!abstract &&
        !_dbus_string_append (&address, "unix:path=")) ||
-      !_dbus_address_append_escaped (&address, &path_str))
+      !_dbus_string_append (&address, path))
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       goto failed_0;
@@ -399,7 +384,6 @@ _dbus_server_new_for_tcp_socket (const char     *host,
   DBusServer *server;
   int listen_fd;
   DBusString address;
-  DBusString host_str;
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -412,9 +396,8 @@ _dbus_server_new_for_tcp_socket (const char     *host,
   if (host == NULL)
     host = "localhost";
 
-  _dbus_string_init_const (&host_str, host);
   if (!_dbus_string_append (&address, "tcp:host=") ||
-      !_dbus_address_append_escaped (&address, &host_str) ||
+      !_dbus_string_append (&address, host) ||
       !_dbus_string_append (&address, ",port=") ||
       !_dbus_string_append_int (&address, port))
     {

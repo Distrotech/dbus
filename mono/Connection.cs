@@ -161,23 +161,22 @@ namespace DBus
     {
       if (!dbus_connection_register_object_path (RawConnection, path, ref vtable, IntPtr.Zero))
         throw new OutOfMemoryException ();
- 
+
       this.object_paths[path] = vtable;
     }
- 
+
     internal void UnregisterObjectPath (string path)
     {
       dbus_connection_unregister_object_path (RawConnection, path);
- 
+
       this.object_paths.Remove (path);
     }
 
-
-    public string UniqueName
+    public string BaseService
     {
       get
 	{
-	  return Marshal.PtrToStringAnsi (dbus_bus_get_unique_name (RawConnection));
+	  return Marshal.PtrToStringAnsi (dbus_bus_get_base_service (RawConnection));
 	}
     }
 
@@ -317,7 +316,7 @@ namespace DBus
     private extern static void dbus_connection_disconnect (IntPtr ptr);
 
     [DllImport ("dbus-1")]
-    private extern static IntPtr dbus_bus_get_unique_name (IntPtr ptr);
+    private extern static IntPtr dbus_bus_get_base_service (IntPtr ptr);
 
     [DllImport("dbus-1")]
     private extern static bool dbus_connection_add_filter(IntPtr rawConnection,
