@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 AC_INIT(dbus/dbus.h)
 
-AM_INIT_AUTOMAKE(dbus, 0.30)
+AM_INIT_AUTOMAKE(dbus, 0.23.2)
 
 AM_CONFIG_HEADER(config.h)
 
@@ -368,53 +368,6 @@ AC_SUBST(DBUS_INT64_TYPE)
 AC_SUBST(DBUS_INT64_CONSTANT)
 AC_SUBST(DBUS_UINT64_CONSTANT)
 AC_SUBST(DBUS_HAVE_INT64)
-
-### see what 32-bit int is called
-AC_MSG_CHECKING([32-bit integer type])
-
-case 4 in
-$ac_cv_sizeof_short)
-  dbusint32=int
-  ;;
-$ac_cv_sizeof_int)
-  dbusint32=int
-  ;;
-$ac_cv_sizeof_long)
-  dbusint32=long
-  ;;
-esac
-
-if test -z "$dbusint32" ; then
-        DBUS_INT32_TYPE="no_int32_type_detected"
-        AC_MSG_ERROR([No 32-bit integer type found])
-else
-        DBUS_INT32_TYPE="$dbusint32"
-        AC_MSG_RESULT($DBUS_INT32_TYPE)
-fi
-
-AC_SUBST(DBUS_INT32_TYPE)
-
-### see what 16-bit int is called
-AC_MSG_CHECKING([16-bit integer type])
-
-case 2 in
-$ac_cv_sizeof_short)
-  dbusint16=short
-  ;;
-$ac_cv_sizeof_int)
-  dbusint16=int
-  ;;
-esac
-
-if test -z "$dbusint16" ; then
-        DBUS_INT16_TYPE="no_int16_type_detected"
-        AC_MSG_ERROR([No 16-bit integer type found])
-else
-        DBUS_INT16_TYPE="$dbusint16"
-        AC_MSG_RESULT($DBUS_INT16_TYPE)
-fi
-
-AC_SUBST(DBUS_INT16_TYPE)
 
 ## byte order
 AC_C_BIGENDIAN
@@ -819,13 +772,6 @@ fi
 AM_CONDITIONAL(HAVE_GLIB, test x$have_glib = xyes)
 AM_CONDITIONAL(HAVE_GLIB_THREADS, test x$have_glib_threads = xyes)
 
-if test x$have_glib = xyes; then
-   GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
-else
-   GLIB_GENMARSHAL=glib-not-enabled-so-there-is-no-genmarshal
-fi
-AC_SUBST(GLIB_GENMARSHAL)
-
 dnl GLib flags
 AC_SUBST(DBUS_GLIB_CFLAGS)
 AC_SUBST(DBUS_GLIB_LIBS)
@@ -842,7 +788,6 @@ if test x$have_glib = xno ; then
     have_gtk=no
 else
     PKG_CHECK_MODULES(DBUS_GTK, gtk+-2.0, have_gtk=yes, have_gtk=no)
-    PKG_CHECK_MODULES(DBUS_GTK_THREADS, gtk+-2.0 gthread-2.0, have_gtk_threads=yes, have_gtk_threads=no)
 fi
 
 if test x$have_gtk = xno ; then
@@ -864,8 +809,6 @@ AM_CONDITIONAL(HAVE_GTK, test x$have_gtk = xyes)
 dnl Gtk flags
 AC_SUBST(DBUS_GTK_CFLAGS)
 AC_SUBST(DBUS_GTK_LIBS)
-AC_SUBST(DBUS_GTK_THREADS_CFLAGS)
-AC_SUBST(DBUS_GTK_THREADS_LIBS)
 
 # Qt detection
 AC_PATH_PROG(QT_MOC, moc, no)
@@ -1121,7 +1064,7 @@ AC_SUBST(TEST_$1)
 
 TEST_PATH(SERVICE_DIR, data/valid-service-files)
 TEST_PATH(SERVICE_BINARY, test-service)
-TEST_PATH(GLIB_SERVICE_BINARY, glib/test-service-glib)
+TEST_PATH(GLIB_SERVICE_BINARY, test-service-glib)
 TEST_PATH(EXIT_BINARY, test-exit)
 TEST_PATH(SEGFAULT_BINARY, test-segfault)
 TEST_PATH(SLEEP_FOREVER_BINARY, test-sleep-forever)
@@ -1198,7 +1141,7 @@ bus/system.conf
 bus/session.conf
 bus/messagebus
 bus/rc.messagebus
-bus/dbus-daemon.1
+bus/dbus-daemon-1.1
 Makefile
 dbus/Makefile
 glib/Makefile
@@ -1226,7 +1169,6 @@ test/data/valid-config-files/debug-allow-all.conf
 test/data/valid-config-files/debug-allow-all-sha1.conf
 test/data/valid-service-files/debug-echo.service
 test/data/valid-service-files/debug-segfault.service
-test/data/valid-service-files/debug-glib.service
 ])
 
 ### FIXME it's bizarre that have_qt and have_glib are used
@@ -1252,8 +1194,6 @@ echo "
 	cppflags:		  ${CPPFLAGS}
 	cxxflags:		  ${CXXFLAGS}
 	64-bit int:		  ${DBUS_INT64_TYPE}
-	32-bit int:		  ${DBUS_INT32_TYPE}
-	16-bit int:		  ${DBUS_INT16_TYPE}
         Doxygen:                  ${DOXYGEN}
         xmlto:                    ${XMLTO}"
 

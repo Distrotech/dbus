@@ -1,3 +1,17 @@
+D-BUS 0.23.2 (18 Feb 2005)
+===
+- shuffle some code around in the mono bindings to deterministically
+  finalize classes so that delegates are unregistered correctly.
+- backport a bunch of thread locking-related fixes from HEAD.
+
+D-BUS 0.23.1 (11 Feb 2005)
+===
+- fix a bug in which the bus daemon wouldn't recognize that a service
+  owner quit
+- fix a bug in the mono bindings that would cause unmanaged code to
+  call back into a delegate that had been garbage collected and
+  crashed.
+
 D-BUS 0.23 (11 Jan 2005)
 ===
 

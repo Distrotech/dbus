@@ -121,11 +121,11 @@ namespace DBus
       this.matches.Remove (match_rule);
     }
 
-    public string UniqueName
+    public string BaseService
     {
       get
 	{
-	  return Marshal.PtrToStringAnsi (dbus_bus_get_unique_name (RawConnection));
+	  return Marshal.PtrToStringAnsi (dbus_bus_get_base_service (RawConnection));
 	}
     }
 
@@ -237,7 +237,7 @@ namespace DBus
     private extern static void dbus_connection_disconnect (IntPtr ptr);
 
     [DllImport ("dbus-1")]
-    private extern static IntPtr dbus_bus_get_unique_name (IntPtr ptr);
+    private extern static IntPtr dbus_bus_get_base_service (IntPtr ptr);
 
     [DllImport("dbus-1")]
     private extern static bool dbus_connection_add_filter(IntPtr rawConnection,
