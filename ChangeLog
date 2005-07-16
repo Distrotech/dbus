@@ -1,3 +1,10 @@
+2005-07-16  John (J5) Palmieri  <johnp@redhat.com>
+
+	* python/Makefile.am: dbus_binding.pxd.in should be included 
+	in EXTRA_DIST not dbus_binding.pxd
+
+	* NEWS: Update to 0.35.1
+	
 2005-07-15  John (J5) Palmieri  <johnp@redhat.com>
 
 	* NEWS: Update to 0.35

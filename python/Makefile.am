@@ -22,7 +22,7 @@ EXTRA_DIST = 			\
 	dbus_h_wrapper.h	\
 	dbus_bindings.pyx	\
 	dbus_glib_bindings.pyx  \
-	dbus_bindings.pxd	\
+	dbus_bindings.pxd.in	\
 	extract.py
 
 CLEANFILES =			\
