@@ -2,6 +2,7 @@
 
 	* python/Makefile.am: dbus_binding.pxd.in should be included 
 	in EXTRA_DIST not dbus_binding.pxd
+	fix up $(srcdir) hopefully for the last time
 
 	* NEWS: Update to 0.35.1
 	
