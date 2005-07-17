@@ -1,4 +1,5 @@
 D-BUS 0.35.2 (17 July 2005)
+===
 - Rename Unix Security Context to SELinux Security Context in API
 - Fixed more dist errors that distcheck didn't pick up on
 - Fixed various bugs in the python bindings that prevented them from working
