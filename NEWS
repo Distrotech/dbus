@@ -1,3 +1,9 @@
+D-Bus 1.0.1 (17 November 2006)
+==
+- Fix bug where calling dbus_threads_init_default would assert
+- Fix UUID output to match the spec
+- Clear up documentation on UUIDs
+
 D-Bus 1.0.0 (08 November 2006)
 ==
 - Documents updated with API/ABI garuntees 
