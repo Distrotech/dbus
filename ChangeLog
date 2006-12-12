@@ -1,5 +1,9 @@
 2006-12-12  John (J5) Palmieri  <johnp@redhat.com>
 
+	* Released 1.0.2
+
+2006-12-12  John (J5) Palmieri  <johnp@redhat.com>
+
 	* bus/signal.c: Fix match_rule_equal errata
 	(CVE-2006-6107 - Patch from Kimmo Hämäläinen 
 	<kimmo.hamalainen@nokia.com>)
@@ -24,6 +28,10 @@
 
 	* doc/dbus-faq.xml: minor FAQ tweaks
 
+2006-11-17  John (J5) Palmieri  <johnp@redhat.com>
+
+	* Released 1.0.1
+
 2006-11-14  Havoc Pennington  <hp@redhat.com>
 	
 	* dbus/dbus-misc.c, dbus/dbus-misc.h: Move
@@ -47,6 +55,8 @@
 	as a replacement for regular uuidgen/RFC4122.
 
 2006-11-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* configure.in: Bump version to 1.0.1 for next stable release
 
 	* dbus/dbus-threads.h: fix DBUS_THREAD_FUNCTIONS_ALL_MASK to have
 	the correct value so we don't assert when initalizing recursive threads

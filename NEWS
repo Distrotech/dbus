@@ -1,3 +1,15 @@
+D-Bus 1.0.2 (12 December 2006)
+==
+- Fix security bug CVE-2006-6107 match rules can be removed by apps that did
+  not create them
+- pthread fix
+
+D-Bus 1.0.1 (17 November 2006)
+==
+- Fix bug where calling dbus_threads_init_default would assert
+- Fix UUID output to match the spec
+- Clear up documentation on UUIDs
+
 D-Bus 1.0.0 (08 November 2006)
 ==
 - Documents updated with API/ABI garuntees 
