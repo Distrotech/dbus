@@ -1,3 +1,13 @@
+2007-01-26  Havoc Pennington  <hp@redhat.com>
+
+	* bus/session.conf.in: override all the default limits with much
+	higher limits on the session bus, there is no reason the session
+	bus should have low limits
+
+	* bus/config-parser.c (bus_config_parser_new): increase default
+	limits so they are less likely to be hit; in particular the max
+	replies per connection was way too low
+
 2006-12-12  John (J5) Palmieri  <johnp@redhat.com>
 
 	* Released 1.0.2
