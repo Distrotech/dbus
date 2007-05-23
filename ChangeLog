@@ -1,3 +1,10 @@
+2007-05-23  Havoc Pennington  <hp@redhat.com>
+
+	* bus/Makefile.am (install-data-hook): create session.d
+
+	* bus/session.conf.in: add session.d for the session bus, so
+	security policy can be extended
+
 2007-04-27  Havoc Pennington  <hp@redhat.com>
 
 	* dbus/dbus-sysdeps-unix.c (_dbus_open_socket): fix #10781 from
