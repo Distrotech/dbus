@@ -1,3 +1,10 @@
+2007-07-18  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-message.c (dbus_message_get_cached)
+	(dbus_message_cache_or_finalize): don't mess with message from
+	message cache outside of the cache lock. Bug #9164 from Jonathan
+	Matthew.
+
 2007-07-10  Havoc Pennington  <hp@redhat.com>
 
 	* dbus/dbus-connection.c (struct DBusConnection): Fix from Olivier
