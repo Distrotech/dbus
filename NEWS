@@ -1,3 +1,21 @@
+D-Bus 1.0.3 (27 Febuary 2008)
+==
+- Fixed CVE-2008-0595 - security policy of the type <allow send_interface=
+  "some.interface.WithMethods"/> work as an implicit allow for
+  messages sent without an interface bypassing the default deny rules and 
+  potentially allowing restricted methods exported on the bus to be executed
+  by unauthorized users.
+- correctly unref connections without guids during shutdown
+- don't mess with message from message cache outside of the cache lock
+- avoid trying to protect individual bits in a word with different locks  
+- fix to allow a server to use port=0 or omit port so the port can be 
+  auto-selected by the OS
+- add session.d for the session bus, so security policy can be extended
+- capture the dbus-launch stderr output and add it to the DBusError message we 
+  return.
+- add option --close-stderr to close stderr before starting dbus-daemon
+- session bus now has higher limits by default
+
 D-Bus 1.0.2 (12 December 2006)
 ==
 - Fix security bug CVE-2006-6107 match rules can be removed by apps that did
