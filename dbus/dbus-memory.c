@@ -26,6 +26,8 @@
 #include "dbus-sysdeps.h"
 #include "dbus-list.h"
 #include <stdlib.h>
+#include <execinfo.h>
+#include <stdio.h>
 
 /**
  * @defgroup DBusMemory Memory Allocation
@@ -106,6 +108,16 @@ static dbus_bool_t guards = FALSE;
 static dbus_bool_t disable_mem_pools = FALSE;
 static dbus_bool_t backtrace_on_fail_alloc = FALSE;
 static DBusAtomic n_blocks_outstanding = {0};
+
+__attribute__((packed))
+struct block
+{
+  void *symbols[500];
+  long number_of_symbols;
+  long  size;
+  char memory[0];
+};
+static struct block *blocks[16384];
 
 /** value stored in guard padding for debugging buffer overrun */
 #define GUARD_VALUE 0xdeadbeef
@@ -467,12 +479,27 @@ dbus_malloc (size_t bytes)
 #endif
   else
     {
+      struct block *block;
+      int i;
       void *mem;
-      mem = malloc (bytes);
+      block = malloc (sizeof (struct block) + bytes + 256);
+      block->size = bytes;
+      block->number_of_symbols = backtrace (block->symbols, 100);
+      mem = &block->memory;
+  
 #ifdef DBUS_BUILD_TESTS
       if (mem)
 	_dbus_atomic_inc (&n_blocks_outstanding);
 #endif
+      for (i = 0; i < sizeof (blocks)/sizeof(*blocks); i++)
+      {
+        if (blocks[i] == NULL)
+          {
+            blocks[i] = block;
+            break;
+          }
+      }
+
       return mem;
     }
 }
@@ -520,12 +547,29 @@ dbus_malloc0 (size_t bytes)
 #endif
   else
     {
+      struct block *block;
+      int i;
       void *mem;
-      mem = calloc (bytes, 1);
+
+      block = calloc (sizeof (struct block) + bytes + 256, 1);
+      block->size = bytes;
+      block->number_of_symbols = backtrace (block->symbols, 100);
+      mem = &block->memory;
+
 #ifdef DBUS_BUILD_TESTS
       if (mem)
 	_dbus_atomic_inc (&n_blocks_outstanding);
 #endif
+
+      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
+      {
+        if (blocks[i] == NULL)
+          {
+            blocks[i] = block;
+            break;
+          }
+      }
+
       return mem;
     }
 }
@@ -597,12 +641,42 @@ dbus_realloc (void  *memory,
 #endif
   else
     {
+      struct block *block;
+      int i;
       void *mem;
-      mem = realloc (memory, bytes);
+
+      if (memory != NULL)
+      {
+      block = (struct block *) (((char *) memory) - offsetof (struct block, memory));
+
+      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
+        {
+          if (blocks[i] == block)
+            {
+              blocks[i] = NULL;
+              break;
+            }
+        }
+      } else block = NULL;
+
+      block = realloc (block, bytes + sizeof (struct block) + 256);
+      block->size = bytes;
+      block->number_of_symbols = backtrace (block->symbols, 100);
+
+      mem = &block->memory;
 #ifdef DBUS_BUILD_TESTS
       if (memory == NULL && mem != NULL)
 	    _dbus_atomic_inc (&n_blocks_outstanding);
 #endif
+
+      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
+      {
+        if (blocks[i] == NULL)
+          {
+            blocks[i] = block;
+            break;
+          }
+      }
       return mem;
     }
 }
@@ -635,13 +709,26 @@ dbus_free (void  *memory)
     
   if (memory) /* we guarantee it's safe to free (NULL) */
     {
+      int i;
+      struct block *block;
 #ifdef DBUS_BUILD_TESTS
       _dbus_atomic_dec (&n_blocks_outstanding);
       
       _dbus_assert (n_blocks_outstanding.value >= 0);
 #endif
 
-      free (memory);
+      block = (struct block *) (((char *) memory) - offsetof (struct block, memory));
+
+      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
+        {
+          if (blocks[i] == block)
+            {
+              blocks[i] = NULL;
+              break;
+            }
+        }
+
+      free (block);
     }
 }
 
@@ -744,6 +831,29 @@ _dbus_register_shutdown_func (DBusShutdownFunction  func,
  *
  * @{
  */
+static void
+print_leaks (void)
+{
+  if (n_blocks_outstanding.value != 0)
+    {
+      int i;
+
+      int found = 0;
+      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
+      {
+        if (blocks[i] != NULL)
+          {
+              struct block *block;
+              fprintf (stderr, "found leak\n");
+              block = blocks[i];
+              backtrace_symbols_fd (block->symbols, block->number_of_symbols, 2);
+              fprintf (stderr, "--\n");
+              found =1 ;
+          }
+      }
+      if (!found) fprintf (stderr, "no leaks found\n");
+    }
+}
 
 /**
  * Frees all memory allocated internally by libdbus and
@@ -798,6 +908,7 @@ dbus_shutdown (void)
     }
 
   _dbus_current_generation += 1;
+  print_leaks ();
 }
 
 /** @} */ /** End of public API docs block */
