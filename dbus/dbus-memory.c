@@ -427,6 +427,36 @@ set_guards (void       *real_block,
 
 #endif
 
+static void
+add_block (struct block *block)
+{
+  int i;
+
+  for (i = 0; i < sizeof (blocks)/sizeof(*blocks); i++)
+  {
+    if (blocks[i] == NULL)
+      {
+        blocks[i] = block;
+        break;
+      }
+  }
+}
+
+static void
+remove_block (struct block *block)
+{
+  int i;
+
+  for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
+    {
+      if (blocks[i] == block)
+        {
+          blocks[i] = NULL;
+          break;
+        }
+    }
+}
+
 /** @} */ /* End of internals docs */
 
 
@@ -480,7 +510,6 @@ dbus_malloc (size_t bytes)
   else
     {
       struct block *block;
-      int i;
       void *mem;
       block = malloc (sizeof (struct block) + bytes + 256);
       block->size = bytes;
@@ -491,15 +520,7 @@ dbus_malloc (size_t bytes)
       if (mem)
 	_dbus_atomic_inc (&n_blocks_outstanding);
 #endif
-      for (i = 0; i < sizeof (blocks)/sizeof(*blocks); i++)
-      {
-        if (blocks[i] == NULL)
-          {
-            blocks[i] = block;
-            break;
-          }
-      }
-
+      add_block (block);
       return mem;
     }
 }
@@ -548,7 +569,6 @@ dbus_malloc0 (size_t bytes)
   else
     {
       struct block *block;
-      int i;
       void *mem;
 
       block = calloc (sizeof (struct block) + bytes + 256, 1);
@@ -561,14 +581,7 @@ dbus_malloc0 (size_t bytes)
 	_dbus_atomic_inc (&n_blocks_outstanding);
 #endif
 
-      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
-      {
-        if (blocks[i] == NULL)
-          {
-            blocks[i] = block;
-            break;
-          }
-      }
+      add_block (block);
 
       return mem;
     }
@@ -642,21 +655,13 @@ dbus_realloc (void  *memory,
   else
     {
       struct block *block;
-      int i;
       void *mem;
 
       if (memory != NULL)
       {
       block = (struct block *) (((char *) memory) - offsetof (struct block, memory));
 
-      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
-        {
-          if (blocks[i] == block)
-            {
-              blocks[i] = NULL;
-              break;
-            }
-        }
+      remove_block (block);
       } else block = NULL;
 
       block = realloc (block, bytes + sizeof (struct block) + 256);
@@ -669,14 +674,7 @@ dbus_realloc (void  *memory,
 	    _dbus_atomic_inc (&n_blocks_outstanding);
 #endif
 
-      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
-      {
-        if (blocks[i] == NULL)
-          {
-            blocks[i] = block;
-            break;
-          }
-      }
+      add_block (block);
       return mem;
     }
 }
@@ -709,7 +707,6 @@ dbus_free (void  *memory)
     
   if (memory) /* we guarantee it's safe to free (NULL) */
     {
-      int i;
       struct block *block;
 #ifdef DBUS_BUILD_TESTS
       _dbus_atomic_dec (&n_blocks_outstanding);
@@ -719,14 +716,7 @@ dbus_free (void  *memory)
 
       block = (struct block *) (((char *) memory) - offsetof (struct block, memory));
 
-      for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
-        {
-          if (blocks[i] == block)
-            {
-              blocks[i] = NULL;
-              break;
-            }
-        }
+      remove_block (block);
 
       free (block);
     }
