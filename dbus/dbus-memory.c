@@ -113,11 +113,13 @@ __attribute__((packed))
 struct block
 {
   void *symbols[500];
-  long number_of_symbols;
+  long  index;
+  long  number_of_symbols;
   long  size;
   char memory[0];
 };
 static struct block *blocks[16384];
+static long next_block_index;
 
 /** value stored in guard padding for debugging buffer overrun */
 #define GUARD_VALUE 0xdeadbeef
@@ -430,13 +432,33 @@ set_guards (void       *real_block,
 static void
 add_block (struct block *block)
 {
-  int i;
+  unsigned int i;
+
+  if (blocks[next_block_index] == NULL)
+    {
+      blocks[next_block_index] = block;
+
+      block->index = next_block_index;
+
+      if ((next_block_index < sizeof (blocks)/sizeof(*blocks) - 1)
+          && blocks[next_block_index + 1] == NULL)
+        next_block_index++;
+
+      return;
+    }
 
   for (i = 0; i < sizeof (blocks)/sizeof(*blocks); i++)
   {
+    block->index = i;
     if (blocks[i] == NULL)
       {
         blocks[i] = block;
+        if ((i < sizeof (blocks)/sizeof(*blocks) - 1) &&
+          blocks[i+1] == NULL &&
+          (blocks[next_block_index] != NULL ||
+           next_block_index > i + 1))
+            next_block_index = i + 1;
+
         break;
       }
   }
@@ -445,16 +467,10 @@ add_block (struct block *block)
 static void
 remove_block (struct block *block)
 {
-  int i;
+  blocks[block->index] = NULL;
 
-  for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
-    {
-      if (blocks[i] == block)
-        {
-          blocks[i] = NULL;
-          break;
-        }
-    }
+  if (block->index < next_block_index)
+    next_block_index = block->index;
 }
 
 /** @} */ /* End of internals docs */
@@ -826,7 +842,7 @@ print_leaks (void)
 {
   if (n_blocks_outstanding.value != 0)
     {
-      int i;
+      unsigned int i;
 
       int found = 0;
       for (i = 0; i < sizeof(blocks)/sizeof(*blocks); i++)
