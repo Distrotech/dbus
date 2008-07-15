@@ -850,7 +850,7 @@ print_leaks (void)
         if (blocks[i] != NULL)
           {
               struct block *block;
-              fprintf (stderr, "found leak\n");
+              fprintf (stderr, "found %ld byte leak\n", block->size);
               block = blocks[i];
               backtrace_symbols_fd (block->symbols, block->number_of_symbols, 2);
               fprintf (stderr, "--\n");
