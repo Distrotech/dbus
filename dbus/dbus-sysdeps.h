@@ -373,6 +373,11 @@ dbus_bool_t _dbus_change_identity (unsigned long     uid,
                                    unsigned long     gid,
                                    DBusError        *error);
 
+dbus_bool_t _dbus_command_for_pid (unsigned long  pid,
+                                   DBusString    *str,
+                                   int            max_len,
+                                   DBusError     *error);
+
 /** A UNIX signal handler */
 typedef void (* DBusSignalHandler) (int sig);
 
