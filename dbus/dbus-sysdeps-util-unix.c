@@ -36,6 +36,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <syslog.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -285,6 +286,38 @@ _dbus_change_identity  (dbus_uid_t     uid,
     }
   
   return TRUE;
+}
+
+void 
+_dbus_init_system_log (void)
+{
+  openlog ("dbus", LOG_PID, LOG_DAEMON);
+}
+
+/**
+ * Log an informative message.  Intended for use primarily by
+ * the system bus.
+ *
+ * @param msg a printf-style format string
+ * @param args arguments for the format string
+ */
+void 
+_dbus_log_info (const char *msg, va_list args)
+{
+  vsyslog (LOG_DAEMON|LOG_NOTICE, msg, args);
+}
+
+/**
+ * Log a security-related message.  Intended for use primarily by
+ * the system bus.
+ *
+ * @param msg a printf-style format string
+ * @param args arguments for the format string
+ */
+void 
+_dbus_log_security (const char *msg, va_list args)
+{
+  vsyslog (LOG_AUTH|LOG_NOTICE, msg, args);
 }
 
 /** Installs a UNIX signal handler

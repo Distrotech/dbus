@@ -53,6 +53,7 @@ struct BusContext
   DBusUserDatabase *user_database;
   BusLimits limits;
   unsigned int fork : 1;
+  unsigned int syslog : 1;
 };
 
 static dbus_int32_t server_data_slot = -1;
@@ -382,6 +383,7 @@ process_config_first_time_only (BusContext      *context,
     }
 
   context->fork = bus_config_parser_get_fork (parser);
+  context->syslog = bus_config_parser_get_syslog (parser);
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
   retval = TRUE;
@@ -823,7 +825,10 @@ bus_context_reload_config (BusContext *context,
     }
   ret = TRUE;
 
+  bus_context_log_info (context, "Reloaded configuration");
  failed:  
+  if (!ret)
+    bus_context_log_info (context, "Unable to reload configuration: %s", error->message);
   if (parser != NULL)
     bus_config_parser_unref (parser);
   return ret;
@@ -1096,6 +1101,32 @@ bus_context_get_reply_timeout (BusContext *context)
   return context->limits.reply_timeout;
 }
 
+void
+bus_context_log_info (BusContext *context, const char *msg, ...)
+{
+  va_list args;
+
+  va_start (args, msg);
+  
+  if (context->syslog)
+    _dbus_log_info (msg, args);
+
+  va_end (args);
+}
+
+void
+bus_context_log_security (BusContext *context, const char *msg, ...)
+{
+  va_list args;
+
+  va_start (args, msg);
+  
+  if (context->syslog)
+    _dbus_log_security (msg, args);
+
+  va_end (args);
+}
+
 /*
  * addressed_recipient is the recipient specified in the message.
  *
@@ -1120,8 +1151,10 @@ bus_context_check_security_policy (BusContext     *context,
 {
   BusClientPolicy *sender_policy;
   BusClientPolicy *recipient_policy;
+  dbus_int32_t toggles;
   int type;
   dbus_bool_t requested_reply;
+  const char *sender_name;
   
   type = dbus_message_get_type (message);
   
@@ -1132,6 +1165,12 @@ bus_context_check_security_policy (BusContext     *context,
   _dbus_assert (type == DBUS_MESSAGE_TYPE_SIGNAL ||
                 addressed_recipient != NULL ||
                 strcmp (dbus_message_get_destination (message), DBUS_SERVICE_DBUS) == 0);
+
+  /* Used in logging below */
+  if (sender != NULL)
+    sender_name = bus_connection_get_name (sender);
+  else
+    sender_name = NULL;
   
   switch (type)
     {
@@ -1169,19 +1208,18 @@ bus_context_check_security_policy (BusContext     *context,
 				    dbus_message_get_error_name (message),
 				    dest ? dest : DBUS_SERVICE_DBUS, error))
         {
-
 	  if (dbus_error_is_set (error) &&
 	      dbus_error_has_name (error, DBUS_ERROR_NO_MEMORY))
 	    {
 	      return FALSE;
-	    }
-	  
+	    } 
 
           dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
                           "An SELinux policy prevents this sender "
                           "from sending this message to this recipient "
-                          "(rejected message had interface \"%s\" "
+                          "(rejected message had sender \"%s\" interface \"%s\" "
                           "member \"%s\" error name \"%s\" destination \"%s\")",
+                          sender_name ? sender_name : "(unset)",
                           dbus_message_get_interface (message) ?
                           dbus_message_get_interface (message) : "(unset)",
                           dbus_message_get_member (message) ?
@@ -1297,16 +1335,16 @@ bus_context_check_security_policy (BusContext     *context,
                                          context->registry,
                                          requested_reply,
                                          proposed_recipient,
-                                         message))
+                                         message, &toggles))
     {
       const char *dest;
+      const char *msg = "Rejected send message, %d matched rules; "
+                        "sender=\"%s\" interface=\"%s\" member=\"%s\" error name=\"%s\" destination=\"%s\")";
 
       dest = dbus_message_get_destination (message);
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
-                      "A security policy in place prevents this sender "
-                      "from sending this message to this recipient, "
-                      "see message bus configuration file (rejected message "
-                      "had interface \"%s\" member \"%s\" error name \"%s\" destination \"%s\")",
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED, msg,
+                      toggles,
+                      sender_name ? sender_name : "(unset)",
                       dbus_message_get_interface (message) ?
                       dbus_message_get_interface (message) : "(unset)",
                       dbus_message_get_member (message) ?
@@ -1314,6 +1352,17 @@ bus_context_check_security_policy (BusContext     *context,
                       dbus_message_get_error_name (message) ?
                       dbus_message_get_error_name (message) : "(unset)",
                       dest ? dest : DBUS_SERVICE_DBUS);
+      /* Needs to be duplicated to avoid calling malloc and having to handle OOM */
+      bus_context_log_security (context, msg,
+                                toggles,
+                                sender_name ? sender_name : "(unset)",
+                                dbus_message_get_interface (message) ?
+                                dbus_message_get_interface (message) : "(unset)",
+                                dbus_message_get_member (message) ?
+                                dbus_message_get_member (message) : "(unset)",
+                                dbus_message_get_error_name (message) ?
+                                dbus_message_get_error_name (message) : "(unset)",
+                                dest ? dest : DBUS_SERVICE_DBUS);
       _dbus_verbose ("security policy disallowing message due to sender policy\n");
       return FALSE;
     }
@@ -1324,16 +1373,16 @@ bus_context_check_security_policy (BusContext     *context,
                                             requested_reply,
                                             sender,
                                             addressed_recipient, proposed_recipient,
-                                            message))
+                                            message, &toggles))
     {
+      const char *msg = "Rejected receive message, %d matched rules; "
+                        "sender=\"%s\" interface=\"%s\" member=\"%s\" error name=\"%s\" destination=\"%s\" reply serial=%u requested_reply=%d)";
       const char *dest;
 
       dest = dbus_message_get_destination (message);
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
-                      "A security policy in place prevents this recipient "
-                      "from receiving this message from this sender, "
-                      "see message bus configuration file (rejected message "
-                      "had interface \"%s\" member \"%s\" error name \"%s\" destination \"%s\" reply serial %u requested_reply=%d)",
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED, msg,
+                      toggles,
+                      sender_name ? sender_name : "(unset)",
                       dbus_message_get_interface (message) ?
                       dbus_message_get_interface (message) : "(unset)",
                       dbus_message_get_member (message) ?
@@ -1343,6 +1392,19 @@ bus_context_check_security_policy (BusContext     *context,
                       dest ? dest : DBUS_SERVICE_DBUS,
                       dbus_message_get_reply_serial (message),
                       requested_reply);
+      /* Needs to be duplicated to avoid calling malloc and having to handle OOM */
+      bus_context_log_security (context, msg,
+                                toggles,
+                                sender_name ? sender_name : "(unset)",
+                                dbus_message_get_interface (message) ?
+                                dbus_message_get_interface (message) : "(unset)",
+                                dbus_message_get_member (message) ?
+                                dbus_message_get_member (message) : "(unset)",
+                                dbus_message_get_error_name (message) ?
+                                dbus_message_get_error_name (message) : "(unset)",
+                                dest ? dest : DBUS_SERVICE_DBUS,
+                                dbus_message_get_reply_serial (message),
+                                requested_reply);
       _dbus_verbose ("security policy disallowing message due to recipient policy\n");
       return FALSE;
     }

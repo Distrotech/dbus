@@ -48,7 +48,8 @@ typedef enum
   ELEMENT_TYPE,
   ELEMENT_SELINUX,
   ELEMENT_ASSOCIATE,
-  ELEMENT_STANDARD_SESSION_SERVICEDIRS
+  ELEMENT_STANDARD_SESSION_SERVICEDIRS,
+  ELEMENT_SYSLOG
 } ElementType;
 
 typedef enum
@@ -130,6 +131,8 @@ struct BusConfigParser
 
   unsigned int fork : 1; /**< TRUE to fork into daemon mode */
 
+  unsigned int syslog : 1; /**< TRUE to enable syslog */
+
   unsigned int is_toplevel : 1; /**< FALSE if we are a sub-config-file inside another one */
 };
 
@@ -174,6 +177,8 @@ element_type_to_name (ElementType type)
       return "selinux";
     case ELEMENT_ASSOCIATE:
       return "associate";
+    case ELEMENT_SYSLOG:
+      return "syslog";
     }
 
   _dbus_assert_not_reached ("bad element type");
@@ -752,6 +757,21 @@ start_busconfig_child (BusConfigParser   *parser,
         }
 
       parser->fork = TRUE;
+      
+      return TRUE;
+    }
+  else if (strcmp (element_name, "syslog") == 0)
+    {
+      if (!check_no_attributes (parser, "syslog", attribute_names, attribute_values, error))
+        return FALSE;
+
+      if (push_element (parser, ELEMENT_SYSLOG) == NULL)
+        {
+          BUS_SET_OOM (error);
+          return FALSE;
+        }
+
+      parser->syslog = TRUE;
       
       return TRUE;
     }
@@ -1958,6 +1978,7 @@ bus_config_parser_end_element (BusConfigParser   *parser,
     case ELEMENT_ALLOW:
     case ELEMENT_DENY:
     case ELEMENT_FORK:
+    case ELEMENT_SYSLOG:
     case ELEMENT_SELINUX:
     case ELEMENT_ASSOCIATE:
     case ELEMENT_STANDARD_SESSION_SERVICEDIRS:
@@ -2208,6 +2229,7 @@ bus_config_parser_content (BusConfigParser   *parser,
     case ELEMENT_ALLOW:
     case ELEMENT_DENY:
     case ELEMENT_FORK:
+    case ELEMENT_SYSLOG:
     case ELEMENT_STANDARD_SESSION_SERVICEDIRS:    
     case ELEMENT_SELINUX:
     case ELEMENT_ASSOCIATE:
@@ -2501,6 +2523,12 @@ dbus_bool_t
 bus_config_parser_get_fork (BusConfigParser   *parser)
 {
   return parser->fork;
+}
+
+dbus_bool_t
+bus_config_parser_get_syslog (BusConfigParser   *parser)
+{
+  return parser->syslog;
 }
 
 const char *

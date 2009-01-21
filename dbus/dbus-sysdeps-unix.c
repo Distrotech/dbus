@@ -2307,7 +2307,6 @@ _dbus_full_duplex_pipe (int        *fd1,
 #endif
 }
 
-
 /**
  * Measure the length of the given format string and arguments,
  * not including the terminating nul.
