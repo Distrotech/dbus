@@ -7,7 +7,7 @@ m4_define([dbus_micro_version], [4])
 # This is a configure hack just for this branch; don't try to touch
 # the minor/micro versions as that will just make things needlessly complex,
 # no API consumer should care about the differences between 1.2.4 and 1.2.4.Xpermissive.
-m4_define([dbus_substream],[4permissive])
+m4_define([dbus_substream],[6permissive])
 m4_define([dbus_version],
           [dbus_major_version.dbus_minor_version.dbus_micro_version.dbus_substream])
 AC_INIT(dbus, [dbus_version])
