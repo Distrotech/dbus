@@ -73,6 +73,13 @@ DBUS_UTIL_arch_sources =			\
 	dbus-sysdeps-util-win.c			\
 	dbus-spawn-win.c
 else
+
+if DBUS_ENABLE_LAUNCHD
+launchd_source = dbus-server-launchd.h dbus-server-launchd.c
+else
+launchd_source =
+endif
+
 DBUS_LIB_arch_sources = 			\
 	dbus-uuidgen.c				\
 	dbus-uuidgen.h				\
@@ -80,6 +87,7 @@ DBUS_LIB_arch_sources = 			\
 	dbus-server-unix.h
 
 DBUS_SHARED_arch_sources = 			\
+	$(launchd_source)			\
 	dbus-file-unix.c 			\
 	dbus-pipe-unix.c 			\
 	dbus-sysdeps-unix.c 			\

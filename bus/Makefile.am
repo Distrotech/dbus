@@ -9,11 +9,17 @@ EFENCE=
 
 CONFIG_IN_FILES=				\
 	session.conf.in				\
-	system.conf.in
+	system.conf.in				\
+	org.freedesktop.dbus-session.plist.in
 
 config_DATA=					\
 	session.conf				\
 	system.conf
+
+if DBUS_ENABLE_LAUNCHD
+agentdir=$(LAUNCHD_AGENT_DIR)
+agent_DATA=org.freedesktop.dbus-session.plist
+endif
 
 if DBUS_USE_LIBXML
 XML_SOURCES=config-loader-libxml.c

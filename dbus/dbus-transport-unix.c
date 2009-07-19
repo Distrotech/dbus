@@ -170,6 +170,59 @@ _dbus_transport_open_platform_specific (DBusAddressEntry  *entry,
           return DBUS_TRANSPORT_OPEN_OK;
         }      
     }
+#ifdef DBUS_ENABLE_LAUNCHD
+  else if (strcmp (method, "launchd") == 0)
+    {
+      DBusError tmp_error = DBUS_ERROR_INIT;
+      const char *launchd_env_var = dbus_address_entry_get_value (entry, "env");
+      const char *launchd_socket;
+      DBusString socket_path;
+      dbus_bool_t valid_socket;
+
+      if (!_dbus_string_init (&socket_path))
+        {
+          _DBUS_SET_OOM (error);
+          return FALSE;
+        }
+
+      if (launchd_env_var == NULL)
+        {
+          _dbus_set_bad_address (error, "launchd", "env", NULL);
+          return DBUS_TRANSPORT_OPEN_BAD_ADDRESS;
+        }
+
+      valid_socket = _dbus_lookup_launchd_socket (&socket_path, launchd_env_var, error);
+
+      if (dbus_error_is_set(error))
+        {
+          _dbus_string_free(&socket_path);
+          return DBUS_TRANSPORT_OPEN_DID_NOT_CONNECT;
+        }
+
+      if (!valid_socket)
+        {
+          dbus_set_error(&tmp_error, DBUS_ERROR_BAD_ADDRESS,
+                         "launchd's env var %s does not exist", launchd_env_var);
+          dbus_error_free(error);
+          dbus_move_error(&tmp_error, error);
+          return DBUS_TRANSPORT_OPEN_DID_NOT_CONNECT;
+        }
+
+      launchd_socket = _dbus_string_get_const_data(&socket_path);
+      *transport_p = _dbus_transport_new_for_domain_socket (launchd_socket, FALSE, error);
+
+      if (*transport_p == NULL)
+        {
+          _DBUS_ASSERT_ERROR_IS_SET (error);
+          return DBUS_TRANSPORT_OPEN_DID_NOT_CONNECT;
+        }
+      else
+        {
+          _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+          return DBUS_TRANSPORT_OPEN_OK;
+        }
+    }
+#endif
   else
     {
       _DBUS_ASSERT_ERROR_IS_CLEAR (error);

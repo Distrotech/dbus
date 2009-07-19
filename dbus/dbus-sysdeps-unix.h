@@ -81,6 +81,10 @@ dbus_bool_t _dbus_read_credentials (int               client_fd,
 dbus_bool_t _dbus_send_credentials (int              server_fd,
                                     DBusError       *error);
 
+dbus_bool_t _dbus_lookup_launchd_socket (DBusString *socket_path,
+                                         const char *launchd_env_var,
+                                         DBusError  *error);
+
 /** Information about a UNIX user */
 typedef struct DBusUserInfo  DBusUserInfo;
 /** Information about a UNIX group */
