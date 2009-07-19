@@ -3315,6 +3315,108 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
 #define DBUS_UNIX_STANDARD_SYSTEM_SERVICEDIR "/dbus-1/system-services"
 
 /**
+ * quries launchd for a specific env var which holds the socket path.
+ * @param launchd_env_var the env var to look up
+ * @param error a DBusError to store the error in case of failure
+ * @return the value of the env var
+ */
+dbus_bool_t
+_dbus_lookup_launchd_socket (DBusString *socket_path,
+                             const char *launchd_env_var,
+                             DBusError  *error)
+{
+#ifdef DBUS_ENABLE_LAUNCHD
+  char *argv[4];
+  int i;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  i = 0;
+  argv[i] = "launchctl";
+  ++i;
+  argv[i] = "getenv";
+  ++i;
+  argv[i] = (char*)launchd_env_var;
+  ++i;
+  argv[i] = NULL;
+  ++i;
+
+  _dbus_assert (i == _DBUS_N_ELEMENTS (argv));
+
+  if (!_read_subprocess_line_argv(argv[0], TRUE, argv, socket_path, error))
+    {
+      return FALSE;
+    }
+
+  /* no error, but no result either */
+  if (_dbus_string_get_length(socket_path) == 0)
+    {
+      return FALSE;
+    }
+
+  /* strip the carriage-return */
+  _dbus_string_shorten(socket_path, 1);
+  return TRUE;
+#else /* DBUS_ENABLE_LAUNCHD */
+  dbus_set_error(error, DBUS_ERROR_NOT_SUPPORTED,
+                "can't lookup socket from launchd; launchd support not compiled in");
+  return FALSE;
+#endif
+}
+
+static dbus_bool_t
+_dbus_lookup_session_address_launchd (DBusString *address, DBusError  *error)
+{
+#ifdef DBUS_ENABLE_LAUNCHD
+  dbus_bool_t valid_socket;
+  DBusString socket_path;
+
+  if (!_dbus_string_init (&socket_path))
+    {
+      _DBUS_SET_OOM (error);
+      return FALSE;
+    }
+
+  valid_socket = _dbus_lookup_launchd_socket (&socket_path, "DBUS_LAUNCHD_SESSION_BUS_SOCKET", error);
+
+  if (dbus_error_is_set(error))
+    {
+      _dbus_string_free(&socket_path);
+      return FALSE;
+    }
+
+  if (!valid_socket)
+    {
+      dbus_set_error(error, "no socket path",
+                "launchd did not provide a socket path, "
+                "verify that org.freedesktop.dbus-session.plist is loaded!");
+      _dbus_string_free(&socket_path);
+      return FALSE;
+    }
+  if (!_dbus_string_append (address, "unix:path="))
+    {
+      _DBUS_SET_OOM (error);
+      _dbus_string_free(&socket_path);
+      return FALSE;
+    }
+  if (!_dbus_string_copy (&socket_path, 0, address,
+                          _dbus_string_get_length (address)))
+    {
+      _DBUS_SET_OOM (error);
+      _dbus_string_free(&socket_path);
+      return FALSE;
+    }
+
+  _dbus_string_free(&socket_path);
+  return TRUE;
+#else
+  dbus_set_error(error, DBUS_ERROR_NOT_SUPPORTED,
+                "can't lookup session address from launchd; launchd support not compiled in");
+  return FALSE;
+#endif
+}
+
+/**
  * Determines the address of the session bus by querying a
  * platform-specific method.
  *
@@ -3338,12 +3440,17 @@ _dbus_lookup_session_address (dbus_bool_t *supported,
                               DBusString  *address,
                               DBusError   *error)
 {
+#ifdef DBUS_ENABLE_LAUNCHD
+  *supported = TRUE;
+  return _dbus_lookup_session_address_launchd (address, error);
+#else
   /* On non-Mac Unix platforms, if the session address isn't already
    * set in DBUS_SESSION_BUS_ADDRESS environment variable, we punt and
    * fall back to the autolaunch: global default; see
    * init_session_address in dbus/dbus-bus.c. */
   *supported = FALSE;
   return TRUE;
+#endif
 }
 
 /**
