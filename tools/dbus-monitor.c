@@ -95,7 +95,11 @@ monitor_filter_func (DBusConnection     *connection,
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+#ifdef __APPLE__
+#define PROFILE_TIMED_FORMAT "%s\t%lu\t%d"
+#else
 #define PROFILE_TIMED_FORMAT "%s\t%lu\t%lu"
+#endif
 #define TRAP_NULL_STRING(str) ((str) ? (str) : "<none>")
 
 typedef enum
