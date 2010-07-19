@@ -3188,7 +3188,12 @@ _read_subprocess_line_argv (const char *progpath,
     {
       /* The process ended with error */
       DBusString error_message;
-      _dbus_string_init (&error_message);
+      if (!_dbus_string_init (&error_message))
+        {
+          _DBUS_SET_OOM (error);
+          goto out;
+        }
+
       ret = 0;
       do
         {
