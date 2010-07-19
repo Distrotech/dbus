@@ -1388,16 +1388,18 @@ _dbus_listen_tcp_socket (const char     *host,
              to use the same port */
           if (!port || !strcmp(port, "0"))
             {
+              int result;
               struct sockaddr_storage addr;
               socklen_t addrlen;
               char portbuf[50];
 
               addrlen = sizeof(addr);
-              getsockname(fd, (struct sockaddr*) &addr, &addrlen);
+              result = getsockname(fd, (struct sockaddr*) &addr, &addrlen);
 
-              if ((res = getnameinfo((struct sockaddr*)&addr, addrlen, NULL, 0,
-                                     portbuf, sizeof(portbuf),
-                                     NI_NUMERICHOST)) != 0)
+              if (result == -1 ||
+                  (res = getnameinfo ((struct sockaddr*)&addr, addrlen, NULL, 0,
+                                      portbuf, sizeof(portbuf),
+                                      NI_NUMERICHOST)) != 0)
                 {
                   dbus_set_error (error, _dbus_error_from_errno (errno),
                                   "Failed to resolve port \"%s:%s\": %s (%s)",
