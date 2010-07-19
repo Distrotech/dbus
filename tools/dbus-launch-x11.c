@@ -293,6 +293,7 @@ init_x_atoms (Display *display)
 int
 x11_get_address (char **paddress, pid_t *pid, long *wid)
 {
+  int result;
   Atom type;
   Window owner;
   int format;
@@ -310,10 +311,10 @@ x11_get_address (char **paddress, pid_t *pid, long *wid)
     *wid = (long) owner;
 
   /* get the bus address */
-  XGetWindowProperty (xdisplay, owner, address_atom, 0, 1024, False,
-                      XA_STRING, &type, &format, &items, &after,
-                      (unsigned char **) &data);
-  if (type == None || after != 0 || data == NULL || format != 8)
+  result = XGetWindowProperty (xdisplay, owner, address_atom, 0, 1024, False,
+                              XA_STRING, &type, &format, &items, &after,
+                              (unsigned char **) &data);
+  if (result != Success || type == None || after != 0 || data == NULL || format != 8)
     return FALSE;               /* error */
 
   *paddress = xstrdup (data);
@@ -323,10 +324,10 @@ x11_get_address (char **paddress, pid_t *pid, long *wid)
   if (pid != NULL)
     {
       *pid = 0;
-      XGetWindowProperty (xdisplay, owner, pid_atom, 0, sizeof pid, False,
-                          XA_CARDINAL, &type, &format, &items, &after,
-                          (unsigned char **) &data);
-      if (type != None && after == 0 && data != NULL && format == 32)
+      result = XGetWindowProperty (xdisplay, owner, pid_atom, 0, sizeof pid, False,
+                                   XA_CARDINAL, &type, &format, &items, &after,
+                                   (unsigned char **) &data);
+      if (result == Success && type != None && after == 0 && data != NULL && format == 32)
         *pid = (pid_t) *(long*) data;
       XFree (data);
     }
