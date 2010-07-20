@@ -701,7 +701,11 @@ pass_info (const char *runprog, const char *bus_address, pid_t bus_pid,
       args = malloc (sizeof (char *) * ((argc-remaining_args)+2));
 
       if (envvar == NULL || args == NULL)
-        goto oom;
+        {
+          free (envvar);
+          free (args);
+          goto oom;
+        }
 
      args[0] = xstrdup (runprog);
       if (!args[0])
