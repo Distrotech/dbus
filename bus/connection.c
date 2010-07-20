@@ -586,9 +586,12 @@ cache_peer_loginfo_string (BusConnectionData *d,
 
   if (dbus_connection_get_windows_user (connection, &windows_sid))
     {
-      if (!_dbus_string_append_printf (&loginfo_buf, "sid=\"%s\" ", windows_sid))
-        goto oom;
+      dbus_bool_t did_append;
+      did_append = _dbus_string_append_printf (&loginfo_buf,
+                                               "sid=\"%s\" ", windows_sid);
       dbus_free (windows_sid);
+      if (!did_append)
+        goto oom;
     }
 
   if (!_dbus_string_steal_data (&loginfo_buf, &(d->cached_loginfo_string)))
