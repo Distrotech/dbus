@@ -1980,7 +1980,6 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
                                                        dbus_uint32_t        *client_serial)
 {
   dbus_uint32_t serial;
-  const char *sig;
 
   preallocated->queue_link->data = message;
   _dbus_list_prepend_link (&connection->outgoing_messages,
@@ -1996,8 +1995,6 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
   
   connection->n_outgoing += 1;
 
-  sig = dbus_message_get_signature (message);
-  
   _dbus_verbose ("Message %p (%s %s %s %s '%s') for %s added to outgoing queue %p, %d pending to send\n",
                  message,
                  dbus_message_type_to_string (dbus_message_get_type (message)),
@@ -2010,7 +2007,7 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
                  dbus_message_get_member (message) ?
                  dbus_message_get_member (message) :
                  "no member",
-                 sig,
+                 dbus_message_get_signature (message),
                  dbus_message_get_destination (message) ?
                  dbus_message_get_destination (message) :
                  "null",
