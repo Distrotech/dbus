@@ -143,8 +143,6 @@ _dbus_keyring_new (void)
 
   return keyring;
 
-  /*  out_4: */
-  _dbus_string_free (&keyring->filename_lock);
  out_3:
   _dbus_string_free (&keyring->filename);
  out_2:
