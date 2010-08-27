@@ -273,7 +273,7 @@ check_address (const char *address, DBusError *error)
  * @returns a new transport, or #NULL on failure.
  */
 static DBusTransport*
-_dbus_transport_new_for_autolaunch (DBusError      *error)
+_dbus_transport_new_for_autolaunch (const char *scope, DBusError *error)
 {
   DBusString address;
   DBusTransport *result = NULL;
@@ -286,7 +286,7 @@ _dbus_transport_new_for_autolaunch (DBusError      *error)
       return NULL;
     }
 
-  if (!_dbus_get_autolaunch_address (&address, error))
+  if (!_dbus_get_autolaunch_address (scope, &address, error))
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       goto out;
@@ -315,7 +315,9 @@ _dbus_transport_open_autolaunch (DBusAddressEntry  *entry,
 
   if (strcmp (method, "autolaunch") == 0)
     {
-      *transport_p = _dbus_transport_new_for_autolaunch (error);
+      const char *scope = dbus_address_entry_get_value (entry, "scope");
+
+      *transport_p = _dbus_transport_new_for_autolaunch (scope, error);
 
       if (*transport_p == NULL)
         {

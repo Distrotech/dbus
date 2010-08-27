@@ -251,6 +251,9 @@ socket_disconnect (DBusServer *server)
       _dbus_delete_file (&tmp, NULL);
     }
 
+  if (server->published_address)
+      _dbus_daemon_unpublish_session_bus_address();
+
   HAVE_LOCK_CHECK (server);
 }
 

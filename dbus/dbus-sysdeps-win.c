@@ -37,6 +37,7 @@
 #endif
 
 #include "dbus-internals.h"
+#include "dbus-sha.h"
 #include "dbus-sysdeps.h"
 #include "dbus-threads.h"
 #include "dbus-protocol.h"
@@ -2536,35 +2537,139 @@ static const char *cDBusAutolaunchMutex = "DBusAutolaunchMutex";
 // mutex to determine if dbus-daemon is already started (per user)
 static const char *cDBusDaemonMutex = "DBusDaemonMutex";
 // named shm for dbus adress info (per user)
-#ifdef _DEBUG
-static const char *cDBusDaemonAddressInfo = "DBusDaemonAddressInfoDebug";
-#else
 static const char *cDBusDaemonAddressInfo = "DBusDaemonAddressInfo";
-#endif
+
+dbus_bool_t
+_dbus_get_install_root(char *prefix, int len);
+
+static dbus_bool_t
+_dbus_get_install_root_as_hash(DBusString *out)
+{
+    DBusString install_path;
+
+    char path[MAX_PATH*2];
+    int path_size = sizeof(path);
+
+    if (!_dbus_get_install_root(path,path_size))
+        return FALSE;
+
+    _dbus_string_init(&install_path);
+    _dbus_string_append(&install_path,path);
+
+    _dbus_string_init(out);
+    _dbus_string_tolower_ascii(&install_path,0,_dbus_string_get_length(&install_path));
+
+    if (!_dbus_sha_compute (&install_path, out))
+        return FALSE;
+
+    return TRUE;
+}
 
 
-void
-_dbus_daemon_publish_session_bus_address (const char* address)
+static dbus_bool_t
+_dbus_get_shm_address(DBusString *out,const char *scope)
+{
+  _dbus_string_init(out);
+  _dbus_string_append(out,cDBusDaemonAddressInfo);
+
+  if (strcmp(scope,"install-path") == 0)
+    {
+      DBusString temp;
+
+      if (!_dbus_get_install_root_as_hash(&temp))
+        {
+          _dbus_string_free(out);
+           return FALSE;
+        }
+      _dbus_string_append(out,"-");
+      _dbus_string_append(out,_dbus_string_get_const_data(&temp));
+      _dbus_string_free(&temp);
+      return TRUE;
+    }
+  else if (strlen(scope) > 0)
+    {
+      _dbus_string_append(out,"-");
+      _dbus_string_append(out,scope);
+      return TRUE;
+    }
+  else
+    {
+      return TRUE;
+    }
+}
+
+static dbus_bool_t
+_dbus_get_mutex_name(DBusString *out,const char *scope)
+{
+  _dbus_string_init(out);
+  _dbus_string_append(out,cDBusDaemonMutex);
+
+  if (strcmp(scope,"install-path") == 0)
+    {
+      DBusString temp;
+
+      if (!_dbus_get_install_root_as_hash(&temp))
+        {
+          _dbus_string_free(out);
+          return FALSE;
+        }
+
+      _dbus_string_append(out,"-");
+      _dbus_string_append(out,_dbus_string_get_const_data(&temp));
+      _dbus_string_free(&temp);
+      return TRUE;
+    }
+  else if (strlen(scope) > 0)
+    {
+      _dbus_string_append(out,"-");
+      _dbus_string_append(out,scope);
+      return TRUE;
+    }
+  else
+    {
+      return TRUE;
+    }
+}
+
+dbus_bool_t
+_dbus_daemon_publish_session_bus_address (const char* address, const char *scope)
 {
   HANDLE lock;
   char *shared_addr = NULL;
   DWORD ret;
+  char addressInfo[1024];
+  DBusString shm_address;
+  DBusString mutex_address;
 
   _dbus_assert (address);
+
+  if (!_dbus_get_mutex_name(&mutex_address,scope))
+    {
+      _dbus_string_free( &mutex_address );
+      return FALSE;
+    }
+
   // before _dbus_global_lock to keep correct lock/release order
-  hDBusDaemonMutex = CreateMutexA( NULL, FALSE, cDBusDaemonMutex );
+  hDBusDaemonMutex = CreateMutexA( NULL, FALSE, _dbus_string_get_const_data(&mutex_address) );
   ret = WaitForSingleObject( hDBusDaemonMutex, 1000 );
   if ( ret != WAIT_OBJECT_0 ) {
-    _dbus_warn("Could not lock mutex %s (return code %ld). daemon already running? Bus address not published.\n", cDBusDaemonMutex, ret );
-    return;
+    _dbus_warn("Could not lock mutex %s (return code %d). daemon already running? Bus address not published.\n", _dbus_string_get_const_data(&mutex_address), ret );
+    return FALSE;
   }
+
+  if (!_dbus_get_shm_address(&shm_address,scope))
+    {
+      _dbus_string_free( &mutex_address );
+      _dbus_string_free( &shm_address );
+      return FALSE;
+    }
 
   // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
   lock = _dbus_global_lock( cUniqueDBusInitMutex );
 
   // create shm
   hDBusSharedMem = CreateFileMappingA( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
-                                      0, strlen( address ) + 1, cDBusDaemonAddressInfo );
+                                       0, strlen( address ) + 1, _dbus_string_get_const_data(&shm_address) );
   _dbus_assert( hDBusSharedMem );
 
   shared_addr = MapViewOfFile( hDBusSharedMem, FILE_MAP_WRITE, 0, 0, 0 );
@@ -2577,6 +2682,9 @@ _dbus_daemon_publish_session_bus_address (const char* address)
   UnmapViewOfFile( shared_addr );
 
   _dbus_global_unlock( lock );
+  _dbus_string_free( &shm_address );
+  _dbus_string_free( &mutex_address );
+  return TRUE;
 }
 
 void
@@ -2601,7 +2709,7 @@ _dbus_daemon_unpublish_session_bus_address (void)
 }
 
 static dbus_bool_t
-_dbus_get_autolaunch_shm (DBusString *address)
+_dbus_get_autolaunch_shm (DBusString *address, DBusString *shm_address)
 {
   HANDLE sharedMem;
   char *shared_addr;
@@ -2610,7 +2718,7 @@ _dbus_get_autolaunch_shm (DBusString *address)
   // read shm
   for(i=0;i<20;++i) {
       // we know that dbus-daemon is available, so we wait until shm is available
-      sharedMem = OpenFileMappingA( FILE_MAP_READ, FALSE, cDBusDaemonAddressInfo );
+      sharedMem = OpenFileMappingA( FILE_MAP_READ, FALSE, _dbus_string_get_const_data(shm_address));
       if( sharedMem == 0 )
           Sleep( 100 );
       if ( sharedMem != 0)
@@ -2638,39 +2746,48 @@ _dbus_get_autolaunch_shm (DBusString *address)
 }
 
 static dbus_bool_t
-_dbus_daemon_already_runs (DBusString *address)
+_dbus_daemon_already_runs (DBusString *address, DBusString *shm_address, const char *scope)
 {
   HANDLE lock;
   HANDLE daemon;
+  DBusString mutex_address;
   dbus_bool_t bRet = TRUE;
 
   // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
   lock = _dbus_global_lock( cUniqueDBusInitMutex );
 
+  if (!_dbus_get_mutex_name(&mutex_address,scope))
+    {
+      _dbus_string_free( &mutex_address );
+      return FALSE;
+    }
+
   // do checks
-  daemon = CreateMutexA( NULL, FALSE, cDBusDaemonMutex );
+  daemon = CreateMutexA( NULL, FALSE, _dbus_string_get_const_data(&mutex_address) );
   if(WaitForSingleObject( daemon, 10 ) != WAIT_TIMEOUT)
     {
       ReleaseMutex (daemon);
       CloseHandle (daemon);
 
       _dbus_global_unlock( lock );
+      _dbus_string_free( &mutex_address );
       return FALSE;
     }
 
   // read shm
-  bRet = _dbus_get_autolaunch_shm( address );
+  bRet = _dbus_get_autolaunch_shm( address, shm_address );
 
   // cleanup
   CloseHandle ( daemon );
 
   _dbus_global_unlock( lock );
+  _dbus_string_free( &mutex_address );
 
   return bRet;
 }
 
 dbus_bool_t
-_dbus_get_autolaunch_address (DBusString *address, 
+_dbus_get_autolaunch_address (const char *scope, DBusString *address,
                               DBusError *error)
 {
   HANDLE mutex;
@@ -2681,12 +2798,19 @@ _dbus_get_autolaunch_address (DBusString *address,
   char dbus_exe_path[MAX_PATH];
   char dbus_args[MAX_PATH * 2];
   const char * daemon_name = DBUS_DAEMON_NAME ".exe";
+  DBusString shm_address;
 
   mutex = _dbus_global_lock ( cDBusAutolaunchMutex );
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  if (_dbus_daemon_already_runs(address))
+  if (!_dbus_get_shm_address(&shm_address,scope))
+    {
+        dbus_set_error_const (error, DBUS_ERROR_FAILED, "could not determine shm address");
+        return FALSE;
+    }
+
+  if (_dbus_daemon_already_runs(address,&shm_address,scope))
     {
         _dbus_verbose("found already running dbus daemon\n");
         retval = TRUE;
@@ -2713,7 +2837,7 @@ _dbus_get_autolaunch_address (DBusString *address,
     {
       CloseHandle (pi.hThread);
       CloseHandle (pi.hProcess);
-      retval = _dbus_get_autolaunch_shm( address );
+      retval = _dbus_get_autolaunch_shm( address, &shm_address );
     }
   
   if (retval == FALSE)

@@ -50,6 +50,7 @@ struct DBusServerVTable
 };
 
 /**
+ * @ingroup DBusServerInternals
  * Internals of DBusServer object
  */
 struct DBusServer
@@ -66,7 +67,8 @@ struct DBusServer
   DBusTimeoutList *timeouts;                  /**< Our timeouts */  
 
   char *address;                              /**< Address this server is listening on. */
-  
+  dbus_bool_t published_address;              /**< flag which indicates that server has published its bus address. */
+
   int max_connections;                        /**< Max number of connections allowed at once. */
 
   DBusDataSlotList slot_list;   /**< Data stored by allocated integer ID */

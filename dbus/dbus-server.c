@@ -104,6 +104,7 @@ _dbus_server_init_base (DBusServer             *server,
   server->address = NULL;
   server->watches = NULL;
   server->timeouts = NULL;
+  server->published_address = FALSE;
 
   if (!_dbus_string_init (&server->guid_hex))
     return FALSE;

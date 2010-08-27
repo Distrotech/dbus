@@ -503,12 +503,6 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  is_session_bus = bus_context_get_type(context) != NULL
-      && strcmp(bus_context_get_type(context),"session") == 0;
-
-  if (is_session_bus)
-    _dbus_daemon_publish_session_bus_address (bus_context_get_address (context));
-
   /* bus_context_new() closes the print_addr_pipe and
    * print_pid_pipe
    */
@@ -528,9 +522,6 @@ main (int argc, char **argv)
   bus_context_shutdown (context);
   bus_context_unref (context);
   bus_selinux_shutdown ();
-
-  if (is_session_bus)
-    _dbus_daemon_unpublish_session_bus_address ();
 
   return 0;
 }

@@ -83,11 +83,35 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
           return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
         }
     }
+  else if (strcmp (method, "autolaunch") == 0)
+    {
+      const char *host = "localhost";
+      const char *bind = "localhost";
+      const char *port = "0";
+      const char *family = "ipv4";
+      const char *scope = dbus_address_entry_get_value (entry, "scope");
+
+      *server_p = _dbus_server_new_for_tcp_socket (host, bind, port,
+                                                   family, error, FALSE);
+      if (*server_p)
+        {
+          _DBUS_ASSERT_ERROR_IS_CLEAR(error);
+          /// @todo should we return an error when address could not be published ?
+          (*server_p)->published_address =
+              _dbus_daemon_publish_session_bus_address ((*server_p)->address, scope);
+          return DBUS_SERVER_LISTEN_OK;
+        }
+      else
+        {
+          _DBUS_ASSERT_ERROR_IS_SET(error);
+          return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
+        }
+    }
   else
     {
-  _DBUS_ASSERT_ERROR_IS_CLEAR(error);
-  return DBUS_SERVER_LISTEN_NOT_HANDLED;
-}
+       _DBUS_ASSERT_ERROR_IS_CLEAR(error);
+       return DBUS_SERVER_LISTEN_NOT_HANDLED;
+    }
 }
 
 /** @} */
