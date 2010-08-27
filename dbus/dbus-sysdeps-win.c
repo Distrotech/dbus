@@ -2572,7 +2572,11 @@ _dbus_get_shm_address(DBusString *out,const char *scope)
   _dbus_string_init(out);
   _dbus_string_append(out,cDBusDaemonAddressInfo);
 
-  if (strcmp(scope,"install-path") == 0)
+  if (!scope)
+    {
+      return TRUE;
+    }
+  else if (strcmp(scope,"install-path") == 0)
     {
       DBusString temp;
 
@@ -2604,7 +2608,11 @@ _dbus_get_mutex_name(DBusString *out,const char *scope)
   _dbus_string_init(out);
   _dbus_string_append(out,cDBusDaemonMutex);
 
-  if (strcmp(scope,"install-path") == 0)
+  if (!scope)
+    {
+      return TRUE;
+    }
+  else if (strcmp(scope,"install-path") == 0)
     {
       DBusString temp;
 
