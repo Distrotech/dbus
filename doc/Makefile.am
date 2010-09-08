@@ -1,3 +1,13 @@
+man_MANS = \
+	dbus-cleanup-sockets.1 \
+	dbus-daemon.1 \
+	dbus-launch.1 \
+	dbus-monitor.1 \
+	dbus-send.1 \
+	dbus-uuidgen.1
+
+MAN_IN_FILES = dbus-daemon.1.in
+
 EXTRA_DIST= 					\
 	busconfig.dtd				\
 	diagram.png				\
@@ -10,7 +20,8 @@ EXTRA_DIST= 					\
 	dcop-howto.txt				\
 	file-boilerplate.c			\
 	introspect.xsl				\
-	system-activation.txt
+	system-activation.txt			\
+	$(MAN_IN_FILES) $(man_MANS)
 
 HTML_FILES=					\
 	dbus-faq.html				\

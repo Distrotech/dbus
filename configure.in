@@ -1579,7 +1579,6 @@ bus/session.conf
 bus/messagebus
 bus/messagebus-config
 bus/rc.messagebus
-bus/dbus-daemon.1
 bus/dbus.service
 bus/dbus.socket
 Makefile
@@ -1589,6 +1588,7 @@ tools/Makefile
 test/Makefile
 test/name-test/Makefile
 doc/Makefile
+doc/dbus-daemon.1
 dbus-1.pc
 test/data/valid-config-files/debug-allow-all.conf
 test/data/valid-config-files/debug-allow-all-sha1.conf
