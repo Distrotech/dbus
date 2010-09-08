@@ -213,12 +213,14 @@ else (WIN32)
 		${DBUS_DIR}/dbus-sysdeps-unix.c
 		${DBUS_DIR}/dbus-sysdeps-pthread.c
 		${DBUS_DIR}/dbus-userdb.c
+        ${DBUS_DIR}/sd-daemon.c
 	)
 	set (DBUS_SHARED_HEADERS ${DBUS_SHARED_HEADERS} 
 		${DBUS_DIR}/dbus-server-unix.h
 		${DBUS_DIR}/dbus-transport-unix.h
 		${DBUS_DIR}/dbus-sysdeps-unix.h
 		${DBUS_DIR}/dbus-userdb.h
+        ${DBUS_DIR}/sd-daemon.h
 	)
 	set (DBUS_UTIL_SOURCES ${DBUS_UTIL_SOURCES}
 		${DBUS_DIR}/dbus-spawn.c
