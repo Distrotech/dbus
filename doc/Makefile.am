@@ -8,6 +8,14 @@ man_MANS = \
 
 MAN_IN_FILES = dbus-daemon.1.in
 
+MAN_HTML_FILES = \
+	dbus-cleanup-sockets.1.html \
+	dbus-daemon.1.html \
+	dbus-launch.1.html \
+	dbus-monitor.1.html \
+	dbus-send.1.html \
+	dbus-uuidgen.1.html
+
 EXTRA_DIST= 					\
 	busconfig.dtd				\
 	diagram.png				\
@@ -58,8 +66,16 @@ $(DOXYGEN_HTML_INDEX): $(wildcard $(top_srcdir)/dbus/*.[ch])
 	$(AM_V_GEN)cd $(top_builddir) && doxygen Doxyfile
 endif
 
+if DBUS_HAVE_MAN2HTML
+all-local:: $(MAN_HTML_FILES)
+
+%.1.html: %.1
+	$(AM_V_GEN)( $(MAN2HTML) $< > $@.tmp && mv $@.tmp $@ )
+endif
+
 clean-local:
 	rm -rf api
+	rm -f *.1.html
 
 maintainer-clean-local:
 	rm -f $(HTML_FILES)

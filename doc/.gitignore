@@ -2,6 +2,7 @@
 .libs
 Makefile
 Makefile.in
+*.1.html
 *.lo
 *.la
 *.o

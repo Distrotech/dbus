@@ -1344,6 +1344,10 @@ fi
 AM_CONDITIONAL(DBUS_XML_DOCS_ENABLED, test x$enable_xml_docs = xyes)
 AC_MSG_RESULT($enable_xml_docs)
 
+AC_PATH_PROG([MAN2HTML], [man2html])
+AC_ARG_VAR([MAN2HTML], [Path to man2html (optional)])
+AM_CONDITIONAL(DBUS_HAVE_MAN2HTML, test x$MAN2HTML != x)
+
 #### Have to go $localstatedir->$prefix/var->/usr/local/var
 
 #### find the actual value for $prefix that we'll end up with
@@ -1630,8 +1634,9 @@ echo "
 	64-bit int:		  ${DBUS_INT64_TYPE}
 	32-bit int:		  ${DBUS_INT32_TYPE}
 	16-bit int:		  ${DBUS_INT16_TYPE}
-        Doxygen:                  ${DOXYGEN}
-        xmlto:                    ${XMLTO}"
+        Doxygen:                  ${DOXYGEN:-not found}
+        xmlto:                    ${XMLTO:-not found}
+        man2html:                 ${MAN2HTML:-not found}"
 
 echo "
         Maintainer mode:          ${USE_MAINTAINER_MODE}
