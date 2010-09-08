@@ -16,6 +16,7 @@ dbus-daemon-launch-helper-test
 bus-test
 rc.messagebus
 messagebus
+messagebus-config
 session.conf
 system.conf
 dbus-daemon.1
