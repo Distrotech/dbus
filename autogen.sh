@@ -70,7 +70,6 @@ fi
 
 libtoolize --copy --force
 
-echo $ACLOCAL $ACLOCAL_FLAGS
 $ACLOCAL $ACLOCAL_FLAGS
 
 ## optionally feature autoheader
