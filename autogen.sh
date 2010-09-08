@@ -27,8 +27,12 @@ fi
 	DIE=1
 }
 
-AUTOMAKE=automake-1.9
-ACLOCAL=aclocal-1.9
+# If the user hasn't explicitly chosen an Automake version, use 1.11. This is
+# the earliest version that gives us silent rules.
+if test -z "$AUTOMAKE"; then
+    AUTOMAKE=automake-1.11
+    ACLOCAL=aclocal-1.11
+fi
 
 ($AUTOMAKE --version) < /dev/null > /dev/null 2>&1 || {
         AUTOMAKE=automake
