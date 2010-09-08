@@ -2997,6 +2997,10 @@
         linkend="message-protocol-header-fields"/>).  If the
         <literal>DESTINATION</literal> field is present, it specifies a message
         recipient by name. Method calls and replies normally specify this field.
+        The message bus must send messages (of any type) with the
+        <literal>DESTINATION</literal> field set to the specified recipient,
+        regardless of whether the recipient has set up a match rule matching
+        the message.
       </para>
 
       <para>
