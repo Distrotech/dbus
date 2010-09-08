@@ -14,7 +14,7 @@ AC_LIBTOOL_RC
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.9 tar-ustar])
+AM_INIT_AUTOMAKE([1.9 tar-ustar -Wno-portability])
 AM_CONFIG_HEADER(config.h)
 
 # Honor aclocal flags
