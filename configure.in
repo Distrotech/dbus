@@ -1313,7 +1313,7 @@ if test x$enable_doxygen_docs = xyes; then
 fi
 
 AM_CONDITIONAL(DBUS_DOXYGEN_DOCS_ENABLED, test x$enable_doxygen_docs = xyes)
-AC_MSG_RESULT(yes)
+AC_MSG_RESULT($enable_doxygen_docs)
 
 ### XML Documentation
 
@@ -1342,7 +1342,7 @@ if test x$enable_xml_docs = xyes; then
 fi
 
 AM_CONDITIONAL(DBUS_XML_DOCS_ENABLED, test x$enable_xml_docs = xyes)
-AC_MSG_RESULT(yes)
+AC_MSG_RESULT($enable_xml_docs)
 
 #### Have to go $localstatedir->$prefix/var->/usr/local/var
 
