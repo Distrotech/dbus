@@ -276,7 +276,7 @@ _dbus_string_save_to_file (const DBusString *str,
     }
   if (world_readable)
     {
-      if (! _dbus_make_file_world_readable (tmp_filename, error))
+      if (! _dbus_make_file_world_readable (&tmp_filename, error))
         goto out;
     }
 
