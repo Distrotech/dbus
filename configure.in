@@ -1348,6 +1348,10 @@ AC_PATH_PROG([MAN2HTML], [man2html])
 AC_ARG_VAR([MAN2HTML], [Path to man2html (optional)])
 AM_CONDITIONAL(DBUS_HAVE_MAN2HTML, test x$MAN2HTML != x)
 
+AM_CONDITIONAL(DBUS_CAN_UPLOAD_DOCS,
+    test x$enable_doxygen_docs = xyes -a x$enable_xml_docs = xyes -a \
+         x$MAN2HTML != x)
+
 #### Have to go $localstatedir->$prefix/var->/usr/local/var
 
 #### find the actual value for $prefix that we'll end up with

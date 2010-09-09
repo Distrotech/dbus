@@ -16,19 +16,25 @@ MAN_HTML_FILES = \
 	dbus-send.1.html \
 	dbus-uuidgen.1.html
 
-EXTRA_DIST= 					\
-	busconfig.dtd				\
-	diagram.png				\
-	diagram.svg				\
-	introspect.dtd				\
-	dbus-faq.xml				\
-	dbus-specification.xml			\
-	dbus-test-plan.xml			\
-	dbus-tutorial.xml			\
-	dcop-howto.txt				\
-	file-boilerplate.c			\
-	introspect.xsl				\
-	system-activation.txt			\
+DTDS = \
+	busconfig.dtd \
+	introspect.dtd
+
+STATIC_DOCS = \
+	diagram.png \
+	diagram.svg \
+	dbus-faq.xml \
+	dbus-specification.xml \
+	dbus-test-plan.xml \
+	dbus-tutorial.xml \
+	dcop-howto.txt \
+	introspect.xsl \
+	system-activation.txt \
+	$(DTDS)
+
+EXTRA_DIST = \
+	file-boilerplate.c \
+	$(STATIC_DOCS) \
 	$(MAN_IN_FILES) $(man_MANS)
 
 HTML_FILES=					\
@@ -73,8 +79,49 @@ all-local:: $(MAN_HTML_FILES)
 	$(AM_V_GEN)( $(MAN2HTML) $< > $@.tmp && mv $@.tmp $@ )
 endif
 
+if DBUS_CAN_UPLOAD_DOCS
+BONUS_FILES = \
+	$(top_srcdir)/README \
+	$(top_srcdir)/HACKING \
+	$(top_srcdir)/AUTHORS \
+	$(top_srcdir)/NEWS \
+	$(top_srcdir)/COPYING \
+	$(top_srcdir)/ChangeLog
+
+dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) $(DOXYGEN_HTML_INDEX)
+	$(AM_V_at)rm -rf $@
+	$(AM_V_GEN)mkdir -p $@/api
+	$(AM_V_at)cp $(STATIC_DOCS) $@
+	$(AM_V_at)cp $(HTML_FILES) $@
+	$(AM_V_at)cp $(MAN_HTML_FILES) $@
+	$(AM_V_at)cp $(BONUS_FILES) $@
+	$(AM_V_at)cp -r api/html $@/api
+
+dbus-docs.tar.gz: dbus-docs
+	$(AM_V_GEN)tar czf $@ $<
+
+DOC_SERVER = dbus.freedesktop.org
+DOC_WWW_DIR = /srv/dbus.freedesktop.org/www
+
+SPECIFICATION_SERVER = specifications.freedesktop.org
+SPECIFICATION_PATH = /srv/specifications.freedesktop.org/www/dbus/1.0
+
+maintainer-upload-docs: dbus-docs.tar.gz dbus-docs
+	scp dbus-docs.tar.gz $(DOC_SERVER):$(DOC_WWW_DIR)
+	rsync -rvzP --chmod=Dg+s,ug+rwX,o=rX \
+		dbus-docs/ $(DOC_SERVER):$(DOC_WWW_DIR)/doc/
+	scp -p $(DTDS) $(SPECIFICATION_SERVER):$(SPECIFICATION_PATH)
+else
+maintainer-upload-docs:
+	@echo "Can't upload documentation! Re-run configure with"
+	@echo "  --enable-doxygen-docs --enable-xml-docs"
+	@echo "and ensure that man2html is installed."
+	@false
+endif
+
 clean-local:
 	rm -rf api
+	rm -rf dbus-docs
 	rm -f *.1.html
 
 maintainer-clean-local:
