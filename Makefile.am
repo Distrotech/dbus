@@ -15,7 +15,8 @@ EXTRA_DIST =			\
         NEWS.pre-1-0            \
 	ChangeLog.pre-1-2       \
         NEWS.pre-1-2		\
-	README.windbus
+	README.windbus		\
+	cmake
 
 all-local: Doxyfile
 
