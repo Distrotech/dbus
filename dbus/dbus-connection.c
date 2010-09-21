@@ -2385,10 +2385,10 @@ _dbus_connection_block_pending_call (DBusPendingCall *pending)
    * below
    */
   timeout = _dbus_pending_call_get_timeout_unlocked (pending);
+  _dbus_get_current_time (&start_tv_sec, &start_tv_usec);
   if (timeout)
     {
       timeout_milliseconds = dbus_timeout_get_interval (timeout);
-      _dbus_get_current_time (&start_tv_sec, &start_tv_usec);
 
       _dbus_verbose ("dbus_connection_send_with_reply_and_block(): will block %d milliseconds for reply serial %u from %ld sec %ld usec\n",
                      timeout_milliseconds,
