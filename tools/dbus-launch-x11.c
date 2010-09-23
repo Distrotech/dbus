@@ -405,6 +405,7 @@ set_address_in_file (char *address, pid_t pid, Window wid)
     return FALSE;
 
   f = fopen (session_file, "w");
+  free (session_file);
   if (f == NULL)
     return FALSE;               /* some kind of error */
   fprintf (f,
@@ -421,7 +422,6 @@ set_address_in_file (char *address, pid_t pid, Window wid)
            address, (long)pid, (long)wid);
 
   fclose (f);
-  free (session_file);
 
   return TRUE;
 }
