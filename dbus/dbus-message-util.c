@@ -1208,6 +1208,16 @@ _dbus_message_test (const char *test_data_dir)
   char **decomposed;
   DBusInitialFDs *initial_fds;
   dbus_bool_t ok;
+  char basic_types[] = DBUS_TYPE_BYTE_AS_STRING \
+                       DBUS_TYPE_BOOLEAN_AS_STRING \
+                       DBUS_TYPE_INT16_AS_STRING \
+                       DBUS_TYPE_INT32_AS_STRING \
+                       DBUS_TYPE_INT64_AS_STRING \
+                       DBUS_TYPE_UINT16_AS_STRING \
+                       DBUS_TYPE_UINT32_AS_STRING \
+                       DBUS_TYPE_UINT64_AS_STRING \
+                       DBUS_TYPE_DOUBLE_AS_STRING \
+                       DBUS_TYPE_STRING_AS_STRING;
 
   initial_fds = _dbus_check_fdleaks_enter ();
 
@@ -1597,6 +1607,52 @@ _dbus_message_test (const char *test_data_dir)
   check_memleaks ();
   _dbus_check_fdleaks_leave (initial_fds);
   initial_fds = _dbus_check_fdleaks_enter ();
+
+  /* Test enumeration of array elements */
+  for (i = strlen (basic_types) - 1; i > 0; i--)
+    {
+      int some;
+      char* signature = _dbus_strdup ("?");
+      signature[0] = basic_types[i];
+      s = "SomeThingToSay";
+      message = dbus_message_new_method_call ("de.ende.test",
+        "/de/ende/test", "de.ende.Test", "ArtistName");
+      _dbus_assert (message != NULL);
+      dbus_message_iter_init_append (message, &iter);
+      dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY,
+                                        signature, &array_iter);
+      for (some = 0; some < 3; some++)
+        {
+          if (basic_types[i] == DBUS_TYPE_STRING)
+            dbus_message_iter_append_basic (&array_iter, DBUS_TYPE_STRING, &s);
+          else
+            dbus_message_iter_append_basic (&array_iter, basic_types[i], &some);
+        }
+      dbus_message_iter_close_container (&iter, &array_iter);
+      dbus_message_iter_init (message, &iter);
+      _dbus_assert (dbus_message_iter_get_element_count (&iter) == some);
+      dbus_message_unref (message);
+      dbus_free (signature);
+    }
+  /* Array of structs */
+  message = dbus_message_new_method_call ("de.ende.test",
+      "/de/ende/test", "de.ende.Test", "ArtistName");
+  _dbus_assert (message != NULL);
+  dbus_message_iter_init_append (message, &iter);
+  dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY,
+                                    DBUS_STRUCT_BEGIN_CHAR_AS_STRING
+                                    DBUS_TYPE_STRING_AS_STRING
+                                    DBUS_STRUCT_END_CHAR_AS_STRING, &array_iter);
+  dbus_message_iter_open_container (&array_iter, DBUS_TYPE_STRUCT,
+                                    NULL, &struct_iter);
+  s = "SpamAndEggs";
+  dbus_message_iter_append_basic (&struct_iter, DBUS_TYPE_STRING, &s);
+  dbus_message_iter_close_container (&array_iter, &struct_iter);
+  dbus_message_iter_close_container (&iter, &array_iter);
+  dbus_message_iter_init (message, &iter);
+  _dbus_assert (dbus_message_iter_get_element_count (&iter) == 1);
+  dbus_message_unref (message);
+  check_memleaks ();
 
   /* Check that we can abandon a container */
   message = dbus_message_new_method_call ("org.freedesktop.DBus.TestService",

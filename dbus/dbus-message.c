@@ -2325,20 +2325,55 @@ dbus_message_iter_get_basic (DBusMessageIter  *iter,
 }
 
 /**
+ * Returns the number of elements in the array-typed value pointed
+ * to by the iterator.
+ * Note that this function is O(1) for arrays of fixed-size types
+ * but O(n) for arrays of variable-length types such as strings,
+ * so it may be a bad idea to use it.
+ *
+ * @param iter the iterator
+ * @returns the number of elements in the array
+ */
+int dbus_message_iter_get_element_count (DBusMessageIter* iter)
+{
+  DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
+  DBusTypeReader array;
+  int element_type;
+  int n_elements = 0;
+
+  _dbus_return_val_if_fail (_dbus_message_iter_check (real), 0);
+  _dbus_return_val_if_fail (_dbus_type_reader_get_current_type (&real->u.reader)
+                            == DBUS_TYPE_ARRAY, 0);
+
+  element_type = _dbus_type_reader_get_element_type (&real->u.reader);
+  _dbus_type_reader_recurse (&real->u.reader, &array);
+  if (dbus_type_is_fixed (element_type))
+    {
+      int alignment = _dbus_type_get_alignment (element_type);
+      int total_len = _dbus_type_reader_get_array_length (&array);
+      n_elements = total_len / alignment;
+    }
+  else
+    {
+      while (_dbus_type_reader_get_current_type (&array) != DBUS_TYPE_INVALID)
+        {
+          ++n_elements;
+          _dbus_type_reader_next (&array);
+        }
+    }
+
+   return n_elements;
+}
+
+/**
  * Returns the number of bytes in the array as marshaled in the wire
  * protocol. The iterator must currently be inside an array-typed
  * value.
  *
  * This function is deprecated on the grounds that it is stupid.  Why
  * would you want to know how many bytes are in the array as marshaled
- * in the wire protocol?  For now, use the n_elements returned from
- * dbus_message_iter_get_fixed_array() instead, or iterate over the
- * array values and count them.
+ * in the wire protocol?  Use dbus_message_iter_get_element_count() instead.
  *
- * @todo introduce a variant of this get_n_elements that returns
- * the number of elements, though with a non-fixed array it will not
- * be very efficient, so maybe it's not good.
- * 
  * @param iter the iterator
  * @returns the number of bytes in the array
  */
