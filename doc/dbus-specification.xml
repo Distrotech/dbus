@@ -7,8 +7,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.14</releaseinfo>
-    <date>May 12, 2010</date>
+    <releaseinfo>Version 0.15</releaseinfo>
+    <date>September 25, 2010</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -2598,10 +2598,124 @@
        </informaltable>
       </sect3>
     </sect2>
+    <sect2 id="transports-autolaunch">
+     <title>Autolaunch</title>
+     <para>The autolaunch transport provides a way for dbus clients to autodetect
+     a running dbus session bus and to autolaunch a session bus if not present.
+     </para>
+     <sect3 id="transports-autolaunch-addresses">
+       <title>Server Address Format</title>
+       <para>
+        Autolaunch addresses uses the "autolaunch:" prefix and support the
+        following key/value pairs:
+       </para>
+       <informaltable>
+        <tgroup cols="3">
+         <thead>
+          <row>
+           <entry>Name</entry>
+           <entry>Values</entry>
+           <entry>Description</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>scope</entry>
+           <entry>(string)</entry>
+           <entry>scope of autolaunch (Windows only)
+            <itemizedlist>
+             <listitem>
+              <para>
+               "install-path" - limit session bus to dbus installation path.
+               The dbus installation path is determined from the location of
+               the shared dbus library. If the library is located in a 'bin'
+               subdirectory the installation root is the directory above,
+               otherwise the directory where the library lives is taken as
+               installation root.
+               <programlisting>
+                   &lt;install-root&gt;/bin/[lib]dbus-1.dll
+                   &lt;install-root&gt;/[lib]dbus-1.dll
+               </programlisting>
+              </para>
+             </listitem>
+             <listitem>
+              <para>
+               other values - specify dedicated session bus like 'release',
+               'debug' or other
+              </para>
+             </listitem>
+            </itemizedlist>
+           </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </informaltable>
+     </sect3>
+     <sect3 id="transports-autolaunch-unix-implementation-notes">
+      <title>Unix implementation notes</title>
+      <para>
+      [FIXME add unix notes ]
+      </para>
+     </sect3>
+     <sect3 id="transports-autolaunch-windows-implementation-notes">
+      <title>Windows implementation notes</title>
+      <para>
+       On start, the server opens a transport, creates a mutex and a shared
+       memory section containing the related session bus address. This mutex will be
+       inspected by the dbus client library to detect a running dbus session bus.
+       The access to the mutex and the shared memory section are protected by a
+       global lock named "UniqueDBusInitMutex".
+      </para>
+      <para>
+       The mutex and shared memory section name depends on the value of the scope
+       attribute and are listed in the following table:
+      </para>
+      <informaltable>
+       <tgroup cols="3">
+        <thead>
+         <row>
+          <entry>Scope Attribute Values</entry>
+          <entry>Mutex Name</entry>
+          <entry>Shared Memory Section Name</entry>
+          <entry>Description</entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry>not defined or empty</entry>
+          <entry>cDBusDaemonMutex</entry>
+          <entry>DBusDaemonAddressInfo</entry>
+          <entry> </entry>
+         </row>
+         <row>
+          <entry>"install-path"</entry>
+          <entry>cDBusDaemonMutex-&lt;sha1-hash&gt;</entry>
+          <entry>DBusDaemonAddressInfo-&lt;sha1-hash&gt;</entry>
+          <entry>The term &lt;sha1-hash&gt; is a sha1 hash string build from the
+          dbus installation root, which is specified in <xref linkend="transports-autolaunch-addresses"/>.
+          Before creating the sha1 hash the installation root string is converted
+          to lowercase.</entry>
+         </row>
+         <row>
+          <entry>any other value</entry>
+          <entry>cDBusDaemonMutex-&lt;scope&gt;</entry>
+          <entry>DBusDaemonAddressInfo-&lt;scope&gt;</entry>
+          <entry>The term &lt;scope&gt; is directly taken from the value of the
+          scope attribute.</entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </informaltable>
+      <para>
+       In the recent implementation the autolaunch transport uses a tcp transport
+       on localhost with a port choosen from the operating system. This detail may
+       change in the future.
+      </para>
+     </sect3>
+    </sect2>
+   </sect1>
 
-  </sect1>
-
-  <sect1 id="naming-conventions">
+   <sect1 id="naming-conventions">
     <title>Naming Conventions</title>
     
     <para>
