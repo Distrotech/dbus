@@ -3234,7 +3234,8 @@ _read_subprocess_line_argv (const char *progpath,
  * @returns #TRUE on success, #FALSE if an error happened
  */
 dbus_bool_t
-_dbus_get_autolaunch_address (DBusString *address,
+_dbus_get_autolaunch_address (const char *scope,
+                              DBusString *address,
                               DBusError  *error)
 {
   static char *argv[6];
@@ -3615,10 +3616,11 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
 }
 
 //PENDING(kdab) docs
-void
-_dbus_daemon_publish_session_bus_address (const char* addr)
+dbus_bool_t
+_dbus_daemon_publish_session_bus_address (const char* addr,
+                                          const char *scope)
 {
-
+  return TRUE;
 }
 
 //PENDING(kdab) docs
