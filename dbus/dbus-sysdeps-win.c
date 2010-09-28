@@ -2846,10 +2846,14 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
       CloseHandle (pi.hThread);
       CloseHandle (pi.hProcess);
       retval = _dbus_get_autolaunch_shm( address, &shm_address );
+      if (retval == FALSE)
+        dbus_set_error_const (error, DBUS_ERROR_FAILED, "Failed to get autolaunch address from launched dbus-daemon");
     }
-  
-  if (retval == FALSE)
-    dbus_set_error_const (error, DBUS_ERROR_FAILED, "Failed to launch dbus-daemon");
+  else
+    {
+      dbus_set_error_const (error, DBUS_ERROR_FAILED, "Failed to launch dbus-daemon");
+      retval == FALSE;
+    }
 
 out:
   if (retval)
