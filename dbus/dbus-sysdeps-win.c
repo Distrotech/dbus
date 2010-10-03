@@ -1129,12 +1129,11 @@ _dbus_poll (DBusPollFD *fds,
       max_fd = MAX (max_fd, fdp->fd);
     }
 
+  // Avoid random lockups with send(), for lack of a better solution so far
+  tv.tv_sec = timeout_milliseconds < 0 ? 1 : timeout_milliseconds / 1000;
+  tv.tv_usec = timeout_milliseconds < 0 ? 0 : (timeout_milliseconds % 1000) * 1000;
 
-  tv.tv_sec = timeout_milliseconds / 1000;
-  tv.tv_usec = (timeout_milliseconds % 1000) * 1000;
-
-  ready = select (max_fd + 1, &read_set, &write_set, &err_set,
-                  timeout_milliseconds < 0 ? NULL : &tv);
+  ready = select (max_fd + 1, &read_set, &write_set, &err_set, &tv);
 
   if (DBUS_SOCKET_API_RETURNS_ERROR (ready))
     {
