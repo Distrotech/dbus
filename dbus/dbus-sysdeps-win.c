@@ -1359,6 +1359,8 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
         }
     }
 
+  _dbus_fd_set_close_on_exec (fd);
+
   if (!_dbus_set_fd_nonblocking (fd, error))
     {
       closesocket (fd);
@@ -1551,6 +1553,7 @@ _dbus_listen_tcp_socket (const char     *host,
 
   for (i = 0 ; i < nlisten_fd ; i++)
     {
+      _dbus_fd_set_close_on_exec (listen_fd[i]);
       if (!_dbus_set_fd_nonblocking (listen_fd[i], error))
         {
           goto failed;
