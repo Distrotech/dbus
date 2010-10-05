@@ -1543,6 +1543,8 @@ else
    DEFAULT_SOCKET_DIR=/tmp
 fi
 
+DEFAULT_SOCKET_DIR=`echo $DEFAULT_SOCKET_DIR | sed 's/+/%2B/g'`
+
 if ! test -z "$with_test_socket_dir" ; then
    TEST_SOCKET_DIR="$with_test_socket_dir"
 else
