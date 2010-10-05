@@ -47,7 +47,12 @@ fi
 	DIE=1
 }
 
-(libtoolize --version) < /dev/null > /dev/null 2>&1 || {
+LIBTOOLIZE=`which libtoolize`
+if test -n $LIBTOOLIZE; then
+	LIBTOOLIZE=`which glibtoolize`
+fi
+
+($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have libtoolize installed to compile $PROJECT."
 	echo "Install the libtool package from ftp.gnu.org or a mirror."
@@ -68,7 +73,7 @@ if test -z "$*"; then
         echo "to pass any to it, please specify them on the $0 command line."
 fi
 
-libtoolize --copy --force
+$LIBTOOLIZE --copy --force
 
 $ACLOCAL $ACLOCAL_FLAGS
 
