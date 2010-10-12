@@ -35,5 +35,5 @@ win32-msvc
 6. make 
 7. make install
 
-A list of all build options could be find in the file ../README.
+A list of all available build options could be find in the file ../README.
 
