@@ -403,8 +403,8 @@ list_allows_user (dbus_bool_t           def,
         }
       else if (rule->type == BUS_POLICY_RULE_GROUP)
         {
-          _dbus_verbose ("List %p group rule uid="DBUS_UID_FORMAT"\n",
-                         list, rule->d.user.uid);
+          _dbus_verbose ("List %p group rule gid="DBUS_GID_FORMAT"\n",
+                         list, rule->d.group.gid);
           
           if (rule->d.group.gid == DBUS_GID_UNSET)
             ;  /* '*' wildcard */
