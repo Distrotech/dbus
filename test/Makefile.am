@@ -122,7 +122,7 @@ dist-hook:
 ## copy tests to builddir so that generated tests and static tests 
 ## are all in one place.
 all-local:
-	for D in $(TESTDIRS); do								\
+	$(AM_V_at)for D in $(TESTDIRS); do								\
 		test -d $(top_builddir)/test/$$D || mkdir $(top_builddir)/test/$$D || exit 1 ;	\
 	done ;											\
 	if ! (test $(srcdir) = . || test $(srcdir) -ef .) ; then								\

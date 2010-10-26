@@ -12,7 +12,9 @@ AC_CANONICAL_HOST
 AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_RC
 
-AM_INIT_AUTOMAKE([1.9 tar-ustar])
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE([1.9 tar-ustar -Wno-portability])
 AM_CONFIG_HEADER(config.h)
 
 # Honor aclocal flags
@@ -1311,7 +1313,7 @@ if test x$enable_doxygen_docs = xyes; then
 fi
 
 AM_CONDITIONAL(DBUS_DOXYGEN_DOCS_ENABLED, test x$enable_doxygen_docs = xyes)
-AC_MSG_RESULT(yes)
+AC_MSG_RESULT($enable_doxygen_docs)
 
 ### XML Documentation
 
@@ -1340,7 +1342,15 @@ if test x$enable_xml_docs = xyes; then
 fi
 
 AM_CONDITIONAL(DBUS_XML_DOCS_ENABLED, test x$enable_xml_docs = xyes)
-AC_MSG_RESULT(yes)
+AC_MSG_RESULT($enable_xml_docs)
+
+AC_PATH_PROG([MAN2HTML], [man2html])
+AC_ARG_VAR([MAN2HTML], [Path to man2html (optional)])
+AM_CONDITIONAL(DBUS_HAVE_MAN2HTML, test x$MAN2HTML != x)
+
+AM_CONDITIONAL(DBUS_CAN_UPLOAD_DOCS,
+    test x$enable_doxygen_docs = xyes -a x$enable_xml_docs = xyes -a \
+         x$MAN2HTML != x)
 
 #### Have to go $localstatedir->$prefix/var->/usr/local/var
 
@@ -1577,7 +1587,6 @@ bus/session.conf
 bus/messagebus
 bus/messagebus-config
 bus/rc.messagebus
-bus/dbus-daemon.1
 bus/dbus.service
 bus/dbus.socket
 Makefile
@@ -1587,6 +1596,7 @@ tools/Makefile
 test/Makefile
 test/name-test/Makefile
 doc/Makefile
+doc/dbus-daemon.1
 dbus-1.pc
 test/data/valid-config-files/debug-allow-all.conf
 test/data/valid-config-files/debug-allow-all-sha1.conf
@@ -1628,8 +1638,9 @@ echo "
 	64-bit int:		  ${DBUS_INT64_TYPE}
 	32-bit int:		  ${DBUS_INT32_TYPE}
 	16-bit int:		  ${DBUS_INT16_TYPE}
-        Doxygen:                  ${DOXYGEN}
-        xmlto:                    ${XMLTO}"
+        Doxygen:                  ${DOXYGEN:-not found}
+        xmlto:                    ${XMLTO:-not found}
+        man2html:                 ${MAN2HTML:-not found}"
 
 echo "
         Maintainer mode:          ${USE_MAINTAINER_MODE}

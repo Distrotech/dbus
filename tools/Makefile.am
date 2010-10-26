@@ -48,8 +48,7 @@ dbus_uuidgen_LDFLAGS=@R_DYNAMIC_LDFLAG@
 dbus_launch_LDADD= $(DBUS_X_LIBS) $(DBUS_CLIENT_LIBS)
 dbus_launch_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
-man_MANS = dbus-send.1 dbus-monitor.1 dbus-launch.1 dbus-cleanup-sockets.1 dbus-uuidgen.1
-EXTRA_DIST = $(man_MANS) run-with-tmp-session-bus.sh strtoll.c strtoull.c
+EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\
 	run-with-tmp-session-bus.conf
 
