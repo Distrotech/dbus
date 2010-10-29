@@ -42,6 +42,7 @@
 #include "dbus-threads.h"
 #include "dbus-protocol.h"
 #include "dbus-string.h"
+#include "dbus-sysdeps.h"
 #include "dbus-sysdeps-win.h"
 #include "dbus-protocol.h"
 #include "dbus-hash.h"
@@ -2942,6 +2943,25 @@ _dbus_get_standard_session_servicedirs (DBusList **dirs)
       }
   }
 #else
+/*
+ the code for accessing services requires absolute base pathes
+ in case DBUS_DATADIR is relative make it absolute
+*/
+#ifdef DBUS_WIN
+  {
+    DBusString p;
+
+    _dbus_string_init_const (&p, DBUS_DATADIR);
+
+    if (!_dbus_path_is_absolute (&p))
+      {
+        char install_root[1000];
+        if (_dbus_get_install_root (install_root, sizeof(install_root)))
+          if (!_dbus_string_append (&servicedir_path, install_root))
+            goto oom;
+      }
+  }
+#endif
   if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR))
     goto oom;
 

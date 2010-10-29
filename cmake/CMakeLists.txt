@@ -23,6 +23,51 @@ endif(COMMAND cmake_policy)
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
+########### basic vars ###############
+
+
+if (DBUSDIR)
+	set(DBUS_INSTALL_DIR "${DBUSDIR}")
+endif (DBUSDIR)
+if ($ENV{DBUSDIR})
+	set(DBUS_INSTALL_DIR "$ENV{DBUSDIR}")
+endif ($ENV{DBUSDIR})
+
+if (DBUS_INSTALL_DIR)
+	set(CMAKE_INSTALL_PREFIX "${DBUS_INSTALL_DIR}" CACHE TYPE PATH FORCE)
+else (DBUS_INSTALL_DIR)
+	set(DBUS_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+endif (DBUS_INSTALL_DIR)
+
+# autotools style
+if (NOT DATAROOTDIR)
+    set (DATAROOTDIR share)
+endif()
+
+if (NOT DATADIR)
+    set (DATADIR ${DATAROOTDIR})
+endif()
+
+if (NOT DOCDIR)
+    SET(DOCDIR ${DATAROOTDIR}/doc/dbus)
+endif()
+
+if (NOT DBUS_DATADIR)
+    SET(DBUS_DATADIR ${DATADIR})
+endif()
+
+set(prefix                   ${DBUS_INSTALL_DIR})
+set(exec_prefix              ${prefix})
+set(EXPANDED_LIBDIR          ${DBUS_INSTALL_DIR}/lib)
+set(EXPANDED_INCLUDEDIR      ${DBUS_INSTALL_DIR}/include)
+set(EXPANDED_BINDIR          ${DBUS_INSTALL_DIR}/bin)
+set(EXPANDED_SYSCONFDIR      ${DBUS_INSTALL_DIR}/etc)
+set(EXPANDED_DATADIR         ${DBUS_INSTALL_DIR}/${DBUS_DATADIR})
+set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_DIR}/lib/dbus/machine-id)
+set(DBUS_BINDIR              ${EXPANDED_BINDIR})
+set(DBUS_DAEMONDIR 			 ${EXPANDED_BINDIR})
+
+
 #enable building of shared library
 SET(BUILD_SHARED_LIBS ON)
 
@@ -169,33 +214,6 @@ include_directories( ${CMAKE_LIBRARY_PATH}  )
 set(DBUS_INCLUDES)
 
 ENABLE_TESTING()
-
-
-########### basic vars ###############
-
-if (DBUSDIR)
-	set(DBUS_INSTALL_DIR "${DBUSDIR}")
-endif (DBUSDIR)
-if ($ENV{DBUSDIR})
-	set(DBUS_INSTALL_DIR "$ENV{DBUSDIR}")
-endif ($ENV{DBUSDIR})
-
-if (DBUS_INSTALL_DIR)
-	set(CMAKE_INSTALL_PREFIX "${DBUS_INSTALL_DIR}" CACHE TYPE PATH FORCE)
-else (DBUS_INSTALL_DIR)
-	set(DBUS_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
-endif (DBUS_INSTALL_DIR)
-
-set(prefix                   ${DBUS_INSTALL_DIR})
-set(exec_prefix              ${prefix})
-set(EXPANDED_LIBDIR          ${DBUS_INSTALL_DIR}/lib)
-set(EXPANDED_INCLUDEDIR      ${DBUS_INSTALL_DIR}/include)
-set(EXPANDED_BINDIR          ${DBUS_INSTALL_DIR}/bin)
-set(EXPANDED_SYSCONFDIR      ${DBUS_INSTALL_DIR}/etc)
-set(EXPANDED_DATADIR         ${DBUS_INSTALL_DIR}/data)
-set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_DIR}/lib/dbus/machine-id)
-set(DBUS_BINDIR              ${EXPANDED_BINDIR})
-set(DBUS_DAEMONDIR 			 ${EXPANDED_BINDIR})
 
 ########### command line options ###############
 # TODO: take check from configure.in
@@ -424,7 +442,6 @@ if (WIN32)
   set (DBUS_SESSION_CONFIG_FILE "etc/dbus-1/session.conf")
   # bus-test expects a non empty string
   set (DBUS_USER "Administrator")
-  set (DBUS_DATADIR "data")
 else (WIN32)
   set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "unix:tmpdir=" CACHE STRING "system bus default address" )
   set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "unix:path=${DBUS_SESSION_SOCKET_DIR}" CACHE STRING "session bus default address" )
@@ -433,7 +450,6 @@ else (WIN32)
   set (DBUS_SYSTEM_CONFIG_FILE  ${configdir}/system.conf)
   set (DBUS_SESSION_CONFIG_FILE ${configdir}/session.conf)
   set (DBUS_USER "root")
-  set (DBUS_DATADIR ${EXPANDED_DATADIR})
 endif (WIN32)
 
 set(DBUS_DAEMON_NAME dbus-daemon CACHE STRING "The name of the dbus daemon executable")

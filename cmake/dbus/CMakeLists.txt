@@ -261,10 +261,9 @@ endif(MSVC_IDE)
 ### Client library
 
 add_library(dbus-1 SHARED
-			${DBUS_LIB_SOURCES}
-			${DBUS_SHARED_SOURCES}
-			${DBUS_LIB_HEADERS}
-			${DBUS_SHARED_HEADERS})
+			${libdbus_SOURCES}
+			${libdbus_HEADERS}
+)
 if(WIN32)
     if(WINCE)
         target_link_libraries(dbus-1 ws2)
