@@ -3,12 +3,11 @@
 "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
 [
 ]>
-
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.14</releaseinfo>
-    <date>May 12, 2010</date>
+    <releaseinfo>Version 0.15</releaseinfo>
+    <date>3 November 2010</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -3696,11 +3695,221 @@
           The environment variable should have precedence over the 
           root window property.
         </para>
-        <para>
-          [FIXME specify location of .service files, probably using 
-          DESKTOP_DIRS etc. from basedir specification, though login session 
-          bus is not really desktop-specific]
-        </para>
+        <para>The address of the login session message bus is given in the
+        <literal>DBUS_SESSION_BUS_ADDRESS</literal> environment variable. If
+        DBUS_SESSION_BUS_ADDRESS is not set, or if it's set to the string
+        "autolaunch:", the system should use platform-specific methods of
+        locating a running D-Bus session server, or starting one if a running
+        instance cannot be found. Note that this mechanism is not recommended
+        for attempting to determine if a daemon is running. It is inherently
+        racy to attempt to make this determination, since the bus daemon may
+        be started just before or just after the determination is made.
+        Therefore, it is recommended that applications do not try to make this
+        determination for their functionality purposes, and instead they
+        should attempt to start the server.</para>
+
+        <sect4 id="message-bus-types-login-x-windows">
+          <title>X Windowing System</title>
+          <para>
+            For the X Windowing System, the application must locate the
+            window owner of the selection represented by the atom formed by
+            concatenating:
+            <itemizedlist>
+              <listitem>
+                <para>the literal string "_DBUS_SESSION_BUS_SELECTION_"</para>
+              </listitem>
+
+              <listitem>
+                <para>the current user's username</para>
+              </listitem>
+
+              <listitem>
+                <para>the literal character '_' (underscore)</para>
+              </listitem>
+
+              <listitem>
+                <para>the machine's ID</para>
+              </listitem>
+            </itemizedlist>
+          </para>
+
+          <para>
+            The following properties are defined for the window that owns
+            this X selection:
+            <informaltable frame="all">
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry>
+                      <para>Atom</para>
+                    </entry>
+
+                    <entry>
+                      <para>meaning</para>
+                    </entry>
+                  </row>
+
+                  <row>
+                    <entry>
+                      <para>_DBUS_SESSION_BUS_ADDRESS</para>
+                    </entry>
+
+                    <entry>
+                      <para>the actual address of the server socket</para>
+                    </entry>
+                  </row>
+
+                  <row>
+                    <entry>
+                      <para>_DBUS_SESSION_BUS_PID</para>
+                    </entry>
+
+                    <entry>
+                      <para>the PID of the server process</para>
+                    </entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </para>
+
+          <para>
+            At least the _DBUS_SESSION_BUS_ADDRESS property MUST be
+            present in this window.
+          </para>
+
+          <para>
+            If the X selection cannot be located or if reading the
+            properties from the window fails, the implementation MUST conclude
+            that there is no D-Bus server running and proceed to start a new
+            server. (See below on concurrency issues)
+          </para>
+
+          <para>
+            Failure to connect to the D-Bus server address thus obtained
+            MUST be treated as a fatal connection error and should be reported
+            to the application.
+          </para>
+
+          <para>
+            As an alternative, an implementation MAY find the information
+            in the following file located in the current user's home directory,
+            in subdirectory .dbus/session-bus/:
+            <itemizedlist>
+              <listitem>
+                <para>the machine's ID</para>
+              </listitem>
+
+              <listitem>
+                <para>the literal character '-' (dash)</para>
+              </listitem>
+
+              <listitem>
+                <para>the X display without the screen number, with the
+                following prefixes removed, if present: ":", "localhost:"
+                ."localhost.localdomain:". That is, a display of
+                "localhost:10.0" produces just the number "10"</para>
+              </listitem>
+            </itemizedlist>
+          </para>
+
+          <para>
+            The contents of this file NAME=value assignment pairs and
+            lines starting with # are comments (no comments are allowed
+            otherwise). The following variable names are defined:
+            <informaltable
+              frame="all">
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry>
+                      <para>Variable</para>
+                    </entry>
+
+                    <entry>
+                      <para>meaning</para>
+                    </entry>
+                  </row>
+
+                  <row>
+                    <entry>
+                      <para>DBUS_SESSION_BUS_ADDRESS</para>
+                    </entry>
+
+                    <entry>
+                      <para>the actual address of the server socket</para>
+                    </entry>
+                  </row>
+
+                  <row>
+                    <entry>
+                      <para>DBUS_SESSION_BUS_PID</para>
+                    </entry>
+
+                    <entry>
+                      <para>the PID of the server process</para>
+                    </entry>
+                  </row>
+
+                  <row>
+                    <entry>
+                      <para>DBUS_SESSION_BUS_WINDOWID</para>
+                    </entry>
+
+                    <entry>
+                      <para>the window ID</para>
+                    </entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </para>
+
+          <para>
+            At least the DBUS_SESSION_BUS_ADDRESS variable MUST be present
+            in this file.
+          </para>
+
+          <para>
+            Failure to open this file MUST be interpreted as absence of a
+            running server. Therefore, the implementation MUST proceed to
+            attempting to launch a new bus server if the file cannot be
+            opened.
+          </para>
+
+          <para>
+            However, success in opening this file MUST NOT lead to the
+            conclusion that the server is running. Thus, a failure to connect to
+            the bus address obtained by the alternative method MUST NOT be
+            considered a fatal error. If the connection cannot be established,
+            the implementation MUST proceed to check the X selection settings or
+            to start the server on its own.
+          </para>
+
+          <para>
+            If the implementation concludes that the D-Bus server is not
+            running it MUST attempt to start a new server and it MUST also
+            ensure that the daemon started as an effect of the "autolaunch"
+            mechanism provides the lookup mechanisms described above, so
+            subsequent calls can locate the newly started server. The
+            implementation MUST also ensure that if two or more concurrent
+            initiations happen, only one server remains running and all other
+            initiations are able to obtain the address of this server and
+            connect to it. In other words, the implementation MUST ensure that
+            the X selection is not present when it attempts to set it, without
+            allowing another process to set the selection between the
+            verification and the setting (e.g., by using XGrabServer /
+            XungrabServer).
+          </para>
+        </sect4>
+        <sect4>
+          <title></title>
+          <para>
+            [FIXME specify location of .service files, probably using
+            DESKTOP_DIRS etc. from basedir specification, though login session
+            bus is not really desktop-specific]
+          </para>
+        </sect4>
       </sect3>
       <sect3 id="message-bus-types-system">
         <title>System message bus</title>
