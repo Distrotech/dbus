@@ -2025,7 +2025,22 @@ test_parsing (void *data)
 
       bus_match_rule_unref (rule);
     }
-  
+
+  rule = check_parse (TRUE, "arg7path='/foo'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags = BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 8);
+      _dbus_assert (rule->args[7] != NULL);
+      _dbus_assert (rule->args[8] == NULL);
+      _dbus_assert (strcmp (rule->args[7], "/foo") == 0);
+      _dbus_assert ((rule->arg_lens[7] & BUS_MATCH_ARG_IS_PATH)
+          == BUS_MATCH_ARG_IS_PATH);
+
+      bus_match_rule_unref (rule);
+    }
+
   /* Too-large argN */
   rule = check_parse (FALSE, "arg300='foo'");
   _dbus_assert (rule == NULL);
@@ -2175,6 +2190,12 @@ should_match_message_1[] = {
   "type='signal',member='Frobated',arg0='foobar'",
   "member='Frobated',arg0='foobar'",
   "type='signal',arg0='foobar'",
+  /* The definition of argXpath matches says: "As with normal argument matches,
+   * if the argument is exactly equal to the string given in the match rule
+   * then the rule is satisfied." So this should match (even though the
+   * argument is not a valid path)!
+   */
+  "arg0path='foobar'",
   NULL
 };
 
@@ -2193,6 +2214,9 @@ should_not_match_message_1[] = {
   "arg0='foobar',arg1='abcdef'",
   "arg0='foobar',arg1='abcdef',arg2='abcdefghi',arg3='abcdefghi',arg4='abcdefghi'",
   "arg0='foobar',arg1='abcdef',arg4='abcdefghi',arg3='abcdefghi',arg2='abcdefghi'",
+  "arg0path='foo'",
+  "arg0path='foobar/'",
+  "arg1path='3'",
   NULL
 };
 
@@ -2272,6 +2296,81 @@ test_matching (void)
   dbus_message_unref (message1);
 }
 
+#define PATH_MATCH_RULE "arg0path='/aa/bb/'"
+
+/* This is a list of paths that should be matched by PATH_MATCH_RULE, taken
+ * from the specification. Notice that not all of them are actually legal D-Bus
+ * paths. The author of this test takes no responsibility for the semantics of
+ * this match rule key.
+ */
+static const char *paths_that_should_be_matched[] = {
+    "/",
+    "/aa/",
+    "/aa/bb/",
+    "/aa/bb/cc/",
+    "/aa/bb/cc",
+    NULL
+};
+
+/* These paths should not be matched by PATH_MATCH_RULE. */
+static const char *paths_that_should_not_be_matched[] = {
+    "/aa/b",
+    "/aa",
+    /* or even... */
+    "/aa/bb",
+    NULL
+};
+
+static void
+test_path_match (const char   *path,
+                 const char   *rule_text,
+                 BusMatchRule *rule,
+                 dbus_bool_t   should_match)
+{
+  DBusMessage *message = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  dbus_bool_t matched;
+
+  _dbus_assert (message != NULL);
+  if (!dbus_message_set_member (message, "Foo"))
+    _dbus_assert_not_reached ("oom");
+
+  if (!dbus_message_append_args (message,
+                                 DBUS_TYPE_STRING, &path,
+                                 NULL))
+    _dbus_assert_not_reached ("oom");
+
+  matched = match_rule_matches (rule, NULL, NULL, message, 0);
+
+  if (matched != should_match)
+    {
+      _dbus_warn ("Expected rule %s to %s message with first arg %s, failed\n",
+                  rule_text,
+                  should_match ? "match" : "not match",
+                  path);
+      exit (1);
+    }
+
+  dbus_message_unref (message);
+}
+
+static void
+test_path_matching (void)
+{
+  BusMatchRule *rule;
+  const char **s;
+
+  rule = check_parse (TRUE, PATH_MATCH_RULE);
+  _dbus_assert (rule != NULL);
+
+  for (s = paths_that_should_be_matched; *s != NULL; s++)
+    test_path_match (*s, PATH_MATCH_RULE, rule, TRUE);
+
+  for (s = paths_that_should_not_be_matched; *s != NULL; s++)
+    test_path_match (*s, PATH_MATCH_RULE, rule, FALSE);
+
+  bus_match_rule_unref (rule);
+}
+
 dbus_bool_t
 bus_signals_test (const DBusString *test_data_dir)
 {
@@ -2286,9 +2385,9 @@ bus_signals_test (const DBusString *test_data_dir)
     _dbus_assert_not_reached ("Parsing match rules test failed");
 
   test_equality ();
-
   test_matching ();
-  
+  test_path_matching ();
+
   return TRUE;
 }
 
