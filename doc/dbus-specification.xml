@@ -40,6 +40,62 @@
 	</affiliation>
       </author>
     </authorgroup>
+   <revhistory>
+     <revision>
+       <revnumber>current</revnumber>
+       <date><ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink></date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.15</revnumber>
+       <date>3 November 2010</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.14</revnumber>
+       <date>12 May 2010</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.13</revnumber>
+       <date>23 Dezember 2009</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.12</revnumber>
+       <date>7 November, 2006</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.11</revnumber>
+       <date>6 February 2005</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.10</revnumber>
+       <date>28 January 2005</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.9</revnumber>
+       <date>7 Januar 2005</date>
+       <authorinitials></authorinitials>
+       <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.8</revnumber>
+       <date>06 September 2003</date>
+       <authorinitials></authorinitials>
+       <revremark>First released document.</revremark>
+     </revision>
+   </revhistory>
   </articleinfo>
 
   <sect1 id="introduction">
@@ -3596,7 +3652,7 @@
         extension. The message bus will only load service description files
         ending with .service; all other files will be ignored.  The file format
         is similar to that of <ulink
-        url="http://www.freedesktop.org/standards/desktop-entry-spec/desktop-entry-spec.html">desktop
+        url="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html">desktop
         entries</ulink>. All service description files must be in UTF-8
         encoding. To ensure that there will be no name collisions, service files
         must be namespaced using the same mechanism as messages and service
