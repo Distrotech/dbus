@@ -1687,8 +1687,9 @@ match_rule_matches (BusMatchRule    *rule,
             {
               const char *actual_arg;
               int actual_length;
-              
-              if (current_type != DBUS_TYPE_STRING)
+
+              if (current_type != DBUS_TYPE_STRING &&
+                  (!is_path || current_type != DBUS_TYPE_OBJECT_PATH))
                 return FALSE;
 
               actual_arg = NULL;
@@ -2300,14 +2301,17 @@ test_matching (void)
 
 /* This is a list of paths that should be matched by PATH_MATCH_RULE, taken
  * from the specification. Notice that not all of them are actually legal D-Bus
- * paths. The author of this test takes no responsibility for the semantics of
+ * paths.
+ *
+ * The author of this test takes no responsibility for the semantics of
  * this match rule key.
  */
 static const char *paths_that_should_be_matched[] = {
-    "/",
     "/aa/",
     "/aa/bb/",
     "/aa/bb/cc/",
+#define FIRST_VALID_PATH_WHICH_SHOULD_MATCH 3
+    "/",
     "/aa/bb/cc",
     NULL
 };
@@ -2322,7 +2326,8 @@ static const char *paths_that_should_not_be_matched[] = {
 };
 
 static void
-test_path_match (const char   *path,
+test_path_match (int type,
+                 const char   *path,
                  const char   *rule_text,
                  BusMatchRule *rule,
                  dbus_bool_t   should_match)
@@ -2335,7 +2340,7 @@ test_path_match (const char   *path,
     _dbus_assert_not_reached ("oom");
 
   if (!dbus_message_append_args (message,
-                                 DBUS_TYPE_STRING, &path,
+                                 type, &path,
                                  NULL))
     _dbus_assert_not_reached ("oom");
 
@@ -2343,10 +2348,12 @@ test_path_match (const char   *path,
 
   if (matched != should_match)
     {
-      _dbus_warn ("Expected rule %s to %s message with first arg %s, failed\n",
+      _dbus_warn ("Expected rule %s to %s message "
+                  "with first arg %s of type '%c', failed\n",
                   rule_text,
                   should_match ? "match" : "not match",
-                  path);
+                  path,
+                  (char) type);
       exit (1);
     }
 
@@ -2363,10 +2370,17 @@ test_path_matching (void)
   _dbus_assert (rule != NULL);
 
   for (s = paths_that_should_be_matched; *s != NULL; s++)
-    test_path_match (*s, PATH_MATCH_RULE, rule, TRUE);
+    test_path_match (DBUS_TYPE_STRING, *s, PATH_MATCH_RULE, rule, TRUE);
+
+  for (s = paths_that_should_be_matched + FIRST_VALID_PATH_WHICH_SHOULD_MATCH;
+       *s != NULL; s++)
+    test_path_match (DBUS_TYPE_OBJECT_PATH, *s, PATH_MATCH_RULE, rule, TRUE);
 
   for (s = paths_that_should_not_be_matched; *s != NULL; s++)
-    test_path_match (*s, PATH_MATCH_RULE, rule, FALSE);
+    {
+      test_path_match (DBUS_TYPE_STRING, *s, PATH_MATCH_RULE, rule, FALSE);
+      test_path_match (DBUS_TYPE_OBJECT_PATH, *s, PATH_MATCH_RULE, rule, FALSE);
+    }
 
   bus_match_rule_unref (rule);
 }
