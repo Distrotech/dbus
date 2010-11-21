@@ -3604,16 +3604,28 @@
                 <row>
                   <entry><literal>arg[0, 1, 2, 3, ...]path</literal></entry>
                   <entry>Any string</entry>
-                  <entry>Argument path matches provide a specialised form of wildcard
-                  matching for path-like namespaces. As with normal argument matches,
-                  if the argument is exactly equal to the string given in the match
-                  rule then the rule is satisfied. Additionally, there is also a
-                  match when either the string given in the match rule or the
-                  appropriate message argument ends with '/' and is a prefix of the
-                  other. An example argument path match is arg0path='/aa/bb/'. This
-                  would match messages with first arguments of '/', '/aa/',
-                  '/aa/bb/', '/aa/bb/cc/' and '/aa/bb/cc'. It would not match
-                  messages with first arguments of '/aa/b', '/aa' or even '/aa/bb'.</entry>
+                  <entry>
+                    <para>Argument path matches provide a specialised form of wildcard
+                      matching for path-like namespaces. As with normal argument matches,
+                      if the argument is exactly equal to the string given in the match
+                      rule then the rule is satisfied. Additionally, there is also a
+                      match when either the string given in the match rule or the
+                      appropriate message argument ends with '/' and is a prefix of the
+                      other. An example argument path match is arg0path='/aa/bb/'. This
+                      would match messages with first arguments of '/', '/aa/',
+                      '/aa/bb/', '/aa/bb/cc/' and '/aa/bb/cc'. It would not match
+                      messages with first arguments of '/aa/b', '/aa' or even '/aa/bb'.</para>
+
+                    <para>This is intended for monitoring “directories” in file system-like
+                      hierarchies, as used in the <citetitle>dconf</citetitle> configuration
+                      system. An application interested in all nodes in a particular hierarchy would
+                      monitor <literal>arg0path='/ca/example/foo/'</literal>. Then the service could
+                      emit a signal with zeroth argument <literal>"/ca/example/foo/bar"</literal> to
+                      represent a modification to the “bar” property, or a signal with zeroth
+                      argument <literal>"/ca/example/"</literal> to represent atomic modification of
+                      many properties within that directory, and the interested application would be
+                      notified in both cases.</para>
+                  </entry>
                 </row>
               </tbody>
             </tgroup>
