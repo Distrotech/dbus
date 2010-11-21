@@ -771,7 +771,22 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
         }
       else if (_dbus_string_equal_c_str (&key_str, "arg0namespace"))
         {
+          int value_len = _dbus_string_get_length (value);
+
           is_namespace = TRUE;
+
+          if (value_len > 0 &&
+              _dbus_string_get_byte (value, value_len - 1) == '.')
+            value_len--;
+
+          if (!_dbus_validate_bus_namespace (value, 0, value_len))
+            {
+              dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
+                  "arg0namespace='%s' is not a valid (optionally "
+                  "period-terminated) prefix of a bus name",
+                  _dbus_string_get_const_data (value));
+              goto failed;
+            }
         }
       else
         {
@@ -2109,7 +2124,60 @@ test_parsing (void *data)
       bus_match_rule_unref (rule);
     }
 
+  rule = check_parse (TRUE, "arg0namespace='foo.'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 1);
+      _dbus_assert (strcmp (rule->args[0], "foo.") == 0);
+      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
+          == BUS_MATCH_ARG_NAMESPACE);
+
+      bus_match_rule_unref (rule);
+    }
+
+  rule = check_parse (TRUE, "arg0namespace='foo.bar'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 1);
+      _dbus_assert (strcmp (rule->args[0], "foo.bar") == 0);
+      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
+          == BUS_MATCH_ARG_NAMESPACE);
+
+      bus_match_rule_unref (rule);
+    }
+
+  rule = check_parse (TRUE, "arg0namespace='foo.bar.'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 1);
+      _dbus_assert (strcmp (rule->args[0], "foo.bar.") == 0);
+      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
+          == BUS_MATCH_ARG_NAMESPACE);
+
+      bus_match_rule_unref (rule);
+    }
+
+  /* Only arg0namespace is supported. */
   rule = check_parse (FALSE, "arg1namespace='foo'");
+  _dbus_assert (rule == NULL);
+
+  /* An empty string isn't a valid namespace prefix (you should just not
+   * specify this key at all).
+   */
+  rule = check_parse (FALSE, "arg0namespace=''");
+  _dbus_assert (rule == NULL);
+
+  /* Two trailing periods on otherwise-valid namespaces aren't allowed. */
+  rule = check_parse (FALSE, "arg0namespace='foo..'");
+  _dbus_assert (rule == NULL);
+
+  rule = check_parse (FALSE, "arg0namespace='foo.bar..'");
   _dbus_assert (rule == NULL);
 
   /* Too-large argN */
