@@ -3596,8 +3596,8 @@
                   <entry><literal>arg[0, 1, 2, 3, ...]</literal></entry>
                   <entry>Any string</entry>
                   <entry>Arg matches are special and are used for further restricting the 
-                  match based on the arguments in the body of a message.  As of this time
-                  only string arguments can be matched.  An example of an argument match 
+                  match based on the arguments in the body of a message. Only arguments of type
+                  STRING can be matched in this way. An example of an argument match 
                   would be arg3='Foo'. Only argument indexes from 0 to 63 should be 
                   accepted.</entry>
                 </row>
@@ -3605,8 +3605,9 @@
                   <entry><literal>arg[0, 1, 2, 3, ...]path</literal></entry>
                   <entry>Any string</entry>
                   <entry>
-                    <para>Argument path matches provide a specialised form of wildcard
-                      matching for path-like namespaces. As with normal argument matches,
+                    <para>Argument path matches provide a specialised form of wildcard matching for
+                      path-like namespaces. They can match arguments whose type is either STRING or
+                      OBJECT_PATH. As with normal argument matches,
                       if the argument is exactly equal to the string given in the match
                       rule then the rule is satisfied. Additionally, there is also a
                       match when either the string given in the match rule or the
