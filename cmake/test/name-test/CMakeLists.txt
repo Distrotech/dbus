@@ -32,4 +32,8 @@ add_executable(test-privserver-client ${NAMEtest-DIR}/test-privserver-client.c)
 target_link_libraries(test-privserver-client ${DBUS_INTERNAL_LIBRARIES} dbus_testutils)
 ADD_TEST(test-privserver-client ${EXECUTABLE_OUTPUT_PATH}/test-privserver-client)
 
+add_executable(test-autolaunch ${NAMEtest-DIR}/test-autolaunch.c)
+target_link_libraries(test-autolaunch ${DBUS_INTERNAL_LIBRARIES} dbus_testutils)
+ADD_TEST(test-autolaunch ${EXECUTABLE_OUTPUT_PATH}/test-autolaunch)
+
 endif (DBUS_BUILD_TESTS)
