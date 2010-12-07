@@ -2670,6 +2670,8 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
   UnmapViewOfFile( shared_addr );
 
   _dbus_global_unlock( lock );
+  _dbus_verbose( "published session bus address at %s\n",_dbus_string_get_const_data (&shm_name) );
+
   _dbus_string_free( &shm_name );
   _dbus_string_free( &mutex_name );
   return TRUE;
@@ -2800,7 +2802,8 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
 
   if (_dbus_daemon_already_runs(address,&shm_name,scope))
     {
-        _dbus_verbose("found already running dbus daemon\n");
+        _dbus_verbose( "found running dbus daemon at %s\n",
+                       _dbus_string_get_const_data (&shm_name) );
         retval = TRUE;
         goto out;
     }
