@@ -2568,30 +2568,35 @@ _dbus_get_install_root_as_hash(DBusString *out)
     return TRUE;
 }
 
-
 static dbus_bool_t
-_dbus_get_shm_name(DBusString *out,const char *scope)
+_dbus_get_address_string (DBusString *out, const char *basestring, const char *scope)
 {
   _dbus_string_init(out);
-  _dbus_string_append(out,cDBusDaemonAddressInfo);
+  _dbus_string_append(out,basestring);
 
   if (!scope)
     {
       return TRUE;
     }
-  else if (strcmp(scope,"install-path") == 0)
+  else if (strcmp(scope,"*install-path") == 0
+        // for 1.3 compatibility
+        || strcmp(scope,"install-path") == 0)
     {
       DBusString temp;
-
       if (!_dbus_get_install_root_as_hash(&temp))
         {
           _dbus_string_free(out);
            return FALSE;
         }
+    }
+  else if (strcmp(scope,"*user") == 0)
+    {
       _dbus_string_append(out,"-");
-      _dbus_string_append(out,_dbus_string_get_const_data(&temp));
-      _dbus_string_free(&temp);
-      return TRUE;
+      if (!_dbus_append_user_from_current_process(out))
+        {
+           _dbus_string_free(out);
+           return FALSE;
+        }
     }
   else if (strlen(scope) > 0)
     {
@@ -2599,47 +2604,19 @@ _dbus_get_shm_name(DBusString *out,const char *scope)
       _dbus_string_append(out,scope);
       return TRUE;
     }
-  else
-    {
-      return TRUE;
-    }
+  return TRUE;
 }
 
 static dbus_bool_t
-_dbus_get_mutex_name(DBusString *out,const char *scope)
+_dbus_get_shm_name (DBusString *out,const char *scope)
 {
-  _dbus_string_init(out);
-  _dbus_string_append(out,cDBusDaemonMutex);
+  return _dbus_get_address_string (out,cDBusDaemonAddressInfo,scope);
+}
 
-  if (!scope)
-    {
-      return TRUE;
-    }
-  else if (strcmp(scope,"install-path") == 0)
-    {
-      DBusString temp;
-
-      if (!_dbus_get_install_root_as_hash(&temp))
-        {
-          _dbus_string_free(out);
-          return FALSE;
-        }
-
-      _dbus_string_append(out,"-");
-      _dbus_string_append(out,_dbus_string_get_const_data(&temp));
-      _dbus_string_free(&temp);
-      return TRUE;
-    }
-  else if (strlen(scope) > 0)
-    {
-      _dbus_string_append(out,"-");
-      _dbus_string_append(out,scope);
-      return TRUE;
-    }
-  else
-    {
-      return TRUE;
-    }
+static dbus_bool_t
+_dbus_get_mutex_name (DBusString *out,const char *scope)
+{
+  return _dbus_get_address_string (out,cDBusDaemonMutex,scope);
 }
 
 dbus_bool_t
