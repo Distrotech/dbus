@@ -2764,14 +2764,14 @@ _dbus_daemon_already_runs (DBusString *address, DBusString *shm_name, const char
   DBusString mutex_name;
   dbus_bool_t bRet = TRUE;
 
-  // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
-  lock = _dbus_global_lock( cUniqueDBusInitMutex );
-
   if (!_dbus_get_mutex_name(&mutex_name,scope))
     {
       _dbus_string_free( &mutex_name );
       return FALSE;
     }
+
+  // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
+  lock = _dbus_global_lock( cUniqueDBusInitMutex );
 
   // do checks
   daemon = CreateMutexA( NULL, FALSE, _dbus_string_get_const_data(&mutex_name) );
@@ -2811,15 +2811,15 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
   const char * daemon_name = DBUS_DAEMON_NAME ".exe";
   DBusString shm_name;
 
-  mutex = _dbus_global_lock ( cDBusAutolaunchMutex );
-
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   if (!_dbus_get_shm_name(&shm_name,scope))
     {
-        dbus_set_error_const (error, DBUS_ERROR_FAILED, "could not determine shm address");
+        dbus_set_error_const (error, DBUS_ERROR_FAILED, "could not determine shm name");
         return FALSE;
     }
+
+  mutex = _dbus_global_lock ( cDBusAutolaunchMutex );
 
   if (_dbus_daemon_already_runs(address,&shm_name,scope))
     {
@@ -2855,7 +2855,7 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
   else
     {
       dbus_set_error_const (error, DBUS_ERROR_FAILED, "Failed to launch dbus-daemon");
-      retval == FALSE;
+      retval = FALSE;
     }
 
 out:
