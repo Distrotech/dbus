@@ -2700,10 +2700,95 @@
        </informaltable>
       </sect3>
     </sect2>
+   </sect1>
+   <sect1 id="meta-transports">
+    <title>Meta Transports</title>
+    <para>
+      Meta transports are a kind of transport with special enhancements or
+      behavior. Currently available meta transports include: autolaunch
+    </para>
 
-  </sect1>
+    <sect2 id="meta-transports-autolaunch">
+     <title>Autolaunch</title>
+     <para>The autolaunch transport provides a way for dbus clients to autodetect
+       a running dbus session bus and to autolaunch a session bus if not present.
+     </para>
+     <sect3 id="meta-transports-autolaunch-addresses">
+       <title>Server Address Format</title>
+       <para>
+         Autolaunch addresses uses the "autolaunch:" prefix and support the
+         following key/value pairs:
+       </para>
+       <informaltable>
+        <tgroup cols="3">
+         <thead>
+          <row>
+           <entry>Name</entry>
+           <entry>Values</entry>
+           <entry>Description</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>scope</entry>
+           <entry>(string)</entry>
+           <entry>scope of autolaunch (Windows only)
+            <itemizedlist>
+             <listitem>
+              <para>
+               "*install-path" - limit session bus to dbus installation path.
+               The dbus installation path is determined from the location of
+               the shared dbus library. If the library is located in a 'bin'
+               subdirectory the installation root is the directory above,
+               otherwise the directory where the library lives is taken as
+               installation root.
+               <programlisting>
+                   &lt;install-root&gt;/bin/[lib]dbus-1.dll
+                   &lt;install-root&gt;/[lib]dbus-1.dll
+               </programlisting>
+              </para>
+             </listitem>
+              <para>
+               "*user" - limit session bus to the recent user.
+              </para>
+             </listitem>
+             <listitem>
+              <para>
+               other values - specify dedicated session bus like "release",
+               "debug" or other
+              </para>
+             </listitem>
+            </itemizedlist>
+           </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </informaltable>
+     </sect3>
 
-  <sect1 id="naming-conventions">
+     <sect3 id="meta-transports-autolaunch-windows-implementation">
+      <title>Windows implementation</title>
+      <para>
+        On start, the server opens a platform specific transport, creates a mutex
+        and a shared memory section containing the related session bus address.
+        This mutex will be inspected by the dbus client library to detect a
+        running dbus session bus. The access to the mutex and the shared memory
+        section are protected by global locks.
+      </para>
+      <para>
+       In the recent implementation the autolaunch transport uses a tcp transport
+       on localhost with a port choosen from the operating system. This detail may
+       change in the future.
+      </para>
+      <para>
+        Disclaimer: The recent implementation is in an early state and may not
+        work in all cirumstances and/or may have security issues. Because of this
+        the implementation is not documentated yet.
+      </para>
+     </sect3>
+    </sect2>
+   </sect1>
+   <sect1 id="naming-conventions">
     <title>Naming Conventions</title>
     
     <para>
