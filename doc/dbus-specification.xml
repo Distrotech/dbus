@@ -2464,8 +2464,8 @@
       [FIXME we need to specify in detail each transport and its possible arguments]
     
       Current transports include: unix domain sockets (including 
-      abstract namespace on linux), TCP/IP, and a debug/testing transport using 
-      in-process pipes. Future possible transports include one that 
+      abstract namespace on linux), launchd, TCP/IP, and a debug/testing transport
+      using in-process pipes. Future possible transports include one that
       tunnels over X11 protocol.
     </para>
   
@@ -2518,6 +2518,53 @@
             <entry>abstract</entry>
             <entry>(string)</entry>
             <entry>unique string (path) in the abstract namespace. If set, the "path" or "tempdir" key must not be set.</entry>
+          </row>
+        </tbody>
+        </tgroup>
+       </informaltable>
+      </sect3>
+    </sect2>
+    <sect2 id="transports-launchd">
+      <title>launchd</title>
+      <para>
+        launchd is a open-source server management system that replaces init, inetd
+        and cron on Apple Mac OS X versions 10.4 and above. It provides a common session
+        bus address for each user and deprecates the X11-enabled D-Bus launcher on OSX.
+      </para>
+
+      <para>
+        launchd allocates a socket and provides it with the unix path through the
+        DBUS_LAUNCHD_SESSION_BUS_SOCKET variable in launchd's environment. Every process
+        spawned by launchd (or dbus-daemon, if it was started by launchd) can access
+        it through its environment.
+        Other processes can query for the launchd socket by executing:
+        $ launchctl getenv DBUS_LAUNCHD_SESSION_BUS_SOCKET
+        This is normally done by the D-Bus client library so doesn't have to be done
+        manually.
+      </para>
+      <para>
+        launchd is not available on Microsoft Windows.
+      </para>
+      <sect3 id="transports-launchd-addresses">
+        <title>Server Address Format</title>
+        <para>
+          launchd addresses are identified by the "launchd:" prefix
+          and support the following key/value pairs:
+        </para>
+        <informaltable>
+         <tgroup cols="3">
+          <thead>
+           <row>
+            <entry>Name</entry>
+            <entry>Values</entry>
+            <entry>Description</entry>
+           </row>
+          </thead>
+          <tbody>
+           <row>
+            <entry>env</entry>
+            <entry>(environment variable)</entry>
+            <entry>path of the unix domain socket for the launchd created dbus-daemon.
           </row>
         </tbody>
         </tgroup>
