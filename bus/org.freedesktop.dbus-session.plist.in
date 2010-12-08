@@ -8,9 +8,11 @@
 	<key>ServiceIPC</key>
 	<true/>
 
-	<!-- bug in 10.4's launchd - on-demand loading does not work -->
+	<!-- Please uncomment on 10.4; OnDemand doesn't work properly there. -->
+	<!--
 	<key>OnDemand</key>
 	<false />
+	-->
 
 	<key>ProgramArguments</key>
 	<array>
