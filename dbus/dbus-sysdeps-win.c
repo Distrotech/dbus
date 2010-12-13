@@ -2588,6 +2588,9 @@ _dbus_get_address_string (DBusString *out, const char *basestring, const char *s
           _dbus_string_free(out);
            return FALSE;
         }
+      _dbus_string_append(out,"-");
+      _dbus_string_append(out,_dbus_string_get_const_data(&temp));
+      _dbus_string_free(&temp);
     }
   else if (strcmp(scope,"*user") == 0)
     {
