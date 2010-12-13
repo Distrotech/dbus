@@ -2564,7 +2564,7 @@
            <row>
             <entry>env</entry>
             <entry>(environment variable)</entry>
-            <entry>path of the unix domain socket for the launchd created dbus-daemon.
+            <entry>path of the unix domain socket for the launchd created dbus-daemon.</entry>
           </row>
         </tbody>
         </tgroup>
@@ -2748,6 +2748,7 @@
                </programlisting>
               </para>
              </listitem>
+             <listitem>
               <para>
                "*user" - limit session bus to the recent user.
               </para>
