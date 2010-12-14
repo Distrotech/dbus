@@ -4,9 +4,9 @@
  * Copyright (C) 2002, 2003  Red Hat, Inc.
  * Copyright (C) 2003 CodeFactory AB
  * Copyright (C) 2005 Novell, Inc.
- * Copyright (C) 2006 Ralf Habacker <ralf.habacker@freenet.de>
  * Copyright (C) 2006 Peter Kümmel  <syntheticpp@gmx.net>
  * Copyright (C) 2006 Christian Ehrlicher <ch.ehrlicher@gmx.de>
+ * Copyright (C) 2006-2010 Ralf Habacker <ralf.habacker@freenet.de>
  *
  * Licensed under the Academic Free License version 2.1
  * 
@@ -2623,6 +2623,48 @@ _dbus_get_mutex_name (DBusString *out,const char *scope)
 }
 
 dbus_bool_t
+_dbus_daemon_is_session_bus_address_published (const char *scope)
+{
+  HANDLE lock;
+  HANDLE mutex;
+  DBusString mutex_name;
+  DWORD ret;
+
+  if (!_dbus_get_mutex_name(&mutex_name,scope))
+    {
+      _dbus_string_free( &mutex_name );
+      return FALSE;
+    }
+
+  if (hDBusDaemonMutex)
+      return TRUE;
+
+  // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
+  lock = _dbus_global_lock( cUniqueDBusInitMutex );
+
+  // we use CreateMutex instead of OpenMutex because of possible race conditions,
+  // see http://msdn.microsoft.com/en-us/library/ms684315%28VS.85%29.aspx
+  hDBusDaemonMutex = CreateMutexA( NULL, FALSE, _dbus_string_get_const_data(&mutex_name) );
+
+  _dbus_global_unlock( lock );
+
+  _dbus_string_free( &mutex_name );
+
+  if (hDBusDaemonMutex  == NULL)
+      return FALSE;
+  if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+      CloseHandle(hDBusDaemonMutex);
+      hDBusDaemonMutex = NULL;
+      return TRUE;
+    }
+  // mutex wasn't created before, so return false.
+  // We leave the mutex name allocated for later reusage
+  // in _dbus_daemon_publish_session_bus_address.
+  return FALSE;
+}
+
+dbus_bool_t
 _dbus_daemon_publish_session_bus_address (const char* address, const char *scope)
 {
   HANDLE lock;
@@ -2640,23 +2682,21 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
       return FALSE;
     }
 
-  // before _dbus_global_lock to keep correct lock/release order
-  hDBusDaemonMutex = CreateMutexA( NULL, FALSE, _dbus_string_get_const_data(&mutex_name) );
-  ret = WaitForSingleObject( hDBusDaemonMutex, 1000 );
-  if ( ret != WAIT_OBJECT_0 ) {
-    _dbus_warn("Could not lock mutex %s (return code %d). daemon already running? Bus address not published.\n", _dbus_string_get_const_data(&mutex_name), ret );
-    return FALSE;
-  }
+  // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
+  lock = _dbus_global_lock( cUniqueDBusInitMutex );
+
+  if (!hDBusDaemonMutex)
+    {
+      hDBusDaemonMutex = CreateMutexA( NULL, FALSE, _dbus_string_get_const_data(&mutex_name) );
+    }
+  _dbus_string_free( &mutex_name );
 
   if (!_dbus_get_shm_name(&shm_name,scope))
     {
-      _dbus_string_free( &mutex_name );
       _dbus_string_free( &shm_name );
+      _dbus_global_unlock( lock );
       return FALSE;
     }
-
-  // sync _dbus_daemon_publish_session_bus_address, _dbus_daemon_unpublish_session_bus_address and _dbus_daemon_already_runs
-  lock = _dbus_global_lock( cUniqueDBusInitMutex );
 
   // create shm
   hDBusSharedMem = CreateFileMappingA( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
@@ -2676,7 +2716,6 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
   _dbus_verbose( "published session bus address at %s\n",_dbus_string_get_const_data (&shm_name) );
 
   _dbus_string_free( &shm_name );
-  _dbus_string_free( &mutex_name );
   return TRUE;
 }
 

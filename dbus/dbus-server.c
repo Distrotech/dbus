@@ -577,6 +577,16 @@ dbus_server_listen (const char     *address,
               handled_once = TRUE;
               goto out;
             }
+          else if (result == DBUS_SERVER_LISTEN_ADDRESS_ALREADY_USED)
+            {
+              _dbus_assert (server == NULL);
+              dbus_set_error (error,
+                       DBUS_ERROR_ADDRESS_IN_USE,
+                       "Address '%s' already used",
+                       dbus_address_entry_get_method (entries[0]));
+              handled_once = TRUE;
+              goto out;
+            }
           else if (result == DBUS_SERVER_LISTEN_BAD_ADDRESS)
             {
               _dbus_assert (server == NULL);

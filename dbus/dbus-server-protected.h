@@ -118,7 +118,8 @@ typedef enum
   DBUS_SERVER_LISTEN_NOT_HANDLED, /**< we aren't in charge of this address type */
   DBUS_SERVER_LISTEN_OK,          /**< we set up the listen */
   DBUS_SERVER_LISTEN_BAD_ADDRESS, /**< malformed address */
-  DBUS_SERVER_LISTEN_DID_NOT_CONNECT /**< well-formed address but failed to set it up */
+  DBUS_SERVER_LISTEN_DID_NOT_CONNECT, /**< well-formed address but failed to set it up */
+  DBUS_SERVER_LISTEN_ADDRESS_ALREADY_USED /**< address is already used */
 } DBusServerListenResult;
 
 DBusServerListenResult _dbus_server_listen_platform_specific (DBusAddressEntry  *entry,
