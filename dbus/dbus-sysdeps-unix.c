@@ -204,7 +204,7 @@ _dbus_write_socket (int               fd,
                     int               start,
                     int               len)
 {
-#ifdef MSG_NOSIGNAL
+#ifdef HAVE_DECL_MSG_NOSIGNAL
   const char *data;
   int bytes_written;
 
@@ -442,7 +442,7 @@ _dbus_write_socket_with_unix_fds_two(int               fd,
  again:
 
   bytes_written = sendmsg (fd, &m, 0
-#ifdef MSG_NOSIGNAL
+#ifdef HAVE_DECL_MSG_NOSIGNAL
                            |MSG_NOSIGNAL
 #endif
                            );
@@ -481,7 +481,7 @@ _dbus_write_socket_two (int               fd,
                         int               start2,
                         int               len2)
 {
-#ifdef MSG_NOSIGNAL
+#ifdef HAVE_DECL_MSG_NOSIGNAL
   struct iovec vectors[2];
   const char *data1;
   const char *data2;
@@ -1494,13 +1494,13 @@ write_credentials_byte (int             server_fd,
 
 #if defined(HAVE_CMSGCRED)
   bytes_written = sendmsg (server_fd, &msg, 0
-#ifdef MSG_NOSIGNAL
+#ifdef HAVE_DECL_MSG_NOSIGNAL
                            |MSG_NOSIGNAL
 #endif
                            );
 #else
   bytes_written = send (server_fd, buf, 1, 0
-#ifdef MSG_NOSIGNAL
+#ifdef HAVE_DECL_MSG_NOSIGNAL
                         |MSG_NOSIGNAL
 #endif
                         );
