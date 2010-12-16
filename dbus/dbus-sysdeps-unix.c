@@ -1493,9 +1493,17 @@ write_credentials_byte (int             server_fd,
  again:
 
 #if defined(HAVE_CMSGCRED)
-  bytes_written = sendmsg (server_fd, &msg, 0);
+  bytes_written = sendmsg (server_fd, &msg, 0
+#ifdef MSG_NOSIGNAL
+                           |MSG_NOSIGNAL
+#endif
+                           );
 #else
-  bytes_written = write (server_fd, buf, 1);
+  bytes_written = send (server_fd, buf, 1, 0
+#ifdef MSG_NOSIGNAL
+                        |MSG_NOSIGNAL
+#endif
+                        );
 #endif
 
   if (bytes_written < 0 && errno == EINTR)
