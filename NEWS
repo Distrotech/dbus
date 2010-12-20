@@ -1,3 +1,15 @@
+D-Bus 1.4.1 (20 December 2010)
+==
+
+ • Fix for CVE-2010-4352: sending messages with excessively-nested variants can
+   crash the bus. The existing restriction to 64-levels of nesting previously
+   only applied to the static type signature; now it also applies to dynamic
+   nesting using variants. Thanks to Rémi Denis-Courmont for discoving this
+   issue.
+ • OS X portability fixes, including launchd support.
+ • Windows autolaunch improvements.
+ • Various bug fixes.
+
 D-Bus 1.4.0 (6 Sep 2010)
 ==
  - systemd hookup
