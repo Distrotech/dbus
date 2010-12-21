@@ -2,7 +2,7 @@ project(dbus)
 
 set (DBUS_MAJOR_VERSION "1")
 set (DBUS_MINOR_VERSION "4")
-set (DBUS_MICRO_VERSION "1")
+set (DBUS_MICRO_VERSION "2")
 # used by file version info
 set (DBUS_PATCH_VERSION "0")
 set (DBUS_VERSION ${DBUS_MAJOR_VERSION}.${DBUS_MINOR_VERSION}.${DBUS_MICRO_VERSION})
