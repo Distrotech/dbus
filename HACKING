@@ -192,6 +192,8 @@ To make a release of D-Bus, do the following:
    dbus.freedesktop.org:/srv/dbus.freedesktop.org/www/releases/dbus/dbus-X.Y.Z.tar.gz.
    This should be possible if you're in group "dbus"
 
+ - Update the online documentation with `make -C doc maintainer-upload-docs`.
+
  - update the wiki page http://www.freedesktop.org/Software/dbus by
    adding the new release under the Download heading. Then, cut the
    link and changelog for the previous that was there.
