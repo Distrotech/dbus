@@ -15,7 +15,10 @@ EXTRA_DIST =			\
         NEWS.pre-1-0            \
 	ChangeLog.pre-1-2       \
         NEWS.pre-1-2		\
-	README.win \
+	README.win		\
+	README.wince		\
+	README.cygwin		\
+	README.launchd		\
 	cmake
 
 all-local: Doxyfile
