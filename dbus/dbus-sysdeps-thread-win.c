@@ -219,8 +219,14 @@ _dbus_windows_condvar_wake_one (DBusCondVar *cond)
   EnterCriticalSection (&cond->lock);
   
   if (cond->list != NULL)
-    SetEvent (_dbus_list_pop_first (&cond->list));
-    
+    {
+      SetEvent (_dbus_list_pop_first (&cond->list));
+      /* Avoid live lock by pushing the waiter to the mutex lock
+         instruction, which is fair.  If we don't do this, we could
+         acquire the condition variable again before the waiter has a
+         chance itself, leading to starvation.  */
+      Sleep (0);
+    }
   LeaveCriticalSection (&cond->lock);
 }
 
@@ -231,7 +237,16 @@ _dbus_windows_condvar_wake_all (DBusCondVar *cond)
 
   while (cond->list != NULL)
     SetEvent (_dbus_list_pop_first (&cond->list));
-  
+
+  if (cond->list != NULL)
+    {
+      /* Avoid live lock by pushing the waiter to the mutex lock
+         instruction, which is fair.  If we don't do this, we could
+         acquire the condition variable again before the waiter has a
+         chance itself, leading to starvation.  */
+      Sleep (0);
+    }
+
   LeaveCriticalSection (&cond->lock);
 }
 
