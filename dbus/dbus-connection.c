@@ -233,7 +233,7 @@ struct DBusPreallocatedSend
   DBusList *counter_link;     /**< Preallocated link in the resource counter */
 };
 
-#ifdef HAVE_DECL_MSG_NOSIGNAL
+#if HAVE_DECL_MSG_NOSIGNAL
 static dbus_bool_t _dbus_modify_sigpipe = FALSE;
 #else
 static dbus_bool_t _dbus_modify_sigpipe = TRUE;
