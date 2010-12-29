@@ -2054,10 +2054,6 @@ _dbus_delete_file (const DBusString *filename,
     return TRUE;
 }
 
-/* Forward declaration of prototype used in next function */
-static dbus_bool_t
-_dbus_get_install_root(char *prefix, int len);
-
 /*
  * replaces the term DBUS_PREFIX in configure_time_path by the
  * current dbus installation directory. On unix this function is a noop
@@ -2541,9 +2537,6 @@ static const char *cDBusAutolaunchMutex = "DBusAutolaunchMutex";
 static const char *cDBusDaemonMutex = "DBusDaemonMutex";
 // named shm for dbus adress info (per user)
 static const char *cDBusDaemonAddressInfo = "DBusDaemonAddressInfo";
-
-dbus_bool_t
-_dbus_get_install_root(char *prefix, int len);
 
 static dbus_bool_t
 _dbus_get_install_root_as_hash(DBusString *out)
@@ -3103,7 +3096,7 @@ _dbus_get_is_errno_eagain_or_ewouldblock (void)
  * @param len length of buffer
  * @returns #FALSE on failure
  */
-static dbus_bool_t
+dbus_bool_t
 _dbus_get_install_root(char *prefix, int len)
 {
     //To find the prefix, we cut the filename and also \bin\ if present

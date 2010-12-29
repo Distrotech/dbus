@@ -30,6 +30,7 @@
 #include "selinux.h"
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-internals.h>
+#include <dbus/dbus-sysdeps.h>
 #include <string.h>
 
 typedef enum
@@ -3243,12 +3244,12 @@ static const char *test_session_service_dir_matches[] =
 #ifdef DBUS_UNIX
          "/testusr/testlocal/testshare/dbus-1/services",
          "/testusr/testshare/dbus-1/services",
-#endif
          DBUS_DATADIR"/dbus-1/services",
-#ifdef DBUS_UNIX
          "/testhome/foo/.testlocal/testshare/dbus-1/services",
 #endif
+/* will be filled in test_default_session_servicedirs() */
 #ifdef DBUS_WIN
+         NULL,
          NULL,
 #endif
          NULL
@@ -3262,6 +3263,16 @@ test_default_session_servicedirs (void)
   DBusString progs;
   const char *common_progs;
   int i;
+
+#ifdef DBUS_WIN
+  char buffer[1024];
+  if (_dbus_get_install_root(buffer, sizeof(buffer)))
+    {
+      strcat(buffer,DBUS_DATADIR);
+      strcat(buffer,"/dbus-1/services");
+      test_session_service_dir_matches[0] = buffer;
+    }
+#endif
 
   /* On Unix we don't actually use this variable, but it's easier to handle the
    * deallocation if we always allocate it, whether needed or not */

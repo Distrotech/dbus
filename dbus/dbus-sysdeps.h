@@ -531,4 +531,9 @@ _dbus_replace_install_prefix (const char *configure_time_path);
 
 DBUS_END_DECLS
 
+
+#ifdef DBUS_WIN
+#include "dbus-sysdeps-win.h"
+#endif
+
 #endif /* DBUS_SYSDEPS_H */
