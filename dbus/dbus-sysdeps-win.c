@@ -3557,6 +3557,23 @@ _dbus_delete_directory (const DBusString *filename,
   return TRUE;
 }
 
+/**
+ * Checks whether the filename is an absolute path
+ *
+ * @param filename the filename
+ * @returns #TRUE if an absolute path
+ */
+dbus_bool_t
+_dbus_path_is_absolute (const DBusString *filename)
+{
+  if (_dbus_string_get_length (filename) > 0)
+    return _dbus_string_get_byte (filename, 1) == ':'
+           || _dbus_string_get_byte (filename, 0) == '\\'
+           || _dbus_string_get_byte (filename, 0) == '/';
+  else
+    return FALSE;
+}
+
 /** @} end of sysdeps-win */
 /* tests in dbus-sysdeps-util.c */
 
