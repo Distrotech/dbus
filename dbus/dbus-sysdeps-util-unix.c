@@ -418,6 +418,7 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
         break;
       case DBUS_SYSTEM_LOG_FATAL:
         flags = LOG_DAEMON|LOG_CRIT;
+        break;
       default:
         return;
     }
