@@ -1602,6 +1602,7 @@ test/name-test/Makefile
 doc/Makefile
 doc/dbus-daemon.1
 dbus-1.pc
+dbus-1-uninstalled.pc
 test/data/valid-config-files/debug-allow-all.conf
 test/data/valid-config-files/debug-allow-all-sha1.conf
 test/data/valid-config-files-system/debug-allow-all-pass.conf
