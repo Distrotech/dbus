@@ -1085,17 +1085,13 @@ fi
 #### gcc warning flags
 
 cc_supports_flag() {
-  AC_MSG_CHECKING(whether $CC supports "$@")
-  Cfile=/tmp/foo${$}
-  touch ${Cfile}.c
-  $CC -c "$@" ${Cfile}.c -o ${Cfile}.o >/dev/null 2>&1
-  rc=$?
-  rm -f ${Cfile}.c ${Cfile}.o
-  case $rc in
-    0) AC_MSG_RESULT(yes);;
-    *) AC_MSG_RESULT(no);;
-  esac
-  return $rc
+  AC_MSG_CHECKING(whether $CC supports "$*")
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$*"
+  AC_TRY_COMPILE([], [], [rc=yes], [rc=no])
+  CFLAGS="$save_CFLAGS"
+  AC_MSG_RESULT([$rc])
+  test "x$rc" = xyes
 }
 
 ld_supports_flag() {
