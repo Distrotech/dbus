@@ -1170,7 +1170,7 @@ if test "x$GCC" = "xyes"; then
 
   case " $CFLAGS " in
   *[\ \	]-Wfloat-equal[\ \	]*) ;;
-  *) if cc_supports_flag -Wfloat-equals; then
+  *) if cc_supports_flag -Wfloat-equal; then
         CFLAGS="$CFLAGS -Wfloat-equal"
      fi
      ;;
