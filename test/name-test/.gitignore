@@ -12,3 +12,4 @@ test-privserver
 test-privserver-client
 test-shutdown
 test-threads-init
+test-autolaunch
