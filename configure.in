@@ -1038,7 +1038,7 @@ AC_SUBST(DBUS_CLIENT_CFLAGS)
 AC_SUBST(DBUS_CLIENT_LIBS)
 
 DBUS_BUS_CFLAGS="$XML_CFLAGS"
-DBUS_BUS_LIBS="$XML_LIBS $SELINUX_LIBS $INTLLIBS $THREAD_LIBS $ADT_LIBS $NETWORK_libs"
+DBUS_BUS_LIBS="$XML_LIBS $SELINUX_LIBS $THREAD_LIBS $ADT_LIBS $NETWORK_libs"
 AC_SUBST(DBUS_BUS_CFLAGS)
 AC_SUBST(DBUS_BUS_LIBS)
 
@@ -1697,7 +1697,6 @@ echo "
         Building XML docs:        ${enable_xml_docs}
         Building cache support:   ${enable_userdb_cache}
         Building launchd support: ${have_launchd}
-        Gettext libs (empty OK):  ${INTLLIBS}
         Using XML parser:         ${with_xml}
         Init scripts style:       ${with_init_scripts}
         Abstract socket names:    ${ac_cv_have_abstract_sockets}
