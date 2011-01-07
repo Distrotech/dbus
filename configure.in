@@ -39,7 +39,7 @@ AC_ARG_ENABLE(mono,             [  --enable-mono         build mono bindings],en
 AC_ARG_ENABLE(mono_docs,        [  --enable-mono-docs    build mono docs],enable_mono_docs=$enableval,enable_mono_docs=auto)
 AC_ARG_ENABLE(python,           [  --enable-python       build python bindings],enable_python=$enableval,enable_python=auto)
 AC_ARG_ENABLE(selinux,          [  --enable-selinux      build with SELinux support],enable_selinux=$enableval,enable_selinux=auto)
-
+AC_ARG_ENABLE(libaudit,          [  --enable-libaudit    build audit daemon support for SELinux],enable_libaudit=$enableval,enable_libaudit=auto)
 AC_ARG_WITH(xml,                [  --with-xml=[libxml/expat]           XML library to use])
 AC_ARG_WITH(init-scripts,       [  --with-init-scripts=[redhat]        Style of init scripts to install])
 AC_ARG_WITH(session-socket-dir, [  --with-session-socket-dir=[dirname] Where to put sockets for the per-login-session message bus])
@@ -722,6 +722,27 @@ if test x$have_selinux = xyes ; then
     AC_DEFINE(HAVE_SELINUX,1,[SELinux support])
 else
     SELINUX_LIBS=
+fi
+
+# libaudit detection
+if test x$enable_libaudit = xno ; then
+    have_libaudit=no;
+else
+    # See if we have audit daemon & capabilities library
+    AC_CHECK_LIB(audit, audit_log_user_avc_message,
+                 have_libaudit=yes, have_libaudit=no)
+    if test x$have_libaudit = xyes ; then
+        AC_CHECK_LIB(cap, cap_set_proc,
+                 have_libaudit=yes, have_libaudit=no)
+    fi
+fi
+
+AM_CONDITIONAL(HAVE_LIBAUDIT, test x$have_libaudit = xyes)
+
+if test x$have_libaudit = xyes ; then
+    SELINUX_LIBS="$SELINUX_LIBS -laudit"
+    LIBS="-lcap $LIBS"
+    AC_DEFINE(HAVE_LIBAUDIT,1,[audit daemon SELinux support])
 fi
 
 #### Set up final flags
