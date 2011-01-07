@@ -26,6 +26,7 @@
 #include "connection.h"
 #include "driver.h"
 #include "dispatch.h"
+#include "selinux.h"
 #include "services.h"
 #include "signals.h"
 #include "utils.h"
@@ -984,6 +985,79 @@ bus_driver_handle_get_connection_unix_process_id (DBusConnection *connection,
 }
 
 static dbus_bool_t
+bus_driver_handle_get_connection_selinux_security_context (DBusConnection *connection,
+							   BusTransaction *transaction,
+							   DBusMessage    *message,
+							   DBusError      *error)
+{
+  const char *service;
+  DBusString str;
+  BusRegistry *registry;
+  BusService *serv;
+  DBusConnection *conn;
+  DBusMessage *reply;
+  BusSELinuxID *context;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  registry = bus_connection_get_registry (connection);
+
+  service = NULL;
+  reply = NULL;
+
+  if (! dbus_message_get_args (message, error,
+			       DBUS_TYPE_STRING, &service,
+			       DBUS_TYPE_INVALID))
+      goto failed;
+
+  _dbus_verbose ("asked for security context of connection %s\n", service);
+
+  _dbus_string_init_const (&str, service);
+  serv = bus_registry_lookup (registry, &str);
+  if (serv == NULL)
+    {
+      dbus_set_error (error,
+		      DBUS_ERROR_SERVICE_HAS_NO_OWNER,
+		      "Could not get security context of name '%s': no such name", service);
+      goto failed;
+    }
+
+  conn = bus_service_get_primary_owner (serv);
+
+  reply = dbus_message_new_method_return (message);
+  if (reply == NULL)
+    goto oom;
+
+  context = bus_connection_get_selinux_id (conn);
+  if (!context)
+    {
+      dbus_set_error (error,
+                      DBUS_ERROR_SELINUX_SECURITY_CONTEXT_UNKNOWN,
+                      "Could not determine security context for '%s'", service);
+      goto failed;
+    }
+
+  if (! bus_selinux_append_context (reply, context, error))
+    goto failed;
+
+  if (! bus_transaction_send_from_driver (transaction, connection, reply))
+    goto oom;
+
+  dbus_message_unref (reply);
+
+  return TRUE;
+
+ oom:
+  BUS_SET_OOM (error);
+
+ failed:
+  _DBUS_ASSERT_ERROR_IS_SET (error);
+  if (reply)
+    dbus_message_unref (reply);
+  return FALSE;
+}
+
+static dbus_bool_t
 bus_driver_handle_reload_config (DBusConnection *connection,
 				 BusTransaction *transaction,
 				 DBusMessage    *message,
@@ -1031,6 +1105,7 @@ struct
   { "GetServiceOwner", bus_driver_handle_get_service_owner },
   { "GetConnectionUnixUser", bus_driver_handle_get_connection_unix_user },
   { "GetConnectionUnixProcessID", bus_driver_handle_get_connection_unix_process_id },
+  { "GetConnectionSELinuxSecurityContext", bus_driver_handle_get_connection_selinux_security_context },
   { "ReloadConfig", bus_driver_handle_reload_config }
 };
 

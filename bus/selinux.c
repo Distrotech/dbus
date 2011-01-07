@@ -436,6 +436,41 @@ bus_selinux_allows_send (DBusConnection     *sender,
 #endif /* HAVE_SELINUX */
 }
 
+dbus_bool_t
+bus_selinux_append_context (DBusMessage    *message,
+			    BusSELinuxID   *sid,
+			    DBusError      *error)
+{
+#ifdef HAVE_SELINUX
+  char *context;
+
+  if (avc_sid_to_context (SELINUX_SID_FROM_BUS (sid), &context) < 0)
+    {
+      if (errno == ENOMEM)
+        BUS_SET_OOM (error);
+      else
+        dbus_set_error (error, DBUS_ERROR_FAILED,
+                        "Error getting context from SID: %s\n",
+			_dbus_strerror (errno));
+      return FALSE;
+    }
+  if (!dbus_message_append_args (message,
+				 DBUS_TYPE_ARRAY,
+				 DBUS_TYPE_BYTE,
+				 context,
+				 strlen (context),
+				 DBUS_TYPE_INVALID))
+    {
+      _DBUS_SET_OOM (error);
+      return FALSE;
+    }
+  freecon (context);
+  return TRUE;
+#else
+  return TRUE;
+#endif
+}
+
 /**
  * Gets the security context of a connection to the bus. It is up to
  * the caller to freecon() when they are done. 
