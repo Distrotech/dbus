@@ -27,8 +27,11 @@
 #include <dbus/dbus-connection.h>
 #include "services.h"
 
-dbus_bool_t bus_selinux_init     (void);
+dbus_bool_t bus_selinux_pre_init (void);
+dbus_bool_t bus_selinux_full_init(void);
 void        bus_selinux_shutdown (void);
+
+dbus_bool_t bus_selinux_enabled  (void);
 
 void bus_selinux_id_ref    (BusSELinuxID *sid);
 void bus_selinux_id_unref  (BusSELinuxID *sid);
@@ -42,7 +45,7 @@ dbus_bool_t    bus_selinux_id_table_insert (DBusHashTable    *service_table,
 DBusHashTable* bus_selinux_id_table_union  (DBusHashTable    *base,
                                             DBusHashTable    *override);
 void           bus_selinux_id_table_print  (DBusHashTable    *service_table);
-
+const char*    bus_selinux_get_policy_root (void);
 
 
 dbus_bool_t bus_selinux_allows_acquire_service (DBusConnection *connection,
