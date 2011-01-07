@@ -64,6 +64,19 @@ free_group_info (void *data)
   dbus_free (info);
 }
 
+static dbus_bool_t
+is_a_number (const DBusString *str,
+             unsigned long    *num)
+{
+  int end;
+
+  if (_dbus_string_parse_int (str, 0, num, &end) &&
+      end == _dbus_string_get_length (str))
+    return TRUE;
+  else
+    return FALSE;
+}
+
 static DBusUserInfo*
 _dbus_user_database_lookup (DBusUserDatabase *db,
                             dbus_uid_t        uid,
@@ -74,6 +87,15 @@ _dbus_user_database_lookup (DBusUserDatabase *db,
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
   _dbus_assert (uid != DBUS_UID_UNSET || username != NULL);
+
+  /* See if the username is really a number */
+  if (uid == DBUS_UID_UNSET)
+    {
+      unsigned long n;
+
+      if (is_a_number (username, &n))
+        uid = n;
+    }
   
   if (uid != DBUS_UID_UNSET)
     info = _dbus_hash_table_lookup_ulong (db->users, uid);
@@ -151,6 +173,15 @@ _dbus_user_database_lookup_group (DBusUserDatabase *db,
   DBusGroupInfo *info;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  /* See if the group is really a number */
+  if (gid == DBUS_UID_UNSET)
+    {
+      unsigned long n;
+
+      if (is_a_number (groupname, &n))
+        gid = n;
+    }
 
   if (gid != DBUS_GID_UNSET)
     info = _dbus_hash_table_lookup_ulong (db->groups, gid);
