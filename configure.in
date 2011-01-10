@@ -1295,12 +1295,10 @@ case $host_os in
         CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
 esac
 
-changequote(,)dnl
 # compress spaces in flags
 CFLAGS=`echo "$CFLAGS" | sed -e 's/ +/ /g'`
 CXXFLAGS=`echo "$CXXFLAGS" | sed -e 's/ +/ /g'`
 CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/ +/ /g'`
-changequote([,])dnl
 
 ### Doxygen Documentation
 
