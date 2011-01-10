@@ -16,7 +16,8 @@ install-sh
 libtool
 ltmain.sh
 missing
-m4
+/m4/lt*.m4
+/m4/libtool.m4
 stamp-h1
 stamp-h
 stamp-h.in
