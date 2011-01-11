@@ -774,7 +774,32 @@ handle_watch (DBusWatch       *watch,
   while (LIVE_CHILDREN (sitter) &&
          babysitter_iteration (sitter, FALSE))
     ;
-  
+
+  /* Those might have closed the sockets we're watching. Before returning
+   * to the main loop, we must sort that out. */
+
+  if (sitter->error_watch != NULL && sitter->error_pipe_from_child == -1)
+    {
+      _dbus_watch_invalidate (sitter->error_watch);
+
+      if (sitter->watches != NULL)
+        _dbus_watch_list_remove_watch (sitter->watches,  sitter->error_watch);
+
+      _dbus_watch_unref (sitter->error_watch);
+      sitter->error_watch = NULL;
+    }
+
+  if (sitter->sitter_watch != NULL && sitter->socket_to_babysitter == -1)
+    {
+      _dbus_watch_invalidate (sitter->sitter_watch);
+
+      if (sitter->watches != NULL)
+        _dbus_watch_list_remove_watch (sitter->watches,  sitter->sitter_watch);
+
+      _dbus_watch_unref (sitter->sitter_watch);
+      sitter->sitter_watch = NULL;
+    }
+
   return TRUE;
 }
 
