@@ -28,6 +28,7 @@
 
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-sysdeps.h>
+#include <dbus/dbus-watch.h>
 
 #define MAINLOOP_SPEW 0
 
@@ -584,6 +585,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
         {
           unsigned int flags;
           WatchCallback *wcb = WATCH_CALLBACK (cb);
+          int fd = dbus_watch_get_socket (wcb->watch);
 
           if (wcb->last_iteration_oom)
             {
@@ -601,6 +603,13 @@ _dbus_loop_iterate (DBusLoop     *loop,
               _dbus_verbose ("  skipping watch on fd %d as it was out of memory last time\n",
                              dbus_watch_get_socket (wcb->watch));
 #endif
+            }
+          else if (_DBUS_UNLIKELY (fd == -1))
+            {
+              _dbus_warn ("watch %p was invalidated but not removed; "
+                  "removing it now\n", wcb->watch);
+              _dbus_loop_remove_watch (loop, wcb->watch, wcb->function,
+                  ((Callback *)wcb)->data);
             }
           else if (dbus_watch_get_enabled (wcb->watch))
             {
