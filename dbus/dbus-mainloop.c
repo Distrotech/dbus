@@ -601,7 +601,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
 
 #if MAINLOOP_SPEW
               _dbus_verbose ("  skipping watch on fd %d as it was out of memory last time\n",
-                             dbus_watch_get_socket (wcb->watch));
+                             fd);
 #endif
             }
           else if (_DBUS_UNLIKELY (fd == -1))
@@ -619,7 +619,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
                   
               flags = dbus_watch_get_flags (wcb->watch);
                   
-              fds[n_fds].fd = dbus_watch_get_socket (wcb->watch);
+              fds[n_fds].fd = fd;
               fds[n_fds].revents = 0;
               fds[n_fds].events = 0;
               if (flags & DBUS_WATCH_READABLE)
@@ -629,7 +629,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
 
 #if MAINLOOP_SPEW
               _dbus_verbose ("  polling watch on fd %d  %s\n",
-                             fds[n_fds].fd, watch_flags_to_string (flags));
+                             fd, watch_flags_to_string (flags));
 #endif
 
               n_fds += 1;
@@ -638,7 +638,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
             {
 #if MAINLOOP_SPEW
               _dbus_verbose ("  skipping disabled watch on fd %d  %s\n",
-                             dbus_watch_get_socket (wcb->watch),
+                             fd,
                              watch_flags_to_string (dbus_watch_get_flags (wcb->watch)));
 #endif
             }
