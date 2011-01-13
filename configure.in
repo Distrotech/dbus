@@ -1,5 +1,5 @@
 dnl -*- mode: m4 -*-
-AC_PREREQ(2.52)
+AC_PREREQ(2.60)
 
 m4_define([dbus_major_version], [1])
 m4_define([dbus_minor_version], [4])
