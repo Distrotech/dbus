@@ -34,6 +34,7 @@ STATIC_DOCS = \
 
 EXTRA_DIST = \
 	file-boilerplate.c \
+	doxygen_to_devhelp.xsl \
 	$(STATIC_DOCS) \
 	$(MAN_IN_FILES) $(man_MANS)
 
