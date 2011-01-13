@@ -72,6 +72,13 @@ doxygen.stamp: $(wildcard $(top_srcdir)/dbus/*.[ch])
 	$(AM_V_GEN)cd $(top_builddir) && doxygen Doxyfile
 	@touch $@
 
+if DBUS_HAVE_XSLTPROC
+api_DATA = dbus.devhelp
+
+dbus.devhelp: $(srcdir)/doxygen_to_devhelp.xsl doxygen.stamp
+	$(XSLTPROC) -o $@ $< api/xml/index.xml
+endif
+
 # this assumes CREATE_SUBDIRS isn't set to YES in Doxyfile
 # (which it isn't currently)
 install-data-local:: doxygen.stamp
