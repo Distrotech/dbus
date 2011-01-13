@@ -89,7 +89,7 @@ BONUS_FILES = \
 
 dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
 	$(AM_V_at)rm -rf $@
-	$(AM_V_GEN)mkdir -p $@/api
+	$(AM_V_GEN)$(MKDIR_P) $@/api
 	$(AM_V_at)cp $(STATIC_DOCS) $@
 	$(AM_V_at)cp $(HTML_FILES) $@
 	$(AM_V_at)cp $(MAN_HTML_FILES) $@
