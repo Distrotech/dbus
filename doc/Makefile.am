@@ -64,13 +64,11 @@ dbus-faq.html: dbus-faq.xml
 endif
 
 if DBUS_DOXYGEN_DOCS_ENABLED
-# Use the index as a proxy for the entire doc tree.
-DOXYGEN_HTML_INDEX = api/html/index.html
+all-local:: doxygen.stamp
 
-all-local:: $(DOXYGEN_HTML_INDEX)
-
-$(DOXYGEN_HTML_INDEX): $(wildcard $(top_srcdir)/dbus/*.[ch])
+doxygen.stamp: $(wildcard $(top_srcdir)/dbus/*.[ch])
 	$(AM_V_GEN)cd $(top_builddir) && doxygen Doxyfile
+	@touch $@
 endif
 
 if DBUS_HAVE_MAN2HTML
@@ -89,7 +87,7 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) $(DOXYGEN_HTML_INDEX)
+dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
 	$(AM_V_at)rm -rf $@
 	$(AM_V_GEN)mkdir -p $@/api
 	$(AM_V_at)cp $(STATIC_DOCS) $@
