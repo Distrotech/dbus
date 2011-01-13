@@ -1,3 +1,5 @@
+apidir = @htmldir@/api
+
 man_MANS = \
 	dbus-cleanup-sockets.1 \
 	dbus-daemon.1 \
@@ -69,6 +71,12 @@ all-local:: doxygen.stamp
 doxygen.stamp: $(wildcard $(top_srcdir)/dbus/*.[ch])
 	$(AM_V_GEN)cd $(top_builddir) && doxygen Doxyfile
 	@touch $@
+
+# this assumes CREATE_SUBDIRS isn't set to YES in Doxyfile
+# (which it isn't currently)
+install-data-local:: doxygen.stamp
+	$(MKDIR_P) $(DESTDIR)$(apidir)
+	$(INSTALL_DATA) api/html/* $(DESTDIR)$(apidir)
 endif
 
 if DBUS_HAVE_MAN2HTML
