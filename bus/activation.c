@@ -360,7 +360,7 @@ update_desktop_file_entry (BusActivation       *activation,
   entry = _dbus_hash_table_lookup_string (s_dir->entries,
                                           _dbus_string_get_const_data (filename));
 
-  exec = strdup (_dbus_replace_install_prefix (exec_tmp));
+  exec = _dbus_strdup (_dbus_replace_install_prefix (exec_tmp));
 
   if (entry == NULL) /* New file */
     {
