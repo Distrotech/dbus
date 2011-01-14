@@ -310,6 +310,10 @@ update_desktop_file_entry (BusActivation       *activation,
                                     error))
     goto failed;
 
+  exec = _dbus_strdup (_dbus_replace_install_prefix (exec_tmp));
+  dbus_free (exec_tmp);
+  exec_tmp = NULL;
+
   /* user is not _required_ unless we are using system activation */
   if (!bus_desktop_file_get_string (desktop_file,
                                     DBUS_SERVICE_SECTION,
@@ -359,8 +363,6 @@ update_desktop_file_entry (BusActivation       *activation,
 
   entry = _dbus_hash_table_lookup_string (s_dir->entries,
                                           _dbus_string_get_const_data (filename));
-
-  exec = _dbus_strdup (_dbus_replace_install_prefix (exec_tmp));
 
   if (entry == NULL) /* New file */
     {
@@ -453,7 +455,6 @@ update_desktop_file_entry (BusActivation       *activation,
 
 failed:
   dbus_free (name);
-  dbus_free (exec_tmp);
   dbus_free (user);
   dbus_free (systemd_service);
   _dbus_string_free (&file_path);
