@@ -79,6 +79,7 @@ main (int argc, char **argv)
 {
 #ifdef DBUS_BUILD_TESTS
   const char *dir;
+  const char *only;
   DBusString test_data_dir;
 
   progname = argv[0];
@@ -87,6 +88,11 @@ main (int argc, char **argv)
     dir = argv[1];
   else
     dir = _dbus_getenv ("DBUS_TEST_DATA");
+
+  if (argc > 2)
+    only = argv[2];
+  else
+    only = NULL;
 
   if (dir == NULL)
     {
@@ -98,55 +104,79 @@ main (int argc, char **argv)
 
   if (!_dbus_threads_init_debug ())
     die ("initializing debug threads");
- 
-  test_pre_hook ();
-  printf ("%s: Running expire list test\n", argv[0]);
-  if (!bus_expire_list_test (&test_data_dir))
-    die ("expire list");
-  test_post_hook ();
- 
-  test_pre_hook ();
-  printf ("%s: Running config file parser test\n", argv[0]);
-  if (!bus_config_parser_test (&test_data_dir))
-    die ("parser");
-  test_post_hook ();
 
-  test_pre_hook ();
-  printf ("%s: Running policy test\n", argv[0]);
-  if (!bus_policy_test (&test_data_dir))
-    die ("policy");
-  test_post_hook ();
+  if (only == NULL || strcmp (only, "expire-list") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running expire list test\n", argv[0]);
+      if (!bus_expire_list_test (&test_data_dir))
+        die ("expire list");
+      test_post_hook ();
+    }
 
-  test_pre_hook ();
-  printf ("%s: Running signals test\n", argv[0]);
-  if (!bus_signals_test (&test_data_dir))
-    die ("signals");
-  test_post_hook ();
+  if (only == NULL || strcmp (only, "config-parser") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running config file parser test\n", argv[0]);
+      if (!bus_config_parser_test (&test_data_dir))
+        die ("parser");
+      test_post_hook ();
+    }
 
-  test_pre_hook ();
-  printf ("%s: Running SHA1 connection test\n", argv[0]);
-  if (!bus_dispatch_sha1_test (&test_data_dir))
-    die ("sha1");
-  test_post_hook ();
+  if (only == NULL || strcmp (only, "policy") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running policy test\n", argv[0]);
+      if (!bus_policy_test (&test_data_dir))
+        die ("policy");
+      test_post_hook ();
+    }
 
-  test_pre_hook ();
-  printf ("%s: Running message dispatch test\n", argv[0]);
-  if (!bus_dispatch_test (&test_data_dir)) 
-    die ("dispatch");
-  test_post_hook ();
+  if (only == NULL || strcmp (only, "signals") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running signals test\n", argv[0]);
+      if (!bus_signals_test (&test_data_dir))
+        die ("signals");
+      test_post_hook ();
+    }
 
-  test_pre_hook ();
-  printf ("%s: Running service files reloading test\n", argv[0]);
-  if (!bus_activation_service_reload_test (&test_data_dir))
-    die ("service reload");
-  test_post_hook ();
+  if (only == NULL || strcmp (only, "dispatch-sha1") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running SHA1 connection test\n", argv[0]);
+      if (!bus_dispatch_sha1_test (&test_data_dir))
+        die ("sha1");
+      test_post_hook ();
+    }
+
+  if (only == NULL || strcmp (only, "dispatch") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running message dispatch test\n", argv[0]);
+      if (!bus_dispatch_test (&test_data_dir)) 
+        die ("dispatch");
+      test_post_hook ();
+    }
+
+  if (only == NULL || strcmp (only, "activation-service-reload") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running service files reloading test\n", argv[0]);
+      if (!bus_activation_service_reload_test (&test_data_dir))
+        die ("service reload");
+      test_post_hook ();
+    }
 
 #ifdef HAVE_UNIX_FD_PASSING
-  test_pre_hook ();
-  printf ("%s: Running unix fd passing test\n", argv[0]);
-  if (!bus_unix_fds_passing_test (&test_data_dir))
-    die ("unix fd passing");
-  test_post_hook ();
+  if (only == NULL || strcmp (only, "unix-fds-passing") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running unix fd passing test\n", argv[0]);
+      if (!bus_unix_fds_passing_test (&test_data_dir))
+        die ("unix fd passing");
+      test_post_hook ();
+    }
 #endif
 
   printf ("%s: Success\n", argv[0]);
