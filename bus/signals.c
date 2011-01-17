@@ -1102,6 +1102,7 @@ bus_matchmaker_new (void)
       else
         _dbus_hash_table_unref (p->rules_by_iface);
     }
+  dbus_free (matchmaker);
 
   return NULL;
 }
