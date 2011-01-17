@@ -455,6 +455,7 @@ update_desktop_file_entry (BusActivation       *activation,
 
 failed:
   dbus_free (name);
+  dbus_free (exec);
   dbus_free (user);
   dbus_free (systemd_service);
   _dbus_string_free (&file_path);
