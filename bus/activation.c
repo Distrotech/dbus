@@ -389,6 +389,11 @@ update_desktop_file_entry (BusActivation       *activation,
       entry->systemd_service = systemd_service;
       entry->refcount = 1;
 
+      /* ownership has been transferred to entry, do not free separately */
+      name = NULL;
+      exec = NULL;
+      user = NULL;
+      systemd_service = NULL;
       entry->s_dir = s_dir;
       entry->filename = _dbus_strdup (_dbus_string_get_const_data (filename));
       if (!entry->filename)
@@ -433,6 +438,12 @@ update_desktop_file_entry (BusActivation       *activation,
       entry->name = name;
       entry->exec = exec;
       entry->user = user;
+      /* ownership has been transferred to entry, do not free separately */
+      name = NULL;
+      exec = NULL;
+      user = NULL;
+      systemd_service = NULL;
+
       if (!_dbus_hash_table_insert_string (activation->entries,
                                            entry->name, bus_activation_entry_ref(entry)))
         {
