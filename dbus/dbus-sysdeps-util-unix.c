@@ -608,53 +608,13 @@ _dbus_directory_open (const DBusString *filename,
   return iter;
 }
 
-/* Calculate the required buffer size (in bytes) for directory
- * entries read from the given directory handle.  Return -1 if this
- * this cannot be done. 
- *
- * If you use autoconf, include fpathconf and dirfd in your
- * AC_CHECK_FUNCS list.  Otherwise use some other method to detect
- * and use them where available.
- */
-static dbus_bool_t
-dirent_buf_size(DIR * dirp, size_t *size)
-{
- long name_max;
-#   if defined(HAVE_FPATHCONF) && defined(_PC_NAME_MAX)
-#      if defined(HAVE_DIRFD)
-          name_max = fpathconf(dirfd(dirp), _PC_NAME_MAX);
-#      elif defined(HAVE_DDFD)
-          name_max = fpathconf(dirp->dd_fd, _PC_NAME_MAX);
-#      else
-          name_max = fpathconf(dirp->__dd_fd, _PC_NAME_MAX);
-#      endif /* HAVE_DIRFD */
-     if (name_max == -1)
-#           if defined(NAME_MAX)
-	     name_max = NAME_MAX;
-#           else
-	     return FALSE;
-#           endif
-#   elif defined(MAXNAMELEN)
-     name_max = MAXNAMELEN;
-#   else
-#       if defined(NAME_MAX)
-	 name_max = NAME_MAX;
-#       else
-#           error "buffer size for readdir_r cannot be determined"
-#       endif
-#   endif
-  if (size)
-    *size = (size_t)offsetof(struct dirent, d_name) + name_max + 1;
-  else
-    return FALSE;
-
-  return TRUE;
-}
-
 /**
  * Get next file in the directory. Will not return "." or ".."  on
  * UNIX. If an error occurs, the contents of "filename" are
  * undefined. The error is never set if the function succeeds.
+ *
+ * This function is not re-entrant, and not necessarily thread-safe.
+ * Only use it for test code or single-threaded utilities.
  *
  * @param iter the iterator
  * @param filename string to be set to the next file in the dir
@@ -666,37 +626,24 @@ _dbus_directory_get_next_file (DBusDirIter      *iter,
                                DBusString       *filename,
                                DBusError        *error)
 {
-  struct dirent *d, *ent;
-  size_t buf_size;
+  struct dirent *ent;
   int err;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
- 
-  if (!dirent_buf_size (iter->d, &buf_size))
-    {
-      dbus_set_error (error, DBUS_ERROR_FAILED,
-                      "Can't calculate buffer size when reading directory");
-      return FALSE;
-    }
-
-  d = (struct dirent *)dbus_malloc (buf_size);
-  if (!d)
-    {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
-                      "No memory to read directory entry");
-      return FALSE;
-    }
 
  again:
-  err = readdir_r (iter->d, d, &ent);
-  if (err || !ent)
+  errno = 0;
+  ent = readdir (iter->d);
+
+  if (!ent)
     {
+      err = errno;
+
       if (err != 0)
         dbus_set_error (error,
                         _dbus_error_from_errno (err),
                         "%s", _dbus_strerror (err));
 
-      dbus_free (d);
       return FALSE;
     }
   else if (ent->d_name[0] == '.' &&
@@ -710,12 +657,10 @@ _dbus_directory_get_next_file (DBusDirIter      *iter,
         {
           dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
                           "No memory to read directory entry");
-          dbus_free (d);
           return FALSE;
         }
       else
         {
-          dbus_free (d);
           return TRUE;
         }
     }
