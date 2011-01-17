@@ -618,7 +618,6 @@ list_concat_new (DBusList **a,
 
   *result = NULL;
 
-  link = _dbus_list_get_first_link (a);
   for (link = _dbus_list_get_first_link (a); link; link = _dbus_list_get_next_link (a, link))
     {
       if (!_dbus_list_append (result, link->data))
