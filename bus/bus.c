@@ -372,11 +372,20 @@ process_config_first_time_only (BusContext       *context,
       if (!credentials)
         goto oom;
       if (!_dbus_string_append (&log_prefix, "[session "))
-        goto oom;
+        {
+          _dbus_credentials_unref (credentials);
+          goto oom;
+        }
       if (!_dbus_credentials_to_string_append (credentials, &log_prefix))
-        goto oom;
+        {
+          _dbus_credentials_unref (credentials);
+          goto oom;
+        }
       if (!_dbus_string_append (&log_prefix, "] "))
-        goto oom;
+        {
+          _dbus_credentials_unref (credentials);
+          goto oom;
+        }
       _dbus_credentials_unref (credentials);
     }
   if (!_dbus_string_steal_data (&log_prefix, &context->log_prefix))
