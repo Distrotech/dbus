@@ -259,7 +259,13 @@ _init_inotify (BusContext *context)
           goto out;
         }
 
-      _dbus_register_shutdown_func (_shutdown_inotify, NULL);
+      if (!_dbus_register_shutdown_func (_shutdown_inotify, NULL))
+      {
+          _dbus_warn ("Unable to register shutdown func");
+          _dbus_watch_unref (watch);
+          watch = NULL;
+          goto out;
+      }
     }
 
   ret = 1;
