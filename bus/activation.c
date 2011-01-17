@@ -264,6 +264,7 @@ update_desktop_file_entry (BusActivation       *activation,
   DBusStat stat_buf;
   DBusString file_path;
   DBusError tmp_error;
+  dbus_bool_t retval;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -286,14 +287,14 @@ update_desktop_file_entry (BusActivation       *activation,
       !_dbus_concat_dir_and_file (&file_path, filename))
     {
       BUS_SET_OOM (error);
-      goto failed;
+      goto finally;
     }
 
   if (!_dbus_stat (&file_path, &stat_buf, NULL))
     {
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Can't stat the service file\n");
-      goto failed;
+      goto finally;
     }
 
   if (!bus_desktop_file_get_string (desktop_file,
@@ -301,14 +302,14 @@ update_desktop_file_entry (BusActivation       *activation,
                                     DBUS_SERVICE_NAME,
                                     &name,
                                     error))
-    goto failed;
+    goto finally;
 
   if (!bus_desktop_file_get_string (desktop_file,
                                     DBUS_SERVICE_SECTION,
                                     DBUS_SERVICE_EXEC,
                                     &exec_tmp,
                                     error))
-    goto failed;
+    goto finally;
 
   exec = _dbus_strdup (_dbus_replace_install_prefix (exec_tmp));
   dbus_free (exec_tmp);
@@ -325,7 +326,7 @@ update_desktop_file_entry (BusActivation       *activation,
       if (dbus_error_has_name (&tmp_error, DBUS_ERROR_NO_MEMORY))
         {
           dbus_move_error (&tmp_error, error);
-          goto failed;
+          goto finally;
         }
       else
         {
@@ -348,7 +349,7 @@ update_desktop_file_entry (BusActivation       *activation,
       if (dbus_error_has_name (&tmp_error, DBUS_ERROR_NO_MEMORY))
         {
           dbus_move_error (&tmp_error, error);
-          goto failed;
+          goto finally;
         }
       else
         {
@@ -373,14 +374,14 @@ update_desktop_file_entry (BusActivation       *activation,
         {
           dbus_set_error (error, DBUS_ERROR_FAILED,
                           "Service %s already exists in activation entry list\n", name);
-          goto failed;
+          goto finally;
         }
 
       entry = dbus_new0 (BusActivationEntry, 1);
       if (entry == NULL)
         {
           BUS_SET_OOM (error);
-          goto failed;
+          goto finally;
         }
 
       entry->name = name;
@@ -394,18 +395,19 @@ update_desktop_file_entry (BusActivation       *activation,
       exec = NULL;
       user = NULL;
       systemd_service = NULL;
+
       entry->s_dir = s_dir;
       entry->filename = _dbus_strdup (_dbus_string_get_const_data (filename));
       if (!entry->filename)
         {
           BUS_SET_OOM (error);
-          goto failed;
+          goto finally;
         }
 
       if (!_dbus_hash_table_insert_string (activation->entries, entry->name, bus_activation_entry_ref (entry)))
         {
           BUS_SET_OOM (error);
-          goto failed;
+          goto finally;
         }
 
       if (!_dbus_hash_table_insert_string (s_dir->entries, entry->filename, bus_activation_entry_ref (entry)))
@@ -413,7 +415,7 @@ update_desktop_file_entry (BusActivation       *activation,
           /* Revert the insertion in the entries table */
           _dbus_hash_table_remove_string (activation->entries, entry->name);
           BUS_SET_OOM (error);
-          goto failed;
+          goto finally;
         }
 
       _dbus_verbose ("Added \"%s\" to list of services\n", entry->name);
@@ -427,7 +429,7 @@ update_desktop_file_entry (BusActivation       *activation,
         {
           _dbus_verbose ("The new service name \"%s\" of service file \"%s\" already in cache, ignoring\n",
                          name, _dbus_string_get_const_data (&file_path));
-          goto failed;
+          goto finally;
         }
 
       dbus_free (entry->name);
@@ -458,13 +460,10 @@ update_desktop_file_entry (BusActivation       *activation,
     }
 
   entry->mtime = stat_buf.mtime;
+  retval = TRUE;
 
-  _dbus_string_free (&file_path);
-  bus_activation_entry_unref (entry);
-
-  return TRUE;
-
-failed:
+finally:
+  /* if these have been transferred into entry, the variables will be NULL */
   dbus_free (name);
   dbus_free (exec);
   dbus_free (user);
