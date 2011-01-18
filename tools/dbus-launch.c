@@ -690,10 +690,11 @@ pass_info (const char *runprog, const char *bus_address, pid_t bus_pid,
            int binary_syntax,
            int argc, char **argv, int remaining_args)
 {
+  char *envvar = NULL;
+  char **args = NULL;
+
   if (runprog)
     {
-      char *envvar;
-      char **args;
       int i;
 
       envvar = malloc (strlen ("DBUS_SESSION_BUS_ADDRESS=") +
@@ -701,11 +702,7 @@ pass_info (const char *runprog, const char *bus_address, pid_t bus_pid,
       args = malloc (sizeof (char *) * ((argc-remaining_args)+2));
 
       if (envvar == NULL || args == NULL)
-        {
-          free (envvar);
-          free (args);
-          goto oom;
-        }
+        goto oom;
 
      args[0] = xstrdup (runprog);
       if (!args[0])
@@ -741,6 +738,12 @@ pass_info (const char *runprog, const char *bus_address, pid_t bus_pid,
   close (2);
   exit (0);
 oom:
+  if (envvar)
+    free (envvar);
+
+  if (args)
+    free (args);
+
   fprintf (stderr, "Out of memory!");
   exit (1);
 }
