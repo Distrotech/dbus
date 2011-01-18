@@ -1438,6 +1438,7 @@ _dbus_listen_tcp_socket (const char     *host,
       dbus_set_error (error, _dbus_error_from_errno (errno),
                       "Failed to bind socket \"%s:%s\": %s",
                       host ? host : "*", port, _dbus_strerror (errno));
+      dbus_free (listen_fd);
       return -1;
     }
 
