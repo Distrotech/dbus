@@ -334,6 +334,8 @@ void
 test_server_shutdown (DBusLoop         *loop,
                       DBusServer       *server)
 {
+  dbus_server_disconnect (server);
+
   if (!dbus_server_set_watch_functions (server,
                                         NULL, NULL, NULL,
                                         NULL,
