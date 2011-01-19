@@ -302,7 +302,7 @@ AC_MSG_CHECKING([32-bit integer type])
 
 case 4 in
 $ac_cv_sizeof_short)
-  dbusint32=int
+  dbusint32=short
   ;;
 $ac_cv_sizeof_int)
   dbusint32=int
