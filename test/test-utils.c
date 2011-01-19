@@ -304,7 +304,7 @@ test_server_setup (DBusLoop      *loop,
                                         sd,
                                         serverdata_free))
     {
-      return FALSE;
+      goto nomem;
     }
 
   if (!dbus_server_set_timeout_functions (server,
@@ -313,7 +313,7 @@ test_server_setup (DBusLoop      *loop,
                                           NULL,
                                           sd, serverdata_free))
     {
-      return FALSE;
+      goto nomem;
     }   
   return TRUE;
 
