@@ -307,6 +307,10 @@ test_server_setup (DBusLoop      *loop,
       goto nomem;
     }
 
+  sd = serverdata_new (loop, server);
+  if (sd == NULL)
+    goto nomem;
+
   if (!dbus_server_set_timeout_functions (server,
                                           add_server_timeout,
                                           remove_server_timeout,
