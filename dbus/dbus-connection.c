@@ -3276,6 +3276,7 @@ reply_handler_timeout (void *data)
   DBusPendingCall *pending = data;
 
   connection = _dbus_pending_call_get_connection_and_lock (pending);
+  _dbus_connection_ref_unlocked (connection);
 
   _dbus_pending_call_queue_timeout_error_unlocked (pending, 
                                                    connection);
@@ -3288,6 +3289,7 @@ reply_handler_timeout (void *data)
 
   /* Unlocks, and calls out to user code */
   _dbus_connection_update_dispatch_status_and_unlock (connection, status);
+  dbus_connection_unref (connection);
   
   return TRUE;
 }

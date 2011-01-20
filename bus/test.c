@@ -76,12 +76,8 @@ client_timeout_callback (DBusTimeout   *timeout,
 {
   DBusConnection *connection = data;
 
-  dbus_connection_ref (connection);
-
   /* can return FALSE on OOM but we just let it fire again later */
   dbus_timeout_handle (timeout);
-
-  dbus_connection_unref (connection);
 }
 
 static dbus_bool_t
