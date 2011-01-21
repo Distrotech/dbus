@@ -129,6 +129,9 @@ _dbus_watch_unref (DBusWatch *watch)
   watch->refcount -= 1;
   if (watch->refcount == 0)
     {
+      if (watch->fd != -1)
+        _dbus_warn ("this watch should have been invalidated");
+
       dbus_watch_set_data (watch, NULL, NULL); /* call free_data_function */
 
       if (watch->free_handler_data_function)

@@ -290,7 +290,11 @@ _dbus_loop_remove_watch (DBusLoop          *loop,
                          void             *data)
 {
   DBusList *link;
-  
+
+  /* fd.o #33336: we want people to remove their watches before invalidating
+   * them */
+  _dbus_assert (dbus_watch_get_socket (watch) != -1);
+
   link = _dbus_list_get_first_link (&loop->callbacks);
   while (link != NULL)
     {
