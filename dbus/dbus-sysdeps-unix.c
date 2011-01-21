@@ -1660,7 +1660,11 @@ _dbus_read_credentials_socket  (int              client_fd,
 
   {
 #ifdef SO_PEERCRED
+#ifdef __OpenBSD__
+    struct sockpeercred cr;
+#else
     struct ucred cr;
+#endif
     int cr_len = sizeof (cr);
 
     if (getsockopt (client_fd, SOL_SOCKET, SO_PEERCRED, &cr, &cr_len) == 0 &&
