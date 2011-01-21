@@ -9,23 +9,12 @@ typedef struct
 } CData;
 
 static dbus_bool_t
-connection_watch_callback (DBusWatch     *watch,
-                           unsigned int   condition,
-                           void          *data)
-{
-  return dbus_watch_handle (watch, condition);
-}
-
-static dbus_bool_t
 add_watch (DBusWatch *watch,
 	   void      *data)
 {
   CData *cd = data;
 
-  return _dbus_loop_add_watch (cd->loop,
-                               watch,
-                               connection_watch_callback,
-                               cd, NULL);
+  return _dbus_loop_add_watch (cd->loop, watch);
 }
 
 static void
@@ -34,8 +23,7 @@ remove_watch (DBusWatch *watch,
 {
   CData *cd = data;
   
-  _dbus_loop_remove_watch (cd->loop,
-                           watch, connection_watch_callback, cd);  
+  _dbus_loop_remove_watch (cd->loop, watch);
 }
 
 static dbus_bool_t
@@ -216,27 +204,12 @@ serverdata_new (DBusLoop       *loop,
 }
 
 static dbus_bool_t
-server_watch_callback (DBusWatch     *watch,
-                       unsigned int   condition,
-                       void          *data)
-{
-  /* FIXME this can be done in dbus-mainloop.c
-   * if the code in activation.c for the babysitter
-   * watch handler is fixed.
-   */
-
-  return dbus_watch_handle (watch, condition);
-}
-
-static dbus_bool_t
 add_server_watch (DBusWatch  *watch,
                   void       *data)
 {
   ServerData *context = data;
 
-  return _dbus_loop_add_watch (context->loop,
-                               watch, server_watch_callback, context,
-                               NULL);
+  return _dbus_loop_add_watch (context->loop, watch);
 }
 
 static void
@@ -245,8 +218,7 @@ remove_server_watch (DBusWatch  *watch,
 {
   ServerData *context = data;
   
-  _dbus_loop_remove_watch (context->loop,
-                           watch, server_watch_callback, context);
+  _dbus_loop_remove_watch (context->loop, watch);
 }
 
 static dbus_bool_t

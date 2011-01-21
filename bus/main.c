@@ -220,14 +220,6 @@ handle_reload_watch (DBusWatch    *watch,
   return TRUE;
 }
 
-static dbus_bool_t
-reload_watch_callback (DBusWatch    *watch,
-		       unsigned int  condition,
-		       void         *data)
-{
-  return dbus_watch_handle (watch, condition);
-}
-
 static void
 setup_reload_pipe (DBusLoop *loop)
 {
@@ -257,8 +249,7 @@ setup_reload_pipe (DBusLoop *loop)
       exit (1);
     }
 
-  if (!_dbus_loop_add_watch (loop, watch, reload_watch_callback,
-			     NULL, NULL))
+  if (!_dbus_loop_add_watch (loop, watch))
     {
       _dbus_warn ("Unable to add reload watch to main loop: %s\n",
 		  error.message);
@@ -271,8 +262,7 @@ setup_reload_pipe (DBusLoop *loop)
 static void
 close_reload_pipe (DBusWatch **watch)
 {
-    _dbus_loop_remove_watch (bus_context_get_loop (context),
-        *watch, reload_watch_callback, NULL);
+    _dbus_loop_remove_watch (bus_context_get_loop (context), *watch);
     _dbus_watch_invalidate (*watch);
     _dbus_watch_unref (*watch);
     *watch = NULL;

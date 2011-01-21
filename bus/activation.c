@@ -1427,9 +1427,9 @@ add_babysitter_watch (DBusWatch      *watch,
 {
   BusPendingActivation *pending_activation = data;
 
-  return _dbus_loop_add_watch (bus_context_get_loop (pending_activation->activation->context),
-                               watch, babysitter_watch_callback, pending_activation,
-                               NULL);
+  return _dbus_loop_add_watch_full (
+      bus_context_get_loop (pending_activation->activation->context),
+      watch, babysitter_watch_callback, pending_activation, NULL);
 }
 
 static void
@@ -1439,7 +1439,7 @@ remove_babysitter_watch (DBusWatch      *watch,
   BusPendingActivation *pending_activation = data;
 
   _dbus_loop_remove_watch (bus_context_get_loop (pending_activation->activation->context),
-                           watch, babysitter_watch_callback, pending_activation);
+                           watch);
 }
 
 static dbus_bool_t

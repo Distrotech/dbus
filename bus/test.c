@@ -37,27 +37,12 @@ static DBusList *clients = NULL;
 static DBusLoop *client_loop = NULL;
 
 static dbus_bool_t
-client_watch_callback (DBusWatch     *watch,
-                       unsigned int   condition,
-                       void          *data)
-{
-  /* FIXME this can be done in dbus-mainloop.c
-   * if the code in activation.c for the babysitter
-   * watch handler is fixed.
-   */
-
-  return dbus_watch_handle (watch, condition);
-}
-
-static dbus_bool_t
 add_client_watch (DBusWatch      *watch,
                   void           *data)
 {
   DBusConnection *connection = data;
 
-  return _dbus_loop_add_watch (client_loop,
-                               watch, client_watch_callback, connection,
-                               NULL);
+  return _dbus_loop_add_watch (client_loop, watch);
 }
 
 static void
@@ -66,8 +51,7 @@ remove_client_watch (DBusWatch      *watch,
 {
   DBusConnection *connection = data;
 
-  _dbus_loop_remove_watch (client_loop,
-                           watch, client_watch_callback, connection);
+  _dbus_loop_remove_watch (client_loop, watch);
 }
 
 static dbus_bool_t

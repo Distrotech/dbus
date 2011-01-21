@@ -254,11 +254,18 @@ _dbus_loop_unref (DBusLoop *loop)
 }
 
 dbus_bool_t
-_dbus_loop_add_watch (DBusLoop          *loop,
-                      DBusWatch        *watch,
-                      DBusWatchFunction  function,
-                      void             *data,
-                      DBusFreeFunction  free_data_func)
+_dbus_loop_add_watch (DBusLoop  *loop,
+                      DBusWatch *watch)
+{
+  return _dbus_loop_add_watch_full (loop, watch, NULL, NULL, NULL);
+}
+
+dbus_bool_t
+_dbus_loop_add_watch_full (DBusLoop          *loop,
+                           DBusWatch         *watch,
+                           DBusWatchFunction  function,
+                           void              *data,
+                           DBusFreeFunction   free_data_func)
 {
   WatchCallback *wcb;
 
@@ -277,10 +284,8 @@ _dbus_loop_add_watch (DBusLoop          *loop,
 }
 
 void
-_dbus_loop_remove_watch (DBusLoop          *loop,
-                         DBusWatch        *watch,
-                         DBusWatchFunction  function,
-                         void             *data)
+_dbus_loop_remove_watch (DBusLoop         *loop,
+                         DBusWatch        *watch)
 {
   DBusList *link;
 
@@ -295,9 +300,7 @@ _dbus_loop_remove_watch (DBusLoop          *loop,
       Callback *this = link->data;
 
       if (this->type == CALLBACK_WATCH &&
-          WATCH_CALLBACK (this)->watch == watch &&
-          WATCH_CALLBACK (this)->data == data &&
-          WATCH_CALLBACK (this)->function == function)
+          WATCH_CALLBACK (this)->watch == watch)
         {
           remove_callback (loop, link);
           
@@ -307,8 +310,7 @@ _dbus_loop_remove_watch (DBusLoop          *loop,
       link = next;
     }
 
-  _dbus_warn ("could not find watch %p function %p data %p to remove\n",
-              watch, (void *)function, data);
+  _dbus_warn ("could not find watch %p to remove\n", watch);
 }
 
 dbus_bool_t
@@ -596,8 +598,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
             {
               _dbus_warn ("watch %p was invalidated but not removed; "
                   "removing it now\n", wcb->watch);
-              _dbus_loop_remove_watch (loop, wcb->watch, wcb->function,
-                  wcb->data);
+              _dbus_loop_remove_watch (loop, wcb->watch);
             }
           else if (dbus_watch_get_enabled (wcb->watch))
             {
@@ -807,7 +808,14 @@ _dbus_loop_iterate (DBusLoop     *loop,
               if (condition != 0 &&
                   dbus_watch_get_enabled (wcb->watch))
                 {
-                  if (!(* wcb->function) (wcb->watch, condition, wcb->data))
+                  dbus_bool_t oom;
+
+                  if (wcb->function)
+                    oom = !(* wcb->function) (wcb->watch, condition, wcb->data);
+                  else
+                    oom = !dbus_watch_handle (wcb->watch, condition);
+
+                  if (oom)
                     wcb->last_iteration_oom = TRUE;
 
 #if MAINLOOP_SPEW
@@ -824,8 +832,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
 
                   _dbus_warn ("invalid request, socket fd %d not open\n",
                       fds[i].fd);
-                  _dbus_loop_remove_watch (loop, watch, wcb->function,
-                      wcb->data);
+                  _dbus_loop_remove_watch (loop, watch);
                   _dbus_watch_invalidate (watch);
                   _dbus_watch_unref (watch);
                 }

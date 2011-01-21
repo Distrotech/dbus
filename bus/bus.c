@@ -103,19 +103,6 @@ server_get_context (DBusServer *server)
 }
 
 static dbus_bool_t
-server_watch_callback (DBusWatch     *watch,
-                       unsigned int   condition,
-                       void          *data)
-{
-  /* FIXME this can be done in dbus-mainloop.c
-   * if the code in activation.c for the babysitter
-   * watch handler is fixed.
-   */
-
-  return dbus_watch_handle (watch, condition);
-}
-
-static dbus_bool_t
 add_server_watch (DBusWatch  *watch,
                   void       *data)
 {
@@ -124,9 +111,7 @@ add_server_watch (DBusWatch  *watch,
 
   context = server_get_context (server);
 
-  return _dbus_loop_add_watch (context->loop,
-                               watch, server_watch_callback, server,
-                               NULL);
+  return _dbus_loop_add_watch (context->loop, watch);
 }
 
 static void
@@ -138,8 +123,7 @@ remove_server_watch (DBusWatch  *watch,
 
   context = server_get_context (server);
 
-  _dbus_loop_remove_watch (context->loop,
-                           watch, server_watch_callback, server);
+  _dbus_loop_remove_watch (context->loop, watch);
 }
 
 static dbus_bool_t
