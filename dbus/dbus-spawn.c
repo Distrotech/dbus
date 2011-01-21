@@ -205,6 +205,9 @@ struct DBusBabysitter
   DBusWatch *error_watch; /**< Error pipe watch */
   DBusWatch *sitter_watch; /**< Sitter pipe watch */
 
+  DBusBabysitterFinishedFunc finished_cb;
+  void *finished_data;
+
   int errnum; /**< Error number */
   int status; /**< Exit status code */
   unsigned int have_child_status : 1; /**< True if child status has been reaped */
@@ -787,6 +790,13 @@ handle_watch (DBusWatch       *watch,
   _dbus_assert (sitter->socket_to_babysitter != -1 || sitter->sitter_watch == NULL);
   _dbus_assert (sitter->error_pipe_from_child != -1 || sitter->error_watch == NULL);
 
+  if (_dbus_babysitter_get_child_exited (sitter) &&
+      sitter->finished_cb != NULL)
+    {
+      sitter->finished_cb (sitter, sitter->finished_data);
+      sitter->finished_cb = NULL;
+    }
+
   _dbus_babysitter_unref (sitter);
   return TRUE;
 }
@@ -1296,6 +1306,15 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
     _dbus_babysitter_unref (sitter);
   
   return FALSE;
+}
+
+void
+_dbus_babysitter_set_result_function  (DBusBabysitter             *sitter,
+                                       DBusBabysitterFinishedFunc  finished,
+                                       void                       *user_data)
+{
+  sitter->finished_cb = finished;
+  sitter->finished_data = user_data;
 }
 
 /** @} */

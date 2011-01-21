@@ -81,6 +81,8 @@ struct DBusBabysitter
 
     DBusWatchList *watches;
     DBusWatch *sitter_watch;
+    DBusBabysitterFinishedFunc finished_cb;
+    void *finished_data;
 
     dbus_bool_t have_spawn_errno;
     int spawn_errno;
@@ -391,6 +393,13 @@ handle_watch (DBusWatch       *watch,
   PING();
   close_socket_to_babysitter (sitter);
   PING();
+
+  if (_dbus_babysitter_get_child_exited (sitter) &&
+      sitter->finished_cb != NULL)
+    {
+      sitter->finished_cb (sitter, sitter->finished_data);
+      sitter->finished_cb = NULL;
+    }
 
   return TRUE;
 }
@@ -733,6 +742,15 @@ out0:
   _dbus_babysitter_unref (sitter);
 
   return FALSE;
+}
+
+void
+_dbus_babysitter_set_result_function  (DBusBabysitter             *sitter,
+                                       DBusBabysitterFinishedFunc  finished,
+                                       void                       *user_data)
+{
+  sitter->finished_cb = finished;
+  sitter->finished_data = user_data;
 }
 
 #ifdef DBUS_BUILD_TESTS
