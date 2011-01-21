@@ -64,6 +64,36 @@ struct DBusLoop
   DBusList *need_dispatch;
 };
 
+static short
+watch_flags_to_poll_events (unsigned int flags)
+{
+  short events = 0;
+
+  if (flags & DBUS_WATCH_READABLE)
+    events |= _DBUS_POLLIN;
+  if (flags & DBUS_WATCH_WRITABLE)
+    events |= _DBUS_POLLOUT;
+
+  return events;
+}
+
+static unsigned int
+watch_flags_from_poll_revents (short revents)
+{
+  unsigned int condition = 0;
+
+  if (revents & _DBUS_POLLIN)
+    condition |= DBUS_WATCH_READABLE;
+  if (revents & _DBUS_POLLOUT)
+    condition |= DBUS_WATCH_WRITABLE;
+  if (revents & _DBUS_POLLHUP)
+    condition |= DBUS_WATCH_HANGUP;
+  if (revents & _DBUS_POLLERR)
+    condition |= DBUS_WATCH_ERROR;
+
+  return condition;
+}
+
 typedef enum
 {
   CALLBACK_WATCH,
@@ -587,11 +617,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
                   
               fds[n_fds].fd = fd;
               fds[n_fds].revents = 0;
-              fds[n_fds].events = 0;
-              if (flags & DBUS_WATCH_READABLE)
-                fds[n_fds].events |= _DBUS_POLLIN;
-              if (flags & DBUS_WATCH_WRITABLE)
-                fds[n_fds].events |= _DBUS_POLLOUT;
+              fds[n_fds].events = watch_flags_to_poll_events (flags);
 
 #if MAINLOOP_SPEW
               _dbus_verbose ("  polling watch on fd %d  %s\n",
@@ -767,16 +793,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
               unsigned int condition;
                   
               wcb = watches_for_fds[i];
-              
-              condition = 0;
-              if (fds[i].revents & _DBUS_POLLIN)
-                condition |= DBUS_WATCH_READABLE;
-              if (fds[i].revents & _DBUS_POLLOUT)
-                condition |= DBUS_WATCH_WRITABLE;
-              if (fds[i].revents & _DBUS_POLLHUP)
-                condition |= DBUS_WATCH_HANGUP;
-              if (fds[i].revents & _DBUS_POLLERR)
-                condition |= DBUS_WATCH_ERROR;
+              condition = watch_flags_from_poll_revents (fds[i].revents);
 
               /* condition may still be 0 if we got some
                * weird POLLFOO thing like POLLWRBAND
