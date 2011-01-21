@@ -38,22 +38,13 @@ remove_watch (DBusWatch *watch,
                            watch, connection_watch_callback, cd);  
 }
 
-static void
-connection_timeout_callback (DBusTimeout   *timeout,
-                             void          *data)
-{
-  /* Can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 static dbus_bool_t
 add_timeout (DBusTimeout *timeout,
 	     void        *data)
 {
   CData *cd = data;
 
-  return _dbus_loop_add_timeout (cd->loop,
-                                 timeout, connection_timeout_callback, cd, NULL);
+  return _dbus_loop_add_timeout (cd->loop, timeout);
 }
 
 static void
@@ -62,8 +53,7 @@ remove_timeout (DBusTimeout *timeout,
 {
   CData *cd = data;
 
-  _dbus_loop_remove_timeout (cd->loop,
-                             timeout, connection_timeout_callback, cd);
+  _dbus_loop_remove_timeout (cd->loop, timeout);
 }
 
 static void
@@ -259,22 +249,13 @@ remove_server_watch (DBusWatch  *watch,
                            watch, server_watch_callback, context);
 }
 
-static void
-server_timeout_callback (DBusTimeout   *timeout,
-                         void          *data)
-{
-  /* can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 static dbus_bool_t
 add_server_timeout (DBusTimeout *timeout,
                     void        *data)
 {
   ServerData *context = data;
 
-  return _dbus_loop_add_timeout (context->loop,
-                                 timeout, server_timeout_callback, context, NULL);
+  return _dbus_loop_add_timeout (context->loop, timeout);
 }
 
 static void
@@ -283,8 +264,7 @@ remove_server_timeout (DBusTimeout *timeout,
 {
   ServerData *context = data;
   
-  _dbus_loop_remove_timeout (context->loop,
-                             timeout, server_timeout_callback, context);
+  _dbus_loop_remove_timeout (context->loop, timeout);
 }
 
 dbus_bool_t

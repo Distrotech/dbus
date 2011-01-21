@@ -142,15 +142,6 @@ remove_server_watch (DBusWatch  *watch,
                            watch, server_watch_callback, server);
 }
 
-
-static void
-server_timeout_callback (DBusTimeout   *timeout,
-                         void          *data)
-{
-  /* can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 static dbus_bool_t
 add_server_timeout (DBusTimeout *timeout,
                     void        *data)
@@ -160,8 +151,7 @@ add_server_timeout (DBusTimeout *timeout,
 
   context = server_get_context (server);
 
-  return _dbus_loop_add_timeout (context->loop,
-                                 timeout, server_timeout_callback, server, NULL);
+  return _dbus_loop_add_timeout (context->loop, timeout);
 }
 
 static void
@@ -173,8 +163,7 @@ remove_server_timeout (DBusTimeout *timeout,
 
   context = server_get_context (server);
 
-  _dbus_loop_remove_timeout (context->loop,
-                             timeout, server_timeout_callback, server);
+  _dbus_loop_remove_timeout (context->loop, timeout);
 }
 
 static void

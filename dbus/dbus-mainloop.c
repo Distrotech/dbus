@@ -74,8 +74,6 @@ typedef struct
 {
   int refcount;
   CallbackType type;
-  void *data;
-  DBusFreeFunction free_data_func;
 } Callback;
 
 typedef struct
@@ -83,6 +81,8 @@ typedef struct
   Callback callback;
   DBusWatchFunction function;
   DBusWatch *watch;
+  void *data;
+  DBusFreeFunction free_data_func;
   /* last watch handle failed due to OOM */
   unsigned int last_iteration_oom : 1;
 } WatchCallback;
@@ -91,7 +91,6 @@ typedef struct
 {
   Callback callback;
   DBusTimeout *timeout;
-  DBusTimeoutFunction function;
   unsigned long last_tv_sec;
   unsigned long last_tv_usec;
 } TimeoutCallback;
@@ -116,17 +115,14 @@ watch_callback_new (DBusWatch         *watch,
   cb->last_iteration_oom = FALSE;
   cb->callback.refcount = 1;
   cb->callback.type = CALLBACK_WATCH;
-  cb->callback.data = data;
-  cb->callback.free_data_func = free_data_func;
+  cb->data = data;
+  cb->free_data_func = free_data_func;
   
   return cb;
 }
 
 static TimeoutCallback*
-timeout_callback_new (DBusTimeout         *timeout,
-                      DBusTimeoutFunction  function,
-                      void                *data,
-                      DBusFreeFunction     free_data_func)
+timeout_callback_new (DBusTimeout         *timeout)
 {
   TimeoutCallback *cb;
 
@@ -135,13 +131,10 @@ timeout_callback_new (DBusTimeout         *timeout,
     return NULL;
 
   cb->timeout = timeout;
-  cb->function = function;
   _dbus_get_current_time (&cb->last_tv_sec,
                           &cb->last_tv_usec);
   cb->callback.refcount = 1;    
   cb->callback.type = CALLBACK_TIMEOUT;
-  cb->callback.data = data;
-  cb->callback.free_data_func = free_data_func;
   
   return cb;
 }
@@ -165,8 +158,8 @@ callback_unref (Callback *cb)
 
   if (cb->refcount == 0)
     {
-      if (cb->free_data_func)
-        (* cb->free_data_func) (cb->data);
+      if (cb->type == CALLBACK_WATCH && WATCH_CALLBACK (cb)->free_data_func)
+        (WATCH_CALLBACK (cb)->free_data_func) (WATCH_CALLBACK (cb)->data);
       
       dbus_free (cb);
     }
@@ -275,7 +268,7 @@ _dbus_loop_add_watch (DBusLoop          *loop,
 
   if (!add_callback (loop, (Callback*) wcb))
     {
-      wcb->callback.free_data_func = NULL; /* don't want to have this side effect */
+      wcb->free_data_func = NULL; /* don't want to have this side effect */
       callback_unref ((Callback*) wcb);
       return FALSE;
     }
@@ -303,7 +296,7 @@ _dbus_loop_remove_watch (DBusLoop          *loop,
 
       if (this->type == CALLBACK_WATCH &&
           WATCH_CALLBACK (this)->watch == watch &&
-          this->data == data &&
+          WATCH_CALLBACK (this)->data == data &&
           WATCH_CALLBACK (this)->function == function)
         {
           remove_callback (loop, link);
@@ -319,21 +312,17 @@ _dbus_loop_remove_watch (DBusLoop          *loop,
 }
 
 dbus_bool_t
-_dbus_loop_add_timeout (DBusLoop            *loop,
-                        DBusTimeout        *timeout,
-                        DBusTimeoutFunction  function,
-                        void               *data,
-                        DBusFreeFunction    free_data_func)
+_dbus_loop_add_timeout (DBusLoop           *loop,
+                        DBusTimeout        *timeout)
 {
   TimeoutCallback *tcb;
 
-  tcb = timeout_callback_new (timeout, function, data, free_data_func);
+  tcb = timeout_callback_new (timeout);
   if (tcb == NULL)
     return FALSE;
 
   if (!add_callback (loop, (Callback*) tcb))
     {
-      tcb->callback.free_data_func = NULL; /* don't want to have this side effect */
       callback_unref ((Callback*) tcb);
       return FALSE;
     }
@@ -342,10 +331,8 @@ _dbus_loop_add_timeout (DBusLoop            *loop,
 }
 
 void
-_dbus_loop_remove_timeout (DBusLoop            *loop,
-                           DBusTimeout        *timeout,
-                           DBusTimeoutFunction  function,
-                           void               *data)
+_dbus_loop_remove_timeout (DBusLoop           *loop,
+                           DBusTimeout        *timeout)
 {
   DBusList *link;
   
@@ -356,9 +343,7 @@ _dbus_loop_remove_timeout (DBusLoop            *loop,
       Callback *this = link->data;
 
       if (this->type == CALLBACK_TIMEOUT &&
-          TIMEOUT_CALLBACK (this)->timeout == timeout &&
-          this->data == data &&
-          TIMEOUT_CALLBACK (this)->function == function)
+          TIMEOUT_CALLBACK (this)->timeout == timeout)
         {
           remove_callback (loop, link);
           
@@ -368,8 +353,7 @@ _dbus_loop_remove_timeout (DBusLoop            *loop,
       link = next;
     }
 
-  _dbus_warn ("could not find timeout %p function %p data %p to remove\n",
-              timeout, (void *)function, data);
+  _dbus_warn ("could not find timeout %p to remove\n", timeout);
 }
 
 /* Convolutions from GLib, there really must be a better way
@@ -613,7 +597,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
               _dbus_warn ("watch %p was invalidated but not removed; "
                   "removing it now\n", wcb->watch);
               _dbus_loop_remove_watch (loop, wcb->watch, wcb->function,
-                  ((Callback *)wcb)->data);
+                  wcb->data);
             }
           else if (dbus_watch_get_enabled (wcb->watch))
             {
@@ -758,9 +742,11 @@ _dbus_loop_iterate (DBusLoop     *loop,
 #if MAINLOOP_SPEW
                   _dbus_verbose ("  invoking timeout\n");
 #endif
-                  
-                  (* tcb->function) (tcb->timeout,
-                                     cb->data);
+
+                  /* can theoretically return FALSE on OOM, but we just
+                   * let it fire again later - in practice that's what
+                   * every wrapper callback in dbus-daemon used to do */
+                  dbus_timeout_handle (tcb->timeout);
 
                   retval = TRUE;
                 }
@@ -821,9 +807,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
               if (condition != 0 &&
                   dbus_watch_get_enabled (wcb->watch))
                 {
-                  if (!(* wcb->function) (wcb->watch,
-                                          condition,
-                                          ((Callback*)wcb)->data))
+                  if (!(* wcb->function) (wcb->watch, condition, wcb->data))
                     wcb->last_iteration_oom = TRUE;
 
 #if MAINLOOP_SPEW
@@ -841,7 +825,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
                   _dbus_warn ("invalid request, socket fd %d not open\n",
                       fds[i].fd);
                   _dbus_loop_remove_watch (loop, watch, wcb->function,
-                      ((Callback *)wcb)->data);
+                      wcb->data);
                   _dbus_watch_invalidate (watch);
                   _dbus_watch_unref (watch);
                 }

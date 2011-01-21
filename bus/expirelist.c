@@ -40,14 +40,6 @@ struct BusExpireList
 
 static dbus_bool_t expire_timeout_handler (void *data);
 
-static void
-call_timeout_callback (DBusTimeout   *timeout,
-                       void          *data)
-{
-  /* can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 BusExpireList*
 bus_expire_list_new (DBusLoop      *loop,
                      int            expire_after,
@@ -73,9 +65,7 @@ bus_expire_list_new (DBusLoop      *loop,
 
   _dbus_timeout_set_enabled (list->timeout, FALSE);
 
-  if (!_dbus_loop_add_timeout (list->loop,
-                               list->timeout,
-                               call_timeout_callback, NULL, NULL))
+  if (!_dbus_loop_add_timeout (list->loop, list->timeout))
     goto failed;
 
   return list;
@@ -94,8 +84,7 @@ bus_expire_list_free (BusExpireList *list)
 {
   _dbus_assert (list->items == NULL);
 
-  _dbus_loop_remove_timeout (list->loop, list->timeout,
-                             call_timeout_callback, NULL);
+  _dbus_loop_remove_timeout (list->loop, list->timeout);
 
   _dbus_timeout_unref (list->timeout);
 

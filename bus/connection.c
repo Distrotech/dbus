@@ -331,24 +331,13 @@ remove_connection_watch (DBusWatch      *watch,
                            watch, connection_watch_callback, connection);
 }
 
-static void
-connection_timeout_callback (DBusTimeout   *timeout,
-                             void          *data)
-{
-  /* DBusConnection *connection = data; */
-
-  /* can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 static dbus_bool_t
 add_connection_timeout (DBusTimeout    *timeout,
                         void           *data)
 {
   DBusConnection *connection = data;
   
-  return _dbus_loop_add_timeout (connection_get_loop (connection),
-                                 timeout, connection_timeout_callback, connection, NULL);
+  return _dbus_loop_add_timeout (connection_get_loop (connection), timeout);
 }
 
 static void
@@ -357,8 +346,7 @@ remove_connection_timeout (DBusTimeout    *timeout,
 {
   DBusConnection *connection = data;
   
-  _dbus_loop_remove_timeout (connection_get_loop (connection),
-                             timeout, connection_timeout_callback, connection);
+  _dbus_loop_remove_timeout (connection_get_loop (connection), timeout);
 }
 
 static void
@@ -460,8 +448,7 @@ bus_connections_new (BusContext *context)
     goto failed_4;
   
   if (!_dbus_loop_add_timeout (bus_context_get_loop (context),
-                               connections->expire_timeout,
-                               call_timeout_callback, NULL, NULL))
+                               connections->expire_timeout))
     goto failed_5;
   
   connections->refcount = 1;
@@ -532,8 +519,7 @@ bus_connections_unref (BusConnections *connections)
       bus_expire_list_free (connections->pending_replies);
       
       _dbus_loop_remove_timeout (bus_context_get_loop (connections->context),
-                                 connections->expire_timeout,
-                                 call_timeout_callback, NULL);
+                                 connections->expire_timeout);
       
       _dbus_timeout_unref (connections->expire_timeout);
       

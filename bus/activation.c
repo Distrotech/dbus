@@ -143,16 +143,6 @@ bus_pending_activation_entry_free (BusPendingActivationEntry *entry)
   dbus_free (entry);
 }
 
-static void
-handle_timeout_callback (DBusTimeout   *timeout,
-                         void          *data)
-{
-  BusPendingActivation *pending_activation = data;
-
-  while (!dbus_timeout_handle (pending_activation->timeout))
-    _dbus_wait_for_memory ();
-}
-
 static BusPendingActivation *
 bus_pending_activation_ref (BusPendingActivation *pending_activation)
 {
@@ -179,8 +169,7 @@ bus_pending_activation_unref (BusPendingActivation *pending_activation)
   if (pending_activation->timeout_added)
     {
       _dbus_loop_remove_timeout (bus_context_get_loop (pending_activation->activation->context),
-                                 pending_activation->timeout,
-                                 handle_timeout_callback, pending_activation);
+                                 pending_activation->timeout);
       pending_activation->timeout_added = FALSE;
     }
 
@@ -1860,10 +1849,7 @@ bus_activation_activate_service (BusActivation  *activation,
         }
 
       if (!_dbus_loop_add_timeout (bus_context_get_loop (activation->context),
-                                   pending_activation->timeout,
-                                   handle_timeout_callback,
-                                   pending_activation,
-                                   NULL))
+                                   pending_activation->timeout))
         {
           _dbus_verbose ("Failed to add timeout for pending activation\n");
 
