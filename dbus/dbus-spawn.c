@@ -257,6 +257,9 @@ _dbus_babysitter_ref (DBusBabysitter *sitter)
   return sitter;
 }
 
+static void close_socket_to_babysitter  (DBusBabysitter *sitter);
+static void close_error_pipe_from_child (DBusBabysitter *sitter);
+
 /**
  * Decrement the reference count on the babysitter object.
  * When the reference count of the babysitter object reaches
@@ -273,25 +276,17 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
   
   sitter->refcount -= 1;
   if (sitter->refcount == 0)
-    {      
-      if (sitter->socket_to_babysitter >= 0)
-        {
-          /* If we haven't forked other babysitters
-           * since this babysitter and socket were
-           * created then this close will cause the
-           * babysitter to wake up from poll with
-           * a hangup and then the babysitter will
-           * quit itself.
-           */
-          _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-          sitter->socket_to_babysitter = -1;
-        }
+    {
+      /* If we haven't forked other babysitters
+       * since this babysitter and socket were
+       * created then this close will cause the
+       * babysitter to wake up from poll with
+       * a hangup and then the babysitter will
+       * quit itself.
+       */
+      close_socket_to_babysitter (sitter);
 
-      if (sitter->error_pipe_from_child >= 0)
-        {
-          _dbus_close_socket (sitter->error_pipe_from_child, NULL);
-          sitter->error_pipe_from_child = -1;
-        }
+      close_error_pipe_from_child (sitter);
 
       if (sitter->sitter_pid > 0)
         {
@@ -341,21 +336,7 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
 
           sitter->sitter_pid = -1;
         }
-      
-      if (sitter->error_watch)
-        {
-          _dbus_watch_invalidate (sitter->error_watch);
-          _dbus_watch_unref (sitter->error_watch);
-          sitter->error_watch = NULL;
-        }
 
-      if (sitter->sitter_watch)
-        {
-          _dbus_watch_invalidate (sitter->sitter_watch);
-          _dbus_watch_unref (sitter->sitter_watch);
-          sitter->sitter_watch = NULL;
-        }
-      
       if (sitter->watches)
         _dbus_watch_list_free (sitter->watches);
 
@@ -476,16 +457,42 @@ static void
 close_socket_to_babysitter (DBusBabysitter *sitter)
 {
   _dbus_verbose ("Closing babysitter\n");
-  _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-  sitter->socket_to_babysitter = -1;
+
+  if (sitter->sitter_watch != NULL)
+    {
+      _dbus_assert (sitter->watches != NULL);
+      _dbus_watch_list_remove_watch (sitter->watches,  sitter->sitter_watch);
+      _dbus_watch_invalidate (sitter->sitter_watch);
+      _dbus_watch_unref (sitter->sitter_watch);
+      sitter->sitter_watch = NULL;
+    }
+
+  if (sitter->socket_to_babysitter >= 0)
+    {
+      _dbus_close_socket (sitter->socket_to_babysitter, NULL);
+      sitter->socket_to_babysitter = -1;
+    }
 }
 
 static void
 close_error_pipe_from_child (DBusBabysitter *sitter)
 {
   _dbus_verbose ("Closing child error\n");
-  _dbus_close_socket (sitter->error_pipe_from_child, NULL);
-  sitter->error_pipe_from_child = -1;
+
+  if (sitter->error_watch != NULL)
+    {
+      _dbus_assert (sitter->watches != NULL);
+      _dbus_watch_list_remove_watch (sitter->watches,  sitter->error_watch);
+      _dbus_watch_invalidate (sitter->error_watch);
+      _dbus_watch_unref (sitter->error_watch);
+      sitter->error_watch = NULL;
+    }
+
+  if (sitter->error_pipe_from_child >= 0)
+    {
+      _dbus_close_socket (sitter->error_pipe_from_child, NULL);
+      sitter->error_pipe_from_child = -1;
+    }
 }
 
 static void
@@ -752,7 +759,7 @@ handle_watch (DBusWatch       *watch,
               unsigned int     condition,
               void            *data)
 {
-  DBusBabysitter *sitter = data;
+  DBusBabysitter *sitter = _dbus_babysitter_ref (data);
   int revents;
   int fd;
   
@@ -775,31 +782,12 @@ handle_watch (DBusWatch       *watch,
          babysitter_iteration (sitter, FALSE))
     ;
 
-  /* Those might have closed the sockets we're watching. Before returning
-   * to the main loop, we must sort that out. */
+  /* fd.o #32992: if the handle_* methods closed their sockets, they previously
+   * didn't always remove the watches. Check that we don't regress. */
+  _dbus_assert (sitter->socket_to_babysitter != -1 || sitter->sitter_watch == NULL);
+  _dbus_assert (sitter->error_pipe_from_child != -1 || sitter->error_watch == NULL);
 
-  if (sitter->error_watch != NULL && sitter->error_pipe_from_child == -1)
-    {
-      _dbus_watch_invalidate (sitter->error_watch);
-
-      if (sitter->watches != NULL)
-        _dbus_watch_list_remove_watch (sitter->watches,  sitter->error_watch);
-
-      _dbus_watch_unref (sitter->error_watch);
-      sitter->error_watch = NULL;
-    }
-
-  if (sitter->sitter_watch != NULL && sitter->socket_to_babysitter == -1)
-    {
-      _dbus_watch_invalidate (sitter->sitter_watch);
-
-      if (sitter->watches != NULL)
-        _dbus_watch_list_remove_watch (sitter->watches,  sitter->sitter_watch);
-
-      _dbus_watch_unref (sitter->sitter_watch);
-      sitter->sitter_watch = NULL;
-    }
-
+  _dbus_babysitter_unref (sitter);
   return TRUE;
 }
 
@@ -1189,6 +1177,12 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
         
   if (!_dbus_watch_list_add_watch (sitter->watches,  sitter->error_watch))
     {
+      /* we need to free it early so the destructor won't try to remove it
+       * without it having been added, which DBusLoop doesn't allow */
+      _dbus_watch_invalidate (sitter->error_watch);
+      _dbus_watch_unref (sitter->error_watch);
+      sitter->error_watch = NULL;
+
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       goto cleanup_and_fail;
     }
@@ -1204,6 +1198,12 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
       
   if (!_dbus_watch_list_add_watch (sitter->watches,  sitter->sitter_watch))
     {
+      /* we need to free it early so the destructor won't try to remove it
+       * without it having been added, which DBusLoop doesn't allow */
+      _dbus_watch_invalidate (sitter->sitter_watch);
+      _dbus_watch_unref (sitter->sitter_watch);
+      sitter->sitter_watch = NULL;
+
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       goto cleanup_and_fail;
     }

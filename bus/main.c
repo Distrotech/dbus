@@ -43,7 +43,8 @@ static int reload_pipe[2];
 #define RELOAD_READ_END 0
 #define RELOAD_WRITE_END 1
 
-static void close_reload_pipe (void);
+static void close_reload_pipe (DBusWatch **);
+static void close_reload_pipe_write (void);
 
 static void
 signal_handler (int sig)
@@ -64,7 +65,7 @@ signal_handler (int sig)
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
             _dbus_warn ("Unable to write to reload pipe.\n");
-            close_reload_pipe ();
+            close_reload_pipe_write ();
           }
       }
       break;
@@ -178,7 +179,7 @@ handle_reload_watch (DBusWatch    *watch,
       _dbus_read_socket (reload_pipe[RELOAD_READ_END], &str, 1) != 1)
     {
       _dbus_warn ("Couldn't read from reload pipe.\n");
-      close_reload_pipe ();
+      close_reload_pipe (&watch);
       return TRUE;
     }
   _dbus_string_free (&str);
@@ -249,11 +250,24 @@ setup_reload_pipe (DBusLoop *loop)
 }
 
 static void
-close_reload_pipe (void)
+close_reload_pipe (DBusWatch **watch)
 {
+    _dbus_loop_remove_watch (bus_context_get_loop (context),
+        *watch, reload_watch_callback, NULL);
+    _dbus_watch_invalidate (*watch);
+    _dbus_watch_unref (*watch);
+    *watch = NULL;
+
     _dbus_close_socket (reload_pipe[RELOAD_READ_END], NULL);
     reload_pipe[RELOAD_READ_END] = -1;
 
+    close_reload_pipe_write ();
+}
+
+/* this is the only bit that's safe to do from an async signal handler */
+static void
+close_reload_pipe_write (void)
+{
     _dbus_close_socket (reload_pipe[RELOAD_WRITE_END], NULL);
     reload_pipe[RELOAD_WRITE_END] = -1;
 }

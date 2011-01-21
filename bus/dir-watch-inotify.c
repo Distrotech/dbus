@@ -204,16 +204,18 @@ _shutdown_inotify (void *data)
 
   _set_watched_dirs_internal (&empty);
 
-  close (inotify_fd);
-  inotify_fd = -1;
   if (watch != NULL)
     {
       _dbus_loop_remove_watch (loop, watch, _inotify_watch_callback, NULL);
+      _dbus_watch_invalidate (watch);
       _dbus_watch_unref (watch);
       _dbus_loop_unref (loop);
     }
   watch = NULL;
   loop = NULL;
+
+  close (inotify_fd);
+  inotify_fd = -1;
 }
 
 static int

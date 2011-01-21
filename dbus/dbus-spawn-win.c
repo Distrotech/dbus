@@ -154,6 +154,27 @@ _dbus_babysitter_ref (DBusBabysitter *sitter)
   return sitter;
 }
 
+static void
+close_socket_to_babysitter (DBusBabysitter *sitter)
+{
+  _dbus_verbose ("Closing babysitter\n");
+
+  if (sitter->sitter_watch != NULL)
+    {
+      _dbus_assert (sitter->watches != NULL);
+      _dbus_watch_list_remove_watch (sitter->watches,  sitter->sitter_watch);
+      _dbus_watch_invalidate (sitter->sitter_watch);
+      _dbus_watch_unref (sitter->sitter_watch);
+      sitter->sitter_watch = NULL;
+    }
+
+  if (sitter->socket_to_babysitter != -1)
+    {
+      _dbus_close_socket (sitter->socket_to_babysitter, NULL);
+      sitter->socket_to_babysitter = -1;
+    }
+}
+
 /**
  * Decrement the reference count on the babysitter object.
  *
@@ -172,11 +193,7 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
 
   if (sitter->refcount == 0)
     {
-      if (sitter->socket_to_babysitter != -1)
-        {
-          _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-          sitter->socket_to_babysitter = -1;
-        }
+      close_socket_to_babysitter (sitter);
 
       if (sitter->socket_to_main != -1)
         {
@@ -372,9 +389,8 @@ handle_watch (DBusWatch       *watch,
    */
 
   PING();
-  _dbus_close_socket (sitter->socket_to_babysitter, NULL);
+  close_socket_to_babysitter (sitter);
   PING();
-  sitter->socket_to_babysitter = -1;
 
   return TRUE;
 }
@@ -668,6 +684,12 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
   PING();
   if (!_dbus_watch_list_add_watch (sitter->watches,  sitter->sitter_watch))
     {
+      /* we need to free it early so the destructor won't try to remove it
+       * without it having been added, which DBusLoop doesn't allow */
+      _dbus_watch_invalidate (sitter->sitter_watch);
+      _dbus_watch_unref (sitter->sitter_watch);
+      sitter->sitter_watch = NULL;
+
       _DBUS_SET_OOM (error);
       goto out0;
     }

@@ -236,6 +236,7 @@ socket_disconnect (DBusServer *server)
         {
           _dbus_server_remove_watch (server,
                                      socket_server->watch[i]);
+          _dbus_watch_invalidate (socket_server->watch[i]);
           _dbus_watch_unref (socket_server->watch[i]);
           socket_server->watch[i] = NULL;
         }

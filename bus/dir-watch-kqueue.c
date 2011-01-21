@@ -81,6 +81,7 @@ _handle_kqueue_watch (DBusWatch *watch, unsigned int flags, void *data)
       if (watch != NULL)
 	{
 	  _dbus_loop_remove_watch (loop, watch, _kqueue_watch_callback, NULL);
+          _dbus_watch_invalidate (watch);
           _dbus_watch_unref (watch);
 	  watch = NULL;
 	}
@@ -124,10 +125,11 @@ _init_kqueue (BusContext *context)
                                    NULL, NULL))
           {
             _dbus_warn ("Unable to add reload watch to main loop");
-	    close (kq);
-	    kq = -1;
+	    _dbus_watch_invalidate (watch);
 	    _dbus_watch_unref (watch);
 	    watch = NULL;
+	    close (kq);
+	    kq = -1;
             goto out;
 	  }
     }

@@ -832,11 +832,14 @@ _dbus_loop_iterate (DBusLoop     *loop,
 
               if (_DBUS_UNLIKELY (fds[i].revents & _DBUS_POLLNVAL))
                 {
+                  DBusWatch *watch = _dbus_watch_ref (wcb->watch);
+
                   _dbus_warn ("invalid request, socket fd %d not open\n",
                       fds[i].fd);
-                  _dbus_watch_invalidate (wcb->watch);
-                  _dbus_loop_remove_watch (loop, wcb->watch, wcb->function,
+                  _dbus_loop_remove_watch (loop, watch, wcb->function,
                       ((Callback *)wcb)->data);
+                  _dbus_watch_invalidate (watch);
+                  _dbus_watch_unref (watch);
                 }
             }
               
