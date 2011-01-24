@@ -95,21 +95,9 @@ watch_flags_from_poll_revents (short revents)
   return condition;
 }
 
-typedef enum
-{
-  CALLBACK_WATCH,
-  CALLBACK_TIMEOUT
-} CallbackType;
-
 typedef struct
 {
   int refcount;
-  CallbackType type;
-} Callback;
-
-typedef struct
-{
-  Callback callback;
   DBusTimeout *timeout;
   unsigned long last_tv_sec;
   unsigned long last_tv_usec;
@@ -129,14 +117,12 @@ timeout_callback_new (DBusTimeout         *timeout)
   cb->timeout = timeout;
   _dbus_get_current_time (&cb->last_tv_sec,
                           &cb->last_tv_usec);
-  cb->callback.refcount = 1;    
-  cb->callback.type = CALLBACK_TIMEOUT;
-  
+  cb->refcount = 1;
   return cb;
 }
 
-static Callback * 
-callback_ref (Callback *cb)
+static TimeoutCallback *
+timeout_callback_ref (TimeoutCallback *cb)
 {
   _dbus_assert (cb->refcount > 0);
   
@@ -146,7 +132,7 @@ callback_ref (Callback *cb)
 }
 
 static void
-callback_unref (Callback *cb)
+timeout_callback_unref (TimeoutCallback *cb)
 {
   _dbus_assert (cb->refcount > 0);
 
@@ -270,7 +256,7 @@ _dbus_loop_add_timeout (DBusLoop           *loop,
     }
   else
     {
-      callback_unref ((Callback*) tcb);
+      timeout_callback_unref (tcb);
       return FALSE;
     }
   
@@ -289,14 +275,12 @@ _dbus_loop_remove_timeout (DBusLoop           *loop,
       DBusList *next = _dbus_list_get_next_link (&loop->timeouts, link);
       TimeoutCallback *this = link->data;
 
-      _dbus_assert (this->callback.type == CALLBACK_TIMEOUT);
-
       if (this->timeout == timeout)
         {
           _dbus_list_remove_link (&loop->timeouts, link);
           loop->callback_list_serial += 1;
           loop->timeout_count -= 1;
-          callback_unref ((Callback *) this);
+          timeout_callback_unref (this);
 
           return;
         }
@@ -589,13 +573,10 @@ _dbus_loop_iterate (DBusLoop     *loop,
       while (link != NULL)
         {
           DBusList *next = _dbus_list_get_next_link (&loop->timeouts, link);
-          Callback *cb = link->data;
+          TimeoutCallback *tcb = link->data;
 
-          _dbus_assert (cb->type == CALLBACK_TIMEOUT);
-
-          if (dbus_timeout_get_enabled (TIMEOUT_CALLBACK (cb)->timeout))
+          if (dbus_timeout_get_enabled (tcb->timeout))
             {
-              TimeoutCallback *tcb = TIMEOUT_CALLBACK (cb);
               int msecs_remaining;
 
               check_timeout (tv_sec, tv_usec, tcb, &msecs_remaining);
@@ -661,7 +642,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
       while (link != NULL)
         {
           DBusList *next = _dbus_list_get_next_link (&loop->timeouts, link);
-          Callback *cb = link->data;
+          TimeoutCallback *tcb = link->data;
 
           if (initial_serial != loop->callback_list_serial)
             goto next_iteration;
@@ -669,11 +650,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
           if (loop->depth != orig_depth)
             goto next_iteration;
 
-          _dbus_assert (cb->type == CALLBACK_TIMEOUT);
-
-          if (dbus_timeout_get_enabled (TIMEOUT_CALLBACK (cb)->timeout))
+          if (dbus_timeout_get_enabled (tcb->timeout))
             {
-              TimeoutCallback *tcb = TIMEOUT_CALLBACK (cb);
               int msecs_remaining;
               
               if (check_timeout (tv_sec, tv_usec,
