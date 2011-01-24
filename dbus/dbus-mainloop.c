@@ -289,6 +289,13 @@ _dbus_loop_add_watch (DBusLoop  *loop,
 }
 
 void
+_dbus_loop_toggle_watch (DBusLoop          *loop,
+                         DBusWatch         *watch)
+{
+  /* stub */
+}
+
+void
 _dbus_loop_remove_watch (DBusLoop         *loop,
                          DBusWatch        *watch)
 {

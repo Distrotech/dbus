@@ -312,6 +312,15 @@ remove_connection_watch (DBusWatch      *watch,
   _dbus_loop_remove_watch (connection_get_loop (connection), watch);
 }
 
+static void
+toggle_connection_watch (DBusWatch      *watch,
+                         void           *data)
+{
+  DBusConnection *connection = data;
+
+  _dbus_loop_toggle_watch (connection_get_loop (connection), watch);
+}
+
 static dbus_bool_t
 add_connection_timeout (DBusTimeout    *timeout,
                         void           *data)
@@ -624,7 +633,7 @@ bus_connections_setup_connection (BusConnections *connections,
   if (!dbus_connection_set_watch_functions (connection,
                                             add_connection_watch,
                                             remove_connection_watch,
-                                            NULL,
+                                            toggle_connection_watch,
                                             connection,
                                             NULL))
     goto out;
