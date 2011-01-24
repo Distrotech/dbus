@@ -181,52 +181,6 @@ callback_unref (Callback *cb)
     }
 }
 
-static dbus_bool_t
-add_callback (DBusLoop  *loop,
-              DBusList **list,
-              Callback *cb)
-{
-
-  if (!_dbus_list_append (list, cb))
-    return FALSE;
-
-  loop->callback_list_serial += 1;
-
-  switch (cb->type)
-    {
-    case CALLBACK_WATCH:
-      loop->watch_count += 1;
-      break;
-    case CALLBACK_TIMEOUT:
-      loop->timeout_count += 1;
-      break;
-    }
-  
-  return TRUE;
-}
-
-static void
-remove_callback (DBusLoop  *loop,
-                 DBusList **list,
-                 DBusList *link)
-{
-  Callback *cb = link->data;
-  
-  switch (cb->type)
-    {
-    case CALLBACK_WATCH:
-      loop->watch_count -= 1;
-      break;
-    case CALLBACK_TIMEOUT:
-      loop->timeout_count -= 1;
-      break;
-    }
-  
-  callback_unref (cb);
-  _dbus_list_remove_link (list, link);
-  loop->callback_list_serial += 1;
-}
-
 DBusLoop*
 _dbus_loop_new (void)
 {
@@ -282,7 +236,12 @@ _dbus_loop_add_watch (DBusLoop  *loop,
   if (wcb == NULL)
     return FALSE;
 
-  if (!add_callback (loop, &loop->watches, (Callback*) wcb))
+  if (_dbus_list_append (&loop->watches, wcb))
+    {
+      loop->callback_list_serial += 1;
+      loop->watch_count += 1;
+    }
+  else
     {
       callback_unref ((Callback*) wcb);
       return FALSE;
@@ -311,7 +270,10 @@ _dbus_loop_remove_watch (DBusLoop         *loop,
 
       if (this->watch == watch)
         {
-          remove_callback (loop, &loop->watches, link);
+          _dbus_list_remove_link (&loop->watches, link);
+          loop->callback_list_serial += 1;
+          loop->watch_count -= 1;
+          callback_unref ((Callback *) this);
 
           return;
         }
@@ -332,7 +294,12 @@ _dbus_loop_add_timeout (DBusLoop           *loop,
   if (tcb == NULL)
     return FALSE;
 
-  if (!add_callback (loop, &loop->timeouts, (Callback*) tcb))
+  if (_dbus_list_append (&loop->timeouts, tcb))
+    {
+      loop->callback_list_serial += 1;
+      loop->timeout_count += 1;
+    }
+  else
     {
       callback_unref ((Callback*) tcb);
       return FALSE;
@@ -357,8 +324,11 @@ _dbus_loop_remove_timeout (DBusLoop           *loop,
 
       if (this->timeout == timeout)
         {
-          remove_callback (loop, &loop->timeouts, link);
-          
+          _dbus_list_remove_link (&loop->timeouts, link);
+          loop->callback_list_serial += 1;
+          loop->timeout_count -= 1;
+          callback_unref ((Callback *) this);
+
           return;
         }
       
