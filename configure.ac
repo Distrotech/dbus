@@ -999,6 +999,30 @@ fi
 
 AM_CONDITIONAL(DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX, test x$have_dnotify = xyes)
 
+AC_ARG_ENABLE([epoll],
+              [AS_HELP_STRING([--enable-epoll],[use epoll(4) on Linux])],
+              [enable_epoll=$enableval], [enable_epoll=auto])
+if test x$enable_epoll = xno; then
+    have_linux_epoll=no
+else
+    AC_MSG_CHECKING([for Linux epoll(4)])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM(
+        [
+        #ifndef __linux__
+        #error This is not Linux
+        #endif
+        #include <sys/epoll.h>
+        ],
+        [epoll_create1 (EPOLL_CLOEXEC);])],
+        [have_linux_epoll=yes],
+        [have_linux_epoll=no])
+    AC_MSG_RESULT([$have_linux_epoll])
+fi
+if test x$enable_epoll,$have_linux_epoll = xyes,no; then
+    AC_MSG_ERROR([epoll support explicitly enabled but not available])
+fi
+AM_CONDITIONAL([HAVE_LINUX_EPOLL], [test x$have_linux_epoll = xyes])
+
 # kqueue checks
 if test x$enable_kqueue = xno ; then
     have_kqueue=no
