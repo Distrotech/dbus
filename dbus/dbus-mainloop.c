@@ -111,8 +111,6 @@ typedef struct
 {
   Callback callback;
   DBusWatch *watch;
-  /* last watch handle failed due to OOM */
-  unsigned int last_iteration_oom : 1;
 } WatchCallback;
 
 typedef struct
@@ -136,7 +134,6 @@ watch_callback_new (DBusWatch         *watch)
     return NULL;
 
   cb->watch = watch;
-  cb->last_iteration_oom = FALSE;
   cb->callback.refcount = 1;
   cb->callback.type = CALLBACK_WATCH;
   
@@ -593,12 +590,12 @@ _dbus_loop_iterate (DBusLoop     *loop,
       wcb = WATCH_CALLBACK (cb);
       fd = dbus_watch_get_socket (wcb->watch);
 
-      if (wcb->last_iteration_oom)
+      if (_dbus_watch_get_oom_last_time (wcb->watch))
         {
           /* we skip this one this time, but reenable it next time,
            * and have a timeout on this iteration
            */
-          wcb->last_iteration_oom = FALSE;
+          _dbus_watch_set_oom_last_time (wcb->watch, FALSE);
           oom_watch_pending = TRUE;
 
           retval = TRUE; /* return TRUE here to keep the loop going,
@@ -817,11 +814,12 @@ _dbus_loop_iterate (DBusLoop     *loop,
                   oom = !dbus_watch_handle (wcb->watch, condition);
 
                   if (oom)
-                    wcb->last_iteration_oom = TRUE;
+                    {
+                      _dbus_watch_set_oom_last_time (wcb->watch, TRUE);
+                    }
 
 #if MAINLOOP_SPEW
-                  _dbus_verbose ("  Invoked watch, oom = %d\n",
-                                 wcb->last_iteration_oom);
+                  _dbus_verbose ("  Invoked watch, oom = %d\n", oom);
 #endif
                   
                   retval = TRUE;

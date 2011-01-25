@@ -76,6 +76,10 @@ void           _dbus_watch_list_toggle_watch  (DBusWatchList           *watch_li
                                                dbus_bool_t              enabled);
 dbus_bool_t    _dbus_watch_get_enabled        (DBusWatch              *watch);
 
+dbus_bool_t    _dbus_watch_get_oom_last_time  (DBusWatch               *watch);
+void           _dbus_watch_set_oom_last_time  (DBusWatch               *watch,
+                                               dbus_bool_t              oom);
+
 /** @} */
 
 DBUS_END_DECLS
