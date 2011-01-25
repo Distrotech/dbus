@@ -79,10 +79,7 @@ typedef struct
 typedef struct
 {
   Callback callback;
-  DBusWatchFunction function;
   DBusWatch *watch;
-  void *data;
-  DBusFreeFunction free_data_func;
   /* last watch handle failed due to OOM */
   unsigned int last_iteration_oom : 1;
 } WatchCallback;
@@ -99,10 +96,7 @@ typedef struct
 #define TIMEOUT_CALLBACK(callback) ((TimeoutCallback*)callback)
 
 static WatchCallback*
-watch_callback_new (DBusWatch         *watch,
-                    DBusWatchFunction  function,
-                    void              *data,
-                    DBusFreeFunction   free_data_func)
+watch_callback_new (DBusWatch         *watch)
 {
   WatchCallback *cb;
 
@@ -111,12 +105,9 @@ watch_callback_new (DBusWatch         *watch,
     return NULL;
 
   cb->watch = watch;
-  cb->function = function;
   cb->last_iteration_oom = FALSE;
   cb->callback.refcount = 1;
   cb->callback.type = CALLBACK_WATCH;
-  cb->data = data;
-  cb->free_data_func = free_data_func;
   
   return cb;
 }
@@ -158,9 +149,6 @@ callback_unref (Callback *cb)
 
   if (cb->refcount == 0)
     {
-      if (cb->type == CALLBACK_WATCH && WATCH_CALLBACK (cb)->free_data_func)
-        (WATCH_CALLBACK (cb)->free_data_func) (WATCH_CALLBACK (cb)->data);
-      
       dbus_free (cb);
     }
 }
@@ -257,25 +245,14 @@ dbus_bool_t
 _dbus_loop_add_watch (DBusLoop  *loop,
                       DBusWatch *watch)
 {
-  return _dbus_loop_add_watch_full (loop, watch, NULL, NULL, NULL);
-}
-
-dbus_bool_t
-_dbus_loop_add_watch_full (DBusLoop          *loop,
-                           DBusWatch         *watch,
-                           DBusWatchFunction  function,
-                           void              *data,
-                           DBusFreeFunction   free_data_func)
-{
   WatchCallback *wcb;
 
-  wcb = watch_callback_new (watch, function, data, free_data_func);
+  wcb = watch_callback_new (watch);
   if (wcb == NULL)
     return FALSE;
 
   if (!add_callback (loop, (Callback*) wcb))
     {
-      wcb->free_data_func = NULL; /* don't want to have this side effect */
       callback_unref ((Callback*) wcb);
       return FALSE;
     }
@@ -810,10 +787,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
                 {
                   dbus_bool_t oom;
 
-                  if (wcb->function)
-                    oom = !(* wcb->function) (wcb->watch, condition, wcb->data);
-                  else
-                    oom = !dbus_watch_handle (wcb->watch, condition);
+                  oom = !dbus_watch_handle (wcb->watch, condition);
 
                   if (oom)
                     wcb->last_iteration_oom = TRUE;

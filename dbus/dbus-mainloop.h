@@ -39,11 +39,6 @@ DBusLoop*   _dbus_loop_ref            (DBusLoop            *loop);
 void        _dbus_loop_unref          (DBusLoop            *loop);
 dbus_bool_t _dbus_loop_add_watch      (DBusLoop            *loop,
                                        DBusWatch           *watch);
-dbus_bool_t _dbus_loop_add_watch_full (DBusLoop            *loop,
-                                       DBusWatch           *watch,
-                                       DBusWatchFunction    function,
-                                       void                *data,
-                                       DBusFreeFunction     free_data_func);
 void        _dbus_loop_remove_watch   (DBusLoop            *loop,
                                        DBusWatch           *watch);
 dbus_bool_t _dbus_loop_add_timeout    (DBusLoop            *loop,
