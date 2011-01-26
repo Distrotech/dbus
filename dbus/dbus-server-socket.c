@@ -273,7 +273,7 @@ static const DBusServerVTable socket_vtable = {
  * @param fds list of file descriptors.
  * @param n_fds number of file descriptors
  * @param address the server's address
- * @param use_nonce whether to create and use a nonce for authentication
+ * @param noncefile to be used for authentication (NULL if not needed)
  * @returns the new server, or #NULL if no memory.
  *
  */
@@ -346,12 +346,6 @@ _dbus_server_new_for_socket (int              *fds,
 
   return (DBusServer*) socket_server;
 
- failed_3:
-  if (socket_server->noncefile)
-    {
-      _dbus_noncefile_delete (socket_server->noncefile, NULL);
-      dbus_free (socket_server->noncefile );
-    }
  failed_2:
   for (i = 0 ; i < n_fds ; i++)
     {
@@ -464,16 +458,18 @@ _dbus_server_new_for_tcp_socket (const char     *host,
       noncefile = dbus_new0 (DBusNonceFile, 1);
       if (noncefile == NULL)
         {
+          dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
           goto failed_2;
         }
 
-      if (!_dbus_noncefile_create (noncefile, NULL))
-          goto failed_2;
+      if (!_dbus_noncefile_create (noncefile, error))
+          goto failed_3;
 
       if (!_dbus_string_append (&address, ",noncefile=") ||
           !_dbus_address_append_escaped (&address, _dbus_noncefile_get_path (noncefile)))
         {
-          goto failed_2;
+          dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+          goto failed_4;
         }
 
     }
@@ -482,7 +478,7 @@ _dbus_server_new_for_tcp_socket (const char     *host,
   if (server == NULL)
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
-      goto failed_2;
+      goto failed_4;
     }
 
   _dbus_string_free (&port_str);
@@ -490,6 +486,12 @@ _dbus_server_new_for_tcp_socket (const char     *host,
   dbus_free(listen_fds);
 
   return server;
+
+ failed_4:
+  _dbus_noncefile_delete (noncefile, NULL);
+
+ failed_3:
+  dbus_free (noncefile);
 
  failed_2:
   for (i = 0 ; i < nlisten_fds ; i++)
