@@ -1307,11 +1307,10 @@ AC_SUBST(SECTION_FLAGS)
 AC_SUBST(SECTION_LDFLAGS)
 AC_MSG_RESULT($ac_gcsections)
 
-# Add -D_POSIX_PTHREAD_SEMANTICS if on Solaris
-#
 case $host_os in
     solaris*)
-       CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS" ;;
+        # Solaris' C library apparently needs these runes to be threadsafe...
+        CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
 esac
 
 changequote(,)dnl
