@@ -1231,6 +1231,9 @@ case $host_os in
     solaris*)
         # Solaris' C library apparently needs these runes to be threadsafe...
         CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
+        # ... and this opt-in to get file descriptor passing support
+        CFLAGS="$CFLAGS -D_XOPEN_SOURCE=500"
+        ;;
 esac
 
 ### Doxygen Documentation
