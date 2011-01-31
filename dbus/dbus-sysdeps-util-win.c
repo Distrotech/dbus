@@ -257,6 +257,11 @@ _dbus_change_to_daemon_user  (const char    *user,
 }
 
 void
+_dbus_request_file_descriptor_limit (unsigned int limit)
+{
+}
+
+void
 _dbus_init_system_log (void)
 {
     // FIXME!

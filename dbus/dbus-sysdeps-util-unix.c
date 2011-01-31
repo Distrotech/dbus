@@ -42,6 +42,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
 #include <grp.h>
 #include <sys/socket.h>
 #include <dirent.h>
@@ -368,6 +371,56 @@ _dbus_change_to_daemon_user  (const char    *user,
   return TRUE;
 }
 #endif /* !HAVE_LIBAUDIT */
+
+
+/**
+ * Attempt to ensure that the current process can open
+ * at least @limit file descriptors.
+ *
+ * If @limit is lower than the current, it will not be
+ * lowered.  No error is returned if the request can
+ * not be satisfied.
+ *
+ * @limit Number of file descriptors
+ */
+void
+_dbus_request_file_descriptor_limit (unsigned int limit)
+{
+#ifdef HAVE_SETRLIMIT
+  struct rlimit lim;
+  struct rlimit target_lim;
+  unsigned int current_limit;
+
+  /* No point to doing this practically speaking
+   * if we're not uid 0.  We expect the system
+   * bus to use this before we change UID, and
+   * the session bus takes the Linux default
+   * of 1024 for both cur and max.
+   */
+  if (getuid () != 0)
+    return;
+
+  if (getrlimit (RLIMIT_NOFILE, &lim) < 0)
+    return;
+
+  if (lim.rlim_cur >= limit)
+    return;
+
+  /* Ignore "maximum limit", assume we have the "superuser"
+   * privileges.  On Linux this is CAP_SYS_RESOURCE.
+   */
+  target_lim.rlim_cur = target_lim.rlim_max = limit;
+  /* Also ignore errors; if we fail, we will at least work
+   * up to whatever limit we had, which seems better than
+   * just outright aborting.
+   *
+   * However, in the future we should probably log this so OS builders
+   * have a chance to notice any misconfiguration like dbus-daemon
+   * being started without CAP_SYS_RESOURCE.
+   */
+  setrlimit (RLIMIT_NOFILE, &target_lim);
+#endif
+}
 
 void 
 _dbus_init_system_log (void)

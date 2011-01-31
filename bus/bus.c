@@ -644,6 +644,24 @@ oom:
   return FALSE;
 }
 
+static void
+raise_file_descriptor_limit (BusContext      *context)
+{
+
+  /* I just picked this out of thin air; we need some extra
+   * descriptors for things like any internal pipes we create,
+   * inotify, connections to SELinux, etc.
+   */
+  unsigned int arbitrary_extra_fds = 32;
+  unsigned int limit;
+
+  limit = context->limits.max_completed_connections +
+    context->limits.max_incomplete_connections
+    + arbitrary_extra_fds;
+
+  _dbus_request_file_descriptor_limit (limit);
+}
+
 static dbus_bool_t
 process_config_postinit (BusContext      *context,
 			 BusConfigParser *parser,
@@ -651,6 +669,8 @@ process_config_postinit (BusContext      *context,
 {
   DBusHashTable *service_context_table;
   DBusList *watched_dirs = NULL;
+
+  raise_file_descriptor_limit (context);
 
   service_context_table = bus_config_parser_steal_service_context_table (parser);
   if (!bus_registry_set_service_context_table (context->registry,

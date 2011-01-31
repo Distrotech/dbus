@@ -517,6 +517,8 @@ dbus_bool_t _dbus_change_to_daemon_user (const char *user,
 
 void _dbus_flush_caches (void);
 
+void _dbus_request_file_descriptor_limit (unsigned int limit);
+
 /*
  * replaces the term DBUS_PREFIX in configure_time_path by the
  * current dbus installation directory. On unix this function is a noop
