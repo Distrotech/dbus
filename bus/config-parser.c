@@ -2237,8 +2237,19 @@ include_dir (BusConfigParser   *parser,
         {
           if (!include_file (parser, &full_path, TRUE, error))
             {
-              _dbus_string_free (&full_path);
-              goto failed;
+              if (dbus_error_is_set (error))
+                {
+                  /* We log to syslog unconditionally here, because this is
+                   * the configuration parser, so we don't yet know whether
+                   * this bus is going to want to write to syslog! (There's
+                   * also some layer inversion going on, if we want to use
+                   * the bus context.) */
+                  _dbus_system_log (DBUS_SYSTEM_LOG_INFO,
+                                    "Encountered error '%s' while parsing '%s'\n",
+                                    error->message,
+                                    _dbus_string_get_const_data (&full_path));
+                  dbus_error_free (error);
+                }
             }
         }
 
