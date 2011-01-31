@@ -138,36 +138,9 @@ match_rule_to_string (BusMatchRule *rule)
   
   if (rule->flags & BUS_MATCH_MESSAGE_TYPE)
     {
-      if (rule->message_type == DBUS_MESSAGE_TYPE_INVALID)
-        {
-          if (!_dbus_string_append_printf (&str, "type='INVALID'"))
-            goto nomem;
-        }
-      else if (rule->message_type == DBUS_MESSAGE_TYPE_METHOD_CALL)
-        {
-          if (!_dbus_string_append_printf (&str, "type='method_call'"))
-            goto nomem;
-        }
-      else if (rule->message_type == DBUS_MESSAGE_TYPE_METHOD_RETURN)
-        {
-          if (!_dbus_string_append_printf (&str, "type='method_return'"))
-            goto nomem;
-        }
-      else if (rule->message_type == DBUS_MESSAGE_TYPE_ERROR)
-        {
-          if (!_dbus_string_append_printf (&str, "type='error'"))
-            goto nomem;
-        }
-      else if (rule->message_type == DBUS_MESSAGE_TYPE_SIGNAL)
-        {
-          if (!_dbus_string_append_printf (&str, "type='signal'"))
-            goto nomem;
-        }
-      else
-        {
-          if (!_dbus_string_append_printf (&str, "type='%d'", rule->message_type))
-            goto nomem;
-        }
+      if (!_dbus_string_append_printf (&str, "type='%s'",
+            dbus_message_type_to_string (rule->message_type)))
+        goto nomem;
     }
 
   if (rule->flags & BUS_MATCH_INTERFACE)
