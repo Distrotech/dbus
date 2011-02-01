@@ -33,3 +33,5 @@ config.h.in
 *.da
 *.gcov
 tags
+/dbus-1.*/
+/dbus-1.*.tar.*
