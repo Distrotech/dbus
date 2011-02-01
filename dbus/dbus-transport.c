@@ -30,6 +30,7 @@
 #include "dbus-auth.h"
 #include "dbus-address.h"
 #include "dbus-credentials.h"
+#include "dbus-mainloop.h"
 #include "dbus-message-private.h"
 #include "dbus-marshal-header.h"
 #ifdef DBUS_BUILD_TESTS
@@ -741,17 +742,6 @@ _dbus_transport_get_is_authenticated (DBusTransport *transport)
               _dbus_connection_unref_unlocked (transport->connection);
               return FALSE;
             }
-
-          if (transport->expected_guid == NULL)
-            {
-              transport->expected_guid = _dbus_strdup (server_guid);
-
-              if (transport->expected_guid == NULL)
-                {
-                  _dbus_verbose ("No memory to complete auth\n");
-                  return FALSE;
-                }
-            }
         }
 
       /* If we're the server, see if we want to allow this identity to proceed.
@@ -853,6 +843,8 @@ _dbus_transport_get_server_id (DBusTransport *transport)
 {
   if (transport->is_server)
     return NULL;
+  else if (transport->authenticated)
+    return _dbus_auth_get_guid_from_server (transport->auth);
   else
     return transport->expected_guid;
 }
