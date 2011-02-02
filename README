@@ -83,7 +83,7 @@ the ./configure program are these
   --enable-checks            include sanity checks on public API
   --enable-xml-docs          build XML documentation (requires xmlto)
   --enable-doxygen-docs      build DOXYGEN documentation (requires Doxygen)
-  --enable-gcov              compile with coverage profiling instrumentation (gcc only)
+  --enable-compiler-coverage compile with coverage profiling instrumentation (gcc only)
   --enable-abstract-sockets  use abstract socket namespace (linux only)
   --enable-selinux           build with SELinux support
   --enable-dnotify           build with dnotify support (linux only)

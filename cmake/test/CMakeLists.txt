@@ -52,10 +52,6 @@ set (test-sleep-forever_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-sleep-forever.c
 )
 
-set (decode_gcov_SOURCES
-    ${CMAKE_SOURCE_DIR}/../test/decode-gcov.c
-)
-
 add_executable(test-service ${test-service_SOURCES})
 target_link_libraries(test-service ${DBUS_INTERNAL_LIBRARIES})
 
@@ -80,9 +76,6 @@ target_link_libraries(test-segfault ${DBUS_INTERNAL_LIBRARIES})
 
 add_executable(test-sleep-forever ${test-sleep-forever_SOURCES})
 target_link_libraries(test-sleep-forever ${DBUS_INTERNAL_LIBRARIES})
-
-#add_executable(decode-gcov ${decode_gcov_SOURCES})
-#target_link_libraries(decode-gcov ${DBUS_INTERNAL_LIBRARIES})
 
 ### keep these in creation order, i.e. uppermost dirs first 
 set (TESTDIRS

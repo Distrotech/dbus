@@ -33,6 +33,11 @@ config.h.in
 *.bbg
 *.da
 *.gcov
+*.gcda
+*.gcno
 tags
 /dbus-1.*/
 /dbus-1.*.tar.*
+/lcov.html/
+/lcov.info
+/lcov.info.tmp

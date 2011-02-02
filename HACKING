@@ -289,10 +289,8 @@ is to add a test in here.
 
 "make check" runs all the deterministic test programs (i.e. not break-loader).
 
-"make check-coverage" is available if you configure with --enable-gcov and 
-gives a complete report on test suite coverage. You can also run 
-"test/decode-gcov foo.c" on any source file to get annotated source, 
-after running make check with a gcov-enabled tree.
+"make lcov-check" is available if you configure with --enable-compiler-coverage
+and gives a complete report on test suite coverage.
 
 Patches
 ===
