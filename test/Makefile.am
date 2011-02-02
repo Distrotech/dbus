@@ -115,8 +115,17 @@ dist-hook:
 	done ;									\
 	FILES=`(cd $(srcdir) && $(FIND_TESTS) -o -name "*.in" -a -not -name Makefile.in | grep -Ev "(.svn|CVS)" )` ;					\
         for F in $$FILES; do							\
-                echo '-- Disting file '$$F ;					\
-		cp -f $(srcdir)/$$F $(distdir)/$$F || exit 1 ;				\
+		B=`basename $$F`; \
+		if test -e $$F.in; then \
+			echo "-- Skipping file $$F (.in version exists)"; \
+		elif test "x$$B" = xrun-with-tmp-session-bus.conf; then \
+			echo "-- Skipping file $$F (generated)"; \
+		elif test -e "$(top_srcdir)/bus/$$B"; then \
+			echo "-- Skipping file $$F (from /bus/)"; \
+		else \
+			echo '-- Disting file '$$F ; \
+			cp -f $(srcdir)/$$F $(distdir)/$$F || exit 1; \
+		fi; \
 	done
 
 ## copy tests to builddir so that generated tests and static tests 
