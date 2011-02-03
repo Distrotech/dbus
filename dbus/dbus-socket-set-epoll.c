@@ -33,6 +33,7 @@
 #endif
 
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
 
@@ -78,6 +79,21 @@ _dbus_socket_set_epoll_new (void)
   self->parent.cls = &_dbus_socket_set_epoll_class;
 
   self->epfd = epoll_create1 (EPOLL_CLOEXEC);
+
+  if (self->epfd == -1)
+    {
+      int flags;
+
+      /* the size hint is ignored unless you have a rather old kernel,
+       * but must be positive on some versions, so just pick something
+       * arbitrary; it's a hint, not a limit */
+      self->epfd = epoll_create (42);
+
+      flags = fcntl (self->epfd, F_GETFD, 0);
+
+      if (flags != -1)
+        fcntl (self->epfd, F_SETFD, flags | FD_CLOEXEC);
+    }
 
   if (self->epfd == -1)
     {
@@ -252,8 +268,11 @@ socket_set_epoll_remove (DBusSocketSet  *set,
 {
   DBusSocketSetEpoll *self = socket_set_epoll_cast (set);
   int err;
+  /* Kernels < 2.6.9 require a non-NULL struct pointer, even though its
+   * contents are ignored */
+  struct epoll_event dummy = { 0 };
 
-  if (epoll_ctl (self->epfd, EPOLL_CTL_DEL, fd, NULL) == 0)
+  if (epoll_ctl (self->epfd, EPOLL_CTL_DEL, fd, &dummy) == 0)
     return;
 
   err = errno;

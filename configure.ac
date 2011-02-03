@@ -999,6 +999,9 @@ fi
 
 AM_CONDITIONAL(DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX, test x$have_dnotify = xyes)
 
+# For simplicity, we require the userland API for epoll_create1 at
+# compile-time (glibc 2.9), but we'll run on kernels that turn out
+# not to have it at runtime.
 AC_ARG_ENABLE([epoll],
               [AS_HELP_STRING([--enable-epoll],[use epoll(4) on Linux])],
               [enable_epoll=$enableval], [enable_epoll=auto])
