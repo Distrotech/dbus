@@ -125,7 +125,7 @@ dbusinclude_HEADERS=				\
 	dbus-types.h
 
 
-dbusarchinclude_HEADERS=			\
+nodist_dbusarchinclude_HEADERS=			\
 	dbus-arch-deps.h
 
 ### source code that goes in the installed client library
@@ -252,9 +252,8 @@ libdbus_internal_la_SOURCES=			\
 	$(DBUS_SHARED_SOURCES)			\
 	$(DBUS_UTIL_SOURCES)
 
-BUILT_SOURCES=$(dbusarchinclude_HEADERS)
+BUILT_SOURCES=$(nodist_dbusarchinclude_HEADERS)
 EXTRA_DIST=dbus-arch-deps.h.in
-
 
 ## this library is the same as libdbus, but exports all the symbols
 ## and is only used for static linking within the dbus package.
