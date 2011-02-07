@@ -167,15 +167,7 @@ dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *speci
 #endif
   
   run_test ("keyring", specific_test, _dbus_keyring_test);
-  
-#if 0
-  printf ("%s: running md5 tests\n", "dbus-test");
-  if (!_dbus_md5_test ())
-    die ("md5");
 
-  check_memleaks ();
-#endif
-  
   run_data_test ("sha", specific_test, _dbus_sha_test, test_data_dir);
   
   run_data_test ("auth", specific_test, _dbus_auth_test, test_data_dir);

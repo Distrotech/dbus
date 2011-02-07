@@ -57,10 +57,6 @@ set (DBUS_LIB_SOURCES
 	${DBUS_DIR}/dbus-transport.c
 	${DBUS_DIR}/dbus-transport-socket.c
 	${DBUS_DIR}/dbus-watch.c
-#dbus-md5.c
-#
-#  find a clean Windows implementation
-#  and move code to a *-win.c file
 )
 
 
@@ -103,7 +99,6 @@ set (DBUS_LIB_HEADERS
 	${DBUS_DIR}/dbus-transport-protected.h
 	${DBUS_DIR}/dbus-watch.h
 	${CMAKE_BINARY_DIR}/config.h
-##dbus-md5.h
 )
 if(UNIX)
 	set (DBUS_LIB_HEADERS ${DBUS_LIB_HEADERS} 
