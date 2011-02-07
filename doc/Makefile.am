@@ -1,10 +1,16 @@
-man_MANS = \
+# automake normally assumes that man pages are generated files;
+# these ones aren't, so we need the dist_ prefix to say that they're
+# their own source code
+dist_man1_MANS = \
 	dbus-cleanup-sockets.1 \
-	dbus-daemon.1 \
 	dbus-launch.1 \
 	dbus-monitor.1 \
 	dbus-send.1 \
 	dbus-uuidgen.1
+
+# on the other hand, this one is generated
+man1_MANS = \
+	dbus-daemon.1
 
 MAN_IN_FILES = dbus-daemon.1.in
 
@@ -35,7 +41,7 @@ STATIC_DOCS = \
 EXTRA_DIST = \
 	file-boilerplate.c \
 	$(STATIC_DOCS) \
-	$(MAN_IN_FILES) $(man_MANS)
+	$(MAN_IN_FILES)
 
 HTML_FILES=					\
 	dbus-faq.html				\
