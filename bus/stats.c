@@ -187,6 +187,7 @@ bus_stats_handle_get_stats (DBusConnection *connection,
   DBusMessage *reply = NULL;
   DBusMessageIter iter, arr_iter;
   static dbus_uint32_t stats_serial = 0;
+  dbus_uint32_t in_use, in_free_list, allocated;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -197,8 +198,40 @@ bus_stats_handle_get_stats (DBusConnection *connection,
   if (reply == NULL)
     goto oom;
 
+  /* Globals */
+
   if (!asv_add_uint32 (&iter, &arr_iter, "Serial", stats_serial++))
     goto oom;
+
+  _dbus_list_get_stats (&in_use, &in_free_list, &allocated);
+  if (!asv_add_uint32 (&iter, &arr_iter, "ListMemPoolUsedBytes", in_use) ||
+      !asv_add_uint32 (&iter, &arr_iter, "ListMemPoolCachedBytes",
+                       in_free_list) ||
+      !asv_add_uint32 (&iter, &arr_iter, "ListMemPoolAllocatedBytes",
+                       allocated))
+    goto oom;
+
+  /* Connections */
+
+  if (!asv_add_uint32 (&iter, &arr_iter, "ActiveConnections",
+        bus_connections_get_n_active (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "IncompleteConnections",
+        bus_connections_get_n_incomplete (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "MatchRules",
+        bus_connections_get_total_match_rules (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakMatchRules",
+        bus_connections_get_peak_match_rules (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakMatchRulesPerConnection",
+        bus_connections_get_peak_match_rules_per_conn (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "BusNames",
+        bus_connections_get_total_bus_names (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakBusNames",
+        bus_connections_get_peak_bus_names (connections)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakBusNamesPerConnection",
+        bus_connections_get_peak_bus_names_per_conn (connections)))
+    goto oom;
+
+  /* end */
 
   if (!close_asv_reply (&iter, &arr_iter))
     goto oom;
@@ -261,10 +294,36 @@ bus_stats_handle_get_connection_stats (DBusConnection *caller_connection,
   if (reply == NULL)
     goto oom;
 
+  /* Bus daemon per-connection stats */
+
   if (!asv_add_uint32 (&iter, &arr_iter, "Serial", stats_serial++) ||
+      !asv_add_uint32 (&iter, &arr_iter, "MatchRules",
+        bus_connection_get_n_match_rules (stats_connection)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakMatchRules",
+        bus_connection_get_peak_match_rules (stats_connection)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "BusNames",
+        bus_connection_get_n_services_owned (stats_connection)) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakBusNames",
+        bus_connection_get_peak_bus_names (stats_connection)) ||
       !asv_add_string (&iter, &arr_iter, "UniqueName",
         bus_connection_get_name (stats_connection)))
     goto oom;
+
+  /* DBusConnection per-connection stats */
+
+  _dbus_connection_get_stats (stats_connection,
+                              &in_messages, &in_bytes, &in_fds,
+                              &out_messages, &out_bytes, &out_fds);
+
+  if (!asv_add_uint32 (&iter, &arr_iter, "IncomingMessages", in_messages) ||
+      !asv_add_uint32 (&iter, &arr_iter, "IncomingBytes", in_bytes) ||
+      !asv_add_uint32 (&iter, &arr_iter, "IncomingFDs", in_fds) ||
+      !asv_add_uint32 (&iter, &arr_iter, "OutgoingMessages", out_messages) ||
+      !asv_add_uint32 (&iter, &arr_iter, "OutgoingBytes", out_bytes) ||
+      !asv_add_uint32 (&iter, &arr_iter, "OutgoingFDs", out_fds))
+    goto oom;
+
+  /* end */
 
   if (!close_asv_reply (&iter, &arr_iter))
     goto oom;
