@@ -6169,7 +6169,8 @@ _dbus_connection_get_stats (DBusConnection *connection,
                             dbus_uint32_t  *out_bytes,
                             dbus_uint32_t  *out_fds,
                             dbus_uint32_t  *out_peak_bytes,
-                            dbus_uint32_t  *out_peak_fds)
+                            dbus_uint32_t  *out_peak_fds,
+                            dbus_uint32_t  *link_cache_size)
 {
   CONNECTION_LOCK (connection);
 
@@ -6193,6 +6194,11 @@ _dbus_connection_get_stats (DBusConnection *connection,
 
   if (out_peak_fds != NULL)
     *out_peak_fds = _dbus_counter_get_peak_unix_fd_value (connection->outgoing_counter);
+
+  if (link_cache_size != NULL)
+    {
+      *link_cache_size = _dbus_list_get_length (&connection->link_cache) * sizeof (DBusList);
+    }
 
   CONNECTION_UNLOCK (connection);
 }
