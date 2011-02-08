@@ -73,6 +73,8 @@ BUS_SOURCES=					\
 	services.h				\
 	signals.c				\
 	signals.h				\
+	stats.c					\
+	stats.h					\
 	test.c					\
 	test.h					\
 	utils.c					\

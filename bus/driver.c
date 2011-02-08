@@ -30,6 +30,7 @@
 #include "services.h"
 #include "selinux.h"
 #include "signals.h"
+#include "stats.h"
 #include "utils.h"
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-internals.h>
@@ -1743,6 +1744,14 @@ static const MessageHandler introspectable_message_handlers[] = {
   { NULL, NULL, NULL, NULL }
 };
 
+#ifdef DBUS_ENABLE_STATS
+static const MessageHandler stats_message_handlers[] = {
+  { "GetStats", "", "a{sv}", bus_stats_handle_get_stats },
+  { "GetConnectionStats", "s", "a{sv}", bus_stats_handle_get_connection_stats },
+  { NULL, NULL, NULL, NULL }
+};
+#endif
+
 typedef struct {
   const char *name;
   const MessageHandler *message_handlers;
@@ -1765,6 +1774,9 @@ static InterfaceHandler interface_handlers[] = {
     "      <arg type=\"s\"/>\n"
     "    </signal>\n" },
   { DBUS_INTERFACE_INTROSPECTABLE, introspectable_message_handlers, NULL },
+#ifdef DBUS_ENABLE_STATS
+  { BUS_INTERFACE_STATS, stats_message_handlers, NULL },
+#endif
   { NULL, NULL, NULL }
 };
 
