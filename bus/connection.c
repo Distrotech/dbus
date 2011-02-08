@@ -62,6 +62,16 @@ struct BusConnections
   DBusTimeout *expire_timeout; /**< Timeout for expiring incomplete connections. */
   int stamp;                   /**< Incrementing number */
   BusExpireList *pending_replies; /**< List of pending replies */
+
+#ifdef DBUS_ENABLE_STATS
+  int total_match_rules;
+  int peak_match_rules;
+  int peak_match_rules_per_conn;
+
+  int total_bus_names;
+  int peak_bus_names;
+  int peak_bus_names_per_conn;
+#endif
 };
 
 static dbus_int32_t connection_data_slot = -1;
@@ -87,6 +97,11 @@ typedef struct
   long connection_tv_sec;  /**< Time when we connected (seconds component) */
   long connection_tv_usec; /**< Time when we connected (microsec component) */
   int stamp;               /**< connections->stamp last time we were traversed */
+
+#ifdef DBUS_ENABLE_STATS
+  int peak_match_rules;
+  int peak_bus_names;
+#endif
 } BusConnectionData;
 
 static dbus_bool_t bus_pending_reply_expired (BusExpireList *list,
@@ -1191,6 +1206,16 @@ bus_connection_send_oom_error (DBusConnection *connection,
   d->oom_preallocated = NULL;
 }
 
+#ifdef DBUS_ENABLE_STATS
+static void
+update_peak (int *peak,
+             int n)
+{
+  if (*peak < n)
+    *peak = n;
+}
+#endif
+
 void
 bus_connection_add_match_rule_link (DBusConnection *connection,
                                     DBusList       *link)
@@ -1203,6 +1228,15 @@ bus_connection_add_match_rule_link (DBusConnection *connection,
   _dbus_list_append_link (&d->match_rules, link);
 
   d->n_match_rules += 1;
+
+#ifdef DBUS_ENABLE_STATS
+  update_peak (&d->peak_match_rules, d->n_match_rules);
+  update_peak (&d->connections->peak_match_rules_per_conn, d->n_match_rules);
+
+  d->connections->total_match_rules += 1;
+  update_peak (&d->connections->peak_match_rules,
+               d->connections->total_match_rules);
+#endif
 }
 
 dbus_bool_t
@@ -1234,6 +1268,10 @@ bus_connection_remove_match_rule (DBusConnection *connection,
 
   d->n_match_rules -= 1;
   _dbus_assert (d->n_match_rules >= 0);
+
+#ifdef DBUS_ENABLE_STATS
+  d->connections->total_match_rules -= 1;
+#endif
 }
 
 int
@@ -1259,6 +1297,16 @@ bus_connection_add_owned_service_link (DBusConnection *connection,
   _dbus_list_append_link (&d->services_owned, link);
 
   d->n_services_owned += 1;
+
+#ifdef DBUS_ENABLE_STATS
+  update_peak (&d->peak_bus_names, d->n_services_owned);
+  update_peak (&d->connections->peak_bus_names_per_conn,
+               d->n_services_owned);
+
+  d->connections->total_bus_names += 1;
+  update_peak (&d->connections->peak_bus_names,
+               d->connections->total_bus_names);
+#endif
 }
 
 dbus_bool_t
@@ -1290,6 +1338,10 @@ bus_connection_remove_owned_service (DBusConnection *connection,
 
   d->n_services_owned -= 1;
   _dbus_assert (d->n_services_owned >= 0);
+
+#ifdef DBUS_ENABLE_STATS
+  d->connections->total_bus_names -= 1;
+#endif
 }
 
 int
@@ -2273,3 +2325,71 @@ bus_transaction_add_cancel_hook (BusTransaction               *transaction,
 
   return TRUE;
 }
+
+#ifdef DBUS_ENABLE_STATS
+int
+bus_connections_get_n_active (BusConnections *connections)
+{
+  return connections->n_completed;
+}
+
+int
+bus_connections_get_n_incomplete (BusConnections *connections)
+{
+  return connections->n_incomplete;
+}
+
+int
+bus_connections_get_total_match_rules (BusConnections *connections)
+{
+  return connections->total_match_rules;
+}
+
+int
+bus_connections_get_peak_match_rules (BusConnections *connections)
+{
+  return connections->peak_match_rules;
+}
+
+int
+bus_connections_get_peak_match_rules_per_conn (BusConnections *connections)
+{
+  return connections->peak_match_rules_per_conn;
+}
+
+int
+bus_connections_get_total_bus_names (BusConnections *connections)
+{
+  return connections->total_bus_names;
+}
+
+int
+bus_connections_get_peak_bus_names (BusConnections *connections)
+{
+  return connections->peak_bus_names;
+}
+
+int
+bus_connections_get_peak_bus_names_per_conn (BusConnections *connections)
+{
+  return connections->peak_bus_names_per_conn;
+}
+
+int
+bus_connection_get_peak_match_rules (DBusConnection *connection)
+{
+  BusConnectionData *d;
+
+  d = BUS_CONNECTION_DATA (connection);
+  return d->peak_match_rules;
+}
+
+int
+bus_connection_get_peak_bus_names (DBusConnection *connection)
+{
+  BusConnectionData *d;
+
+  d = BUS_CONNECTION_DATA (connection);
+  return d->peak_bus_names;
+}
+#endif /* DBUS_ENABLE_STATS */
