@@ -103,6 +103,15 @@ void              _dbus_connection_test_get_locks                 (DBusConnectio
                                                                    DBusCondVar **dispatch_cond_loc,
                                                                    DBusCondVar **io_path_cond_loc);
 
+/* if DBUS_ENABLE_STATS */
+void _dbus_connection_get_stats (DBusConnection *connection,
+                                 dbus_uint32_t  *in_messages,
+                                 dbus_uint32_t  *in_bytes,
+                                 dbus_uint32_t  *in_fds,
+                                 dbus_uint32_t  *out_messages,
+                                 dbus_uint32_t  *out_bytes,
+                                 dbus_uint32_t  *out_fds);
+
 /* This _dbus_bus_* stuff doesn't really belong here, but dbus-bus-internal.h seems
  * silly for one function
  */

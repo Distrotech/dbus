@@ -6157,6 +6157,36 @@ dbus_connection_get_outgoing_size (DBusConnection *connection)
   return res;
 }
 
+#ifdef DBUS_ENABLE_STATS
+void
+_dbus_connection_get_stats (DBusConnection *connection,
+                            dbus_uint32_t  *in_messages,
+                            dbus_uint32_t  *in_bytes,
+                            dbus_uint32_t  *in_fds,
+                            dbus_uint32_t  *out_messages,
+                            dbus_uint32_t  *out_bytes,
+                            dbus_uint32_t  *out_fds)
+{
+  CONNECTION_LOCK (connection);
+
+  if (in_messages != NULL)
+    *in_messages = connection->n_incoming;
+
+  _dbus_transport_get_stats (connection->transport, in_bytes, in_fds);
+
+  if (out_messages != NULL)
+    *out_messages = connection->n_outgoing;
+
+  if (out_bytes != NULL)
+    *out_bytes = _dbus_counter_get_size_value (connection->outgoing_counter);
+
+  if (out_fds != NULL)
+    *out_fds = _dbus_counter_get_unix_fd_value (connection->outgoing_counter);
+
+  CONNECTION_UNLOCK (connection);
+}
+#endif /* DBUS_ENABLE_STATS */
+
 /**
  * Gets the approximate number of uni fds of all messages in the
  * outgoing message queue.

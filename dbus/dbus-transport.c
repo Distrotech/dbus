@@ -1482,4 +1482,18 @@ _dbus_transport_set_allow_anonymous (DBusTransport              *transport,
   transport->allow_anonymous = value != FALSE;
 }
 
+#ifdef DBUS_ENABLE_STATS
+void
+_dbus_transport_get_stats (DBusTransport  *transport,
+                           dbus_uint32_t  *queue_bytes,
+                           dbus_uint32_t  *queue_fds)
+{
+  if (queue_bytes != NULL)
+    *queue_bytes = _dbus_counter_get_size_value (transport->live_messages);
+
+  if (queue_fds != NULL)
+    *queue_fds = _dbus_counter_get_unix_fd_value (transport->live_messages);
+}
+#endif /* DBUS_ENABLE_STATS */
+
 /** @} */
