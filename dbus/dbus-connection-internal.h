@@ -108,9 +108,13 @@ void _dbus_connection_get_stats (DBusConnection *connection,
                                  dbus_uint32_t  *in_messages,
                                  dbus_uint32_t  *in_bytes,
                                  dbus_uint32_t  *in_fds,
+                                 dbus_uint32_t  *in_peak_bytes,
+                                 dbus_uint32_t  *in_peak_fds,
                                  dbus_uint32_t  *out_messages,
                                  dbus_uint32_t  *out_bytes,
-                                 dbus_uint32_t  *out_fds);
+                                 dbus_uint32_t  *out_fds,
+                                 dbus_uint32_t  *out_peak_bytes,
+                                 dbus_uint32_t  *out_peak_fds);
 
 /* This _dbus_bus_* stuff doesn't really belong here, but dbus-bus-internal.h seems
  * silly for one function

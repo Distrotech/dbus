@@ -6163,16 +6163,21 @@ _dbus_connection_get_stats (DBusConnection *connection,
                             dbus_uint32_t  *in_messages,
                             dbus_uint32_t  *in_bytes,
                             dbus_uint32_t  *in_fds,
+                            dbus_uint32_t  *in_peak_bytes,
+                            dbus_uint32_t  *in_peak_fds,
                             dbus_uint32_t  *out_messages,
                             dbus_uint32_t  *out_bytes,
-                            dbus_uint32_t  *out_fds)
+                            dbus_uint32_t  *out_fds,
+                            dbus_uint32_t  *out_peak_bytes,
+                            dbus_uint32_t  *out_peak_fds)
 {
   CONNECTION_LOCK (connection);
 
   if (in_messages != NULL)
     *in_messages = connection->n_incoming;
 
-  _dbus_transport_get_stats (connection->transport, in_bytes, in_fds);
+  _dbus_transport_get_stats (connection->transport,
+                             in_bytes, in_fds, in_peak_bytes, in_peak_fds);
 
   if (out_messages != NULL)
     *out_messages = connection->n_outgoing;
@@ -6182,6 +6187,12 @@ _dbus_connection_get_stats (DBusConnection *connection,
 
   if (out_fds != NULL)
     *out_fds = _dbus_counter_get_unix_fd_value (connection->outgoing_counter);
+
+  if (out_peak_bytes != NULL)
+    *out_peak_bytes = _dbus_counter_get_peak_size_value (connection->outgoing_counter);
+
+  if (out_peak_fds != NULL)
+    *out_peak_fds = _dbus_counter_get_peak_unix_fd_value (connection->outgoing_counter);
 
   CONNECTION_UNLOCK (connection);
 }

@@ -1486,13 +1486,21 @@ _dbus_transport_set_allow_anonymous (DBusTransport              *transport,
 void
 _dbus_transport_get_stats (DBusTransport  *transport,
                            dbus_uint32_t  *queue_bytes,
-                           dbus_uint32_t  *queue_fds)
+                           dbus_uint32_t  *queue_fds,
+                           dbus_uint32_t  *peak_queue_bytes,
+                           dbus_uint32_t  *peak_queue_fds)
 {
   if (queue_bytes != NULL)
     *queue_bytes = _dbus_counter_get_size_value (transport->live_messages);
 
   if (queue_fds != NULL)
     *queue_fds = _dbus_counter_get_unix_fd_value (transport->live_messages);
+
+  if (peak_queue_bytes != NULL)
+    *peak_queue_bytes = _dbus_counter_get_peak_size_value (transport->live_messages);
+
+  if (peak_queue_fds != NULL)
+    *peak_queue_fds = _dbus_counter_get_peak_unix_fd_value (transport->live_messages);
 }
 #endif /* DBUS_ENABLE_STATS */
 

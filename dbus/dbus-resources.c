@@ -58,6 +58,11 @@ struct DBusCounter
   long size_value;       /**< current size counter value */
   long unix_fd_value;    /**< current unix fd counter value */
 
+#ifdef DBUS_ENABLE_STATS
+  long peak_size_value;     /**< largest ever size counter value */
+  long peak_unix_fd_value;  /**< largest ever unix fd counter value */
+#endif
+
   long notify_size_guard_value;    /**< call notify function when crossing this size value */
   long notify_unix_fd_guard_value; /**< call notify function when crossing this unix fd value */
 
@@ -90,6 +95,11 @@ _dbus_counter_new (void)
   counter->refcount = 1;
   counter->size_value = 0;
   counter->unix_fd_value = 0;
+
+#ifdef DBUS_ENABLE_STATS
+  counter->peak_size_value = 0;
+  counter->peak_unix_fd_value = 0;
+#endif
 
   counter->notify_size_guard_value = 0;
   counter->notify_unix_fd_guard_value = 0;
@@ -152,6 +162,11 @@ _dbus_counter_adjust_size (DBusCounter *counter,
 
   counter->size_value += delta;
 
+#ifdef DBUS_ENABLE_STATS
+  if (counter->peak_size_value < counter->size_value)
+    counter->peak_size_value = counter->size_value;
+#endif
+
 #if 0
   _dbus_verbose ("Adjusting counter %ld by %ld = %ld\n",
                  old, delta, counter->size_value);
@@ -181,6 +196,11 @@ _dbus_counter_adjust_unix_fd (DBusCounter *counter,
   long old = counter->unix_fd_value;
   
   counter->unix_fd_value += delta;
+
+#ifdef DBUS_ENABLE_STATS
+  if (counter->peak_unix_fd_value < counter->unix_fd_value)
+    counter->peak_unix_fd_value = counter->unix_fd_value;
+#endif
 
 #if 0
   _dbus_verbose ("Adjusting counter %ld by %ld = %ld\n",
@@ -242,5 +262,19 @@ _dbus_counter_set_notify (DBusCounter               *counter,
   counter->notify_function = function;
   counter->notify_data = user_data;
 }
+
+#ifdef DBUS_ENABLE_STATS
+long
+_dbus_counter_get_peak_size_value (DBusCounter *counter)
+{
+  return counter->peak_size_value;
+}
+
+long
+_dbus_counter_get_peak_unix_fd_value (DBusCounter *counter)
+{
+  return counter->peak_unix_fd_value;
+}
+#endif
 
 /** @} */  /* end of resource limits exported API */

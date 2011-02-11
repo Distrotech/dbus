@@ -261,8 +261,8 @@ bus_stats_handle_get_connection_stats (DBusConnection *caller_connection,
   DBusMessage *reply = NULL;
   DBusMessageIter iter, arr_iter;
   static dbus_uint32_t stats_serial = 0;
-  dbus_uint32_t in_messages, in_bytes, in_fds;
-  dbus_uint32_t out_messages, out_bytes, out_fds;
+  dbus_uint32_t in_messages, in_bytes, in_fds, in_peak_bytes, in_peak_fds;
+  dbus_uint32_t out_messages, out_bytes, out_fds, out_peak_bytes, out_peak_fds;
   BusRegistry *registry;
   BusService *service;
   DBusConnection *stats_connection;
@@ -313,14 +313,20 @@ bus_stats_handle_get_connection_stats (DBusConnection *caller_connection,
 
   _dbus_connection_get_stats (stats_connection,
                               &in_messages, &in_bytes, &in_fds,
-                              &out_messages, &out_bytes, &out_fds);
+                              &in_peak_bytes, &in_peak_fds,
+                              &out_messages, &out_bytes, &out_fds,
+                              &out_peak_bytes, &out_peak_fds);
 
   if (!asv_add_uint32 (&iter, &arr_iter, "IncomingMessages", in_messages) ||
       !asv_add_uint32 (&iter, &arr_iter, "IncomingBytes", in_bytes) ||
       !asv_add_uint32 (&iter, &arr_iter, "IncomingFDs", in_fds) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakIncomingBytes", in_peak_bytes) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakIncomingFDs", in_peak_fds) ||
       !asv_add_uint32 (&iter, &arr_iter, "OutgoingMessages", out_messages) ||
       !asv_add_uint32 (&iter, &arr_iter, "OutgoingBytes", out_bytes) ||
-      !asv_add_uint32 (&iter, &arr_iter, "OutgoingFDs", out_fds))
+      !asv_add_uint32 (&iter, &arr_iter, "OutgoingFDs", out_fds) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakOutgoingBytes", out_peak_bytes) ||
+      !asv_add_uint32 (&iter, &arr_iter, "PeakOutgoingFDs", out_peak_fds))
     goto oom;
 
   /* end */

@@ -51,6 +51,9 @@ void _dbus_counter_set_notify    (DBusCounter               *counter,
                                   DBusCounterNotifyFunction  function,
                                   void                      *user_data);
 
+/* if DBUS_ENABLE_STATS */
+long _dbus_counter_get_peak_size_value    (DBusCounter *counter);
+long _dbus_counter_get_peak_unix_fd_value (DBusCounter *counter);
 
 DBUS_END_DECLS
 
