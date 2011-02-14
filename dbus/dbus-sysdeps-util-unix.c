@@ -1058,11 +1058,11 @@ string_squash_nonprintable (DBusString *str)
   
   for (i = 0; i < len; i++)
     {
-	  unsigned char c = (unsigned char) buf[i];
+      unsigned char c = (unsigned char) buf[i];
       if (c == '\0')
-        c = ' ';
+        buf[i] = ' ';
       else if (c < 0x20 || c > 127)
-        c = '?';
+        buf[i] = '?';
     }
 }
 
@@ -1132,10 +1132,10 @@ _dbus_command_for_pid (unsigned long  pid,
     goto fail;
   
   string_squash_nonprintable (&cmdline);  
-  
+
   if (!_dbus_string_copy (&cmdline, 0, str, _dbus_string_get_length (str)))
     goto oom;
-  
+
   _dbus_string_free (&cmdline);  
   _dbus_string_free (&path);
   return TRUE;
