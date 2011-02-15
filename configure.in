@@ -1176,6 +1176,11 @@ if test "x$GCC" = "xyes"; then
   esac
 
   case " $CFLAGS " in
+  *[\ \	]-Wno-address[\ \	]*) ;;
+  *) CFLAGS="$CFLAGS -Wno-address" ;;
+  esac
+
+  case " $CFLAGS " in
   *[\ \	]-Wfloat-equal[\ \	]*) ;;
   *) if cc_supports_flag -Wfloat-equal; then
         CFLAGS="$CFLAGS -Wfloat-equal"
