@@ -1,3 +1,38 @@
+D-Bus 1.4.4 (UNRELEASED)
+==
+
+  • Switch back to using even micro versions for stable releases; 1.4.1
+    should have been called 1.4.2, so skip that version number
+  • Don't leave bad file descriptors being watched when spawning processes,
+    which could result in a busy-loop (fd.o #32992, NB#200248; possibly
+    also LP#656134, LP#680444, LP#713157)
+  • Check for MSG_NOSIGNAL correctly
+  • Fix failure to detect abstract socket support (fd.o #29895)
+  • Make _dbus_system_logv actually exit with DBUS_SYSTEM_LOG_FATAL
+    (fd.o #32262, NB#180486)
+  • Improve some error code paths (fd.o #29981, fd.o #32264, fd.o #32262,
+    fd.o #33128, fd.o #33277, fd.o #33126, NB#180486)
+  • Avoid possible symlink attacks in /tmp during compilation (fd.o #32854)
+  • Tidy up dead code (fd.o #25306, fd.o #33128, NB#180486)
+  • Improve gcc malloc annotations (fd.o #32710)
+  • If the system bus is launched via systemd, protect it from the OOM killer
+  • Documentation improvements (fd.o #11190)
+  • Avoid readdir_r, which is difficult to use correctly (fd.o #8284,
+    fd.o #15922, LP#241619)
+  • Cope with invalid files in session.d, system.d (fd.o #19186,
+    Debian #230231)
+  • Don't distribute generated files that embed our builddir (fd.o #30285)
+  • Raise the system bus's fd limit to be sufficient for its configuration
+    (fd.o #33474, LP#381063)
+  • Fix syslog string processing
+  • Ignore -Waddress
+  • Windows:
+    · avoid live-lock in Windows CE due to unfair condition variables
+  • OpenBSD:
+    · support credentials-passing (fd.o #32542)
+  • Solaris:
+    · opt-in to thread safety (fd.o #33464)
+
 D-Bus 1.4.1 (20 December 2010)
 ==
 
