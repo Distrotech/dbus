@@ -2515,6 +2515,37 @@ dbus_message_iter_append_basic (DBusMessageIter *iter,
   _dbus_return_val_if_fail (dbus_type_is_basic (type), FALSE);
   _dbus_return_val_if_fail (value != NULL, FALSE);
 
+#ifndef DBUS_DISABLE_CHECKS
+  switch (type)
+    {
+      const char * const *string_p;
+
+      case DBUS_TYPE_STRING:
+        string_p = value;
+        _dbus_return_val_if_fail (_dbus_check_is_valid_utf8 (*string_p), FALSE);
+        break;
+
+      case DBUS_TYPE_OBJECT_PATH:
+        string_p = value;
+        _dbus_return_val_if_fail (_dbus_check_is_valid_path (*string_p), FALSE);
+        break;
+
+      case DBUS_TYPE_SIGNATURE:
+        string_p = value;
+        _dbus_return_val_if_fail (_dbus_check_is_valid_signature (*string_p), FALSE);
+        break;
+
+      case DBUS_TYPE_BOOLEAN:
+        /* FIXME: strictly speaking we should ensure that it's in {0,1},
+         * but for now, fall through */
+
+      default:
+          {
+            /* nothing to check, all possible values are allowed */
+          }
+    }
+#endif
+
   if (!_dbus_message_iter_open_signature (real))
     return FALSE;
 
