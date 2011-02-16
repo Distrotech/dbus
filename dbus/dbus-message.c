@@ -40,6 +40,10 @@
 
 #include <string.h>
 
+#define _DBUS_TYPE_IS_STRINGLIKE(type) \
+  (type == DBUS_TYPE_STRING || type == DBUS_TYPE_SIGNATURE || \
+   type == DBUS_TYPE_OBJECT_PATH)
+
 static void dbus_message_finalize (DBusMessage *message);
 
 /**
@@ -887,9 +891,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
               _dbus_type_reader_read_fixed_multi (&array,
                                                   (void *) ptr, n_elements_p);
             }
-          else if (spec_element_type == DBUS_TYPE_STRING ||
-                   spec_element_type == DBUS_TYPE_SIGNATURE ||
-                   spec_element_type == DBUS_TYPE_OBJECT_PATH)
+          else if (_DBUS_TYPE_IS_STRINGLIKE (spec_element_type))
             {
               char ***str_array_p;
               int n_elements;
@@ -1799,9 +1801,7 @@ dbus_message_append_args_valist (DBusMessage *message,
                 goto failed;
               }
             }
-          else if (element_type == DBUS_TYPE_STRING ||
-                   element_type == DBUS_TYPE_SIGNATURE ||
-                   element_type == DBUS_TYPE_OBJECT_PATH)
+          else if (_DBUS_TYPE_IS_STRINGLIKE (element_type))
             {
               const char ***value_p;
               const char **value;
