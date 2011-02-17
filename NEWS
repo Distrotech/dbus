@@ -1,4 +1,10 @@
-D-Bus 1.4.4 (UNRELEASED)
+D-Bus 1.4.6 (2010-02-17)
+==
+
+  • Remove unfinished changes intended to support GTest-based tests,
+    which were mistakenly included in 1.4.4
+
+D-Bus 1.4.4 (2010-02-17)
 ==
 
   • Switch back to using even micro versions for stable releases; 1.4.1
