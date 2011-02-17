@@ -1,5 +1,7 @@
+Alban Crequy <alban.crequy@collabora.co.uk>
 Alexander Larsson <alexl@redhat.com>
 Anders Carlsson <andersca@codefactory.se>
+Andre Heinecke <aheinecke@intevation.de>
 Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Aurelien Jarno <aurel32@debian.org>
 Benjamin Reed <ranger@befunk.com>
@@ -7,12 +9,14 @@ Benjamin Reed <rangerrick@befunk.com>
 Benjamin Reed <ranger@Sin.local>
 Brian Cameron <brian.cameron@sun.com>
 Christian Dywan <christian.dywan@lanedo.com>
+Christian Dywan <christian@lanedo.com>
 Christian Ehrlicher <Ch.Ehrlicher@gmx.de>
 Christian Persch (GNOME) <chpe@gnome.org>
 Colin Walters <walters@lightbox.localdomain>
 Colin Walters <walters@space-ghost.verbum.private>
 Colin Walters <walters@verbum.org>
 Colin Watson <cjwatson@ubuntu.com>
+Cristian Rodríguez <cristian.rodriguez@opensuse.org>
 Cyril Brulebois <kibi@debian.org>
 Daniel P. Berrange <dan@berrange.com>
 Daniel Reed <djr@redhat.com>
@@ -44,6 +48,7 @@ Johannes Carlsson <johannes.carlsson.x@sonyericsson.com>
 John (J5) Palmieri <johnp@redhat.com>
 Jon Gosting <yukarionsen@gmail.com>
 Jon Trowbridge <trow@ximian.com>
+Kay Sievers <kay.sievers@vrfy.org>
 Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 Kjartan Maraas <kmaraas@gnome.org>
 Kristian Høgsberg <krh@redhat.com>
@@ -64,6 +69,7 @@ Michael Meeks <michael.meeks@novell.com>
 Michael Meeks <michael@ximian.com>
 Mikael Hallendal <micke@codefactory.se>
 Mikael Hallendal <micke@imendio.com>
+Mike McQuaid <mike@mikemcquaid.com>
 Miloslav Trmac <mitr@volny.cz>
 Murray Cumming <murrayc@murrayc.com>
 Nguyễn Thái Ngọc Duy <pclouds@gmail.com>
@@ -72,6 +78,7 @@ Olivier Andrieu <oliv__a@users.sourceforge.net>
 Oswald Buddenhagen <ossi@kde.org>
 Owen Fraser-Green <owen@discobabe.net>
 Patrick von Reth <patrick.vonreth@gmail.com>
+Pau Garcia i Quiles <pgquiles@elpauer.org>
 Paul Bolle <pebolle@tiscali.nl>
 Peter Breitenlohner <peb@mppmu.mpg.de>
 Peter Kümmel <syntheticpp@gmx.net>
@@ -82,6 +89,7 @@ Ralf Habacker <ralf.habacker@freenet.de>
 Ralf Habacker <Ralf.Habacker@freenet.de>
 Ralf Habacker <ralf@s15291359.onlinehome-server.info>
 Ray Strode <rstrode@redhat.com>
+Richard A. Hankins <richard.a.hankins@gmail.com>
 Richard Hughes <richard@hughsie.com>
 Richard Hult <rhult@codefactory.se>
 Richard Hult <richard@imendio.com>
@@ -96,6 +104,7 @@ Sebastian Sauer <sebsauer@kdab.net>
 Seth Nickell <seth@gnome.org>
 Simon McVittie <simon.mcvittie@collabora.co.uk>
 Sjoerd Simons <sjoerd@luon.net>
+Sledz <sledz@MOBIL-400-586.intern.dresearch.de>
 Thiago Macieira <thiago@kde.org>
 Tim Dijkstra <tim@famdijkstra.org>
 Tobias Mueller <fdo-bugs@cryptobitch.de>
@@ -108,5 +117,7 @@ unknown <Habacker@.(none)>
 Waldo Bastian <bastian@kde.org>
 William Lachance <wrlach@gmail.com>
 Will Thompson <will.thompson@collabora.co.uk>
+Wulf C. Krueger <philantrop@exherbo.org>
 Xan Lopez <xan@gnome.org>
+Yaakov Selkowitz <yselkowitz@users.sourceforge.net>
 Zack Rusin <zack@kde.org>

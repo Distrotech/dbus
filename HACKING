@@ -152,17 +152,13 @@ To make a release of D-Bus, do the following:
  - verify that the libtool versioning/library soname is 
    changed if it needs to be, or not changed if not
 
- - update the file NEWS based on the ChangeLog
+ - update the file NEWS based on the git history
 
- - update the AUTHORS file based on the ChangeLog
+ - update the AUTHORS file with "make update-authors" if necessary
 
- - add a ChangeLog entry containing the version number 
-   you're releasing ("Released 0.3" or something)
-   so people can see which changes were before and after
-   a given release
-
- - the version number should have major.minor.micro even
-   if micro is 0, i.e. "1.0.0" and "1.2.0" not "1.0"/"1.2"
+ - the version number should have major.minor.micro, even
+   if micro is 0, i.e. "1.0.0" and "1.2.0" not "1.0"/"1.2"; the micro
+   version should be even for releases, and odd for intermediate snapshots
 
  - "make distcheck" (DO NOT just "make dist" - pass the check!)
 
@@ -176,8 +172,8 @@ To make a release of D-Bus, do the following:
    then simply created an unsigned annotated tag:
    "git tag -a -m 'Released X.Y.Z' dbus-X.Y.Z".
 
- - bump the version number up in configure.in, and commit
-   it.  Make sure you do this *after* tagging the previous
+ - bump the version number up in configure.in (so the micro version is odd),
+   and commit it.  Make sure you do this *after* tagging the previous
    release! The idea is that git has a newer version number
    than anything released.
 
@@ -210,29 +206,21 @@ To make a release of D-Bus, do the following:
 After making a ".0" stable release
 ===
 
-After releasing, when you increment the version number in git, also
-move the ChangeLog to ChangeLog.pre-X-Y where X-Y is what you just
-released, e.g. ChangeLog.pre-1-0. Then create and cvs add a new empty
-ChangeLog. The last entry in ChangeLog.pre-1-0 should be the one about
-"Released 1.0". 
-
-Add ChangeLog.pre-X-Y to EXTRA_DIST in Makefile.am.
-
 We create a branch for each stable release; sometimes the branch is
 not done immediately, instead it's possible to wait until someone has
 a not-suitable-for-stable change they want to make and then branch to
 allow committing that change.
 
-The branch name should be dbus-X.Y-branch which is a branch that has
+The branch name should be dbus-X.Y which is a branch that has
 releases versioned X.Y.Z
 
 To branch:
-  git branch dbus-X.Y-branch
+  git branch dbus-X.Y
 and upload the branch tag to the server:
-  git-push origin dbus-X.Y-branch
+  git push origin dbus-X.Y
 
 To develop in this branch:
-  git-checkout dbus-X.Y-branch
+  git checkout dbus-X.Y
 
 Environment variables
 ===
