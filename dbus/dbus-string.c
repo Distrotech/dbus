@@ -1635,15 +1635,6 @@ _dbus_string_copy_len (const DBusString *source,
 /**
  * Replaces a segment of dest string with a segment of source string.
  *
- * @todo optimize the case where the two lengths are the same, and
- * avoid memmoving the data in the trailing part of the string twice.
- *
- * @todo avoid inserting the source into dest, then deleting
- * the replaced chunk of dest (which creates a potentially large
- * intermediate string). Instead, extend the replaced chunk
- * of dest with padding to the same size as the source chunk,
- * then copy in the source bytes.
- * 
  * @param source the source string
  * @param start where to start copying the source string
  * @param len length of segment to copy
@@ -1669,11 +1660,37 @@ _dbus_string_replace_len (const DBusString *source,
   _dbus_assert (replace_at <= real_dest->len);
   _dbus_assert (replace_len <= real_dest->len - replace_at);
 
-  if (!copy (real_source, start, len,
-             real_dest, replace_at))
-    return FALSE;
+  if (len == replace_len)
+    {
+      memmove (real_dest->str + replace_at,
+               real_source->str + start, len);
+    }
+  else if (len < replace_len)
+    {
+      memmove (real_dest->str + replace_at,
+               real_source->str + start, len);
+      delete (real_dest, replace_at + len,
+              replace_len - len);
+    }
+  else
+    {
+      int diff;
 
-  delete (real_dest, replace_at + len, replace_len);
+      _dbus_assert (len > replace_len);
+
+      diff = len - replace_len;
+
+      /* First of all we check if destination string can be enlarged as
+       * required, then we overwrite previous bytes
+       */
+
+      if (!copy (real_source, start + replace_len, diff,
+                 real_dest, replace_at + replace_len))
+        return FALSE;
+
+      memmove (real_dest->str + replace_at,
+               real_source->str + start, replace_len);
+    }
 
   return TRUE;
 }
