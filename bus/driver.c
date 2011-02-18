@@ -1644,11 +1644,7 @@ bus_driver_handle_get_id (DBusConnection *connection,
   return FALSE;
 }
 
-/* For speed it might be useful to sort this in order of
- * frequency of use (but doesn't matter with only a few items
- * anyhow)
- */
-static struct
+typedef struct
 {
   const char *name;
   const char *in_args;
@@ -1657,7 +1653,13 @@ static struct
                            BusTransaction *transaction,
                            DBusMessage    *message,
                            DBusError      *error);
-} message_handlers[] = {
+} MessageHandler;
+
+/* For speed it might be useful to sort this in order of
+ * frequency of use (but doesn't matter with only a few items
+ * anyhow)
+ */
+static const MessageHandler dbus_message_handlers[] = {
   { "Hello",
     "",
     DBUS_TYPE_STRING_AS_STRING,
@@ -1729,7 +1731,41 @@ static struct
   { "GetId",
     "",
     DBUS_TYPE_STRING_AS_STRING,
-    bus_driver_handle_get_id }
+    bus_driver_handle_get_id },
+  { NULL, NULL, NULL, NULL }
+};
+
+static dbus_bool_t bus_driver_handle_introspect (DBusConnection *,
+    BusTransaction *, DBusMessage *, DBusError *);
+
+static const MessageHandler introspectable_message_handlers[] = {
+  { "Introspect", "", DBUS_TYPE_STRING_AS_STRING, bus_driver_handle_introspect },
+  { NULL, NULL, NULL, NULL }
+};
+
+typedef struct {
+  const char *name;
+  const MessageHandler *message_handlers;
+  const char *extra_introspection;
+} InterfaceHandler;
+
+/* These should ideally be sorted by frequency of use, although it
+ * probably doesn't matter with this few items */
+static InterfaceHandler interface_handlers[] = {
+  { DBUS_INTERFACE_DBUS, dbus_message_handlers,
+    "    <signal name=\"NameOwnerChanged\">\n"
+    "      <arg type=\"s\"/>\n"
+    "      <arg type=\"s\"/>\n"
+    "      <arg type=\"s\"/>\n"
+    "    </signal>\n"
+    "    <signal name=\"NameLost\">\n"
+    "      <arg type=\"s\"/>\n"
+    "    </signal>\n"
+    "    <signal name=\"NameAcquired\">\n"
+    "      <arg type=\"s\"/>\n"
+    "    </signal>\n" },
+  { DBUS_INTERFACE_INTROSPECTABLE, introspectable_message_handlers, NULL },
+  { NULL, NULL, NULL }
 };
 
 static dbus_bool_t
@@ -1770,86 +1806,43 @@ write_args_for_direction (DBusString *xml,
 dbus_bool_t
 bus_driver_generate_introspect_string (DBusString *xml)
 {
-  int i;
+  const InterfaceHandler *ih;
+  const MessageHandler *mh;
 
   if (!_dbus_string_append (xml, DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE))
     return FALSE;
   if (!_dbus_string_append (xml, "<node>\n"))
     return FALSE;
-  if (!_dbus_string_append_printf (xml, "  <interface name=\"%s\">\n", DBUS_INTERFACE_INTROSPECTABLE))
-    return FALSE;
-  if (!_dbus_string_append (xml, "    <method name=\"Introspect\">\n"))
-    return FALSE;
-  if (!_dbus_string_append_printf (xml, "      <arg name=\"data\" direction=\"out\" type=\"%s\"/>\n", DBUS_TYPE_STRING_AS_STRING))
-    return FALSE;
-  if (!_dbus_string_append (xml, "    </method>\n"))
-    return FALSE;
-  if (!_dbus_string_append (xml, "  </interface>\n"))
-    return FALSE;
 
-  if (!_dbus_string_append_printf (xml, "  <interface name=\"%s\">\n",
-                                   DBUS_INTERFACE_DBUS))
-    return FALSE;
-
-  i = 0;
-  while (i < _DBUS_N_ELEMENTS (message_handlers))
+  for (ih = interface_handlers; ih->name != NULL; ih++)
     {
-
-      if (!_dbus_string_append_printf (xml, "    <method name=\"%s\">\n",
-                                       message_handlers[i].name))
+      if (!_dbus_string_append_printf (xml, "  <interface name=\"%s\">\n",
+                                       ih->name))
         return FALSE;
 
-      if (!write_args_for_direction (xml, message_handlers[i].in_args, TRUE))
-	return FALSE;
+      for (mh = ih->message_handlers; mh->name != NULL; mh++)
+        {
+          if (!_dbus_string_append_printf (xml, "    <method name=\"%s\">\n",
+                                           mh->name))
+            return FALSE;
 
-      if (!write_args_for_direction (xml, message_handlers[i].out_args, FALSE))
-	return FALSE;
+          if (!write_args_for_direction (xml, mh->in_args, TRUE))
+            return FALSE;
 
-      if (!_dbus_string_append (xml, "    </method>\n"))
-	return FALSE;
+          if (!write_args_for_direction (xml, mh->out_args, FALSE))
+            return FALSE;
 
-      ++i;
+          if (!_dbus_string_append (xml, "    </method>\n"))
+            return FALSE;
+        }
+
+      if (ih->extra_introspection != NULL &&
+          !_dbus_string_append (xml, ih->extra_introspection))
+        return FALSE;
+
+      if (!_dbus_string_append (xml, "  </interface>\n"))
+        return FALSE;
     }
-
-  if (!_dbus_string_append_printf (xml, "    <signal name=\"NameOwnerChanged\">\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "      <arg type=\"s\"/>\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "      <arg type=\"s\"/>\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "      <arg type=\"s\"/>\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "    </signal>\n"))
-    return FALSE;
-
-
-
-  if (!_dbus_string_append_printf (xml, "    <signal name=\"NameLost\">\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "      <arg type=\"s\"/>\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "    </signal>\n"))
-    return FALSE;
-
-
-
-  if (!_dbus_string_append_printf (xml, "    <signal name=\"NameAcquired\">\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "      <arg type=\"s\"/>\n"))
-    return FALSE;
-
-  if (!_dbus_string_append_printf (xml, "    </signal>\n"))
-    return FALSE;
-
-  if (!_dbus_string_append (xml, "  </interface>\n"))
-    return FALSE;
 
   if (!_dbus_string_append (xml, "</node>\n"))
     return FALSE;
@@ -1926,7 +1919,8 @@ bus_driver_handle_message (DBusConnection *connection,
                            DBusError      *error)
 {
   const char *name, *sender, *interface;
-  int i;
+  const InterfaceHandler *ih;
+  const MessageHandler *mh;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1944,27 +1938,13 @@ bus_driver_handle_message (DBusConnection *connection,
       return TRUE; /* we just ignore this */
     }
 
-  if (dbus_message_is_method_call (message,
-                                   DBUS_INTERFACE_INTROSPECTABLE,
-                                   "Introspect"))
-    return bus_driver_handle_introspect (connection, transaction, message, error);
-
+  /* may be NULL, which means "any interface will do" */
   interface = dbus_message_get_interface (message);
-  if (interface == NULL)
-    interface = DBUS_INTERFACE_DBUS;
 
   _dbus_assert (dbus_message_get_member (message) != NULL);
 
   name = dbus_message_get_member (message);
   sender = dbus_message_get_sender (message);
-
-  if (strcmp (interface,
-              DBUS_INTERFACE_DBUS) != 0)
-    {
-      _dbus_verbose ("Driver got message to unknown interface \"%s\"\n",
-                     interface);
-      goto unknown;
-    }
 
   _dbus_verbose ("Driver got a method call: %s\n",
 		 dbus_message_get_member (message));
@@ -1972,29 +1952,34 @@ bus_driver_handle_message (DBusConnection *connection,
   /* security checks should have kept this from getting here */
   _dbus_assert (sender != NULL || strcmp (name, "Hello") == 0);
 
-  i = 0;
-  while (i < _DBUS_N_ELEMENTS (message_handlers))
+  for (ih = interface_handlers; ih->name != NULL; ih++)
     {
-      if (strcmp (message_handlers[i].name, name) == 0)
+      if (interface != NULL && strcmp (interface, ih->name) != 0)
+        continue;
+
+      for (mh = ih->message_handlers; mh->name != NULL; mh++)
         {
+          if (strcmp (mh->name, name) != 0)
+            continue;
+
           _dbus_verbose ("Found driver handler for %s\n", name);
 
-          if (!dbus_message_has_signature (message, message_handlers[i].in_args))
+          if (!dbus_message_has_signature (message, mh->in_args))
             {
               _DBUS_ASSERT_ERROR_IS_CLEAR (error);
               _dbus_verbose ("Call to %s has wrong args (%s, expected %s)\n",
                              name, dbus_message_get_signature (message),
-                             message_handlers[i].in_args);
+                             mh->in_args);
 
               dbus_set_error (error, DBUS_ERROR_INVALID_ARGS,
                               "Call to %s has wrong args (%s, expected %s)\n",
                               name, dbus_message_get_signature (message),
-                              message_handlers[i].in_args);
+                              mh->in_args);
               _DBUS_ASSERT_ERROR_IS_SET (error);
               return FALSE;
             }
 
-          if ((* message_handlers[i].handler) (connection, transaction, message, error))
+          if ((* mh->handler) (connection, transaction, message, error))
             {
               _DBUS_ASSERT_ERROR_IS_CLEAR (error);
               _dbus_verbose ("Driver handler succeeded\n");
@@ -2007,8 +1992,6 @@ bus_driver_handle_message (DBusConnection *connection,
               return FALSE;
             }
         }
-
-      ++i;
     }
 
  unknown:
