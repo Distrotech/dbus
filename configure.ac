@@ -1224,30 +1224,6 @@ dnl block.
      ;;
   esac
 
-  case " $CFLAGS " in
-  *[\ \	]-fPIC[\ \	]*) ;;
-  *) if test x$dbus_win = xno && cc_supports_flag -fPIC; then
-        PIC_CFLAGS="-fPIC"
-        if ld_supports_flag -z,relro; then
-           PIC_LDFLAGS="-Wl,-z,relro"
-        fi
-     fi
-     ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-fPIE[\ \	]*) ;;
-  *) if test x$dbus_win = xno && cc_supports_flag -fPIE; then
-        PIE_CFLAGS="-fPIE"
-        if ld_supports_flag -z,relro; then
-           PIE_LDFLAGS="-pie -Wl,-z,relro"
-        else
-           PIE_LDFLAGS="-pie"
-        fi
-     fi
-     ;;
-  esac
-
   ### Disabled warnings, and compiler flag overrides
 
   # Let's just ignore unused for now
@@ -1302,11 +1278,6 @@ dnl block.
     esac
   fi
 fi]
-
-AC_SUBST(PIC_CFLAGS)
-AC_SUBST(PIC_LDFLAGS)
-AC_SUBST(PIE_CFLAGS)
-AC_SUBST(PIE_LDFLAGS)
 
 if ld_supports_flag --gc-sections; then
   SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"

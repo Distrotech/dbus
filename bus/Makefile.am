@@ -1,8 +1,9 @@
 configdir=$(sysconfdir)/dbus-1
 dbus_daemon_execdir = $(DBUS_DAEMONDIR)
 
-INCLUDES=-I$(top_srcdir) $(DBUS_BUS_CFLAGS) @PIE_CFLAGS@		\
-	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\"	\
+INCLUDES = -I$(top_srcdir) \
+	$(DBUS_BUS_CFLAGS) \
+	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
 	-DDBUS_COMPILATION
 
 EFENCE=
@@ -88,7 +89,7 @@ dbus_daemon_LDADD=					\
 	$(EFENCE)					\
 	$(DBUS_BUS_LIBS)
 
-dbus_daemon_LDFLAGS=@R_DYNAMIC_LDFLAG@ @SECTION_LDFLAGS@ @PIE_LDFLAGS@
+dbus_daemon_LDFLAGS=@R_DYNAMIC_LDFLAG@ @SECTION_LDFLAGS@
 
 LAUNCH_HELPER_SOURCES=				\
 	$(XML_SOURCES)				\
