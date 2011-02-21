@@ -1,7 +1,20 @@
 D-Bus 1.4.10 (UNRELEASED)
 ==
 
-...
+Notes for distributors:
+
+  This version of D-Bus no longer uses -fPIE by default. Distributions wishing
+  to harden the dbus-daemon and dbus-launch-helper can re-enable this if their
+  toolchain supports it reliably, via something like:
+
+    ./configure CFLAGS=-fPIE LDFLAGS="-pie -Wl,-z,relro"
+
+  or by using distribution-specific wrappers such as Debian's hardening-wrapper.
+
+Changes:
+
+  • Don't force -fPIE: distributions and libtool know better than we do whether
+    it's desirable (fd.o #16621, fd.o #27215; Simon McVittie)
 
 D-Bus 1.4.8 (2011-04-08)
 ==
