@@ -195,6 +195,11 @@ main (int argc,
   g_test_add ("/message/tcp", Fixture, "tcp:host=127.0.0.1", setup,
       test_message, teardown);
 
+  g_test_add ("/connect/nonce-tcp", Fixture, "nonce-tcp:host=127.0.0.1", setup,
+      test_connect, teardown);
+  g_test_add ("/message/nonce-tcp", Fixture, "nonce-tcp:host=127.0.0.1", setup,
+      test_message, teardown);
+
 #ifdef DBUS_UNIX
   g_test_add ("/connect/unix", Fixture, "unix:tmpdir=/tmp", setup,
       test_connect, teardown);
