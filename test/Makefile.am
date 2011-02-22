@@ -73,12 +73,20 @@ spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 EXTRA_DIST=
 
 modular_tests = \
-	test-loopback
+	test-loopback \
+	test-relay
 
 test_loopback_SOURCES = loopback.c
 test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_loopback_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_loopback_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_relay_SOURCES = relay.c
+test_relay_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_relay_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_relay_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 

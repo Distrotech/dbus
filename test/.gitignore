@@ -24,3 +24,4 @@ shell-test
 test-shell-service
 test-names
 test-loopback
+test-relay
