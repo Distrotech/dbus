@@ -152,6 +152,10 @@ test_message (Fixture *f,
   g_assert_cmpstr (dbus_message_get_signature (incoming), ==, "");
   g_assert_cmpstr (dbus_message_get_path (incoming), ==, "/com/example/Hello");
   g_assert_cmpuint (dbus_message_get_serial (incoming), ==, serial);
+
+  dbus_message_unref (incoming);
+
+  dbus_message_unref (outgoing);
 }
 
 static void
