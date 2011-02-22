@@ -434,13 +434,14 @@ internal_bus_get (DBusBusType  type,
   _dbus_return_val_if_fail (type >= 0 && type < N_BUS_TYPES, NULL);
   _dbus_return_val_if_error_is_set (error, NULL);
 
+  connection = NULL;
+
   _DBUS_LOCK (bus);
 
   if (!init_connections_unlocked ())
     {
-      _DBUS_UNLOCK (bus);
       _DBUS_SET_OOM (error);
-      return NULL;
+      goto out;
     }
 
   /* We want to use the activation address even if the
@@ -462,9 +463,7 @@ internal_bus_get (DBusBusType  type,
     {
       connection = bus_connections[type];
       dbus_connection_ref (connection);
-      
-      _DBUS_UNLOCK (bus);
-      return connection;
+      goto out;
     }
 
   address = bus_connection_addresses[address_type];
@@ -472,8 +471,7 @@ internal_bus_get (DBusBusType  type,
     {
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Unable to determine the address of the message bus (try 'man dbus-launch' and 'man dbus-daemon' for help)");
-      _DBUS_UNLOCK (bus);
-      return NULL;
+      goto out;
     }
 
   if (private)
@@ -483,19 +481,15 @@ internal_bus_get (DBusBusType  type,
   
   if (!connection)
     {
-      _DBUS_ASSERT_ERROR_IS_SET (error);
-      _DBUS_UNLOCK (bus);
-      return NULL;
+      goto out;
     }
 
   if (!dbus_bus_register (connection, error))
     {
-      _DBUS_ASSERT_ERROR_IS_SET (error);
       _dbus_connection_close_possibly_shared (connection);
       dbus_connection_unref (connection);
-
-      _DBUS_UNLOCK (bus);
-      return NULL;
+      connection = NULL;
+      goto out;
     }
 
   if (!private)
@@ -520,10 +514,12 @@ internal_bus_get (DBusBusType  type,
   bd->is_well_known = TRUE;
   _DBUS_UNLOCK (bus_datas);
 
-  
-  _DBUS_UNLOCK (bus);
+out:
+  /* Return a reference to the caller, or NULL with error set. */
+  if (connection == NULL)
+    _DBUS_ASSERT_ERROR_IS_SET (error);
 
-  /* Return a reference to the caller */
+  _DBUS_UNLOCK (bus);
   return connection;
 }
 
