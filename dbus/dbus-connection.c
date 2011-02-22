@@ -609,8 +609,8 @@ _dbus_connection_get_message_to_send (DBusConnection *connection)
  * @param message the message that was sent.
  */
 void
-_dbus_connection_message_sent (DBusConnection *connection,
-                               DBusMessage    *message)
+_dbus_connection_message_sent_unlocked (DBusConnection *connection,
+                                        DBusMessage    *message)
 {
   DBusList *link;
 
@@ -4143,7 +4143,7 @@ notify_disconnected_unlocked (DBusConnection *connection)
       
       while ((link = _dbus_list_get_last_link (&connection->outgoing_messages)))
         {
-          _dbus_connection_message_sent (connection, link->data);
+          _dbus_connection_message_sent_unlocked (connection, link->data);
         }
     } 
 }

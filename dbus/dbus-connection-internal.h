@@ -54,7 +54,7 @@ void              _dbus_connection_queue_received_message_link (DBusConnection  
                                                                 DBusList           *link);
 dbus_bool_t       _dbus_connection_has_messages_to_send_unlocked (DBusConnection     *connection);
 DBusMessage*      _dbus_connection_get_message_to_send         (DBusConnection     *connection);
-void              _dbus_connection_message_sent                (DBusConnection     *connection,
+void              _dbus_connection_message_sent_unlocked       (DBusConnection     *connection,
                                                                 DBusMessage        *message);
 dbus_bool_t       _dbus_connection_add_watch_unlocked          (DBusConnection     *connection,
                                                                 DBusWatch          *watch);
