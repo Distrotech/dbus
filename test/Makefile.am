@@ -52,7 +52,8 @@ test_segfault_SOURCES =				\
 test_sleep_forever_SOURCES =			\
 	test-sleep-forever.c
 
-# When any programs are not linked to libdbus-internal, fix this.
+# This assumes that most tests will be linked to libdbus-internal;
+# tests linked to only the public libdbus have their own CPPFLAGS.
 AM_CPPFLAGS=-DDBUS_STATIC_BUILD
 TEST_LIBS=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
 
@@ -70,6 +71,21 @@ spawn_test_LDADD=$(TEST_LIBS)
 spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 EXTRA_DIST=
+
+modular_tests = \
+	test-loopback
+
+test_loopback_SOURCES = loopback.c
+test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_loopback_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_loopback_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+if DBUS_ENABLE_MODULAR_TESTS
+noinst_PROGRAMS += $(modular_tests)
+TESTS += $(modular_tests)
+endif DBUS_ENABLE_MODULAR_TESTS
 
 ## keep these in creation order, i.e. uppermost dirs first 
 TESTDIRS=					\

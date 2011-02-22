@@ -23,3 +23,4 @@ decode-gcov
 shell-test
 test-shell-service
 test-names
+test-loopback
