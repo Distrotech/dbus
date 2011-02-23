@@ -254,6 +254,8 @@ _dbus_message_add_counter_link (DBusMessage  *message,
 #ifdef HAVE_UNIX_FD_PASSING
   _dbus_counter_adjust_unix_fd (link->data, message->unix_fd_counter_delta);
 #endif
+
+  _dbus_counter_notify (link->data);
 }
 
 /**
@@ -313,6 +315,7 @@ _dbus_message_remove_counter (DBusMessage  *message,
   _dbus_counter_adjust_unix_fd (counter, - message->unix_fd_counter_delta);
 #endif
 
+  _dbus_counter_notify (counter);
   _dbus_counter_unref (counter);
 }
 
@@ -575,6 +578,7 @@ free_counter (void *element,
   _dbus_counter_adjust_unix_fd (counter, - message->unix_fd_counter_delta);
 #endif
 
+  _dbus_counter_notify (counter);
   _dbus_counter_unref (counter);
 }
 

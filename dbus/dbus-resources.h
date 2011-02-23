@@ -42,6 +42,7 @@ void         _dbus_counter_adjust_size       (DBusCounter *counter,
                                               long         delta);
 void         _dbus_counter_adjust_unix_fd    (DBusCounter *counter,
                                               long         delta);
+void         _dbus_counter_notify            (DBusCounter *counter);
 long         _dbus_counter_get_size_value    (DBusCounter *counter);
 long         _dbus_counter_get_unix_fd_value (DBusCounter *counter);
 
