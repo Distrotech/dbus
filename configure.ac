@@ -1106,10 +1106,12 @@ cc_supports_flag() {
 
 ld_supports_flag() {
   AC_MSG_CHECKING([whether $LD supports "$@"])
-  AC_TRY_LINK([
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
     int one(void) { return 1; }
     int two(void) { return 2; }
-  ], [ two(); ] , [_ac_ld_flag_supported=yes], [_ac_ld_flag_supported=no])
+  ]], [[ two();  ]])],
+    [_ac_ld_flag_supported=yes],
+    [_ac_ld_flag_supported=no])
 
   if test "$_ac_ld_flag_supported" = "yes"; then
     rm -f conftest.c
