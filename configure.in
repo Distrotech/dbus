@@ -1295,11 +1295,6 @@ case $host_os in
         CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
 esac
 
-# compress spaces in flags
-CFLAGS=`echo "$CFLAGS" | sed -e 's/ +/ /g'`
-CXXFLAGS=`echo "$CXXFLAGS" | sed -e 's/ +/ /g'`
-CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/ +/ /g'`
-
 ### Doxygen Documentation
 
 AC_PATH_PROG(DOXYGEN, doxygen, no)
