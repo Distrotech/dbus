@@ -172,14 +172,14 @@ To make a release of D-Bus, do the following:
    then simply created an unsigned annotated tag:
    "git tag -a -m 'Released X.Y.Z' dbus-X.Y.Z".
 
- - bump the version number up in configure.in (so the micro version is odd),
+ - bump the version number up in configure.ac (so the micro version is odd),
    and commit it.  Make sure you do this *after* tagging the previous
    release! The idea is that git has a newer version number
    than anything released.
 
  - merge the branch you've released to the chronologically-later
    branch (usually "master"). You'll probably have to fix a merge
-   conflict in configure.in (the version number).
+   conflict in configure.ac (the version number).
 
  - push your changes and the tag to the central repository with
      git push origin master dbus-X.Y dbus-X.Y.Z
