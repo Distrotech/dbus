@@ -3502,29 +3502,6 @@ _dbus_get_standard_session_servicedirs (DBusList **dirs)
   xdg_data_home = _dbus_getenv ("XDG_DATA_HOME");
   xdg_data_dirs = _dbus_getenv ("XDG_DATA_DIRS");
 
-  if (xdg_data_dirs != NULL)
-    {
-      if (!_dbus_string_append (&servicedir_path, xdg_data_dirs))
-        goto oom;
-
-      if (!_dbus_string_append (&servicedir_path, ":"))
-        goto oom;
-    }
-  else
-    {
-      if (!_dbus_string_append (&servicedir_path, "/usr/local/share:/usr/share:"))
-        goto oom;
-    }
-
-  /*
-   * add configured datadir to defaults
-   * this may be the same as an xdg dir
-   * however the config parser should take
-   * care of duplicates
-   */
-  if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR":"))
-        goto oom;
-
   if (xdg_data_home != NULL)
     {
       if (!_dbus_string_append (&servicedir_path, xdg_data_home))
@@ -3545,6 +3522,32 @@ _dbus_get_standard_session_servicedirs (DBusList **dirs)
       if (!_dbus_concat_dir_and_file (&servicedir_path, &local_share))
         goto oom;
     }
+
+  if (!_dbus_string_append (&servicedir_path, ":"))
+    goto oom;
+
+  if (xdg_data_dirs != NULL)
+    {
+      if (!_dbus_string_append (&servicedir_path, xdg_data_dirs))
+        goto oom;
+
+      if (!_dbus_string_append (&servicedir_path, ":"))
+        goto oom;
+    }
+  else
+    {
+      if (!_dbus_string_append (&servicedir_path, "/usr/local/share:/usr/share:"))
+        goto oom;
+    }
+
+  /*
+   * add configured datadir to defaults
+   * this may be the same as an xdg dir
+   * however the config parser should take
+   * care of duplicates
+   */
+  if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR))
+    goto oom;
 
   if (!_dbus_split_paths_and_append (&servicedir_path,
                                      DBUS_UNIX_STANDARD_SESSION_SERVICEDIR,
