@@ -3253,10 +3253,10 @@ process_test_equiv_subdir (const DBusString *test_base_dir,
 static const char *test_session_service_dir_matches[] = 
         {
 #ifdef DBUS_UNIX
+         "/testhome/foo/.testlocal/testshare/dbus-1/services",
          "/testusr/testlocal/testshare/dbus-1/services",
          "/testusr/testshare/dbus-1/services",
          DBUS_DATADIR"/dbus-1/services",
-         "/testhome/foo/.testlocal/testshare/dbus-1/services",
 #endif
 /* will be filled in test_default_session_servicedirs() */
 #ifdef DBUS_WIN
