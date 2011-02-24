@@ -1,5 +1,5 @@
 dnl -*- mode: m4 -*-
-AC_PREREQ(2.52)
+AC_PREREQ([2.63])
 
 m4_define([dbus_major_version], [1])
 m4_define([dbus_minor_version], [4])
@@ -14,7 +14,7 @@ AC_LIBTOOL_RC
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.9 tar-ustar -Wno-portability])
+AM_INIT_AUTOMAKE([1.10 tar-ustar -Wno-portability])
 AM_CONFIG_HEADER(config.h)
 
 # Honor aclocal flags
