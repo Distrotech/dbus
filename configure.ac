@@ -629,19 +629,23 @@ AC_CHECK_DECLS([MSG_NOSIGNAL], [], [], [[ #include <sys/socket.h> ]])
 
 dnl check for flavours of varargs macros (test from GLib)
 AC_MSG_CHECKING(for ISO C99 varargs macros in C)
-AC_TRY_COMPILE([],[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 int a(int p1, int p2, int p3);
 #define call_a(...) a(1,__VA_ARGS__)
 call_a(2,3);
-],dbus_have_iso_c_varargs=yes,dbus_have_iso_c_varargs=no)
+]])],
+[dbus_have_iso_c_varargs=yes],
+[dbus_have_iso_c_varargs=no])
 AC_MSG_RESULT($dbus_have_iso_c_varargs)
 
 AC_MSG_CHECKING(for GNUC varargs macros)
-AC_TRY_COMPILE([],[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 int a(int p1, int p2, int p3);
 #define call_a(params...) a(1,params)
 call_a(2,3);
-],dbus_have_gnuc_varargs=yes,dbus_have_gnuc_varargs=no)
+]])],
+[dbus_have_gnuc_varargs=yes],
+[dbus_have_gnuc_varargs=no])
 AC_MSG_RESULT($dbus_have_gnuc_varargs)
 
 dnl Output varargs tests
