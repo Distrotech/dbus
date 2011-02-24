@@ -9,8 +9,6 @@ m4_define([dbus_version],
 AC_INIT([dbus],[dbus_version],[https://bugs.freedesktop.org/enter_bug.cgi?product=dbus],[dbus])
 
 AC_CANONICAL_HOST
-AC_LIBTOOL_WIN32_DLL
-AC_LIBTOOL_RC
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -73,6 +71,10 @@ AM_PROG_LIBTOOL
 AC_PROG_MKDIR_P
 COMPILER_COVERAGE
 COMPILER_OPTIMISATIONS
+
+# Initialize libtool
+LT_INIT([win32-dll])
+LT_LANG([Windows Resource])
 
 # Set some internal variables depending on the platform for later use.
 dbus_win=no
