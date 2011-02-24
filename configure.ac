@@ -601,14 +601,16 @@ fi
 
 dnl check for socklen_t
 AC_MSG_CHECKING(whether socklen_t is defined)
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-],[
+]], [[
 socklen_t foo;
 foo = 1;
-],dbus_have_socklen_t=yes,dbus_have_socklen_t=no)
+]])],
+[dbus_have_socklen_t=yes],
+[dbus_have_socklen_t=no])
 AC_MSG_RESULT($dbus_have_socklen_t)
 
 if test "x$dbus_have_socklen_t" = "xyes"; then
