@@ -1129,8 +1129,10 @@ if test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = x
   fi
 fi
 
-if test "x$GCC" = "xyes"; then
-  changequote(,)dnl
+dnl This whole "if" block is in m4 quotes ([]) because it uses them
+dnl for character ranges internally. m4 macros cannot be used inside this
+dnl block.
+[if test "x$GCC" = "xyes"; then
   case " $CFLAGS " in
   *[\ \	]-Wall[\ \	]*) ;;
   *) CFLAGS="$CFLAGS -Wall" ;;
@@ -1272,8 +1274,7 @@ if test "x$GCC" = "xyes"; then
     *) CFLAGS="$CFLAGS -pedantic" ;;
     esac
   fi
-  changequote([,])dnl
-fi
+fi]
 
 AC_SUBST(PIC_CFLAGS)
 AC_SUBST(PIC_LDFLAGS)
