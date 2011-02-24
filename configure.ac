@@ -817,15 +817,17 @@ AC_CHECK_FUNC(pthread_condattr_setclock,have_pthread_condattr_setclock=true,have
 if test x$have_pthread_condattr_setclock = xtrue; then
     AC_SEARCH_LIBS([clock_getres],[rt],[THREAD_LIBS="$THREAD_LIBS -lrt"])
     AC_MSG_CHECKING([for CLOCK_MONOTONIC])
-    AC_TRY_COMPILE([#include <time.h>
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>
 #include <pthread.h>
-], [
+]], [[
 struct timespec monotonic_timer;
 pthread_condattr_t attr;
 pthread_condattr_init (&attr);
 pthread_condattr_setclock (&attr, CLOCK_MONOTONIC);
 clock_getres (CLOCK_MONOTONIC,&monotonic_timer);
-], have_clock_monotonic=true, have_clock_monotonic=false)
+]])],
+[have_clock_monotonic=true],
+[have_clock_monotonic=false])
 if test x$have_clock_monotonic = xtrue; then
     AC_MSG_RESULT([found])
     AC_DEFINE(HAVE_MONOTONIC_CLOCK, 1, [Define if we have CLOCK_MONOTONIC])
