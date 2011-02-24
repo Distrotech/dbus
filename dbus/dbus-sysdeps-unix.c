@@ -3265,6 +3265,18 @@ _dbus_get_autolaunch_address (const char *scope,
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
   retval = FALSE;
 
+  /* fd.o #19997: if $DISPLAY isn't set to something useful, then
+   * dbus-launch-x11 is just going to fail. Rather than trying to
+   * run it, we might as well bail out early with a nice error. */
+  display = _dbus_getenv ("DISPLAY");
+
+  if (display == NULL || display[0] == '\0')
+    {
+      dbus_set_error_const (error, DBUS_ERROR_NOT_SUPPORTED,
+          "Unable to autolaunch a dbus-daemon without DISPLAY set");
+      return FALSE;
+    }
+
   if (!_dbus_string_init (&uuid))
     {
       _DBUS_SET_OOM (error);
