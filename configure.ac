@@ -491,32 +491,34 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([[
 AC_MSG_RESULT($broken_poll)
 
 AC_MSG_CHECKING(for dirfd)
-AC_TRY_LINK([
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <dirent.h>
-],[
+]], [[
 DIR *dirp;
 dirp = opendir(".");
 dirfd(dirp);
 closedir(dirp);
-],
-dbus_have_dirfd=yes, dbus_have_dirfd=no)
+]])],
+[dbus_have_dirfd=yes],
+[dbus_have_dirfd=no])
 AC_MSG_RESULT($dbus_have_dirfd)
 if test "$dbus_have_dirfd" = yes; then
 	AC_DEFINE(HAVE_DIRFD,1,[Have dirfd function])
 else
 	AC_MSG_CHECKING(for DIR *dirp->dd_fd)
-	AC_TRY_LINK([
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <dirent.h>
-	],[
+	]], [[
 DIR *dirp;
 int fd;
 dirp = opendir(".");
 fd = dirp->dd_fd;
 closedir(dirp);
-	],
-	dbus_have_ddfd=yes, dbus_have_ddfd=no)
+        ]])],
+        [dbus_have_ddfd=yes],
+        [dbus_have_ddfd=no])
 	AC_MSG_RESULT($dbus_have_ddfd)
 	if test "$dbus_have_ddfd" = yes; then
 		AC_DEFINE(HAVE_DDFD,1,[Have the ddfd member of DIR])
