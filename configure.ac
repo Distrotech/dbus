@@ -587,11 +587,10 @@ if test "$ac_cv_func_posix_getpwnam_r" = yes; then
 else
         AC_CACHE_CHECK([for nonposix getpwnam_r],
                 ac_cv_func_nonposix_getpwnam_r,
-                [AC_TRY_LINK([#include <pwd.h>],
-                        [char buffer[10000];
+                [AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[char buffer[10000];
                         struct passwd pwd;
                         getpwnam_r ("", &pwd, buffer,
-                                        sizeof (buffer));],
+                                        sizeof (buffer));]])],
                         [ac_cv_func_nonposix_getpwnam_r=yes],
                         [ac_cv_func_nonposix_getpwnam_r=no])])
                 if test "$ac_cv_func_nonposix_getpwnam_r" = yes; then
