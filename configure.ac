@@ -658,14 +658,16 @@ fi
 
 dnl Check for various credentials.
 AC_MSG_CHECKING(for struct cmsgcred)
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
-],[
+]], [[
 struct cmsgcred cred;
 
 cred.cmcred_pid = 0;
-],dbus_have_struct_cmsgcred=yes,dbus_have_struct_cmsgcred=no)
+]])],
+[dbus_have_struct_cmsgcred=yes],
+[dbus_have_struct_cmsgcred=no])
 AC_MSG_RESULT($dbus_have_struct_cmsgcred)
 
 if test x$dbus_have_struct_cmsgcred = xyes; then
