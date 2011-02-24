@@ -1611,7 +1611,7 @@ AH_VERBATIM(_DARWIN_ENVIRON,
 #endif
 ])
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Doxyfile
 dbus/versioninfo.rc
 dbus/dbus-arch-deps.h
@@ -1650,6 +1650,7 @@ test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.serv
 test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service
 test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service
 ])
+AC_OUTPUT
 
 dnl ==========================================================================
 echo "
