@@ -1156,8 +1156,10 @@ if test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = x
   fi
 fi
 
-if test "x$GCC" = "xyes"; then
-  changequote(,)dnl
+dnl This whole "if" block is in m4 quotes ([]) because it uses them
+dnl for character ranges internally. m4 macros cannot be used inside this
+dnl block.
+[if test "x$GCC" = "xyes"; then
   case " $CFLAGS " in
   *[\ \	]-Wall[\ \	]*) ;;
   *) CFLAGS="$CFLAGS -Wall" ;;
@@ -1299,8 +1301,7 @@ if test "x$GCC" = "xyes"; then
     *) CFLAGS="$CFLAGS -pedantic" ;;
     esac
   fi
-  changequote([,])dnl
-fi
+fi]
 
 AC_SUBST(PIC_CFLAGS)
 AC_SUBST(PIC_LDFLAGS)
@@ -1320,13 +1321,6 @@ case $host_os in
         # Solaris' C library apparently needs these runes to be threadsafe...
         CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
 esac
-
-changequote(,)dnl
-# compress spaces in flags
-CFLAGS=`echo "$CFLAGS" | sed -e 's/ +/ /g'`
-CXXFLAGS=`echo "$CXXFLAGS" | sed -e 's/ +/ /g'`
-CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/ +/ /g'`
-changequote([,])dnl
 
 ### Doxygen Documentation
 
