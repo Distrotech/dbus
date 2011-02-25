@@ -20,7 +20,7 @@ main (int argc, char *argv[])
 
   conn = dbus_bus_get (DBUS_BUS_SESSION, &error);
 
-#ifdef DBUS_BUILD_X11
+#ifdef DBUS_ENABLE_X11_AUTOLAUNCH
   if (dbus_error_is_set (&error))
     {
       fprintf (stderr, "*** Failed to autolaunch session bus: %s\n",
