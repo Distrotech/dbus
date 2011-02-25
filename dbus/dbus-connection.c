@@ -4365,44 +4365,48 @@ static DBusHandlerResult
 _dbus_connection_peer_filter_unlocked_no_update (DBusConnection *connection,
                                                  DBusMessage    *message)
 {
+  dbus_bool_t sent = FALSE;
+  DBusMessage *ret = NULL;
+  DBusList *expire_link;
+
   if (connection->route_peer_messages && dbus_message_get_destination (message) != NULL)
     {
       /* This means we're letting the bus route this message */
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
-  else if (dbus_message_is_method_call (message,
-                                        DBUS_INTERFACE_PEER,
-                                        "Ping"))
+
+  if (!dbus_message_has_interface (message, DBUS_INTERFACE_PEER))
     {
-      DBusMessage *ret;
-      dbus_bool_t sent;
-      
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+  /* Preallocate a linked-list link, so that if we need to dispose of a
+   * message, we can attach it to the expired list */
+  expire_link = _dbus_list_alloc_link (NULL);
+
+  if (!expire_link)
+    return DBUS_HANDLER_RESULT_NEED_MEMORY;
+
+  if (dbus_message_is_method_call (message,
+                                   DBUS_INTERFACE_PEER,
+                                   "Ping"))
+    {
       ret = dbus_message_new_method_return (message);
       if (ret == NULL)
-        return DBUS_HANDLER_RESULT_NEED_MEMORY;
-     
+        goto out;
+
       sent = _dbus_connection_send_unlocked_no_update (connection, ret, NULL);
-
-      dbus_message_unref (ret);
-
-      if (!sent)
-        return DBUS_HANDLER_RESULT_NEED_MEMORY;
-      
-      return DBUS_HANDLER_RESULT_HANDLED;
     }
   else if (dbus_message_is_method_call (message,
                                         DBUS_INTERFACE_PEER,
                                         "GetMachineId"))
     {
-      DBusMessage *ret;
-      dbus_bool_t sent;
       DBusString uuid;
       
       ret = dbus_message_new_method_return (message);
       if (ret == NULL)
-        return DBUS_HANDLER_RESULT_NEED_MEMORY;
+        goto out;
 
-      sent = FALSE;
       _dbus_string_init (&uuid);
       if (_dbus_get_local_machine_uuid_encoded (&uuid))
         {
@@ -4415,43 +4419,38 @@ _dbus_connection_peer_filter_unlocked_no_update (DBusConnection *connection,
             }
         }
       _dbus_string_free (&uuid);
-      
-      dbus_message_unref (ret);
-
-      if (!sent)
-        return DBUS_HANDLER_RESULT_NEED_MEMORY;
-      
-      return DBUS_HANDLER_RESULT_HANDLED;
     }
-  else if (dbus_message_has_interface (message, DBUS_INTERFACE_PEER))
+  else
     {
       /* We need to bounce anything else with this interface, otherwise apps
        * could start extending the interface and when we added extensions
        * here to DBusConnection we'd break those apps.
        */
-      
-      DBusMessage *ret;
-      dbus_bool_t sent;
-      
       ret = dbus_message_new_error (message,
                                     DBUS_ERROR_UNKNOWN_METHOD,
                                     "Unknown method invoked on org.freedesktop.DBus.Peer interface");
       if (ret == NULL)
-        return DBUS_HANDLER_RESULT_NEED_MEMORY;
-      
+        goto out;
+
       sent = _dbus_connection_send_unlocked_no_update (connection, ret, NULL);
-      
-      dbus_message_unref (ret);
-      
-      if (!sent)
-        return DBUS_HANDLER_RESULT_NEED_MEMORY;
-      
-      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+out:
+  if (ret == NULL)
+    {
+      _dbus_list_free_link (expire_link);
     }
   else
     {
-      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+      /* It'll be safe to unref the reply when we unlock */
+      expire_link->data = ret;
+      _dbus_list_prepend_link (&connection->expired_messages, expire_link);
     }
+
+  if (!sent)
+    return DBUS_HANDLER_RESULT_NEED_MEMORY;
+
+  return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 /**
