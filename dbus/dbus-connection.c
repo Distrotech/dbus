@@ -4698,10 +4698,11 @@ dbus_connection_dispatch (DBusConnection *connection)
       DBusMessage *reply;
       DBusString str;
       DBusPreallocatedSend *preallocated;
+      DBusList *expire_link;
 
       _dbus_verbose ("  sending error %s\n",
                      DBUS_ERROR_UNKNOWN_METHOD);
-      
+
       if (!_dbus_string_init (&str))
         {
           result = DBUS_HANDLER_RESULT_NEED_MEMORY;
@@ -4732,11 +4733,22 @@ dbus_connection_dispatch (DBusConnection *connection)
           _dbus_verbose ("no memory for error reply in dispatch\n");
           goto out;
         }
-      
+
+      expire_link = _dbus_list_alloc_link (reply);
+
+      if (expire_link == NULL)
+        {
+          dbus_message_unref (reply);
+          result = DBUS_HANDLER_RESULT_NEED_MEMORY;
+          _dbus_verbose ("no memory for error send in dispatch\n");
+          goto out;
+        }
+
       preallocated = _dbus_connection_preallocate_send_unlocked (connection);
 
       if (preallocated == NULL)
         {
+          _dbus_list_free_link (expire_link);
           /* It's OK that this is finalized, because it hasn't been seen by
            * anything that could attach user callbacks */
           dbus_message_unref (reply);
@@ -4747,9 +4759,9 @@ dbus_connection_dispatch (DBusConnection *connection)
 
       _dbus_connection_send_preallocated_unlocked_no_update (connection, preallocated,
                                                              reply, NULL);
+      /* reply will be freed when we release the lock */
+      _dbus_list_prepend_link (&connection->expired_messages, expire_link);
 
-      dbus_message_unref (reply);
-      
       result = DBUS_HANDLER_RESULT_HANDLED;
     }
   
