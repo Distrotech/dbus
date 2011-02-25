@@ -1,24 +1,19 @@
 dnl -*- mode: m4 -*-
-AC_PREREQ(2.52)
+AC_PREREQ([2.63])
 
 m4_define([dbus_major_version], [1])
 m4_define([dbus_minor_version], [4])
 m4_define([dbus_micro_version], [7])
 m4_define([dbus_version],
           [dbus_major_version.dbus_minor_version.dbus_micro_version])
-AC_INIT(dbus, [dbus_version])
+AC_INIT([dbus],[dbus_version],[https://bugs.freedesktop.org/enter_bug.cgi?product=dbus],[dbus])
 
 AC_CANONICAL_HOST
-AC_LIBTOOL_WIN32_DLL
-AC_LIBTOOL_RC
 
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.9 tar-ustar -Wno-portability])
-AM_CONFIG_HEADER(config.h)
-
-# Honor aclocal flags
-ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
+AM_INIT_AUTOMAKE([1.10 tar-ustar -Wno-portability])
 
 GETTEXT_PACKAGE=dbus-1
 AC_SUBST(GETTEXT_PACKAGE)
@@ -73,6 +68,10 @@ AM_PROG_LIBTOOL
 AC_PROG_MKDIR_P
 COMPILER_COVERAGE
 COMPILER_OPTIMISATIONS
+
+# Initialize libtool
+LT_INIT([win32-dll])
+LT_LANG([Windows Resource])
 
 # Set some internal variables depending on the platform for later use.
 dbus_win=no
@@ -491,32 +490,34 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([[
 AC_MSG_RESULT($broken_poll)
 
 AC_MSG_CHECKING(for dirfd)
-AC_TRY_LINK([
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <dirent.h>
-],[
+]], [[
 DIR *dirp;
 dirp = opendir(".");
 dirfd(dirp);
 closedir(dirp);
-],
-dbus_have_dirfd=yes, dbus_have_dirfd=no)
+]])],
+[dbus_have_dirfd=yes],
+[dbus_have_dirfd=no])
 AC_MSG_RESULT($dbus_have_dirfd)
 if test "$dbus_have_dirfd" = yes; then
 	AC_DEFINE(HAVE_DIRFD,1,[Have dirfd function])
 else
 	AC_MSG_CHECKING(for DIR *dirp->dd_fd)
-	AC_TRY_LINK([
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <dirent.h>
-	],[
+	]], [[
 DIR *dirp;
 int fd;
 dirp = opendir(".");
 fd = dirp->dd_fd;
 closedir(dirp);
-	],
-	dbus_have_ddfd=yes, dbus_have_ddfd=no)
+        ]])],
+        [dbus_have_ddfd=yes],
+        [dbus_have_ddfd=no])
 	AC_MSG_RESULT($dbus_have_ddfd)
 	if test "$dbus_have_ddfd" = yes; then
 		AC_DEFINE(HAVE_DDFD,1,[Have the ddfd member of DIR])
@@ -585,11 +586,10 @@ if test "$ac_cv_func_posix_getpwnam_r" = yes; then
 else
         AC_CACHE_CHECK([for nonposix getpwnam_r],
                 ac_cv_func_nonposix_getpwnam_r,
-                [AC_TRY_LINK([#include <pwd.h>],
-                        [char buffer[10000];
+                [AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[char buffer[10000];
                         struct passwd pwd;
                         getpwnam_r ("", &pwd, buffer,
-                                        sizeof (buffer));],
+                                        sizeof (buffer));]])],
                         [ac_cv_func_nonposix_getpwnam_r=yes],
                         [ac_cv_func_nonposix_getpwnam_r=no])])
                 if test "$ac_cv_func_nonposix_getpwnam_r" = yes; then
@@ -600,14 +600,16 @@ fi
 
 dnl check for socklen_t
 AC_MSG_CHECKING(whether socklen_t is defined)
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-],[
+]], [[
 socklen_t foo;
 foo = 1;
-],dbus_have_socklen_t=yes,dbus_have_socklen_t=no)
+]])],
+[dbus_have_socklen_t=yes],
+[dbus_have_socklen_t=no])
 AC_MSG_RESULT($dbus_have_socklen_t)
 
 if test "x$dbus_have_socklen_t" = "xyes"; then
@@ -626,19 +628,23 @@ AC_CHECK_DECLS([MSG_NOSIGNAL], [], [], [[ #include <sys/socket.h> ]])
 
 dnl check for flavours of varargs macros (test from GLib)
 AC_MSG_CHECKING(for ISO C99 varargs macros in C)
-AC_TRY_COMPILE([],[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 int a(int p1, int p2, int p3);
 #define call_a(...) a(1,__VA_ARGS__)
 call_a(2,3);
-],dbus_have_iso_c_varargs=yes,dbus_have_iso_c_varargs=no)
+]])],
+[dbus_have_iso_c_varargs=yes],
+[dbus_have_iso_c_varargs=no])
 AC_MSG_RESULT($dbus_have_iso_c_varargs)
 
 AC_MSG_CHECKING(for GNUC varargs macros)
-AC_TRY_COMPILE([],[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 int a(int p1, int p2, int p3);
 #define call_a(params...) a(1,params)
 call_a(2,3);
-],dbus_have_gnuc_varargs=yes,dbus_have_gnuc_varargs=no)
+]])],
+[dbus_have_gnuc_varargs=yes],
+[dbus_have_gnuc_varargs=no])
 AC_MSG_RESULT($dbus_have_gnuc_varargs)
 
 dnl Output varargs tests
@@ -651,14 +657,16 @@ fi
 
 dnl Check for various credentials.
 AC_MSG_CHECKING(for struct cmsgcred)
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
-],[
+]], [[
 struct cmsgcred cred;
 
 cred.cmcred_pid = 0;
-],dbus_have_struct_cmsgcred=yes,dbus_have_struct_cmsgcred=no)
+]])],
+[dbus_have_struct_cmsgcred=yes],
+[dbus_have_struct_cmsgcred=no])
 AC_MSG_RESULT($dbus_have_struct_cmsgcred)
 
 if test x$dbus_have_struct_cmsgcred = xyes; then
@@ -808,15 +816,17 @@ AC_CHECK_FUNC(pthread_condattr_setclock,have_pthread_condattr_setclock=true,have
 if test x$have_pthread_condattr_setclock = xtrue; then
     AC_SEARCH_LIBS([clock_getres],[rt],[THREAD_LIBS="$THREAD_LIBS -lrt"])
     AC_MSG_CHECKING([for CLOCK_MONOTONIC])
-    AC_TRY_COMPILE([#include <time.h>
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>
 #include <pthread.h>
-], [
+]], [[
 struct timespec monotonic_timer;
 pthread_condattr_t attr;
 pthread_condattr_init (&attr);
 pthread_condattr_setclock (&attr, CLOCK_MONOTONIC);
 clock_getres (CLOCK_MONOTONIC,&monotonic_timer);
-], have_clock_monotonic=true, have_clock_monotonic=false)
+]])],
+[have_clock_monotonic=true],
+[have_clock_monotonic=false])
 if test x$have_clock_monotonic = xtrue; then
     AC_MSG_RESULT([found])
     AC_DEFINE(HAVE_MONOTONIC_CLOCK, 1, [Define if we have CLOCK_MONOTONIC])
@@ -837,12 +847,13 @@ else
     # see if we have the SELinux header with the new D-Bus stuff in it
     if test x$have_selinux = xyes ; then
         AC_MSG_CHECKING([for DBUS Flask permissions in selinux/av_permissions.h])
-	AC_TRY_COMPILE([#include <selinux/av_permissions.h>],
-			[#ifdef DBUS__ACQUIRE_SVC return 0;
-			 #else
-			 #error DBUS__ACQUIRE_SVC not defined
-			 #endif],
-                        have_selinux=yes, have_selinux=no)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <selinux/av_permissions.h>]],
+                          [[#ifdef DBUS__ACQUIRE_SVC return 0;
+			    #else
+			    #error DBUS__ACQUIRE_SVC not defined
+			    #endif]])],
+                          [have_selinux=yes],
+                          [have_selinux=no])
 	AC_MSG_RESULT($have_selinux)
     fi
 
@@ -1094,10 +1105,12 @@ cc_supports_flag() {
 
 ld_supports_flag() {
   AC_MSG_CHECKING([whether $LD supports "$@"])
-  AC_TRY_LINK([
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
     int one(void) { return 1; }
     int two(void) { return 2; }
-  ], [ two(); ] , [_ac_ld_flag_supported=yes], [_ac_ld_flag_supported=no])
+  ]], [[ two();  ]])],
+    [_ac_ld_flag_supported=yes],
+    [_ac_ld_flag_supported=no])
 
   if test "$_ac_ld_flag_supported" = "yes"; then
     rm -f conftest.c
@@ -1597,7 +1610,7 @@ AH_VERBATIM(_DARWIN_ENVIRON,
 #endif
 ])
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Doxyfile
 dbus/versioninfo.rc
 dbus/dbus-arch-deps.h
@@ -1636,6 +1649,7 @@ test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.serv
 test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service
 test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service
 ])
+AC_OUTPUT
 
 dnl ==========================================================================
 echo "
