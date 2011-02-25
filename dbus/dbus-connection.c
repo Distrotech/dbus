@@ -252,6 +252,7 @@ struct DBusConnection
   
   DBusList *outgoing_messages; /**< Queue of messages we need to send, send the end of the list first. */
   DBusList *incoming_messages; /**< Queue of messages we have received, end of the list received most recently. */
+  DBusList *expired_messages;  /**< Messages that will be released when we next unlock. */
 
   DBusMessage *message_borrowed; /**< Filled in if the first incoming message has been borrowed;
                                   *   dispatch_acquired will be set by the borrower
@@ -386,12 +387,42 @@ _dbus_connection_lock (DBusConnection *connection)
 void
 _dbus_connection_unlock (DBusConnection *connection)
 {
+  DBusList *expired_messages;
+  DBusList *iter;
+
   if (TRACE_LOCKS)
     {
       _dbus_verbose ("UNLOCK\n");
     }
 
+  /* If we had messages that expired (fell off the incoming or outgoing
+   * queues) while we were locked, actually release them now */
+  expired_messages = connection->expired_messages;
+  connection->expired_messages = NULL;
+
   RELEASING_LOCK_CHECK (connection);
+  _dbus_mutex_unlock (connection->mutex);
+
+  for (iter = _dbus_list_get_first_link (&expired_messages);
+      iter != NULL;
+      iter = _dbus_list_get_next_link (&expired_messages, iter))
+    {
+      DBusMessage *message = iter->data;
+
+      dbus_message_unref (message);
+      iter->data = NULL;
+    }
+
+  /* Take the lock back for a moment, to copy the links into the link
+   * cache. FIXME: with this extra cost, is it still advantageous to have
+   * the link cache? */
+  _dbus_mutex_lock (connection->mutex);
+
+  for (iter = _dbus_list_pop_first_link (&expired_messages);
+      iter != NULL;
+      iter = _dbus_list_pop_first_link (&expired_messages))
+    _dbus_list_prepend_link (&connection->link_cache, iter);
+
   _dbus_mutex_unlock (connection->mutex);
 }
 
@@ -627,11 +658,10 @@ _dbus_connection_message_sent_unlocked (DBusConnection *connection,
   _dbus_assert (link != NULL);
   _dbus_assert (link->data == message);
 
-  /* Save this link in the link cache */
   _dbus_list_unlink (&connection->outgoing_messages,
                      link);
-  _dbus_list_prepend_link (&connection->link_cache, link);
-  
+  _dbus_list_prepend_link (&connection->expired_messages, link);
+
   connection->n_outgoing -= 1;
 
   _dbus_verbose ("Message %p (%s %s %s %s '%s') removed from outgoing queue %p, %d left to send\n",
@@ -656,8 +686,8 @@ _dbus_connection_message_sent_unlocked (DBusConnection *connection,
 
   /* Save this link in the link cache also */
   _dbus_list_prepend_link (&connection->link_cache, link);
-  
-  dbus_message_unref (message);
+
+  /* The message will actually be unreffed when we unlock */
 }
 
 /** Function to be called in protected_change_watch() with refcount held */
@@ -4746,19 +4776,34 @@ dbus_connection_dispatch (DBusConnection *connection)
        */
       _dbus_connection_putback_message_link_unlocked (connection,
                                                       message_link);
+      /* now we don't want to free them */
+      message_link = NULL;
+      message = NULL;
     }
   else
     {
       _dbus_verbose (" ... done dispatching\n");
-      
-      _dbus_list_free_link (message_link);
-      dbus_message_unref (message); /* don't want the message to count in max message limits
-                                     * in computing dispatch status below
-                                     */
     }
-  
+
   _dbus_connection_release_dispatch (connection);
   HAVE_LOCK_CHECK (connection);
+
+  if (message != NULL)
+    {
+      /* We don't want this message to count in maximum message limits when
+       * computing the dispatch status, below. We have to drop the lock
+       * temporarily, because finalizing a message can trigger callbacks.
+       *
+       * We have a reference to the connection, and we don't use any cached
+       * pointers to the connection's internals below this point, so it should
+       * be safe to drop the lock and take it back. */
+      CONNECTION_UNLOCK (connection);
+      dbus_message_unref (message);
+      CONNECTION_LOCK (connection);
+    }
+
+  if (message_link != NULL)
+    _dbus_list_free_link (message_link);
 
   _dbus_verbose ("before final status update\n");
   status = _dbus_connection_get_dispatch_status_unlocked (connection);

@@ -72,12 +72,16 @@ live_messages_notify (DBusCounter *counter,
   _dbus_verbose ("Unix FD counter value is now %d\n",
                  (int) _dbus_counter_get_unix_fd_value (counter));
 #endif
-  
+
   /* disable or re-enable the read watch for the transport if
    * required.
    */
   if (transport->vtable->live_messages_changed)
-    (* transport->vtable->live_messages_changed) (transport);
+    {
+      _dbus_connection_lock (transport->connection);
+      (* transport->vtable->live_messages_changed) (transport);
+      _dbus_connection_unlock (transport->connection);
+    }
 
   _dbus_transport_unref (transport);
 }
