@@ -1062,34 +1062,48 @@ AC_SUBST(DBUS_TEST_CFLAGS)
 AC_SUBST(DBUS_TEST_LIBS)
 
 ### X11 detection
-if test x$dbus_win = xyes ; then
-   enable_x11=no
-else
-AC_PATH_XTRA
+DBUS_X_LIBS=
+DBUS_X_CFLAGS=
 
-## for now enable_x11 just tracks have_x11,
-## there's no --enable-x11
-if test x$no_x = xyes ; then
-   have_x11=no
-   enable_x11=no
-else
-   have_x11=yes
-   enable_x11=yes
+AC_ARG_ENABLE([x11-autolaunch],
+  AS_HELP_STRING([--enable-x11-autolaunch], [build with X11 auto-launch support]),
+  [], [enable_x11_autolaunch=auto])
+
+if test "x$dbus_win" = xyes; then
+    if test "x$enable_x11_autolaunch" = xyes; then
+        AC_MSG_ERROR([X11 auto-launch is not supported on Windows])
+    fi
+
+    enable_x11_autolaunch=no
 fi
 
-if test x$enable_x11 = xyes ; then
-   AC_DEFINE(DBUS_BUILD_X11,1,[Build X11-dependent code])
-   DBUS_X_LIBS="$X_LIBS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
-   DBUS_X_CFLAGS="$X_CFLAGS"
+if test "x$enable_x11_autolaunch" = xno; then
+    have_x11=no
 else
-   DBUS_X_LIBS=
-   DBUS_X_CFLAGS=
+    AC_PATH_XTRA
+
+    if test "x$no_x" = xyes; then
+        have_x11=no
+    else
+        have_x11=yes
+        DBUS_X_LIBS="$X_LIBS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
+        DBUS_X_CFLAGS="$X_CFLAGS"
+    fi
 fi
 
-AC_SUBST(DBUS_X_CFLAGS)
-AC_SUBST(DBUS_X_LIBS)
+if test "x$enable_x11_autolaunch,$have_x11" = xyes,no; then
+    AC_MSG_ERROR([X11 auto-launch requires X headers/libraries])
+else
+    # move from "auto" to "yes" or "no" if necessary
+    enable_x11_autolaunch="$have_x11"
 fi
 
+if test "x$enable_x11_autolaunch" = xyes ; then
+   AC_DEFINE([DBUS_BUILD_X11], [1], [Define to enable X11 auto-launch])
+fi
+
+AC_SUBST([DBUS_X_CFLAGS])
+AC_SUBST([DBUS_X_LIBS])
 
 #### gcc warning flags
 

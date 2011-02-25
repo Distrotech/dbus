@@ -345,7 +345,7 @@ OPTION(DBUS_HAVE_ATOMIC_INT    "Some atomic integer implementation present" ${at
 OPTION(DBUS_USE_ATOMIC_INT_486 "Use atomic integer implementation for 486" ${atomic_int_486})
 
 if(X11_FOUND)
-  OPTION(DBUS_BUILD_X11 "Build X11-dependent code " ON)
+  OPTION(DBUS_BUILD_X11 "Build with X11 autolaunch support " ON)
 endif(X11_FOUND)
 
 # test binary names

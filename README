@@ -105,7 +105,7 @@ to the cmake program are these (use -D<key>=<value> on command line)
 
     CMAKE_BUILD_TYPE                   set dbus build mode - one of Debug|Release|RelWithDebInfo|MinSizeRel
     DBUS_BUILD_TESTS                   enable unit test code  default=ON
-    DBUS_BUILD_X11                     Build X11-dependent code default=ON
+    DBUS_BUILD_X11                     Build with X11 autolaunch support default=ON
     HAVE_CONSOLE_OWNER_FILE            enable console owner file (solaris only) ) default=ON
     DBUS_DISABLE_ASSERTS               Disable assertion checking default=OFF
     DBUS_DISABLE_CHECKS                Disable public API sanity checking default=OFF
