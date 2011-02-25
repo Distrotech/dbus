@@ -1,3 +1,5 @@
+apidir = @htmldir@/api
+
 # automake normally assumes that man pages are generated files;
 # these ones aren't, so we need the dist_ prefix to say that they're
 # their own source code
@@ -40,6 +42,7 @@ STATIC_DOCS = \
 
 EXTRA_DIST = \
 	file-boilerplate.c \
+	doxygen_to_devhelp.xsl \
 	$(STATIC_DOCS) \
 	$(MAN_IN_FILES)
 
@@ -69,13 +72,24 @@ dbus-faq.html: dbus-faq.xml
 endif
 
 if DBUS_DOXYGEN_DOCS_ENABLED
-# Use the index as a proxy for the entire doc tree.
-DOXYGEN_HTML_INDEX = api/html/index.html
+all-local:: doxygen.stamp
 
-all-local:: $(DOXYGEN_HTML_INDEX)
-
-$(DOXYGEN_HTML_INDEX): $(wildcard $(top_srcdir)/dbus/*.[ch])
+doxygen.stamp: $(wildcard $(top_srcdir)/dbus/*.[ch])
 	$(AM_V_GEN)cd $(top_builddir) && doxygen Doxyfile
+	@touch $@
+
+if DBUS_HAVE_XSLTPROC
+api_DATA = dbus.devhelp
+
+dbus.devhelp: $(srcdir)/doxygen_to_devhelp.xsl doxygen.stamp
+	$(XSLTPROC) -o $@ $< api/xml/index.xml
+endif
+
+# this assumes CREATE_SUBDIRS isn't set to YES in Doxyfile
+# (which it isn't currently)
+install-data-local:: doxygen.stamp
+	$(MKDIR_P) $(DESTDIR)$(apidir)
+	$(INSTALL_DATA) api/html/* $(DESTDIR)$(apidir)
 endif
 
 if DBUS_HAVE_MAN2HTML
@@ -94,9 +108,9 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) $(DOXYGEN_HTML_INDEX)
+dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
 	$(AM_V_at)rm -rf $@
-	$(AM_V_GEN)mkdir -p $@/api
+	$(AM_V_GEN)$(MKDIR_P) $@/api
 	$(AM_V_at)cp $(STATIC_DOCS) $@
 	$(AM_V_at)cp $(HTML_FILES) $@
 	$(AM_V_at)cp $(MAN_HTML_FILES) $@
