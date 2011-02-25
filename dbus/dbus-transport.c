@@ -1144,6 +1144,13 @@ _dbus_transport_queue_messages (DBusTransport *transport)
         }
       else
         {
+          /* We didn't call the notify function when we added the counter, so
+           * catch up now. Since we have the connection's lock, it's desirable
+           * that we bypass the notify function and call this virtual method
+           * directly. */
+          if (transport->vtable->live_messages_changed)
+            (* transport->vtable->live_messages_changed) (transport);
+
           /* pass ownership of link and message ref to connection */
           _dbus_connection_queue_received_message_link (transport->connection,
                                                         link);

@@ -647,9 +647,12 @@ _dbus_connection_message_sent_unlocked (DBusConnection *connection,
                  dbus_message_get_signature (message),
                  connection, connection->n_outgoing);
 
-  /* Save this link in the link cache also */
+  /* It's OK that in principle we call the notify function, because for the
+   * outgoing limit, there isn't one */
   _dbus_message_remove_counter (message, connection->outgoing_counter,
                                 &link);
+
+  /* Save this link in the link cache also */
   _dbus_list_prepend_link (&connection->link_cache, link);
   
   dbus_message_unref (message);
@@ -1977,6 +1980,8 @@ _dbus_connection_send_preallocated_unlocked_no_update (DBusConnection       *con
   _dbus_list_prepend_link (&connection->outgoing_messages,
                            preallocated->queue_link);
 
+  /* It's OK that we'll never call the notify function, because for the
+   * outgoing limit, there isn't one */
   _dbus_message_add_counter_link (message,
                                   preallocated->counter_link);
 
