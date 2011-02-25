@@ -5,8 +5,19 @@ D-Bus 1.5.0 (UNRELEASED)
     Simon McVittie)
   • Optimize _dbus_string_replace_len to reduce waste (fd.o #21261,
     Roberto Guido)
+
+D-Bus 1.4.8 (UNRELEASED)
+==
+
   • Include _dbus_path_is_absolute in libdbus on Windows, fixing compilation
     (fd.o #32805, Mark Brand)
+  • Rename configure.in to configure.ac, and update it to modern conventions
+    (fd.o #32245; Javier Jardón, Simon McVittie)
+  • Correctly give XDG_DATA_HOME priority over XDG_DATA_DIRS (fd.o #34496,
+    Anders Kaseorg)
+  • Prevent X11 autolaunching if $DISPLAY is unset or empty, and add
+    --disable-x11-autolaunch configure option to prevent it altogether
+    in embedded environments (fd.o #19997, NB#219964; Simon McVittie)
 
 D-Bus 1.4.6 (2010-02-17)
 ==
