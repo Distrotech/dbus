@@ -70,11 +70,7 @@
     TOOK_LOCK_CHECK (connection);                                               \
   } while (0)
 
-#define CONNECTION_UNLOCK(connection) do {                                              \
-    if (TRACE_LOCKS) { _dbus_verbose ("UNLOCK\n");  }        \
-    RELEASING_LOCK_CHECK (connection);                                                  \
-    _dbus_mutex_unlock ((connection)->mutex);                                            \
-  } while (0)
+#define CONNECTION_UNLOCK(connection) _dbus_connection_unlock (connection)
 
 #define SLOTS_LOCK(connection) do {                     \
     _dbus_mutex_lock ((connection)->slot_mutex);        \
@@ -390,7 +386,13 @@ _dbus_connection_lock (DBusConnection *connection)
 void
 _dbus_connection_unlock (DBusConnection *connection)
 {
-  CONNECTION_UNLOCK (connection);
+  if (TRACE_LOCKS)
+    {
+      _dbus_verbose ("UNLOCK\n");
+    }
+
+  RELEASING_LOCK_CHECK (connection);
+  _dbus_mutex_unlock (connection->mutex);
 }
 
 /**
