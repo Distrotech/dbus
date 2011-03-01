@@ -1558,6 +1558,15 @@ AH_VERBATIM(_DARWIN_ENVIRON,
 #endif
 ])
 
+AC_ARG_ENABLE([stats],
+  [AS_HELP_STRING([--enable-stats],
+    [enable bus daemon usage statistics])],
+  [], [enable_stats=no])
+if test "x$enable_stats" = xyes; then
+  AC_DEFINE([DBUS_ENABLE_STATS], [1],
+    [Define to enable bus daemon usage statistics])
+fi
+
 AC_CONFIG_FILES([
 Doxyfile
 dbus/versioninfo.rc
@@ -1633,6 +1642,7 @@ echo "
         Building verbose mode:    ${enable_verbose_mode}
         Building assertions:      ${enable_asserts}
         Building checks:          ${enable_checks}
+        Building bus stats API:   ${enable_stats}
         Building SELinux support: ${have_selinux}
         Building inotify support: ${have_inotify}
         Building dnotify support: ${have_dnotify}
