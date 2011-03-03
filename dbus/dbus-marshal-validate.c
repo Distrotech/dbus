@@ -250,7 +250,7 @@ _dbus_validate_signature_with_reason (const DBusString *type_str,
 
       if (last == DBUS_DICT_ENTRY_BEGIN_CHAR)
         {
-          if (!(_dbus_type_is_valid (*p) && dbus_type_is_basic (*p)))
+          if (!(dbus_type_is_valid (*p) && dbus_type_is_basic (*p)))
             {
               result = DBUS_INVALID_DICT_KEY_MUST_BE_BASIC_TYPE;
               goto out;
@@ -393,7 +393,7 @@ validate_body_helper (DBusTypeReader       *reader,
               {
                 int array_elem_type = _dbus_type_reader_get_element_type (reader);
 
-                if (!_dbus_type_is_valid (array_elem_type))
+                if (!dbus_type_is_valid (array_elem_type))
                   {
                     return DBUS_INVALID_UNKNOWN_TYPECODE;
                   }

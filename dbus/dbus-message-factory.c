@@ -27,6 +27,7 @@
 #ifdef DBUS_BUILD_TESTS
 #include "dbus-message-factory.h"
 #include "dbus-message-private.h"
+#include "dbus-signature.h"
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -978,7 +979,7 @@ find_next_typecode (DBusMessageDataIter *iter,
 
       _dbus_assert (byte_seq < _dbus_string_get_length (data));
 
-      if (_dbus_type_is_valid (_dbus_string_get_byte (data, byte_seq)))
+      if (dbus_type_is_valid (_dbus_string_get_byte (data, byte_seq)))
         break;
       else
         iter_next (iter);
