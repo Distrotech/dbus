@@ -2660,6 +2660,19 @@ dbus_message_iter_append_fixed_array (DBusMessageIter *iter,
                             DBUS_MAXIMUM_ARRAY_LENGTH / _dbus_type_get_alignment (element_type),
                             FALSE);
 
+#ifndef DBUS_DISABLE_CHECKS
+  if (element_type == DBUS_TYPE_BOOLEAN)
+    {
+      const dbus_bool_t * const *bools = value;
+      int i;
+
+      for (i = 0; i < n_elements; i++)
+        {
+          _dbus_return_val_if_fail ((*bools)[i] == 0 || (*bools)[i] == 1, FALSE);
+        }
+    }
+#endif
+
   ret = _dbus_type_writer_write_fixed_multi (&real->u.writer, element_type, value, n_elements);
 
   return ret;
