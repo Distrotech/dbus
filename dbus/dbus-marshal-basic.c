@@ -1065,8 +1065,6 @@ _dbus_marshal_write_fixed_multi (DBusString *str,
     case DBUS_TYPE_INT16:
     case DBUS_TYPE_UINT16:
       return marshal_fixed_multi (str, insert_at, vp, n_elements, byte_order, 2, pos_after);
-      /* FIXME: we canonicalize to 0 or 1 for the single boolean case
-       * should we here too ? */
     case DBUS_TYPE_BOOLEAN:
     case DBUS_TYPE_INT32:
     case DBUS_TYPE_UINT32:
