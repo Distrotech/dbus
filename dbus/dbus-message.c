@@ -2631,10 +2631,6 @@ dbus_message_iter_append_basic (DBusMessageIter *iter,
  * @todo If this fails due to lack of memory, the message is hosed and
  * you have to start over building the whole message.
  *
- * For Unix file descriptors this function will internally duplicate
- * the descriptor you passed in. Hence you may close the descriptor
- * immediately after this call.
- *
  * @param iter the append iterator
  * @param element_type the type of the array elements
  * @param value the address of the array
