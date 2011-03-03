@@ -283,9 +283,10 @@ dbus_signature_validate_single (const char       *signature,
  * A "container type" can contain basic types, or nested
  * container types. #DBUS_TYPE_INVALID is not a container type.
  *
- * This function will crash if passed a typecode that isn't
- * in dbus-protocol.h
+ * It is an error to pass an invalid type-code, other than DBUS_TYPE_INVALID,
+ * to this function. The valid type-codes are defined by dbus-protocol.h.
  *
+ * @param typecode either a valid type-code or DBUS_TYPE_INVALID
  * @returns #TRUE if type is a container
  */
 dbus_bool_t
@@ -305,9 +306,10 @@ dbus_type_is_container (int typecode)
  * variants are not basic types.  #DBUS_TYPE_INVALID is not a basic
  * type.
  *
- * This function will crash if passed a typecode that isn't
- * in dbus-protocol.h 
+ * It is an error to pass an invalid type-code, other than DBUS_TYPE_INVALID,
+ * to this function. The valid type-codes are defined by dbus-protocol.h.
  *
+ * @param typecode either a valid type-code or DBUS_TYPE_INVALID
  * @returns #TRUE if type is basic
  */
 dbus_bool_t
@@ -334,9 +336,10 @@ dbus_type_is_basic (int typecode)
  * but struct is not considered a fixed type for purposes of this
  * function.
  *
- * This function will crash if passed a typecode that isn't
- * in dbus-protocol.h
- * 
+ * It is an error to pass an invalid type-code, other than DBUS_TYPE_INVALID,
+ * to this function. The valid type-codes are defined by dbus-protocol.h.
+ *
+ * @param typecode either a valid type-code or DBUS_TYPE_INVALID
  * @returns #FALSE if the type can occupy different lengths
  */
 dbus_bool_t
