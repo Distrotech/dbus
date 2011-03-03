@@ -2519,6 +2519,7 @@ dbus_message_iter_append_basic (DBusMessageIter *iter,
   switch (type)
     {
       const char * const *string_p;
+      const dbus_bool_t *bool_p;
 
       case DBUS_TYPE_STRING:
         string_p = value;
@@ -2536,8 +2537,9 @@ dbus_message_iter_append_basic (DBusMessageIter *iter,
         break;
 
       case DBUS_TYPE_BOOLEAN:
-        /* FIXME: strictly speaking we should ensure that it's in {0,1},
-         * but for now, fall through */
+        bool_p = value;
+        _dbus_return_val_if_fail (*bool_p == 0 || *bool_p == 1, FALSE);
+        break;
 
       default:
           {
