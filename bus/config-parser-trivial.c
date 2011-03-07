@@ -164,7 +164,7 @@ bus_config_parser_start_element (BusConfigParser   *parser,
     {
     case ELEMENT_SERVICEHELPER:
     case ELEMENT_USER:
-    case ELEMENT_TYPE:
+    case ELEMENT_CONFIGTYPE:
       /* content about to be handled */
       break;
 
@@ -277,7 +277,7 @@ bus_config_parser_content (BusConfigParser   *parser,
       }
       break;
 
-    case ELEMENT_TYPE:
+    case ELEMENT_CONFIGTYPE:
       {
         if (!_dbus_string_copy (&content_sane, 0, &parser->bus_type, 0))
           {
