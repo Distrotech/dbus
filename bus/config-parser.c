@@ -690,12 +690,12 @@ start_busconfig_child (BusConfigParser   *parser,
 
       return TRUE;
     }
-  else if (element_type == ELEMENT_TYPE)
+  else if (element_type == ELEMENT_CONFIGTYPE)
     {
       if (!check_no_attributes (parser, "type", attribute_names, attribute_values, error))
         return FALSE;
 
-      if (push_element (parser, ELEMENT_TYPE) == NULL)
+      if (push_element (parser, ELEMENT_CONFIGTYPE) == NULL)
         {
           BUS_SET_OOM (error);
           return FALSE;
@@ -2002,7 +2002,7 @@ bus_config_parser_end_element (BusConfigParser   *parser,
 
     case ELEMENT_INCLUDE:
     case ELEMENT_USER:
-    case ELEMENT_TYPE:
+    case ELEMENT_CONFIGTYPE:
     case ELEMENT_LISTEN:
     case ELEMENT_PIDFILE:
     case ELEMENT_AUTH:
@@ -2472,7 +2472,7 @@ bus_config_parser_content (BusConfigParser   *parser,
       }
       break;
 
-    case ELEMENT_TYPE:
+    case ELEMENT_CONFIGTYPE:
       {
         char *s;
 
