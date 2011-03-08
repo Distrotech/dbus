@@ -3037,6 +3037,114 @@
         annotation.
       </para>
     </sect2>
+
+    <sect2 id="standard-interfaces-objectmanager">
+      <title><literal>org.freedesktop.DBus.ObjectManager</literal></title>
+      <para>
+        An API can optionally make use of this interface for one or
+        more sub-trees of objects. The root of each sub-tree implement
+        this interface so other applications can get all objects,
+        interfaces and properties in a single method call.  It is
+        appropriate to use this interface if users of the tree of
+        objects are expected to be interested in all interfaces of all
+        objects in the tree; a more granular API should be used if
+        users of the objects are expected to be interested in a small
+        subset of the objects, a small subset of their interfaces, or
+        both.
+      </para>
+      <para>
+        The method that applications can use to get all objects and
+        properties is <literal>GetManagedObjects</literal>:
+      </para>
+      <para>
+        <programlisting>
+          org.freedesktop.DBus.ObjectManager.GetManagedObjects (out DICT&lt;OBJPATH,DICT&lt;STRING,DICT&lt;STRING,VARIANT&gt;&gt;&gt; objpath_interfaces_and_properties);
+        </programlisting>
+      </para>
+      <para>
+        The return value of this method is a dict whose keys are
+        object paths. All returned object paths are children of the
+        object path implementing this interface, i.e. their object
+        paths start with the ObjectManager's object path plus '/'.
+      </para>
+      <para>
+        Each value is a dict whose keys are interfaces names.  Each
+        value in this inner dict is the same dict that would be
+        returned by the <link
+        linkend="standard-interfaces-properties">org.freedesktop.DBus.Properties.GetAll()</link>
+        method for that combination of object path and interface. If
+        an interface has no properties, the empty dict is returned.
+      </para>
+      <para>
+        Changes are emitted using the following two signals:
+      </para>
+      <para>
+        <programlisting>
+          org.freedesktop.DBus.ObjectManager.InterfacesAdded (OBJPATH object_path,
+                                                              DICT&lt;STRING,DICT&lt;STRING,VARIANT&gt;&gt; interfaces_and_properties);
+          org.freedesktop.DBus.ObjectManager.InterfacesRemoved (OBJPATH object_path,
+                                                                ARRAY&lt;STRING&gt; interfaces);
+        </programlisting>
+      </para>
+      <para>
+        The <literal>InterfacesAdded</literal> signal is emitted when
+        either a new object is added or when an existing object gains
+        one or more interfaces. The
+        <literal>InterfacesRemoved</literal> signal is emitted
+        whenever an object is removed or it loses one or more
+        interfaces. The second parameter of the
+        <literal>InterfacesAdded</literal> signal contains a dict with
+        the interfaces and properties (if any) that have been added to
+        the given object path. Similarly, the second parameter of the
+        <literal>InterfacesRemoved</literal> signal contains an array
+        of the interfaces that were removed. Note that changes on
+        properties on existing interfaces are not reported using this
+        interface - an application should also monitor the existing <link
+        linkend="standard-interfaces-properties">PropertiesChanged</link>
+        signal on each object.
+      </para>
+      <para>
+        Applications SHOULD NOT export objects that are children of an
+        object (directly or otherwise) implementing this interface but
+        which are not returned in the reply from the
+        <literal>GetManagedObjects()</literal> method of this
+        interface on the given object.
+      </para>
+      <para>
+        The intent of the <literal>ObjectManager</literal> interface
+        is to make it easy to write a robust client
+        implementation. The trivial client implementation only needs
+        to make two method calls:
+      </para>
+      <para>
+        <programlisting>
+          org.freedesktop.DBus.AddMatch (bus_proxy,
+                                         "type='signal',name='org.example.App',path_namespace='/org/example/App'");
+          objects = org.freedesktop.DBus.ObjectManager.GetManagedObjects (app_proxy);
+        </programlisting>
+      </para>
+      <para>
+        on the message bus and the remote application's
+        <literal>ObjectManager</literal>, respectively. Whenever a new
+        remote object is created (or an existing object gains a new
+        interface), the <literal>InterfacesAdded</literal> signal is
+        emitted, and since this signal contains all properties for the
+        interfaces, no calls to the
+        <literal>org.freedesktop.Properties</literal> interface on the
+        remote object are needed. Additionally, since the initial
+        <literal>AddMatch()</literal> rule already include signal
+        messages from the newly created child object, no new
+        <literal>AddMatch()</literal> call is needed.
+      </para>
+
+      <para>
+        <emphasis>
+          The <literal>org.freedesktop.DBus.ObjectManager</literal>
+          interface was added in version 0.17 of the D-Bus
+          specification.
+        </emphasis>
+      </para>
+    </sect2>
   </sect1>
 
   <sect1 id="introspection-format">
