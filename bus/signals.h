@@ -37,7 +37,8 @@ typedef enum
   BUS_MATCH_SENDER       = 1 << 3,
   BUS_MATCH_DESTINATION  = 1 << 4,
   BUS_MATCH_PATH         = 1 << 5,
-  BUS_MATCH_ARGS         = 1 << 6
+  BUS_MATCH_ARGS         = 1 << 6,
+  BUS_MATCH_PATH_PREFIX  = 1 << 7
 } BusMatchFlags;
 
 BusMatchRule* bus_match_rule_new   (DBusConnection *matches_go_to);
@@ -56,6 +57,8 @@ dbus_bool_t bus_match_rule_set_destination  (BusMatchRule     *rule,
                                              const char       *destination);
 dbus_bool_t bus_match_rule_set_path         (BusMatchRule     *rule,
                                              const char       *path);
+dbus_bool_t bus_match_rule_set_path_prefix  (BusMatchRule     *rule,
+                                             const char       *path_prefix);
 dbus_bool_t bus_match_rule_set_arg          (BusMatchRule     *rule,
                                              int               arg,
                                              const DBusString *value,

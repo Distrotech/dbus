@@ -41,6 +41,7 @@ struct BusMatchRule
   char *sender;
   char *destination;
   char *path;
+  char *path_prefix;
 
   unsigned int *arg_lens;
   char **args;
@@ -94,6 +95,7 @@ bus_match_rule_unref (BusMatchRule *rule)
       dbus_free (rule->sender);
       dbus_free (rule->destination);
       dbus_free (rule->path);
+      dbus_free (rule->path_prefix);
       dbus_free (rule->arg_lens);
 
       /* can't use dbus_free_string_array() since there
@@ -203,6 +205,18 @@ match_rule_to_string (BusMatchRule *rule)
         }
       
       if (!_dbus_string_append_printf (&str, "path='%s'", rule->path))
+        goto nomem;
+    }
+
+  if (rule->flags & BUS_MATCH_PATH_PREFIX)
+    {
+      if (_dbus_string_get_length (&str) > 0)
+        {
+          if (!_dbus_string_append (&str, ","))
+            goto nomem;
+        }
+
+      if (!_dbus_string_append_printf (&str, "path_prefix='%s'", rule->path_prefix))
         goto nomem;
     }
 
@@ -384,6 +398,25 @@ bus_match_rule_set_path (BusMatchRule *rule,
   rule->flags |= BUS_MATCH_PATH;
   dbus_free (rule->path);
   rule->path = new;
+
+  return TRUE;
+}
+
+dbus_bool_t
+bus_match_rule_set_path_prefix (BusMatchRule *rule,
+                                const char   *path_prefix)
+{
+  char *new;
+
+  _dbus_assert (path_prefix != NULL);
+
+  new = _dbus_strdup (path_prefix);
+  if (new == NULL)
+    return FALSE;
+
+  rule->flags |= BUS_MATCH_PATH_PREFIX;
+  dbus_free (rule->path_prefix);
+  rule->path_prefix = new;
 
   return TRUE;
 }
@@ -1018,6 +1051,34 @@ bus_match_rule_parse (DBusConnection   *matches_go_to,
               goto failed;
             }
         }
+      else if (strcmp (key, "path_prefix") == 0)
+        {
+          int path_prefix_len;
+
+          if (rule->flags & BUS_MATCH_PATH_PREFIX)
+            {
+              dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
+                              "Key %s specified twice in match rule\n", key);
+              goto failed;
+            }
+
+          path_prefix_len = len;
+          if (_dbus_string_ends_with_c_str (&tmp_str, "/"))
+            path_prefix_len--;
+
+          if (!_dbus_validate_path (&tmp_str, 0, path_prefix_len))
+            {
+              dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
+                              "Path prefix '%s' is invalid\n", value);
+              goto failed;
+            }
+
+          if (!bus_match_rule_set_path_prefix (rule, value))
+            {
+              BUS_SET_OOM (error);
+              goto failed;
+            }
+        }
       else if (strcmp (key, "destination") == 0)
         {
           if (rule->flags & BUS_MATCH_DESTINATION)
@@ -1349,6 +1410,10 @@ match_rule_equal (BusMatchRule *a,
   if ((a->flags & BUS_MATCH_PATH) &&
       strcmp (a->path, b->path) != 0)
     return FALSE;
+
+  if ((a->flags & BUS_MATCH_PATH_PREFIX) &&
+      strcmp (a->path_prefix, b->path_prefix) != 0)
+    return FALSE;
   
   if ((a->flags & BUS_MATCH_INTERFACE) &&
       strcmp (a->interface, b->interface) != 0)
@@ -1612,6 +1677,17 @@ connection_is_primary_owner (DBusConnection *connection,
 }
 
 static dbus_bool_t
+str_has_prefix (const char *str, const char *prefix)
+{
+  size_t prefix_len;
+  prefix_len = strlen (prefix);
+  if (strncmp (str, prefix, prefix_len) == 0)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+static dbus_bool_t
 match_rule_matches (BusMatchRule    *rule,
                     DBusConnection  *sender,
                     DBusConnection  *addressed_recipient,
@@ -1719,6 +1795,20 @@ match_rule_matches (BusMatchRule    *rule,
         return FALSE;
 
       if (strcmp (path, rule->path) != 0)
+        return FALSE;
+    }
+
+  if (flags & BUS_MATCH_PATH_PREFIX)
+    {
+      const char *path;
+
+      _dbus_assert (rule->path_prefix != NULL);
+
+      path = dbus_message_get_path (message);
+      if (path == NULL)
+        return FALSE;
+
+      if (!str_has_prefix (path, rule->path_prefix))
         return FALSE;
     }
 
@@ -2616,6 +2706,83 @@ test_path_matching (void)
   bus_match_rule_unref (rule);
 }
 
+static const char*
+path_prefix_should_match_message_1[] = {
+  "type='signal',path_prefix='/foo'",
+  "type='signal',path_prefix='/foo/'",
+  "type='signal',path_prefix='/foo/TheObjectManager'",
+  NULL
+};
+
+static const char*
+path_prefix_should_not_match_message_1[] = {
+  "type='signal',path_prefix='/bar'",
+  "type='signal',path_prefix='/bar/'",
+  "type='signal',path_prefix='/bar/TheObjectManager'",
+  NULL
+};
+
+static const char*
+path_prefix_should_match_message_2[] = {
+  "type='signal',path_prefix='/foo/TheObjectManager'",
+  "type='signal',path_prefix='/foo/TheObjectManager/'",
+  NULL
+};
+
+static const char*
+path_prefix_should_not_match_message_2[] = {
+  NULL
+};
+
+static const char*
+path_prefix_should_match_message_3[] = {
+  "type='signal',path_prefix='/foo/TheObjectManager'",
+  NULL
+};
+
+static const char*
+path_prefix_should_not_match_message_3[] = {
+  "type='signal',path_prefix='/foo/TheObjectManager/'",
+  NULL
+};
+
+static void
+test_matching_path_prefix (void)
+{
+  DBusMessage *message1;
+  DBusMessage *message2;
+  DBusMessage *message3;
+
+  message1 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message1 != NULL);
+  if (!dbus_message_set_path (message1, "/foo/TheObjectManager"))
+    _dbus_assert_not_reached ("oom");
+
+  message2 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message2 != NULL);
+  if (!dbus_message_set_path (message2, "/foo/TheObjectManager/child_object"))
+    _dbus_assert_not_reached ("oom");
+
+  message3 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message3 != NULL);
+  if (!dbus_message_set_path (message3, "/foo/TheObjectManagerOther"))
+    _dbus_assert_not_reached ("oom");
+
+  check_matching (message1, 1,
+                  path_prefix_should_match_message_1,
+                  path_prefix_should_not_match_message_1);
+  check_matching (message2, 2,
+                  path_prefix_should_match_message_2,
+                  path_prefix_should_not_match_message_2);
+  check_matching (message3, 3,
+                  path_prefix_should_match_message_3,
+                  path_prefix_should_not_match_message_3);
+
+  dbus_message_unref (message3);
+  dbus_message_unref (message2);
+  dbus_message_unref (message1);
+}
+
 dbus_bool_t
 bus_signals_test (const DBusString *test_data_dir)
 {
@@ -2632,6 +2799,7 @@ bus_signals_test (const DBusString *test_data_dir)
   test_equality ();
   test_matching ();
   test_path_matching ();
+  test_matching_path_prefix ();
 
   return TRUE;
 }

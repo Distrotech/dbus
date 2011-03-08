@@ -3722,6 +3722,26 @@
                   path match is path='/org/freedesktop/Hal/Manager'</entry>
                 </row>
                 <row>
+                  <entry><literal>path_prefix</literal></entry>
+                  <entry>An object path optionally ending in a slash</entry>
+                  <entry>
+                    <para>
+                      Matches messages which are sent from or to an
+                      object for which the object path is a prefix of
+                      the given value. Examples of matches are
+                      path_prefix='/org/Application/ObjectManager' or
+                      path_prefix='/org/Application/ContactObjects/'.
+                    </para>
+                    <para>
+                      <emphasis>
+                        This match key was added in version 0.15 of the
+                        D-Bus specification and implemented by the bus
+                        daemon in dbus 1.4.7 and later.
+                      </emphasis>
+                    </para>
+                </entry>
+                </row>
+                <row>
                   <entry><literal>destination</literal></entry>
                   <entry>A unique name (see <xref linkend="term-unique-name"/>)</entry>
                   <entry>Matches messages which are being sent to the given unique name. An
