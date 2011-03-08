@@ -9,8 +9,6 @@ D-Bus 1.5.0 (UNRELEASED)
 D-Bus 1.4.8 (UNRELEASED)
 ==
 
-  • Include _dbus_path_is_absolute in libdbus on Windows, fixing compilation
-    (fd.o #32805, Mark Brand)
   • Rename configure.in to configure.ac, and update it to modern conventions
     (fd.o #32245; Javier Jardón, Simon McVittie)
   • Correctly give XDG_DATA_HOME priority over XDG_DATA_DIRS (fd.o #34496,
@@ -18,6 +16,13 @@ D-Bus 1.4.8 (UNRELEASED)
   • Prevent X11 autolaunching if $DISPLAY is unset or empty, and add
     --disable-x11-autolaunch configure option to prevent it altogether
     in embedded environments (fd.o #19997, NB#219964; Simon McVittie)
+  • Install the documentation, and an index for Devhelp (fd.o #13495,
+    Debian #454142; Simon McVittie, Matthias Clasen)
+  • Windows:
+    · Avoid the name ELEMENT_TYPE due to namespace-pollution from winioctl.h
+      (Andre Heinecke)
+    · Include _dbus_path_is_absolute in libdbus on Windows, fixing compilation
+      (fd.o #32805, Mark Brand)
 
 D-Bus 1.4.6 (2010-02-17)
 ==
