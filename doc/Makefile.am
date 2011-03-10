@@ -90,6 +90,13 @@ endif
 install-data-local:: doxygen.stamp
 	$(MKDIR_P) $(DESTDIR)$(apidir)
 	$(INSTALL_DATA) api/html/* $(DESTDIR)$(apidir)
+
+uninstall-local::
+	rm -f $(DESTDIR)$(apidir)/*.html
+	rm -f $(DESTDIR)$(apidir)/*.png
+	rm -f $(DESTDIR)$(apidir)/*.css
+	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(apidir) || \
+		rmdir $(DESTDIR)$(apidir)
 endif
 
 if DBUS_HAVE_MAN2HTML
@@ -143,6 +150,7 @@ clean-local:
 	rm -rf api
 	rm -rf dbus-docs
 	rm -f *.1.html
+	rm -f doxygen.stamp
 
 maintainer-clean-local:
 	rm -f $(HTML_FILES)
