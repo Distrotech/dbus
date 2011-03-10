@@ -1921,6 +1921,7 @@ bus_driver_handle_message (DBusConnection *connection,
   const char *name, *sender, *interface;
   const InterfaceHandler *ih;
   const MessageHandler *mh;
+  dbus_bool_t found_interface = FALSE;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1956,6 +1957,8 @@ bus_driver_handle_message (DBusConnection *connection,
     {
       if (interface != NULL && strcmp (interface, ih->name) != 0)
         continue;
+
+      found_interface = TRUE;
 
       for (mh = ih->message_handlers; mh->name != NULL; mh++)
         {
@@ -1998,7 +2001,7 @@ bus_driver_handle_message (DBusConnection *connection,
   _dbus_verbose ("No driver handler for message \"%s\"\n",
                  name);
 
-  dbus_set_error (error, DBUS_ERROR_UNKNOWN_METHOD,
+  dbus_set_error (error, found_interface ? DBUS_ERROR_UNKNOWN_METHOD : DBUS_ERROR_UNKNOWN_INTERFACE,
                   "%s does not understand message %s",
                   DBUS_SERVICE_DBUS, name);
 

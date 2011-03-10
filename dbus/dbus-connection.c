@@ -4523,6 +4523,7 @@ dbus_connection_dispatch (DBusConnection *connection)
   DBusPendingCall *pending;
   dbus_int32_t reply_serial;
   DBusDispatchStatus status;
+  dbus_bool_t found_object;
 
   _dbus_return_val_if_fail (connection != NULL, DBUS_DISPATCH_COMPLETE);
 
@@ -4687,7 +4688,8 @@ dbus_connection_dispatch (DBusConnection *connection)
 
   HAVE_LOCK_CHECK (connection);
   result = _dbus_object_tree_dispatch_and_unlock (connection->objects,
-                                                  message);
+                                                  message,
+                                                  &found_object);
   
   CONNECTION_LOCK (connection);
 
@@ -4726,7 +4728,7 @@ dbus_connection_dispatch (DBusConnection *connection)
         }
       
       reply = dbus_message_new_error (message,
-                                      DBUS_ERROR_UNKNOWN_METHOD,
+                                      found_object ? DBUS_ERROR_UNKNOWN_METHOD : DBUS_ERROR_UNKNOWN_OBJECT,
                                       _dbus_string_get_const_data (&str));
       _dbus_string_free (&str);
 
