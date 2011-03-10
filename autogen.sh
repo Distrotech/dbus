@@ -75,7 +75,7 @@ fi
 
 $LIBTOOLIZE --copy --force
 
-$ACLOCAL $ACLOCAL_FLAGS
+$ACLOCAL -I m4 $ACLOCAL_FLAGS
 
 ## optionally feature autoheader
 (autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader
