@@ -2515,6 +2515,39 @@ dbus_message_iter_append_basic (DBusMessageIter *iter,
   _dbus_return_val_if_fail (dbus_type_is_basic (type), FALSE);
   _dbus_return_val_if_fail (value != NULL, FALSE);
 
+#ifndef DBUS_DISABLE_CHECKS
+  switch (type)
+    {
+      const char * const *string_p;
+      const dbus_bool_t *bool_p;
+
+      case DBUS_TYPE_STRING:
+        string_p = value;
+        _dbus_return_val_if_fail (_dbus_check_is_valid_utf8 (*string_p), FALSE);
+        break;
+
+      case DBUS_TYPE_OBJECT_PATH:
+        string_p = value;
+        _dbus_return_val_if_fail (_dbus_check_is_valid_path (*string_p), FALSE);
+        break;
+
+      case DBUS_TYPE_SIGNATURE:
+        string_p = value;
+        _dbus_return_val_if_fail (_dbus_check_is_valid_signature (*string_p), FALSE);
+        break;
+
+      case DBUS_TYPE_BOOLEAN:
+        bool_p = value;
+        _dbus_return_val_if_fail (*bool_p == 0 || *bool_p == 1, FALSE);
+        break;
+
+      default:
+          {
+            /* nothing to check, all possible values are allowed */
+          }
+    }
+#endif
+
   if (!_dbus_message_iter_open_signature (real))
     return FALSE;
 
@@ -2626,6 +2659,19 @@ dbus_message_iter_append_fixed_array (DBusMessageIter *iter,
   _dbus_return_val_if_fail (n_elements <=
                             DBUS_MAXIMUM_ARRAY_LENGTH / _dbus_type_get_alignment (element_type),
                             FALSE);
+
+#ifndef DBUS_DISABLE_CHECKS
+  if (element_type == DBUS_TYPE_BOOLEAN)
+    {
+      const dbus_bool_t * const *bools = value;
+      int i;
+
+      for (i = 0; i < n_elements; i++)
+        {
+          _dbus_return_val_if_fail ((*bools)[i] == 0 || (*bools)[i] == 1, FALSE);
+        }
+    }
+#endif
 
   ret = _dbus_type_writer_write_fixed_multi (&real->u.writer, element_type, value, n_elements);
 

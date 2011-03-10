@@ -1221,6 +1221,8 @@ DEFINE_DBUS_NAME_CHECK(error_name)
 DEFINE_DBUS_NAME_CHECK(bus_name)
 /** define _dbus_check_is_valid_signature() */
 DEFINE_DBUS_NAME_CHECK(signature)
+/** define _dbus_check_is_valid_utf8() */
+DEFINE_DBUS_NAME_CHECK(utf8)
 
 /** @} */
 
