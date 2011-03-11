@@ -3633,12 +3633,18 @@ _dbus_get_standard_system_servicedirs (DBusList **dirs)
     }
 
   /*
-   * add configured datadir to defaults
-   * this may be the same as an xdg dir
-   * however the config parser should take
-   * care of duplicates
+   * Add configured datadir to defaults. This may be the same as one
+   * of the XDG directories. However, the config parser should take
+   * care of the duplicates.
+   *
+   * Also, append /lib as counterpart of /usr/share on the root
+   * directory (the root directory does not know /share), in order to
+   * facilitate early boot system bus activation where /usr might not
+   * be available.
    */
-  if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR":"))
+  if (!_dbus_string_append (&servicedir_path,
+                            DBUS_DATADIR":"
+                            "/lib:"))
         goto oom;
 
   if (!_dbus_split_paths_and_append (&servicedir_path,
