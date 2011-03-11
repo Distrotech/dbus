@@ -76,9 +76,15 @@ modular_tests = \
 	test-loopback \
 	test-relay
 
+installcheck_tests =
+installcheck_environment = \
+	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
+	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
+	DBUS_TEST_USE_INSTALLED=1
+
 TESTS_ENVIRONMENT = \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
-	DBUS_TEST_DATA=@abs_top_srcdir@/test/data
+	DBUS_TEST_DATA=@abs_top_builddir@/test/data
 
 test_loopback_SOURCES = loopback.c
 test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
@@ -97,7 +103,12 @@ test_relay_LDADD = $(top_builddir)/dbus/libdbus-1.la \
 if DBUS_ENABLE_MODULAR_TESTS
 noinst_PROGRAMS += $(modular_tests)
 TESTS += $(modular_tests)
+installcheck_tests += $(modular_tests)
 endif DBUS_ENABLE_MODULAR_TESTS
+
+installcheck-local:
+	$(MAKE) check-TESTS TESTS='$$(installcheck_tests)' \
+		TESTS_ENVIRONMENT='$$(installcheck_environment)'
 
 ## keep these in creation order, i.e. uppermost dirs first 
 TESTDIRS=					\
