@@ -76,6 +76,10 @@ modular_tests = \
 	test-loopback \
 	test-relay
 
+TESTS_ENVIRONMENT = \
+	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
+	DBUS_TEST_DATA=@abs_top_srcdir@/test/data
+
 test_loopback_SOURCES = loopback.c
 test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_loopback_LDFLAGS = @R_DYNAMIC_LDFLAG@
