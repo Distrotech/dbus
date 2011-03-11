@@ -6258,4 +6258,18 @@ dbus_connection_get_outgoing_unix_fds (DBusConnection *connection)
   return res;
 }
 
+#ifdef DBUS_BUILD_TESTS
+/**
+ * Returns the address of the transport object of this connection
+ *
+ * @param connection the connection
+ * @returns the address string
+ */
+const char*
+_dbus_connection_get_address (DBusConnection *connection)
+{
+  return _dbus_transport_get_address (connection->transport);
+}
+#endif
+
 /** @} */

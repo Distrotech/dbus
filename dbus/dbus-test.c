@@ -154,6 +154,8 @@ dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *speci
 
 #ifdef DBUS_UNIX
   run_data_test ("userdb", specific_test, _dbus_userdb_test, test_data_dir);
+
+  run_test ("transport-unix", specific_test, _dbus_transport_unix_test);
 #endif
   
   run_test ("keyring", specific_test, _dbus_keyring_test);

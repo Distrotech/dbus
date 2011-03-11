@@ -70,6 +70,10 @@ int _dbus_listen_unix_socket  (const char     *path,
                                dbus_bool_t     abstract,
                                DBusError      *error);
 
+int _dbus_connect_exec (const char     *path,
+                        char *const    argv[],
+                        DBusError      *error);
+
 int _dbus_listen_systemd_sockets (int       **fd,
                                  DBusError *error);
 
