@@ -41,6 +41,8 @@
 #endif
 
 typedef struct {
+    gboolean skip;
+
     DBusError e;
     GError *ge;
 
@@ -167,42 +169,63 @@ echo_filter (DBusConnection *connection,
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+typedef struct {
+    const char *bug_ref;
+    guint min_messages;
+    const char *config_file;
+} Config;
+
 static void
 setup (Fixture *f,
-    gconstpointer context G_GNUC_UNUSED)
+    gconstpointer context)
 {
+  const Config *config = context;
   gchar *dbus_daemon;
-  gchar *config;
+  gchar *arg;
   gchar *address;
 
   f->ge = NULL;
   dbus_error_init (&f->e);
+
+  if (config != NULL && config->config_file != NULL)
+    {
+      if (g_getenv ("DBUS_TEST_DATA") == NULL)
+        {
+          g_message ("SKIP: set DBUS_TEST_DATA to a directory containing %s",
+              config->config_file);
+          f->skip = TRUE;
+          return;
+        }
+
+      arg = g_strdup_printf (
+          "--config-file=%s/%s",
+          g_getenv ("DBUS_TEST_DATA"), config->config_file);
+    }
+  else if (g_getenv ("DBUS_TEST_SYSCONFDIR") != NULL)
+    {
+      arg = g_strdup_printf ("--config-file=%s/dbus-1/session.conf",
+          g_getenv ("DBUS_TEST_SYSCONFDIR"));
+    }
+  else if (g_getenv ("DBUS_TEST_DATA") != NULL)
+    {
+      arg = g_strdup_printf (
+          "--config-file=%s/valid-config-files/session.conf",
+          g_getenv ("DBUS_TEST_DATA"));
+    }
+  else
+    {
+      arg = g_strdup ("--session");
+    }
 
   dbus_daemon = g_strdup (g_getenv ("DBUS_TEST_DAEMON"));
 
   if (dbus_daemon == NULL)
     dbus_daemon = g_strdup ("dbus-daemon");
 
-  if (g_getenv ("DBUS_TEST_SYSCONFDIR") != NULL)
-    {
-      config = g_strdup_printf ("--config-file=%s/dbus-1/session.conf",
-          g_getenv ("DBUS_TEST_SYSCONFDIR"));
-    }
-  else if (g_getenv ("DBUS_TEST_DATA") != NULL)
-    {
-      config = g_strdup_printf (
-          "--config-file=%s/valid-config-files/session.conf",
-          g_getenv ("DBUS_TEST_DATA"));
-    }
-  else
-    {
-      config = g_strdup ("--session");
-    }
-
-  address = spawn_dbus_daemon (dbus_daemon, config, &f->daemon_pid);
+  address = spawn_dbus_daemon (dbus_daemon, arg, &f->daemon_pid);
 
   g_free (dbus_daemon);
-  g_free (config);
+  g_free (arg);
 
   f->left_conn = connect_to_bus (address);
   f->right_conn = connect_to_bus (address);
@@ -229,15 +252,25 @@ pc_count (DBusPendingCall *pc,
 
 static void
 test_echo (Fixture *f,
-    gconstpointer context G_GNUC_UNUSED)
+    gconstpointer context)
 {
+  const Config *config = context;
   guint count = 2000;
   guint sent;
   guint received = 0;
   double elapsed;
 
+  if (f->skip)
+    return;
+
+  if (config != NULL && config->bug_ref != NULL)
+    g_test_bug (config->bug_ref);
+
   if (g_test_perf ())
     count = 100000;
+
+  if (config != NULL)
+    count = MAX (config->min_messages, count);
 
   add_echo_filter (f);
 
@@ -304,14 +337,22 @@ teardown (Fixture *f,
       f->right_conn = NULL;
     }
 
+  if (f->daemon_pid != 0)
+    {
 #ifdef DBUS_WIN
-  TerminateProcess (f->daemon_pid, 1);
+      TerminateProcess (f->daemon_pid, 1);
 #else
-  kill (f->daemon_pid, SIGTERM);
+      kill (f->daemon_pid, SIGTERM);
 #endif
 
-  g_spawn_close_pid (f->daemon_pid);
+      g_spawn_close_pid (f->daemon_pid);
+      f->daemon_pid = 0;
+    }
 }
+
+static Config limited_config = {
+    "34393", 10000, "valid-config-files/incoming-limit.conf"
+};
 
 int
 main (int argc,
@@ -321,6 +362,8 @@ main (int argc,
   g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
 
   g_test_add ("/echo/session", Fixture, NULL, setup, test_echo, teardown);
+  g_test_add ("/echo/limited", Fixture, &limited_config,
+      setup, test_echo, teardown);
 
   return g_test_run ();
 }
