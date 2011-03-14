@@ -5,6 +5,12 @@ D-Bus 1.5.0 (UNRELEASED)
     Simon McVittie)
   • Optimize _dbus_string_replace_len to reduce waste (fd.o #21261,
     Roberto Guido)
+  • Require user intervention to compile with missing 64-bit support
+    (fd.o #35114, Simon McVittie)
+  • Add dbus_type_is_valid as public API (fd.o #20496, Simon McVittie)
+  • Raise UnknownObject instead of UnknownMethod for calls to methods on
+    paths that are not part of the object tree, and UnknownInterface for calls
+    to unknown interfaces in the bus daemon (fd.o #34527, Lennart Poettering)
 
 D-Bus 1.4.8 (UNRELEASED)
 ==
