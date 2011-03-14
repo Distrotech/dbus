@@ -10,6 +10,10 @@ D-Bus 1.4.8 (UNRELEASED)
     in embedded environments (fd.o #19997, NB#219964; Simon McVittie)
   • Install the documentation, and an index for Devhelp (fd.o #13495,
     Debian #454142; Simon McVittie, Matthias Clasen)
+  • If checks are not disabled, check validity of string-like types and
+    booleans when sending them (fd.o #16338, NB#223152; Simon McVittie)
+  • Add UnknownObject, UnknownInterface, UnknownProperty and PropertyReadOnly
+    errors to dbus-shared.h (fd.o #34527, Lennart Poettering)
   • Windows:
     · Avoid the name ELEMENT_TYPE due to namespace-pollution from winioctl.h
       (Andre Heinecke)
