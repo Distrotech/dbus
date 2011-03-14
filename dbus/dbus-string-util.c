@@ -266,7 +266,7 @@ _dbus_string_test (void)
 {
   DBusString str;
   DBusString other;
-  int i, a, end;
+  int i, end;
   long v;
   double d;
   int lens[] = { 0, 1, 2, 3, 4, 5, 10, 16, 17, 18, 25, 31, 32, 33, 34, 35, 63, 64, 65, 66, 67, 68, 69, 70, 71, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136 };
@@ -513,94 +513,10 @@ _dbus_string_test (void)
   _dbus_assert (_dbus_string_get_length (&other) == i * 2 - 1);
   _dbus_assert (_dbus_string_equal_c_str (&other,
                                           "HelloHello WorldWorle"));
-
+  
   _dbus_string_free (&str);
   _dbus_string_free (&other);
-
-  /* Different tests are provided because different behaviours are
-   * implemented in _dbus_string_replace_len() in function of replacing and
-   * replaced lengths
-   */
-
-  if (!_dbus_string_init (&str))
-    _dbus_assert_not_reached ("failed to init string");
   
-  if (!_dbus_string_append (&str, "Hello World"))
-    _dbus_assert_not_reached ("could not append to string");
-
-  i = _dbus_string_get_length (&str);
-  
-  if (!_dbus_string_init (&other))
-    _dbus_assert_not_reached ("could not init string");
-
-  if (!_dbus_string_append (&other, "Foo String"))
-    _dbus_assert_not_reached ("could not append to string");
-
-  a = _dbus_string_get_length (&other);
-
-  if (!_dbus_string_replace_len (&str, 0, 6,
-                                 &other, 4, 0))
-    _dbus_assert_not_reached ("could not replace 0 length");
-
-  _dbus_assert (_dbus_string_get_length (&str) == i);
-  _dbus_assert (_dbus_string_get_length (&other) == a + 6);
-  _dbus_assert (_dbus_string_equal_c_str (&other,
-                                          "Foo Hello String"));
-
-  if (!_dbus_string_replace_len (&str, 5, 6,
-                                 &other,
-                                 _dbus_string_get_length (&other),
-                                 0))
-    _dbus_assert_not_reached ("could not replace at the end");
-
-  _dbus_assert (_dbus_string_get_length (&str) == i);
-  _dbus_assert (_dbus_string_get_length (&other) == a + 6 + 6);
-  _dbus_assert (_dbus_string_equal_c_str (&other,
-                                          "Foo Hello String World"));
-
-  if (!_dbus_string_replace_len (&str, 0, 5,
-                                 &other,
-                                 _dbus_string_get_length (&other) - 5,
-                                 5))
-    _dbus_assert_not_reached ("could not replace same length");
-
-  _dbus_assert (_dbus_string_get_length (&str) == i);
-  _dbus_assert (_dbus_string_get_length (&other) == a + 6 + 6);
-  _dbus_assert (_dbus_string_equal_c_str (&other,
-                                          "Foo Hello String Hello"));
-
-  if (!_dbus_string_replace_len (&str, 6, 5,
-                                 &other, 4, 12))
-    _dbus_assert_not_reached ("could not replace with shorter string");
-
-  _dbus_assert (_dbus_string_get_length (&str) == i);
-  _dbus_assert (_dbus_string_get_length (&other) == a + 5);
-  _dbus_assert (_dbus_string_equal_c_str (&other,
-                                          "Foo World Hello"));
-
-  if (!_dbus_string_replace_len (&str, 0, 1,
-                                 &other, 0, 3))
-    _dbus_assert_not_reached ("could not replace at the beginning");
-
-  _dbus_assert (_dbus_string_get_length (&str) == i);
-  _dbus_assert (_dbus_string_get_length (&other) == a + 3);
-  _dbus_assert (_dbus_string_equal_c_str (&other,
-                                          "H World Hello"));
-
-  if (!_dbus_string_replace_len (&str, 6, 5,
-                                 &other,
-                                 _dbus_string_get_length (&other) - 5,
-                                 5))
-    _dbus_assert_not_reached ("could not replace same length");
-
-  _dbus_assert (_dbus_string_get_length (&str) == i);
-  _dbus_assert (_dbus_string_get_length (&other) == a + 3);
-  _dbus_assert (_dbus_string_equal_c_str (&other,
-                                          "H World World"));
-
-  _dbus_string_free (&str);
-  _dbus_string_free (&other);
-
   /* Check append/get unichar */
   
   if (!_dbus_string_init (&str))

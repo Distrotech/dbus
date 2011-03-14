@@ -38,7 +38,6 @@
 #include "dbus-protocol.h"
 #include "dbus-dataslot.h"
 #include "dbus-string.h"
-#include "dbus-signature.h"
 #include "dbus-pending-call.h"
 #include "dbus-object-tree.h"
 #include "dbus-threads-internal.h"
@@ -3096,7 +3095,7 @@ dbus_connection_can_send_type(DBusConnection *connection,
 {
   _dbus_return_val_if_fail (connection != NULL, FALSE);
 
-  if (!dbus_type_is_valid (type))
+  if (!_dbus_type_is_valid(type))
     return FALSE;
 
   if (type != DBUS_TYPE_UNIX_FD)

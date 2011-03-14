@@ -228,12 +228,6 @@ AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long long)
 AC_CHECK_SIZEOF(__int64)
 
-AC_ARG_WITH([64-bit],
-  [AS_HELP_STRING([--without-64-bit],
-    [If you have to use this option, please report it as a bug])],
-  [],
-  [with_64_bit=yes])
-
 ### See what our 64 bit type is called
 AC_MSG_CHECKING([64-bit integer type])
 
@@ -271,32 +265,13 @@ $ac_cv_sizeof___int64)
   ;;
 esac
 
-AS_IF(
-  [test "x$with_64_bit" = xno],
-  [
+if test -z "$dbusint64" ; then
         DBUS_INT64_TYPE="no_int64_type_detected"
         DBUS_HAVE_INT64=0
         DBUS_INT64_CONSTANT=
         DBUS_UINT64_CONSTANT=
-        AC_MSG_RESULT([disabled via --without-64-bit])
-  ],
-  dnl else if
-  [test -z "$dbusint64"],
-  [AC_MSG_RESULT([not found])
-  AC_MSG_ERROR([Could not find a 64-bit integer type.
-
-Please report a bug here with details of your platform and compiler:
-
-    http://bugs.freedesktop.org/enter_bug.cgi?product=DBus&component=core
-
-To compile D-Bus with all 64-bit integer types removed (not recommended), use
-the option "--without-64-bit".
-
-This option is likely to be removed in future, unless you report that your
-platform needs it.])
-  ],
-  dnl else
-  [
+        AC_MSG_RESULT([none found])
+else
         DBUS_INT64_TYPE="$dbusint64"
         DBUS_HAVE_INT64=1
         DBUS_INT64_CONSTANT="$dbusint64_constant"
@@ -305,7 +280,7 @@ platform needs it.])
 		AC_DEFINE_UNQUOTED(DBUS_INT64_PRINTF_MODIFIER, [$dbusint64_printf_modifier], [Define to printf modifier for 64 bit integer type])
 	fi
         AC_MSG_RESULT($DBUS_INT64_TYPE)
-  ])
+fi
 
 AC_SUBST(DBUS_INT64_TYPE)
 AC_SUBST(DBUS_INT64_CONSTANT)
@@ -1769,17 +1744,4 @@ fi
 if test x$dbus_use_libxml = xtrue; then
         echo
 	echo "WARNING: You have chosen to use libxml as your xml parser however this code path is not maintained by the D-Bus developers and if it breaks you get to keep the pieces.  If you have selected this option in err please reconfigure with expat (e.g. --with-xml=expat)."
-fi
-
-if test "x$DBUS_HAVE_INT64" = x0; then
-  AC_MSG_WARN([You have disabled 64-bit integers via --without-64-bit.
-
-  This removes parts of the standard D-Bus API and ABI (the 't' and 'x'
-  typecodes, the dbus_int64_t and dbus_uint64_t types, etc.) and should only be
-  used if your compiler lacks support for 64-bit integers. Please report a bug
-  with details of your platform and compiler.
-
-  This option is likely to be removed in future, unless the D-Bus developers
-  receive reports that it is still needed.
-  ])
 fi

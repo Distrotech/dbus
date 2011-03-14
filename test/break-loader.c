@@ -446,7 +446,7 @@ randomly_change_one_type (const DBusString *orig_data,
     {
       int b;
       b = _dbus_string_get_byte (mutated, i);
-      if (dbus_type_is_valid (b))
+      if (_dbus_type_is_valid (b))
         {
           _dbus_string_set_byte (mutated, i, random_type ());
           return;
