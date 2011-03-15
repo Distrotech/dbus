@@ -1319,6 +1319,7 @@ nonnull (const char *maybe_null,
  */
 static void
 complain_about_message (BusContext     *context,
+                        const char     *error_name,
                         const char     *complaint,
                         int             matched_rules,
                         DBusMessage    *message,
@@ -1352,7 +1353,7 @@ complain_about_message (BusContext     *context,
   else
     proposed_recipient_loginfo = "bus";
 
-  dbus_set_error (&stack_error, DBUS_ERROR_ACCESS_DENIED,
+  dbus_set_error (&stack_error, error_name,
       "%s, %d matched rules; type=\"%s\", sender=\"%s\" (%s) "
       "interface=\"%s\" member=\"%s\" error name=\"%s\" "
       "requested_reply=\"%d\" destination=\"%s\" (%s)",
@@ -1457,7 +1458,7 @@ bus_context_check_security_policy (BusContext     *context,
             {
               /* don't syslog this, just set the error: avc_has_perm should
                * have already written to either the audit log or syslog */
-              complain_about_message (context,
+              complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
                   "An SELinux policy prevents this sender from sending this "
                   "message to this recipient",
                   0, message, sender, proposed_recipient, FALSE, FALSE, error);
@@ -1577,7 +1578,8 @@ bus_context_check_security_policy (BusContext     *context,
       const char *msg = "Rejected send message, %d matched rules; "
                         "type=\"%s\", sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" error name=\"%s\" requested_reply=%d destination=\"%s\" (%s))";
 
-      complain_about_message (context, "Rejected send message", toggles,
+      complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+          "Rejected send message", toggles,
           message, sender, proposed_recipient, requested_reply,
           (addressed_recipient == proposed_recipient), error);
       _dbus_verbose ("security policy disallowing message due to sender policy\n");
@@ -1588,7 +1590,8 @@ bus_context_check_security_policy (BusContext     *context,
     {
       /* We want to drop this message, and are only not doing so for backwards
        * compatibility. */
-      complain_about_message (context, "Would reject message", toggles,
+      complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+          "Would reject message", toggles,
           message, sender, proposed_recipient, requested_reply,
           TRUE, NULL);
     }
@@ -1601,7 +1604,8 @@ bus_context_check_security_policy (BusContext     *context,
                                             addressed_recipient, proposed_recipient,
                                             message, &toggles))
     {
-      complain_about_message (context, "Rejected receive message", toggles,
+      complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+          "Rejected receive message", toggles,
           message, sender, proposed_recipient, requested_reply,
           (addressed_recipient == proposed_recipient), NULL);
       _dbus_verbose ("security policy disallowing message due to recipient policy\n");
@@ -1613,11 +1617,10 @@ bus_context_check_security_policy (BusContext     *context,
       ((dbus_connection_get_outgoing_size (proposed_recipient) > context->limits.max_outgoing_bytes) ||
        (dbus_connection_get_outgoing_unix_fds (proposed_recipient) > context->limits.max_outgoing_unix_fds)))
     {
-      dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
-                      "The destination service \"%s\" has a full message queue",
-                      dest ? dest : (proposed_recipient ?
-                                     bus_connection_get_name (proposed_recipient) :
-                                     DBUS_SERVICE_DBUS));
+      complain_about_message (context, DBUS_ERROR_LIMITS_EXCEEDED,
+          "Rejected: destination has a full message queue",
+          0, message, sender, proposed_recipient, requested_reply, TRUE,
+          error);
       _dbus_verbose ("security policy disallowing message due to full message queue\n");
       return FALSE;
     }
