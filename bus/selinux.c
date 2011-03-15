@@ -164,7 +164,7 @@ log_callback (const char *fmt, ...)
   }
 #endif /* HAVE_LIBAUDIT */
   
-  vsyslog (LOG_INFO, fmt, ap);
+  vsyslog (LOG_USER | LOG_INFO, fmt, ap);
   va_end(ap);
 }
 
@@ -342,7 +342,6 @@ bus_selinux_full_init (void)
     }
   else
     {
-      openlog ("dbus", LOG_PERROR, LOG_USER);
       _dbus_verbose ("Access Vector Cache (AVC) started.\n");
     }
 

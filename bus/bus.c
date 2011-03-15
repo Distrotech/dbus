@@ -297,6 +297,8 @@ process_config_first_time_only (BusContext       *context,
   retval = FALSE;
   auth_mechanisms = NULL;
 
+  _dbus_init_system_log ();
+
   context->systemd_activation = systemd_activation;
 
   /* Check for an existing pid file. Of course this is a race;
