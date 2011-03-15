@@ -264,7 +264,7 @@ _dbus_request_file_descriptor_limit (unsigned int limit)
 void
 _dbus_init_system_log (void)
 {
-    // FIXME!
+  /* OutputDebugStringA doesn't need any special initialization, do nothing */
 }
 
 /**
