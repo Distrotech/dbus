@@ -1455,21 +1455,12 @@ bus_context_check_security_policy (BusContext     *context,
         {
           if (error != NULL && !dbus_error_is_set (error))
             {
-              sender_name = bus_connection_get_name (sender);
-
-              dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
-                              "An SELinux policy prevents this sender "
-                              "from sending this message to this recipient "
-                              "(rejected message had sender \"%s\" interface \"%s\" "
-                              "member \"%s\" error name \"%s\" destination \"%s\")",
-                              sender_name ? sender_name : "(unset)",
-                              dbus_message_get_interface (message) ?
-                              dbus_message_get_interface (message) : "(unset)",
-                              dbus_message_get_member (message) ?
-                              dbus_message_get_member (message) : "(unset)",
-                              dbus_message_get_error_name (message) ?
-                              dbus_message_get_error_name (message) : "(unset)",
-                              dest ? dest : DBUS_SERVICE_DBUS);
+              /* don't syslog this, just set the error: avc_has_perm should
+               * have already written to either the audit log or syslog */
+              complain_about_message (context,
+                  "An SELinux policy prevents this sender from sending this "
+                  "message to this recipient",
+                  0, message, sender, proposed_recipient, FALSE, FALSE, error);
               _dbus_verbose ("SELinux security check denying send to service\n");
             }
 
