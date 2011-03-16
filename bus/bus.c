@@ -23,6 +23,9 @@
 
 #include <config.h>
 #include "bus.h"
+
+#include <stdio.h>
+
 #include "activation.h"
 #include "connection.h"
 #include "services.h"
@@ -36,6 +39,7 @@
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-credentials.h>
 #include <dbus/dbus-internals.h>
+
 #ifdef DBUS_CYGWIN
 #include <signal.h>
 #endif
@@ -1283,7 +1287,14 @@ bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char
   va_list args;
 
   if (!context->syslog)
-    return;
+    {
+      /* we're not syslogging; just output to stderr */
+      va_start (args, msg);
+      vfprintf (stderr, msg, args);
+      fprintf (stderr, "\n");
+      va_end (args);
+      return;
+    }
 
   va_start (args, msg);
 
@@ -1336,7 +1347,7 @@ complain_about_message (BusContext     *context,
   const char *sender_loginfo;
   const char *proposed_recipient_loginfo;
 
-  if (error == NULL && !(context->syslog && log))
+  if (error == NULL && !log)
     return;
 
   if (sender != NULL)
