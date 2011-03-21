@@ -157,7 +157,7 @@ _dbus_check_fdleaks_enter (void)
 
   /* This works on Linux only */
 
-  if ((d = opendir("/proc/self/fd")))
+  if ((d = opendir ("/proc/self/fd")))
     {
       struct dirent *de;
 
@@ -171,21 +171,21 @@ _dbus_check_fdleaks_enter (void)
             continue;
 
           errno = 0;
-          l = strtol(de->d_name, &e, 10);
-          _dbus_assert(errno == 0 && e && !*e);
+          l = strtol (de->d_name, &e, 10);
+          _dbus_assert (errno == 0 && e && !*e);
 
           fd = (int) l;
 
           if (fd < 3)
             continue;
 
-          if (fd == dirfd(d))
+          if (fd == dirfd (d))
             continue;
 
           FD_SET (fd, &fds->set);
         }
 
-      closedir(d);
+      closedir (d);
     }
 
   return fds;
@@ -202,7 +202,7 @@ _dbus_check_fdleaks_leave (DBusInitialFDs *fds)
 
   /* This works on Linux only */
 
-  if ((d = opendir("/proc/self/fd")))
+  if ((d = opendir ("/proc/self/fd")))
     {
       struct dirent *de;
 
@@ -216,25 +216,25 @@ _dbus_check_fdleaks_leave (DBusInitialFDs *fds)
             continue;
 
           errno = 0;
-          l = strtol(de->d_name, &e, 10);
-          _dbus_assert(errno == 0 && e && !*e);
+          l = strtol (de->d_name, &e, 10);
+          _dbus_assert (errno == 0 && e && !*e);
 
           fd = (int) l;
 
           if (fd < 3)
             continue;
 
-          if (fd == dirfd(d))
+          if (fd == dirfd (d))
             continue;
 
           if (FD_ISSET (fd, &fds->set))
             continue;
 
-          _dbus_warn("file descriptor %i leaked in %s.\n", fd, __FILE__);
-          _dbus_assert_not_reached("fdleaks");
+          _dbus_warn ("file descriptor %i leaked in %s.\n", fd, __FILE__);
+          _dbus_assert_not_reached ("fdleaks");
         }
 
-      closedir(d);
+      closedir (d);
     }
 
   free (fds);
