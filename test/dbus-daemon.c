@@ -184,7 +184,17 @@ setup (Fixture *f,
 
   if (g_getenv ("DBUS_TEST_USE_INSTALLED") != NULL)
     {
-      config = g_strdup ("--session");
+      /* we strdup this because it might be clobbered by a subsequent
+       * g_getenv */
+      gchar *destdir = g_strdup (g_getenv ("DESTDIR"));
+
+      if (destdir != NULL && *destdir != '\0')
+        config = g_strdup_printf ("--config-file=%s%s/dbus-1/session.conf",
+            destdir, g_getenv ("DBUS_TEST_SYSCONFDIR"));
+      else
+        config = g_strdup ("--session");
+
+      g_free (destdir);
     }
   else
     {

@@ -81,7 +81,9 @@ installcheck_tests =
 installcheck_environment = \
 	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
 	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
-	DBUS_TEST_USE_INSTALLED=1
+	DBUS_TEST_USE_INSTALLED=1 \
+	DBUS_TEST_SYSCONFDIR=$(sysconfdir) \
+	DESTDIR=$(DESTDIR)
 
 TESTS_ENVIRONMENT = \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
