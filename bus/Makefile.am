@@ -1,5 +1,5 @@
-
 configdir=$(sysconfdir)/dbus-1
+dbus_daemon_execdir = $(DBUS_DAEMONDIR)
 
 INCLUDES=-I$(top_srcdir) $(DBUS_BUS_CFLAGS) @PIE_CFLAGS@		\
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\"	\
@@ -145,31 +145,28 @@ bus_test_launch_helper_CPPFLAGS= -DDBUS_STATIC_BUILD	\
 	-DACTIVATION_LAUNCHER_TEST	\
 	-DACTIVATION_LAUNCHER_DO_OOM
 
-extra_tests=
-extra_noinst_programs=
-extra_inst_programs=
-if DBUS_UNIX
-extra_tests+=bus-test-launch-helper
-extra_noinst_programs+=dbus-daemon-launch-helper dbus-daemon-launch-helper-test dbus-daemon
-endif
-if DBUS_WIN
-extra_inst_programs+=dbus-daemon
-endif
+## we use noinst_PROGRAMS not check_PROGRAMS so that we build
+## even when not doing "make check"
+noinst_PROGRAMS = $(TESTS)
+dbus_daemon_exec_PROGRAMS = dbus-daemon
+libexec_PROGRAMS = dbus-daemon-launch-helper
 
 ## note that TESTS has special meaning (stuff to use in make check)
 ## so if adding tests not to be run in make check, don't add them to
 ## TESTS
+TESTS =
+
 if DBUS_BUILD_TESTS
 TESTS_ENVIRONMENT=DBUS_TEST_DATA=$(top_builddir)/test/data DBUS_TEST_HOMEDIR=$(top_builddir)/dbus DBUS_FATAL_WARNINGS=1 DBUS_BLOCK_ON_ABORT=1
-TESTS=bus-test bus-test-system $(extra_tests)
-else
-TESTS=
-endif
+TESTS += bus-test bus-test-system
 
-## we use noinst_PROGRAMS not check_PROGRAMS so that we build
-## even when not doing "make check"
-noinst_PROGRAMS=$(TESTS) $(extra_noinst_programs)
-bin_PROGRAMS=$(extra_inst_programs)
+if DBUS_UNIX
+TESTS += bus-test-launch-helper
+# this is used by the tests but is not,itself, a test
+noinst_PROGRAMS += dbus-daemon-launch-helper-test
+endif DBUS_UNIX
+
+endif DBUS_BUILD_TESTS
 
 bus_test_system_SOURCES=			\
 	$(XML_SOURCES)				\
@@ -197,34 +194,12 @@ bus_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 clean-local:
 	/bin/rm *.bb *.bbg *.da *.gcov || true
 
-uninstall-hook:
-	rm -f $(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT)
-	rm -f $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper$(EXEEXT)
-
 install-data-hook:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/run/dbus
 	$(mkinstalldirs) $(DESTDIR)$(configdir)/system.d
 	$(mkinstalldirs) $(DESTDIR)$(configdir)/session.d
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/services
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/system-services
-if DBUS_UNIX
-	if test '!' -d $(DESTDIR)$(DBUS_DAEMONDIR); then \
-		$(mkinstalldirs) $(DESTDIR)$(DBUS_DAEMONDIR); \
-		chmod 755 $(DESTDIR)$(DBUS_DAEMONDIR); \
-	fi
-	$(LIBTOOL) --mode=install $(INSTALL_PROGRAM) dbus-daemon$(EXEEXT) $(DESTDIR)$(DBUS_DAEMONDIR)
-	$(mkinstalldirs) $(DESTDIR)$(libexecdir)/dbus-1
-	if test -f dbus-daemon-launch-helper$(EXEEXT) ; then \
-	$(LIBTOOL) --mode=install $(INSTALL_PROGRAM) dbus-daemon-launch-helper$(EXEEXT) $(DESTDIR)$(libexecdir); \
-	if test `id -u` -eq 0; then \
-		chown root:$(DBUS_USER) $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper$(EXEEXT); \
-		chmod 4750 $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper$(EXEEXT); \
-	else \
-		echo "Not installing $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper binary setuid!"; \
-		echo "You'll need to manually set permissions to root:$(DBUS_USER) and permissions 4750"; \
-	fi \
-	fi
-endif
 if HAVE_SYSTEMD
 # Install dbus.socket as default implementation of a D-Bus stack
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/dbus.target.wants
@@ -234,6 +209,17 @@ if HAVE_SYSTEMD
 	$(LN_S) ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/sockets.target.wants/dbus.socket
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants
 	$(LN_S) ../dbus.service $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants/dbus.service
+endif
+
+if DBUS_UNIX
+install-exec-hook:
+	if test `id -u` -eq 0; then \
+		chown root:$(DBUS_USER) $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper$(EXEEXT); \
+		chmod 4750 $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper$(EXEEXT); \
+	else \
+		echo "Not installing $(DESTDIR)$(libexecdir)/dbus-daemon-launch-helper binary setuid!"; \
+		echo "You'll need to manually set permissions to root:$(DBUS_USER) and permissions 4750"; \
+	fi
 endif
 
 #### Init scripts fun
