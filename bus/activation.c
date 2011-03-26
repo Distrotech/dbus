@@ -1106,6 +1106,10 @@ bus_activation_service_created (BusActivation  *activation,
   if (!pending_activation)
     return TRUE;
 
+  bus_context_log (activation->context,
+                   DBUS_SYSTEM_LOG_INFO, "Successfully activated service '%s'",
+                   service_name);
+
   link = _dbus_list_get_first_link (&pending_activation->entries);
   while (link != NULL)
     {
@@ -1400,6 +1404,11 @@ babysitter_watch_callback (DBusWatch     *watch,
 
       if (activation_failed)
         {
+          bus_context_log (pending_activation->activation->context,
+                           DBUS_SYSTEM_LOG_INFO, "Activated service '%s' failed: %s",
+                           pending_activation->service_name,
+                           error.message);
+
           /* Destroy all pending activations with the same exec */
           _dbus_hash_iter_init (pending_activation->activation->pending_activations,
                                 &iter);
@@ -1462,6 +1471,10 @@ pending_activation_timed_out (void *data)
   dbus_set_error (&error, DBUS_ERROR_TIMED_OUT,
                   "Activation of %s timed out",
                   pending_activation->service_name);
+  bus_context_log (pending_activation->activation->context,
+                   DBUS_SYSTEM_LOG_INFO,
+                   "Failed to activate service '%s': timed out",
+                   pending_activation->service_name);
 
   pending_activation_failed (pending_activation, &error);
 
@@ -1674,6 +1687,7 @@ bus_activation_activate_service (BusActivation  *activation,
                                  const char     *service_name,
                                  DBusError      *error)
 {
+  DBusError tmp_error;
   BusActivationEntry *entry;
   BusPendingActivation *pending_activation;
   BusPendingActivationEntry *pending_activation_entry;
@@ -1962,18 +1976,34 @@ bus_activation_activate_service (BusActivation  *activation,
           service = bus_registry_lookup (registry, &service_string);
 
           if (service != NULL)
-            /* Wonderful, systemd is connected, let's just send the msg */
-            retval = bus_dispatch_matches (activation_transaction, NULL, bus_service_get_primary_owners_connection (service),
-                                           message, error);
+            {
+              bus_context_log (activation->context,
+                               DBUS_SYSTEM_LOG_INFO, "Activating via systemd: service name='%s' unit='%s'",
+                               service_name,
+                               entry->systemd_service);
+              /* Wonderful, systemd is connected, let's just send the msg */
+              retval = bus_dispatch_matches (activation_transaction, NULL, bus_service_get_primary_owners_connection (service),
+                                             message, error);
+            }
           else
-            /* systemd is not around, let's "activate" it. */
-            retval = bus_activation_activate_service (activation, connection, activation_transaction, TRUE,
-                                                      message, "org.freedesktop.systemd1", error);
+            {
+              bus_context_log (activation->context,
+                               DBUS_SYSTEM_LOG_INFO, "Activating systemd to hand-off: service name='%s' unit='%s'",
+                               service_name,
+                               entry->systemd_service);
+              /* systemd is not around, let's "activate" it. */
+              retval = bus_activation_activate_service (activation, connection, activation_transaction, TRUE,
+                                                        message, "org.freedesktop.systemd1", error);
+            }
 
           dbus_message_unref (message);
 
           if (!retval)
             {
+              bus_context_log (activation->context,
+                               DBUS_SYSTEM_LOG_INFO, "Failed to activate via systemd: service name='%s' unit='%s'",
+                               service_name,
+                               entry->systemd_service);
               _DBUS_ASSERT_ERROR_IS_SET (error);
               _dbus_verbose ("failed to send activation message: %s\n", error->name);
               bus_transaction_cancel_and_free (activation_transaction);
@@ -2069,13 +2099,29 @@ bus_activation_activate_service (BusActivation  *activation,
     }
 
   _dbus_verbose ("Spawning %s ...\n", argv[0]);
+  if (servicehelper != NULL)
+    bus_context_log (activation->context,
+                     DBUS_SYSTEM_LOG_INFO, "Activating service name='%s' (using servicehelper)",
+                     service_name);
+  else
+    bus_context_log (activation->context,
+                     DBUS_SYSTEM_LOG_INFO, "Activating service name='%s'",
+                     service_name);
+
+  dbus_error_init (&tmp_error);
+
   if (!_dbus_spawn_async_with_babysitter (&pending_activation->babysitter, argv,
                                           envp,
                                           NULL, activation,
-                                          error))
+                                          &tmp_error))
     {
       _dbus_verbose ("Failed to spawn child\n");
-      _DBUS_ASSERT_ERROR_IS_SET (error);
+      bus_context_log (activation->context,
+                       DBUS_SYSTEM_LOG_INFO, "Failed to activate service %s: %s",
+                       service_name,
+                       tmp_error.message);
+      _DBUS_ASSERT_ERROR_IS_SET (&tmp_error);
+      dbus_move_error (&tmp_error, error);
       dbus_free_string_array (argv);
       dbus_free_string_array (envp);
 
@@ -2166,9 +2212,15 @@ dbus_activation_systemd_failure (BusActivation *activation,
                              DBUS_TYPE_INVALID))
     dbus_set_error(&error, code, str);
 
+
   if (unit)
     {
       DBusHashIter iter;
+
+      bus_context_log (activation->context,
+                       DBUS_SYSTEM_LOG_INFO, "Activation via systemd failed for unit '%s': %s",
+                       unit,
+                       str);
 
       _dbus_hash_iter_init (activation->pending_activations,
                             &iter);
