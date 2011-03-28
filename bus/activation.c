@@ -1685,10 +1685,8 @@ bus_activation_activate_service (BusActivation  *activation,
   int argc;
   dbus_bool_t retval;
   DBusHashIter iter;
-  dbus_bool_t activated;
+  dbus_bool_t was_pending_activation;
   DBusString command;
-
-  activated = TRUE;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1768,7 +1766,8 @@ bus_activation_activate_service (BusActivation  *activation,
 
   /* Check if the service is being activated */
   pending_activation = _dbus_hash_table_lookup_string (activation->pending_activations, service_name);
-  if (pending_activation)
+  was_pending_activation = (pending_activation != NULL);
+  if (was_pending_activation)
     {
       if (!_dbus_list_append (&pending_activation->entries, pending_activation_entry))
         {
@@ -1875,19 +1874,6 @@ bus_activation_activate_service (BusActivation  *activation,
       pending_activation->n_entries += 1;
       pending_activation->activation->n_pending_activations += 1;
 
-      activated = FALSE;
-      _dbus_hash_iter_init (activation->pending_activations, &iter);
-      while (_dbus_hash_iter_next (&iter))
-        {
-          BusPendingActivation *p = _dbus_hash_iter_get_value (&iter);
-
-          if (strcmp (p->exec, entry->exec) == 0)
-            {
-              activated = TRUE;
-              break;
-            }
-        }
-
       if (!_dbus_hash_table_insert_string (activation->pending_activations,
                                            pending_activation->service_name,
                                            pending_activation))
@@ -1910,7 +1896,7 @@ bus_activation_activate_service (BusActivation  *activation,
       return FALSE;
     }
 
-  if (activated)
+  if (was_pending_activation)
     return TRUE;
 
   if (bus_context_get_systemd_activation (activation->context))
