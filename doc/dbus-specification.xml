@@ -39,6 +39,16 @@
           </address>
 	</affiliation>
       </author>
+      <author>
+	<firstname>Sven</firstname>
+	<surname>Herzberg</surname>
+	<affiliation>
+	  <orgname>Imendio AB</orgname>
+	  <address>
+            <email>sven@imendio.com</email>
+          </address>
+	</affiliation>
+      </author>
     </authorgroup>
    <revhistory>
      <revision>
@@ -3781,9 +3791,7 @@
         <xref linkend="message-bus-types"/>.
       </para>
       <para>
-        [FIXME the file format should be much better specified than "similar to
-        .desktop entries" esp. since desktop entries are already
-        badly-specified. ;-)] Service description files have the ".service" file
+        Service description files have the ".service" file
         extension. The message bus will only load service description files
         ending with .service; all other files will be ignored.  The file format
         is similar to that of <ulink
@@ -3792,6 +3800,17 @@
         encoding. To ensure that there will be no name collisions, service files
         must be namespaced using the same mechanism as messages and service
         names.
+
+      <para>
+        [FIXME the file format should be much better specified than "similar to
+        .desktop entries" esp. since desktop entries are already
+        badly-specified. ;-)]
+        These sections from the specification apply to service files as well:
+
+        <itemizedlist>
+          <listitem><para>General syntax</para></listitem>
+          <listitem><para>Comment format</para></listitem>
+        </itemizedlist>
 
         <figure>
 	  <title>Example service description file</title>
