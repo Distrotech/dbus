@@ -26,6 +26,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+#include <dbus/dbus-hash.h>
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-sysdeps.h>
 #include <dbus/dbus-watch.h>
@@ -56,7 +57,8 @@ watch_flags_to_string (int flags)
 struct DBusLoop
 {
   int refcount;
-  DBusList *watches;
+  /** fd => dbus_malloc'd DBusList ** of references to DBusWatch */
+  DBusHashTable *watches;
   DBusList *timeouts;
   int callback_list_serial;
   int watch_count;
@@ -144,6 +146,28 @@ timeout_callback_unref (TimeoutCallback *cb)
     }
 }
 
+static void
+free_watch_table_entry (void *data)
+{
+  DBusList **watches = data;
+  DBusWatch *watch;
+
+  /* DBusHashTable sometimes calls free_function(NULL) even if you never
+   * have NULL as a value */
+  if (watches == NULL)
+    return;
+
+  for (watch = _dbus_list_pop_first (watches);
+      watch != NULL;
+      watch = _dbus_list_pop_first (watches))
+    {
+      _dbus_watch_unref (watch);
+    }
+
+  _dbus_assert (*watches == NULL);
+  dbus_free (watches);
+}
+
 DBusLoop*
 _dbus_loop_new (void)
 {
@@ -153,8 +177,17 @@ _dbus_loop_new (void)
   if (loop == NULL)
     return NULL;
 
+  loop->watches = _dbus_hash_table_new (DBUS_HASH_INT, NULL,
+                                        free_watch_table_entry);
+
+  if (loop->watches == NULL)
+    {
+      dbus_free (loop);
+      return NULL;
+    }
+
   loop->refcount = 1;
-  
+
   return loop;
 }
 
@@ -184,16 +217,91 @@ _dbus_loop_unref (DBusLoop *loop)
 
           dbus_connection_unref (connection);
         }
-      
+
+      _dbus_hash_table_unref (loop->watches);
       dbus_free (loop);
     }
+}
+
+static DBusList **
+ensure_watch_table_entry (DBusLoop *loop,
+                          int       fd)
+{
+  DBusList **watches;
+
+  watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+
+  if (watches == NULL)
+    {
+      watches = dbus_new0 (DBusList *, 1);
+
+      if (watches == NULL)
+        return watches;
+
+      if (!_dbus_hash_table_insert_int (loop->watches, fd, watches))
+        {
+          dbus_free (watches);
+          watches = NULL;
+        }
+    }
+
+  return watches;
+}
+
+static void
+cull_watches_for_invalid_fd (DBusLoop  *loop,
+                             int        fd)
+{
+  DBusList *link;
+  DBusList *next;
+  DBusList **watches;
+
+  _dbus_warn ("invalid request, socket fd %d not open\n", fd);
+  watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+
+  if (watches != NULL)
+    {
+      for (link = _dbus_list_get_first_link (watches);
+          link != NULL;
+          link = _dbus_list_get_next_link (watches, link))
+        _dbus_watch_invalidate (link->data);
+    }
+
+  _dbus_hash_table_remove_int (loop->watches, fd);
+}
+
+static void
+gc_watch_table_entry (DBusLoop  *loop,
+                      DBusList **watches,
+                      int        fd)
+{
+  /* If watches is already NULL we have nothing to do */
+  if (watches == NULL)
+    return;
+
+  /* We can't GC hash table entries if they're non-empty lists */
+  if (*watches != NULL)
+    return;
+
+  _dbus_hash_table_remove_int (loop->watches, fd);
 }
 
 dbus_bool_t
 _dbus_loop_add_watch (DBusLoop  *loop,
                       DBusWatch *watch)
 {
-  if (_dbus_list_append (&loop->watches, _dbus_watch_ref (watch)))
+  int fd;
+  DBusList **watches;
+
+  fd = dbus_watch_get_socket (watch);
+  _dbus_assert (fd != -1);
+
+  watches = ensure_watch_table_entry (loop, fd);
+
+  if (watches == NULL)
+    return FALSE;
+
+  if (_dbus_list_append (watches, _dbus_watch_ref (watch)))
     {
       loop->callback_list_serial += 1;
       loop->watch_count += 1;
@@ -201,9 +309,11 @@ _dbus_loop_add_watch (DBusLoop  *loop,
   else
     {
       _dbus_watch_unref (watch);
-      return FALSE;
-    }
-  
+      gc_watch_table_entry (loop, watches, fd);
+
+       return FALSE;
+     }
+
   return TRUE;
 }
 
@@ -211,30 +321,43 @@ void
 _dbus_loop_remove_watch (DBusLoop         *loop,
                          DBusWatch        *watch)
 {
+  DBusList **watches;
   DBusList *link;
+  int fd;
 
-  /* fd.o #33336: we want people to remove their watches before invalidating
-   * them */
-  _dbus_assert (dbus_watch_get_socket (watch) != -1);
+  /* This relies on people removing watches before they invalidate them,
+   * which has been safe since fd.o #33336 was fixed. Assert about it
+   * so we don't regress. */
+  fd = dbus_watch_get_socket (watch);
+  _dbus_assert (fd != -1);
 
-  link = _dbus_list_get_first_link (&loop->watches);
-  while (link != NULL)
+  watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+
+  if (watches != NULL)
     {
-      DBusList *next = _dbus_list_get_next_link (&loop->watches, link);
-      DBusWatch *this = link->data;
-
-      if (this == watch)
+      link = _dbus_list_get_first_link (watches);
+      while (link != NULL)
         {
-          _dbus_list_remove_link (&loop->watches, link);
-          loop->callback_list_serial += 1;
-          loop->watch_count -= 1;
-          _dbus_watch_unref (this);
+          DBusList *next = _dbus_list_get_next_link (watches, link);
+          DBusWatch *this = link->data;
 
-          return;
-        }
-      
-      link = next;
-    }
+          if (this == watch)
+            {
+              _dbus_list_remove_link (watches, link);
+              loop->callback_list_serial += 1;
+              loop->watch_count -= 1;
+              _dbus_watch_unref (this);
+
+              /* if that was the last watch for that fd, drop the hash table
+               * entry too */
+              gc_watch_table_entry (loop, watches, fd);
+
+              return;
+            }
+
+          link = next;
+         }
+     }
 
   _dbus_warn ("could not find watch %p to remove\n", watch);
 }
@@ -448,8 +571,6 @@ _dbus_loop_iterate (DBusLoop     *loop,
   DBusPollFD *fds;
   DBusPollFD stack_fds[N_STACK_DESCRIPTORS];
   int n_fds;
-  DBusWatch **watches_for_fds;
-  DBusWatch *stack_watches_for_fds[N_STACK_DESCRIPTORS];
   int i;
   DBusList *link;
   int n_ready;
@@ -457,11 +578,11 @@ _dbus_loop_iterate (DBusLoop     *loop,
   long timeout;
   dbus_bool_t oom_watch_pending;
   int orig_depth;
-  
+  DBusHashIter hash_iter;
+
   retval = FALSE;      
 
   fds = NULL;
-  watches_for_fds = NULL;
   n_fds = 0;
   oom_watch_pending = FALSE;
   orig_depth = loop->depth;
@@ -470,8 +591,9 @@ _dbus_loop_iterate (DBusLoop     *loop,
   _dbus_verbose ("Iteration block=%d depth=%d timeout_count=%d watch_count=%d\n",
                  block, loop->depth, loop->timeout_count, loop->watch_count);
 #endif
-  
-  if (loop->watches == NULL && loop->timeouts == NULL)
+
+  if (_dbus_hash_table_get_n_entries (loop->watches) == 0 &&
+      loop->timeouts == NULL)
     goto next_iteration;
 
   if (loop->watch_count > N_STACK_DESCRIPTORS)
@@ -483,61 +605,57 @@ _dbus_loop_iterate (DBusLoop     *loop,
           _dbus_wait_for_memory ();
           fds = dbus_new0 (DBusPollFD, loop->watch_count);
         }
-      
-      watches_for_fds = dbus_new (DBusWatch *, loop->watch_count);
-      while (watches_for_fds == NULL)
-        {
-          _dbus_wait_for_memory ();
-          watches_for_fds = dbus_new (DBusWatch *, loop->watch_count);
-        }
     }
   else
     {      
       fds = stack_fds;
-      watches_for_fds = stack_watches_for_fds;
     }
 
   /* fill our array of fds and watches */
   n_fds = 0;
-  link = _dbus_list_get_first_link (&loop->watches);
-  while (link != NULL)
+  _dbus_hash_iter_init (loop->watches, &hash_iter);
+
+  while (_dbus_hash_iter_next (&hash_iter))
     {
-      DBusList *next = _dbus_list_get_next_link (&loop->watches, link);
+      DBusList **watches;
       unsigned int flags;
-      DBusWatch *watch = link->data;
       int fd;
 
-      fd = dbus_watch_get_socket (watch);
+      fd = _dbus_hash_iter_get_int_key (&hash_iter);
+      watches = _dbus_hash_iter_get_value (&hash_iter);
+      flags = 0;
 
-      if (_dbus_watch_get_oom_last_time (watch))
+      for (link = _dbus_list_get_first_link (watches);
+          link != NULL;
+          link = _dbus_list_get_next_link (watches, link))
         {
-          /* we skip this one this time, but reenable it next time,
-           * and have a timeout on this iteration
-           */
-          _dbus_watch_set_oom_last_time (watch, FALSE);
-          oom_watch_pending = TRUE;
+          DBusWatch *watch = link->data;
 
-          retval = TRUE; /* return TRUE here to keep the loop going,
-                          * since we don't know the watch is inactive
-                          */
+          if (_dbus_watch_get_oom_last_time (watch))
+            {
+              /* we skip this one this time, but reenable it next time,
+               * and have a timeout on this iteration
+               */
+              _dbus_watch_set_oom_last_time (watch, FALSE);
+              oom_watch_pending = TRUE;
+
+              retval = TRUE; /* return TRUE here to keep the loop going,
+                              * since we don't know the watch is inactive
+                              */
 
 #if MAINLOOP_SPEW
-          _dbus_verbose ("  skipping watch on fd %d as it was out of memory last time\n",
-                         fd);
+              _dbus_verbose ("  skipping watch on fd %d as it was out of memory last time\n",
+                             fd);
 #endif
+            }
+          else if (dbus_watch_get_enabled (watch))
+            {
+              flags |= dbus_watch_get_flags (watch);
+            }
         }
-      else if (_DBUS_UNLIKELY (fd == -1))
-        {
-          _dbus_warn ("watch %p was invalidated but not removed; "
-              "removing it now\n", watch);
-          _dbus_loop_remove_watch (loop, watch);
-        }
-      else if (dbus_watch_get_enabled (watch))
-        {
-          watches_for_fds[n_fds] = _dbus_watch_ref (watch);
 
-          flags = dbus_watch_get_flags (watch);
-
+      if (flags != 0)
+        {
           fds[n_fds].fd = fd;
           fds[n_fds].revents = 0;
           fds[n_fds].events = watch_flags_to_poll_events (flags);
@@ -557,10 +675,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
                          watch_flags_to_string (dbus_watch_get_flags (watch)));
 #endif
         }
-
-      link = next;
     }
-  
+
   timeout = -1;
   if (loop->timeout_count > 0)
     {
@@ -692,9 +808,12 @@ _dbus_loop_iterate (DBusLoop     *loop,
       
   if (n_ready > 0)
     {
-      i = 0;
-      while (i < n_fds)
+      for (i = 0; i < n_fds; i++)
         {
+          DBusList **watches;
+          DBusList *next;
+          unsigned int condition;
+
           /* FIXME I think this "restart if we change the watches"
            * approach could result in starving watches
            * toward the end of the list.
@@ -705,19 +824,37 @@ _dbus_loop_iterate (DBusLoop     *loop,
           if (loop->depth != orig_depth)
             goto next_iteration;
 
-          if (fds[i].revents != 0)
+          if (fds[i].revents == 0)
+            continue;
+
+          if (_DBUS_UNLIKELY (fds[i].revents & _DBUS_POLLNVAL))
             {
-              DBusWatch *watch;
-              unsigned int condition;
+              cull_watches_for_invalid_fd (loop, fds[i].fd);
+              goto next_iteration;
+            }
 
-              watch = watches_for_fds[i];
-              condition = watch_flags_from_poll_revents (fds[i].revents);
+          condition = watch_flags_from_poll_revents (fds[i].revents);
 
-              /* condition may still be 0 if we got some
-               * weird POLLFOO thing like POLLWRBAND
-               */
-                  
-              if (condition != 0 && dbus_watch_get_enabled (watch))
+          /* condition may still be 0 if we got some
+           * weird POLLFOO thing like POLLWRBAND
+           */
+          if (condition == 0)
+            continue;
+
+          watches = _dbus_hash_table_lookup_int (loop->watches, fds[i].fd);
+
+          if (watches == NULL)
+            continue;
+
+          for (link = _dbus_list_get_first_link (watches);
+              link != NULL;
+              link = next)
+            {
+              DBusWatch *watch = link->data;
+
+              next = _dbus_list_get_next_link (watches, link);
+
+              if (dbus_watch_get_enabled (watch))
                 {
                   dbus_bool_t oom;
 
@@ -731,22 +868,18 @@ _dbus_loop_iterate (DBusLoop     *loop,
 #if MAINLOOP_SPEW
                   _dbus_verbose ("  Invoked watch, oom = %d\n", oom);
 #endif
-                  
                   retval = TRUE;
-                }
 
-              if (_DBUS_UNLIKELY (fds[i].revents & _DBUS_POLLNVAL))
-                {
-                  _dbus_watch_ref (watch);
-                  _dbus_warn ("invalid request, socket fd %d not open\n",
-                      fds[i].fd);
-                  _dbus_loop_remove_watch (loop, watch);
-                  _dbus_watch_invalidate (watch);
-                  _dbus_watch_unref (watch);
+                  /* We re-check this every time, in case the callback
+                   * added/removed watches, which might make our position in
+                   * the linked list invalid. See the FIXME above. */
+                  if (initial_serial != loop->callback_list_serial)
+                    goto next_iteration;
+
+                  if (loop->depth != orig_depth)
+                    goto next_iteration;
                 }
             }
-              
-          ++i;
         }
     }
       
@@ -757,19 +890,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
   
   if (fds && fds != stack_fds)
     dbus_free (fds);
-  if (watches_for_fds)
-    {
-      i = 0;
-      while (i < n_fds)
-        {
-          _dbus_watch_unref (watches_for_fds[i]);
-          ++i;
-        }
-      
-      if (watches_for_fds != stack_watches_for_fds)
-        dbus_free (watches_for_fds);
-    }
-  
+
   if (_dbus_loop_dispatch (loop))
     retval = TRUE;
   
