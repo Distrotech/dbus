@@ -154,6 +154,10 @@ To make a release of D-Bus, do the following:
 
  - update the file NEWS based on the git history
 
+ - verify that the version number of dbus-specification.xml is
+   changed if it needs to be; if changes have been made, update the
+   release date in that file
+
  - update the AUTHORS file with "make update-authors" if necessary
 
  - the version number should have major.minor.micro, even
@@ -175,7 +179,8 @@ To make a release of D-Bus, do the following:
  - bump the version number up in configure.ac (so the micro version is odd),
    and commit it.  Make sure you do this *after* tagging the previous
    release! The idea is that git has a newer version number
-   than anything released.
+   than anything released. Similarly, bump the version number of
+   dbus-specification.xml and set the release date to "(not finalized)".
 
  - merge the branch you've released to the chronologically-later
    branch (usually "master"). You'll probably have to fix a merge

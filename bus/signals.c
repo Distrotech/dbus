@@ -47,7 +47,10 @@ struct BusMatchRule
   int args_len;
 };
 
+#define BUS_MATCH_ARG_NAMESPACE   0x4000000u
 #define BUS_MATCH_ARG_IS_PATH  0x8000000u
+
+#define BUS_MATCH_ARG_FLAGS (BUS_MATCH_ARG_NAMESPACE | BUS_MATCH_ARG_IS_PATH)
 
 BusMatchRule*
 bus_match_rule_new (DBusConnection *matches_go_to)
@@ -203,6 +206,18 @@ match_rule_to_string (BusMatchRule *rule)
         goto nomem;
     }
 
+  if (rule->flags & BUS_MATCH_PATH_NAMESPACE)
+    {
+      if (_dbus_string_get_length (&str) > 0)
+        {
+          if (!_dbus_string_append (&str, ","))
+            goto nomem;
+        }
+
+      if (!_dbus_string_append_printf (&str, "path_namespace='%s'", rule->path))
+        goto nomem;
+    }
+
   if (rule->flags & BUS_MATCH_SENDER)
     {
       if (_dbus_string_get_length (&str) > 0)
@@ -238,7 +253,7 @@ match_rule_to_string (BusMatchRule *rule)
         {
           if (rule->args[i] != NULL)
             {
-              dbus_bool_t is_path;
+              dbus_bool_t is_path, is_namespace;
 
               if (_dbus_string_get_length (&str) > 0)
                 {
@@ -247,10 +262,13 @@ match_rule_to_string (BusMatchRule *rule)
                 }
 
               is_path = (rule->arg_lens[i] & BUS_MATCH_ARG_IS_PATH) != 0;
+              is_namespace = (rule->arg_lens[i] & BUS_MATCH_ARG_NAMESPACE) != 0;
               
               if (!_dbus_string_append_printf (&str,
                                                "arg%d%s='%s'",
-                                               i, is_path ? "path" : "",
+                                               i,
+                                               is_path ? "path" :
+                                               is_namespace ? "namespace" : "",
                                                rule->args[i]))
                 goto nomem;
             }
@@ -365,7 +383,8 @@ bus_match_rule_set_destination (BusMatchRule *rule,
 
 dbus_bool_t
 bus_match_rule_set_path (BusMatchRule *rule,
-                         const char   *path)
+                         const char   *path,
+                         dbus_bool_t   is_namespace)
 {
   char *new;
 
@@ -375,7 +394,13 @@ bus_match_rule_set_path (BusMatchRule *rule,
   if (new == NULL)
     return FALSE;
 
-  rule->flags |= BUS_MATCH_PATH;
+  rule->flags &= ~(BUS_MATCH_PATH|BUS_MATCH_PATH_NAMESPACE);
+
+  if (is_namespace)
+    rule->flags |= BUS_MATCH_PATH_NAMESPACE;
+  else
+    rule->flags |= BUS_MATCH_PATH;
+
   dbus_free (rule->path);
   rule->path = new;
 
@@ -386,7 +411,8 @@ dbus_bool_t
 bus_match_rule_set_arg (BusMatchRule     *rule,
                         int                arg,
                         const DBusString *value,
-                        dbus_bool_t       is_path)
+                        dbus_bool_t       is_path,
+                        dbus_bool_t       is_namespace)
 {
   int length;
   char *new;
@@ -452,6 +478,9 @@ bus_match_rule_set_arg (BusMatchRule     *rule,
 
   if (is_path)
     rule->arg_lens[arg] |= BUS_MATCH_ARG_IS_PATH;
+
+  if (is_namespace)
+    rule->arg_lens[arg] |= BUS_MATCH_ARG_NAMESPACE;
 
   /* NULL termination didn't get busted */
   _dbus_assert (rule->args[rule->args_len] == NULL);
@@ -747,7 +776,8 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
                                 const DBusString *value,
                                 DBusError        *error)
 {
-  dbus_bool_t is_path;
+  dbus_bool_t is_path = FALSE;
+  dbus_bool_t is_namespace = FALSE;
   DBusString key_str;
   unsigned long arg;
   int length;
@@ -778,16 +808,34 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
       goto failed;
     }
 
-  if (end != length &&
-      ((end + 4) != length ||
-       !_dbus_string_ends_with_c_str (&key_str, "path")))
+  if (end != length)
     {
-      dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
-                      "Key '%s' in match rule contains junk after argument number. Only 'path' is optionally valid ('arg0path' for example).\n", key);
-      goto failed;
-    }
+      if ((end + strlen ("path")) == length &&
+          _dbus_string_ends_with_c_str (&key_str, "path"))
+        {
+          is_path = TRUE;
+        }
+      else if (_dbus_string_equal_c_str (&key_str, "arg0namespace"))
+        {
+          int value_len = _dbus_string_get_length (value);
 
-  is_path = end != length;
+          is_namespace = TRUE;
+
+          if (!_dbus_validate_bus_namespace (value, 0, value_len))
+            {
+              dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
+                  "arg0namespace='%s' is not a valid prefix of a bus name",
+                  _dbus_string_get_const_data (value));
+              goto failed;
+            }
+        }
+      else
+        {
+          dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
+              "Key '%s' in match rule contains junk after argument number (%u). Only 'arg%upath' (for example) or 'arg0namespace' are valid", key, arg, arg);
+          goto failed;
+        }
+    }
 
   /* If we didn't check this we could allocate a huge amount of RAM */
   if (arg > DBUS_MAXIMUM_MATCH_RULE_ARG_NUMBER)
@@ -806,7 +854,7 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
       goto failed;
     }
   
-  if (!bus_match_rule_set_arg (rule, arg, value, is_path))
+  if (!bus_match_rule_set_arg (rule, arg, value, is_path, is_namespace))
     {
       BUS_SET_OOM (error);
       goto failed;
@@ -962,12 +1010,15 @@ bus_match_rule_parse (DBusConnection   *matches_go_to,
               goto failed;
             }
         }
-      else if (strcmp (key, "path") == 0)
+      else if (strcmp (key, "path") == 0 ||
+          strcmp (key, "path_namespace") == 0)
         {
-          if (rule->flags & BUS_MATCH_PATH)
+          dbus_bool_t is_namespace = (strcmp (key, "path_namespace") == 0);
+
+          if (rule->flags & (BUS_MATCH_PATH | BUS_MATCH_PATH_NAMESPACE))
             {
               dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
-                              "Key %s specified twice in match rule\n", key);
+                              "path or path_namespace specified twice in match rule\n");
               goto failed;
             }
 
@@ -978,7 +1029,7 @@ bus_match_rule_parse (DBusConnection   *matches_go_to,
               goto failed;
             }
 
-          if (!bus_match_rule_set_path (rule, value))
+          if (!bus_match_rule_set_path (rule, value, is_namespace))
             {
               BUS_SET_OOM (error);
               goto failed;
@@ -1315,7 +1366,7 @@ match_rule_equal (BusMatchRule *a,
   if ((a->flags & BUS_MATCH_PATH) &&
       strcmp (a->path, b->path) != 0)
     return FALSE;
-  
+
   if ((a->flags & BUS_MATCH_INTERFACE) &&
       strcmp (a->interface, b->interface) != 0)
     return FALSE;
@@ -1346,7 +1397,7 @@ match_rule_equal (BusMatchRule *a,
           if (a->arg_lens[i] != b->arg_lens[i])
             return FALSE;
 
-          length = a->arg_lens[i] & ~BUS_MATCH_ARG_IS_PATH;
+          length = a->arg_lens[i] & ~BUS_MATCH_ARG_FLAGS;
 
           if (a->args[i] != NULL)
             {
@@ -1578,6 +1629,17 @@ connection_is_primary_owner (DBusConnection *connection,
 }
 
 static dbus_bool_t
+str_has_prefix (const char *str, const char *prefix)
+{
+  size_t prefix_len;
+  prefix_len = strlen (prefix);
+  if (strncmp (str, prefix, prefix_len) == 0)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+static dbus_bool_t
 match_rule_matches (BusMatchRule    *rule,
                     DBusConnection  *sender,
                     DBusConnection  *addressed_recipient,
@@ -1688,6 +1750,31 @@ match_rule_matches (BusMatchRule    *rule,
         return FALSE;
     }
 
+  if (flags & BUS_MATCH_PATH_NAMESPACE)
+    {
+      const char *path;
+      int len;
+
+      _dbus_assert (rule->path != NULL);
+
+      path = dbus_message_get_path (message);
+      if (path == NULL)
+        return FALSE;
+
+      if (!str_has_prefix (path, rule->path))
+        return FALSE;
+
+      len = strlen (rule->path);
+
+      /* Check that the actual argument is within the expected
+       * namespace, rather than just starting with that string,
+       * by checking that the matched prefix is followed by a '/'
+       * or the end of the path.
+       */
+      if (path[len] != '\0' && path[len] != '/')
+        return FALSE;
+    }
+
   if (flags & BUS_MATCH_ARGS)
     {
       int i;
@@ -1703,11 +1790,12 @@ match_rule_matches (BusMatchRule    *rule,
           int current_type;
           const char *expected_arg;
           int expected_length;
-          dbus_bool_t is_path;
+          dbus_bool_t is_path, is_namespace;
 
           expected_arg = rule->args[i];
-          expected_length = rule->arg_lens[i] & ~BUS_MATCH_ARG_IS_PATH;
+          expected_length = rule->arg_lens[i] & ~BUS_MATCH_ARG_FLAGS;
           is_path = (rule->arg_lens[i] & BUS_MATCH_ARG_IS_PATH) != 0;
+          is_namespace = (rule->arg_lens[i] & BUS_MATCH_ARG_NAMESPACE) != 0;
           
           current_type = dbus_message_iter_get_arg_type (&iter);
 
@@ -1715,8 +1803,9 @@ match_rule_matches (BusMatchRule    *rule,
             {
               const char *actual_arg;
               int actual_length;
-              
-              if (current_type != DBUS_TYPE_STRING)
+
+              if (current_type != DBUS_TYPE_STRING &&
+                  (!is_path || current_type != DBUS_TYPE_OBJECT_PATH))
                 return FALSE;
 
               actual_arg = NULL;
@@ -1738,6 +1827,32 @@ match_rule_matches (BusMatchRule    *rule,
                   if (memcmp (actual_arg, expected_arg,
                               MIN (actual_length, expected_length)) != 0)
                     return FALSE;
+                }
+              else if (is_namespace)
+                {
+                  if (expected_length > actual_length)
+                    return FALSE;
+
+                  /* If the actual argument doesn't start with the expected
+                   * namespace, then we don't match.
+                   */
+                  if (memcmp (expected_arg, actual_arg, expected_length) != 0)
+                    return FALSE;
+
+                  if (expected_length < actual_length)
+                    {
+                      /* Check that the actual argument is within the expected
+                       * namespace, rather than just starting with that string,
+                       * by checking that the matched prefix ends in a '.'.
+                       *
+                       * This doesn't stop "foo.bar." matching "foo.bar..baz"
+                       * which is an invalid namespace, but at some point the
+                       * daemon can't cover up for broken services.
+                       */
+                      if (actual_arg[expected_length] != '.')
+                        return FALSE;
+                    }
+                  /* otherwise we had an exact match. */
                 }
               else
                 {
@@ -2053,7 +2168,73 @@ test_parsing (void *data)
 
       bus_match_rule_unref (rule);
     }
-  
+
+  rule = check_parse (TRUE, "arg7path='/foo'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags = BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 8);
+      _dbus_assert (rule->args[7] != NULL);
+      _dbus_assert (rule->args[8] == NULL);
+      _dbus_assert (strcmp (rule->args[7], "/foo") == 0);
+      _dbus_assert ((rule->arg_lens[7] & BUS_MATCH_ARG_IS_PATH)
+          == BUS_MATCH_ARG_IS_PATH);
+
+      bus_match_rule_unref (rule);
+    }
+
+  /* Arg 0 namespace matches */
+  rule = check_parse (TRUE, "arg0namespace='foo'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 1);
+      _dbus_assert (strcmp (rule->args[0], "foo") == 0);
+      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
+          == BUS_MATCH_ARG_NAMESPACE);
+
+      bus_match_rule_unref (rule);
+    }
+
+  rule = check_parse (TRUE, "arg0namespace='foo.bar'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
+      _dbus_assert (rule->args != NULL);
+      _dbus_assert (rule->args_len == 1);
+      _dbus_assert (strcmp (rule->args[0], "foo.bar") == 0);
+      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
+          == BUS_MATCH_ARG_NAMESPACE);
+
+      bus_match_rule_unref (rule);
+    }
+
+  /* Only arg0namespace is supported. */
+  rule = check_parse (FALSE, "arg1namespace='foo'");
+  _dbus_assert (rule == NULL);
+
+  /* An empty string isn't a valid namespace prefix (you should just not
+   * specify this key at all).
+   */
+  rule = check_parse (FALSE, "arg0namespace=''");
+  _dbus_assert (rule == NULL);
+
+  /* Trailing periods aren't allowed (earlier versions of the arg0namespace
+   * spec allowed a single trailing period, which altered the semantics) */
+  rule = check_parse (FALSE, "arg0namespace='foo.'");
+  _dbus_assert (rule == NULL);
+
+  rule = check_parse (FALSE, "arg0namespace='foo.bar.'");
+  _dbus_assert (rule == NULL);
+
+  rule = check_parse (FALSE, "arg0namespace='foo..'");
+  _dbus_assert (rule == NULL);
+
+  rule = check_parse (FALSE, "arg0namespace='foo.bar..'");
+  _dbus_assert (rule == NULL);
+
   /* Too-large argN */
   rule = check_parse (FALSE, "arg300='foo'");
   _dbus_assert (rule == NULL);
@@ -2072,6 +2253,24 @@ test_parsing (void *data)
   
   /* Reject duplicates */
   rule = check_parse (FALSE, "type='signal',type='method_call'");
+  _dbus_assert (rule == NULL);
+
+  rule = check_parse (TRUE, "path_namespace='/foo/bar'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_PATH_NAMESPACE);
+      _dbus_assert (rule->path != NULL);
+      _dbus_assert (strcmp (rule->path, "/foo/bar") == 0);
+
+      bus_match_rule_unref (rule);
+    }
+
+  /* Almost a duplicate */
+  rule = check_parse (FALSE, "path='/foo',path_namespace='/foo'");
+  _dbus_assert (rule == NULL);
+
+  /* Trailing / was supported in the initial proposal, but now isn't */
+  rule = check_parse (FALSE, "path_namespace='/foo/'");
   _dbus_assert (rule == NULL);
 
   /* Duplicates with the argN code */
@@ -2134,6 +2333,7 @@ static struct {
   { "type='method_call',arg0='blah',arg1='baz'", "arg0='blah',arg1='baz',type='method_call'" },
   { "type='method_call',arg3='foosh'", "arg3='foosh',type='method_call'" },
   { "arg3='fool'", "arg3='fool'" },
+  { "arg0namespace='fool'", "arg0namespace='fool'" },
   { "member='food'", "member='food'" }
 };
 
@@ -2203,6 +2403,13 @@ should_match_message_1[] = {
   "type='signal',member='Frobated',arg0='foobar'",
   "member='Frobated',arg0='foobar'",
   "type='signal',arg0='foobar'",
+  /* The definition of argXpath matches says: "As with normal argument matches,
+   * if the argument is exactly equal to the string given in the match rule
+   * then the rule is satisfied." So this should match (even though the
+   * argument is not a valid path)!
+   */
+  "arg0path='foobar'",
+  "arg0namespace='foobar'",
   NULL
 };
 
@@ -2221,6 +2428,44 @@ should_not_match_message_1[] = {
   "arg0='foobar',arg1='abcdef'",
   "arg0='foobar',arg1='abcdef',arg2='abcdefghi',arg3='abcdefghi',arg4='abcdefghi'",
   "arg0='foobar',arg1='abcdef',arg4='abcdefghi',arg3='abcdefghi',arg2='abcdefghi'",
+  "arg0path='foo'",
+  "arg0path='foobar/'",
+  "arg1path='3'",
+  "arg0namespace='foo'",
+  "arg0namespace='foo',arg1='abcdef'",
+  "arg0namespace='moo'",
+  NULL
+};
+
+#define EXAMPLE_NAME "com.example.backend.foo"
+
+static const char *
+should_match_message_2[] = {
+  /* EXAMPLE_NAME is in all of these namespaces */
+  "arg0namespace='com.example.backend'",
+  "arg0namespace='com.example'",
+  "arg0namespace='com'",
+
+  /* If the client specifies the name exactly, with no trailing period, then
+   * it should match.
+   */
+  "arg0namespace='com.example.backend.foo'",
+
+  NULL
+};
+
+static const char *
+should_not_match_message_2[] = {
+  /* These are not even prefixes */
+  "arg0namespace='com.example.backend.foo.bar'",
+  "arg0namespace='com.example.backend.foobar'",
+
+  /* These are prefixes, but they're not parent namespaces. */
+  "arg0namespace='com.example.backend.fo'",
+  "arg0namespace='com.example.backen'",
+  "arg0namespace='com.exampl'",
+  "arg0namespace='co'",
+
   NULL
 };
 
@@ -2276,7 +2521,7 @@ check_matching (DBusMessage *message,
 static void
 test_matching (void)
 {
-  DBusMessage *message1;
+  DBusMessage *message1, *message2;
   const char *v_STRING;
   dbus_int32_t v_INT32;
 
@@ -2298,6 +2543,185 @@ test_matching (void)
                   should_not_match_message_1);
   
   dbus_message_unref (message1);
+
+  message2 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message2 != NULL);
+  if (!dbus_message_set_member (message2, "NameOwnerChanged"))
+    _dbus_assert_not_reached ("oom");
+
+  /* Obviously this isn't really a NameOwnerChanged signal. */
+  v_STRING = EXAMPLE_NAME;
+  if (!dbus_message_append_args (message2,
+                                 DBUS_TYPE_STRING, &v_STRING,
+                                 NULL))
+    _dbus_assert_not_reached ("oom");
+
+  check_matching (message2, 2,
+                  should_match_message_2,
+                  should_not_match_message_2);
+
+  dbus_message_unref (message2);
+}
+
+#define PATH_MATCH_RULE "arg0path='/aa/bb/'"
+
+/* This is a list of paths that should be matched by PATH_MATCH_RULE, taken
+ * from the specification. Notice that not all of them are actually legal D-Bus
+ * paths.
+ *
+ * The author of this test takes no responsibility for the semantics of
+ * this match rule key.
+ */
+static const char *paths_that_should_be_matched[] = {
+    "/aa/",
+    "/aa/bb/",
+    "/aa/bb/cc/",
+#define FIRST_VALID_PATH_WHICH_SHOULD_MATCH 3
+    "/",
+    "/aa/bb/cc",
+    NULL
+};
+
+/* These paths should not be matched by PATH_MATCH_RULE. */
+static const char *paths_that_should_not_be_matched[] = {
+    "/aa/b",
+    "/aa",
+    /* or even... */
+    "/aa/bb",
+    NULL
+};
+
+static void
+test_path_match (int type,
+                 const char   *path,
+                 const char   *rule_text,
+                 BusMatchRule *rule,
+                 dbus_bool_t   should_match)
+{
+  DBusMessage *message = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  dbus_bool_t matched;
+
+  _dbus_assert (message != NULL);
+  if (!dbus_message_set_member (message, "Foo"))
+    _dbus_assert_not_reached ("oom");
+
+  if (!dbus_message_append_args (message,
+                                 type, &path,
+                                 NULL))
+    _dbus_assert_not_reached ("oom");
+
+  matched = match_rule_matches (rule, NULL, NULL, message, 0);
+
+  if (matched != should_match)
+    {
+      _dbus_warn ("Expected rule %s to %s message "
+                  "with first arg %s of type '%c', failed\n",
+                  rule_text,
+                  should_match ? "match" : "not match",
+                  path,
+                  (char) type);
+      exit (1);
+    }
+
+  dbus_message_unref (message);
+}
+
+static void
+test_path_matching (void)
+{
+  BusMatchRule *rule;
+  const char **s;
+
+  rule = check_parse (TRUE, PATH_MATCH_RULE);
+  _dbus_assert (rule != NULL);
+
+  for (s = paths_that_should_be_matched; *s != NULL; s++)
+    test_path_match (DBUS_TYPE_STRING, *s, PATH_MATCH_RULE, rule, TRUE);
+
+  for (s = paths_that_should_be_matched + FIRST_VALID_PATH_WHICH_SHOULD_MATCH;
+       *s != NULL; s++)
+    test_path_match (DBUS_TYPE_OBJECT_PATH, *s, PATH_MATCH_RULE, rule, TRUE);
+
+  for (s = paths_that_should_not_be_matched; *s != NULL; s++)
+    {
+      test_path_match (DBUS_TYPE_STRING, *s, PATH_MATCH_RULE, rule, FALSE);
+      test_path_match (DBUS_TYPE_OBJECT_PATH, *s, PATH_MATCH_RULE, rule, FALSE);
+    }
+
+  bus_match_rule_unref (rule);
+}
+
+static const char*
+path_namespace_should_match_message_1[] = {
+  "type='signal',path_namespace='/foo'",
+  "type='signal',path_namespace='/foo/TheObjectManager'",
+  NULL
+};
+
+static const char*
+path_namespace_should_not_match_message_1[] = {
+  "type='signal',path_namespace='/bar'",
+  "type='signal',path_namespace='/bar/TheObjectManager'",
+  NULL
+};
+
+static const char*
+path_namespace_should_match_message_2[] = {
+  "type='signal',path_namespace='/foo/TheObjectManager'",
+  NULL
+};
+
+static const char*
+path_namespace_should_not_match_message_2[] = {
+  NULL
+};
+
+static const char*
+path_namespace_should_match_message_3[] = {
+  NULL
+};
+
+static const char*
+path_namespace_should_not_match_message_3[] = {
+  "type='signal',path_namespace='/foo/TheObjectManager'",
+  NULL
+};
+
+static void
+test_matching_path_namespace (void)
+{
+  DBusMessage *message1;
+  DBusMessage *message2;
+  DBusMessage *message3;
+
+  message1 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message1 != NULL);
+  if (!dbus_message_set_path (message1, "/foo/TheObjectManager"))
+    _dbus_assert_not_reached ("oom");
+
+  message2 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message2 != NULL);
+  if (!dbus_message_set_path (message2, "/foo/TheObjectManager/child_object"))
+    _dbus_assert_not_reached ("oom");
+
+  message3 = dbus_message_new (DBUS_MESSAGE_TYPE_SIGNAL);
+  _dbus_assert (message3 != NULL);
+  if (!dbus_message_set_path (message3, "/foo/TheObjectManagerOther"))
+    _dbus_assert_not_reached ("oom");
+
+  check_matching (message1, 1,
+                  path_namespace_should_match_message_1,
+                  path_namespace_should_not_match_message_1);
+  check_matching (message2, 2,
+                  path_namespace_should_match_message_2,
+                  path_namespace_should_not_match_message_2);
+  check_matching (message3, 3,
+                  path_namespace_should_match_message_3,
+                  path_namespace_should_not_match_message_3);
+
+  dbus_message_unref (message3);
+  dbus_message_unref (message2);
+  dbus_message_unref (message1);
 }
 
 dbus_bool_t
@@ -2314,9 +2738,10 @@ bus_signals_test (const DBusString *test_data_dir)
     _dbus_assert_not_reached ("Parsing match rules test failed");
 
   test_equality ();
-
   test_matching ();
-  
+  test_path_matching ();
+  test_matching_path_namespace ();
+
   return TRUE;
 }
 
