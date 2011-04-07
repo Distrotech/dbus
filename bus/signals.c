@@ -1801,6 +1801,7 @@ match_rule_matches (BusMatchRule    *rule,
   if (flags & BUS_MATCH_PATH_PREFIX)
     {
       const char *path;
+      int len;
 
       _dbus_assert (rule->path_prefix != NULL);
 
@@ -1809,6 +1810,17 @@ match_rule_matches (BusMatchRule    *rule,
         return FALSE;
 
       if (!str_has_prefix (path, rule->path_prefix))
+        return FALSE;
+
+      len = strlen (rule->path_prefix);
+
+      /* Check that the actual argument is within the expected
+       * namespace, rather than just starting with that string,
+       * by checking that the matched prefix either ends in a '/',
+       * or is followed by a '/' or the end of the path.
+       */
+      if (rule->path_prefix[len - 1] != '/' &&
+          path[len] != '\0' && path[len] != '/')
         return FALSE;
     }
 
@@ -2736,12 +2748,12 @@ path_prefix_should_not_match_message_2[] = {
 
 static const char*
 path_prefix_should_match_message_3[] = {
-  "type='signal',path_prefix='/foo/TheObjectManager'",
   NULL
 };
 
 static const char*
 path_prefix_should_not_match_message_3[] = {
+  "type='signal',path_prefix='/foo/TheObjectManager'",
   "type='signal',path_prefix='/foo/TheObjectManager/'",
   NULL
 };
