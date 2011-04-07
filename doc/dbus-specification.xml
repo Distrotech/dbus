@@ -3849,6 +3849,13 @@
                     </para>
 
                     <para>See also <xref linkend='bus-messages-name-owner-changed'/>.</para>
+                    <para>
+                      <emphasis>
+                        This match key was added in version 0.16 of the
+                        D-Bus specification and implemented by the bus
+                        daemon in dbus 1.5.0 and later.
+                      </emphasis>
+                    </para>
                   </entry>
                 </row>
               </tbody>
