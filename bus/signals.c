@@ -2255,6 +2255,24 @@ test_parsing (void *data)
   rule = check_parse (FALSE, "type='signal',type='method_call'");
   _dbus_assert (rule == NULL);
 
+  rule = check_parse (TRUE, "path_namespace='/foo/bar'");
+  if (rule != NULL)
+    {
+      _dbus_assert (rule->flags == BUS_MATCH_PATH_NAMESPACE);
+      _dbus_assert (rule->path != NULL);
+      _dbus_assert (strcmp (rule->path, "/foo/bar") == 0);
+
+      bus_match_rule_unref (rule);
+    }
+
+  /* Almost a duplicate */
+  rule = check_parse (FALSE, "path='/foo',path_namespace='/foo'");
+  _dbus_assert (rule == NULL);
+
+  /* Trailing / was supported in the initial proposal, but now isn't */
+  rule = check_parse (FALSE, "path_namespace='/foo/'");
+  _dbus_assert (rule == NULL);
+
   /* Duplicates with the argN code */
   rule = check_parse (FALSE, "arg0='foo',arg0='bar'");
   _dbus_assert (rule == NULL);
