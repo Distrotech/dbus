@@ -23,10 +23,7 @@
 lcov-reset:
 	lcov --directory @abs_top_srcdir@ --zerocounters
 
-# gcov takes ~forever to process config-parser.c for some reason?
 lcov-report:
-	true > bus/bus_test-config-parser.gcno
-	true > bus/dbus_daemon-config-parser.gcno
 	lcov --directory @abs_top_srcdir@ --capture \
 		--output-file @abs_top_builddir@/lcov.info
 	$(mkdir_p) @abs_top_builddir@/lcov.html

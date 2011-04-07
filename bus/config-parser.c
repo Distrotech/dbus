@@ -1223,97 +1223,96 @@ append_rule_from_element (BusConfigParser   *parser,
    * Pretty sure the below stuff is broken, FIXME think about it more.
    */
 
-  if (((send_interface && send_error) ||
-       (send_interface && receive_interface) ||
-       (send_interface && receive_member) ||
-       (send_interface && receive_error) ||
-       (send_interface && receive_sender) ||
-       (send_interface && receive_requested_reply) ||
-       (send_interface && own) ||
-       (send_interface && user) ||
-       (send_interface && group)) ||
+  if ((send_interface && (send_error ||
+                          receive_interface ||
+                          receive_member ||
+                          receive_error ||
+                          receive_sender ||
+                          receive_requested_reply ||
+                          own ||
+                          user ||
+                          group)) ||
 
-      ((send_member && send_error) ||
-       (send_member && receive_interface) ||
-       (send_member && receive_member) ||
-       (send_member && receive_error) ||
-       (send_member && receive_sender) ||
-       (send_member && receive_requested_reply) ||
-       (send_member && own) ||
-       (send_member && user) ||
-       (send_member && group)) ||
-      
-      ((send_error && receive_interface) ||
-       (send_error && receive_member) ||
-       (send_error && receive_error) ||
-       (send_error && receive_sender) ||
-       (send_error && receive_requested_reply) ||
-       (send_error && own) ||
-       (send_error && user) ||
-       (send_error && group)) ||
+      (send_member && (send_error ||
+                       receive_interface ||
+                       receive_member ||
+                       receive_error ||
+                       receive_sender ||
+                       receive_requested_reply ||
+                       own ||
+                       user ||
+                       group)) ||
 
-      ((send_destination && receive_interface) ||
-       (send_destination && receive_member) ||
-       (send_destination && receive_error) ||
-       (send_destination && receive_sender) ||
-       (send_destination && receive_requested_reply) ||
-       (send_destination && own) ||
-       (send_destination && user) ||
-       (send_destination && group)) ||
+      (send_error && (receive_interface ||
+                      receive_member ||
+                      receive_error ||
+                      receive_sender ||
+                      receive_requested_reply ||
+                      own ||
+                      user ||
+                      group)) ||
 
-      ((send_type && receive_interface) ||
-       (send_type && receive_member) ||
-       (send_type && receive_error) ||
-       (send_type && receive_sender) ||
-       (send_type && receive_requested_reply) ||
-       (send_type && own) ||
-       (send_type && user) ||
-       (send_type && group)) ||
+      (send_destination && (receive_interface ||
+                            receive_member ||
+                            receive_error ||
+                            receive_sender ||
+                            receive_requested_reply ||
+                            own ||
+                            user ||
+                            group)) ||
 
-      ((send_path && receive_interface) ||
-       (send_path && receive_member) ||
-       (send_path && receive_error) ||
-       (send_path && receive_sender) ||
-       (send_path && receive_requested_reply) ||
-       (send_path && own) ||
-       (send_path && user) ||
-       (send_path && group)) ||
+      (send_type && (receive_interface ||
+                     receive_member ||
+                     receive_error ||
+                     receive_sender ||
+                     receive_requested_reply ||
+                     own ||
+                     user ||
+                     group)) ||
 
-      ((send_requested_reply && receive_interface) ||
-       (send_requested_reply && receive_member) ||
-       (send_requested_reply && receive_error) ||
-       (send_requested_reply && receive_sender) ||
-       (send_requested_reply && receive_requested_reply) ||
-       (send_requested_reply && own) ||
-       (send_requested_reply && user) ||
-       (send_requested_reply && group)) ||
-      
-      ((receive_interface && receive_error) ||
-       (receive_interface && own) ||
-       (receive_interface && user) ||
-       (receive_interface && group)) ||
+      (send_path && (receive_interface ||
+                     receive_member ||
+                     receive_error ||
+                     receive_sender ||
+                     receive_requested_reply ||
+                     own ||
+                     user ||
+                     group)) ||
 
-      ((receive_member && receive_error) ||
-       (receive_member && own) ||
-       (receive_member && user) ||
-       (receive_member && group)) ||
-      
-      ((receive_error && own) ||
-       (receive_error && user) ||
-       (receive_error && group)) ||
+      (send_requested_reply && (receive_interface ||
+                                receive_member ||
+                                receive_error ||
+                                receive_sender ||
+                                receive_requested_reply ||
+                                own ||
+                                user ||
+                                group)) ||
 
-      ((eavesdrop && own) ||
-       (eavesdrop && user) ||
-       (eavesdrop && group)) ||
+      (receive_interface && (receive_error ||
+                             own ||
+                             user ||
+                             group)) ||
 
-      ((receive_requested_reply && own) ||
-       (receive_requested_reply && user) ||
-       (receive_requested_reply && group)) ||
-      
-      ((own && user) ||
-       (own && group)) ||
+      (receive_member && (receive_error ||
+                          own ||
+                          user ||
+                          group)) ||
 
-      ((user && group)))
+      (receive_error && (own ||
+                         user ||
+                         group)) ||
+
+      (eavesdrop && (own ||
+                     user ||
+                     group)) ||
+
+      (receive_requested_reply && (own ||
+                                   user ||
+                                   group)) ||
+
+      (own && (user || group)) ||
+
+      (user && group))
     {
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Invalid combination of attributes on element <%s>",
