@@ -144,6 +144,9 @@ dbus_bool_t _dbus_validate_error_name (const DBusString *str,
 dbus_bool_t _dbus_validate_bus_name   (const DBusString *str,
                                        int               start,
                                        int               len);
+dbus_bool_t _dbus_validate_bus_namespace (const DBusString  *str,
+                                          int                start,
+                                          int                len);
 dbus_bool_t _dbus_validate_signature  (const DBusString *str,
                                        int               start,
                                        int               len);

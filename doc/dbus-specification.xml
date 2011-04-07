@@ -3731,24 +3731,69 @@
                   <entry><literal>arg[0, 1, 2, 3, ...]</literal></entry>
                   <entry>Any string</entry>
                   <entry>Arg matches are special and are used for further restricting the 
-                  match based on the arguments in the body of a message.  As of this time
-                  only string arguments can be matched.  An example of an argument match 
+                  match based on the arguments in the body of a message. Only arguments of type
+                  STRING can be matched in this way. An example of an argument match 
                   would be arg3='Foo'. Only argument indexes from 0 to 63 should be 
                   accepted.</entry>
                 </row>
                 <row>
                   <entry><literal>arg[0, 1, 2, 3, ...]path</literal></entry>
                   <entry>Any string</entry>
-                  <entry>Argument path matches provide a specialised form of wildcard
-                  matching for path-like namespaces. As with normal argument matches,
-                  if the argument is exactly equal to the string given in the match
-                  rule then the rule is satisfied. Additionally, there is also a
-                  match when either the string given in the match rule or the
-                  appropriate message argument ends with '/' and is a prefix of the
-                  other. An example argument path match is arg0path='/aa/bb/'. This
-                  would match messages with first arguments of '/', '/aa/',
-                  '/aa/bb/', '/aa/bb/cc/' and '/aa/bb/cc'. It would not match
-                  messages with first arguments of '/aa/b', '/aa' or even '/aa/bb'.</entry>
+                  <entry>
+                    <para>Argument path matches provide a specialised form of wildcard matching for
+                      path-like namespaces. They can match arguments whose type is either STRING or
+                      OBJECT_PATH. As with normal argument matches,
+                      if the argument is exactly equal to the string given in the match
+                      rule then the rule is satisfied. Additionally, there is also a
+                      match when either the string given in the match rule or the
+                      appropriate message argument ends with '/' and is a prefix of the
+                      other. An example argument path match is arg0path='/aa/bb/'. This
+                      would match messages with first arguments of '/', '/aa/',
+                      '/aa/bb/', '/aa/bb/cc/' and '/aa/bb/cc'. It would not match
+                      messages with first arguments of '/aa/b', '/aa' or even '/aa/bb'.</para>
+
+                    <para>This is intended for monitoring “directories” in file system-like
+                      hierarchies, as used in the <citetitle>dconf</citetitle> configuration
+                      system. An application interested in all nodes in a particular hierarchy would
+                      monitor <literal>arg0path='/ca/example/foo/'</literal>. Then the service could
+                      emit a signal with zeroth argument <literal>"/ca/example/foo/bar"</literal> to
+                      represent a modification to the “bar” property, or a signal with zeroth
+                      argument <literal>"/ca/example/"</literal> to represent atomic modification of
+                      many properties within that directory, and the interested application would be
+                      notified in both cases.</para>
+                  </entry>
+                </row>
+                <row>
+                  <entry><literal>arg0namespace</literal></entry>
+                  <entry>Like a bus name or interface name, except that the string may contain only
+                    one element, and may end with a trailing period</entry>
+                  <entry>
+                    <para>Match messages whose first argument is of type STRING, and is a bus name
+                      or interface name within the specified namespace. This is primarily intended
+                      for watching name owner changes for a group of related bus names, rather than
+                      for a single name or all name changes.</para>
+
+                    <para>If the value has a trailing period, then only bus names or interface names
+                      within that namespace are matched. If it has no trailing period, an exact
+                      match is also allowed.</para>
+
+                    <para>For example, the match rule
+                      <literal>member='NameOwnerChanged',arg0namespace='com.example.backend'</literal>
+                      matches name owner changes for bus names such as
+                      <literal>com.example.backend.foo</literal>,
+                      <literal>com.example.backend.foo.bar</literal>, and
+                      <literal>com.example.backend</literal> itself.</para>
+
+                    <para>On the other hand, the match rule
+                      <literal>member='NameOwnerChanged',arg0namespace='com.example.backend.'</literal>
+                      (with a trailing period in the namespace) matches owner changes for
+                      <literal>com.example.backend.foo</literal> and
+                      <literal>com.example.backend.foo.bar</literal>, but not for
+                      <literal>com.example.backend</literal>.
+                    </para>
+
+                    <para>See also <xref linkend='bus-messages-name-owner-changed'/>.</para>
+                  </entry>
                 </row>
               </tbody>
             </tgroup>
