@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.15</releaseinfo>
-    <date>3 November 2010</date>
+    <releaseinfo>Version 0.16</releaseinfo>
+    <date>(not finalized)</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -3757,9 +3757,9 @@
                     </para>
                     <para>
                       <emphasis>
-                        This match key was added in version 0.15 of the
+                        This match key was added in version 0.16 of the
                         D-Bus specification and implemented by the bus
-                        daemon in dbus 1.4.7 and later.
+                        daemon in dbus 1.5.0 and later.
                       </emphasis>
                     </para>
                 </entry>
