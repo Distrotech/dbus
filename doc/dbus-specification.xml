@@ -3722,22 +3722,19 @@
                   path match is path='/org/freedesktop/Hal/Manager'</entry>
                 </row>
                 <row>
-                  <entry><literal>path_prefix</literal></entry>
-                  <entry>An object path optionally ending in a slash</entry>
+                  <entry><literal>path_namespace</literal></entry>
+                  <entry>An object path</entry>
                   <entry>
                     <para>
                       Matches messages which are sent from or to an
-                      object for which the object path is a descendant of
-                      the given value. If the prefix ends with a slash, it
-                      matches all paths starting with that string;
-                      if it does not end with a slash, it matches either
-                      that exact path, or that path followed by one or
+                      object for which the object path is either the
+                      given value, or that value followed by one or
                       more path components.
                     </para>
 
                     <para>
                       For example,
-                      <literal>path_prefix='/com/example/foo'</literal>
+                      <literal>path_namespace='/com/example/foo'</literal>
                       would match signals sent by
                       <literal>/com/example/foo</literal>
                       or by
@@ -3747,14 +3744,11 @@
                     </para>
 
                     <para>
-                      However,
-                      <literal>path_prefix='/com/example/foo/'</literal>
-                      would still match signals sent by
-                      <literal>/com/example/foo/bar</literal>,
-                      but would not match signals sent by
-                      <literal>/com/example/foo</literal> or
-                      <literal>/com/example/foobar</literal>.
+                      Using both <literal>path</literal> and
+                      <literal>path_namespace</literal> in the same match
+                      rule is not allowed.
                     </para>
+
                     <para>
                       <emphasis>
                         This match key was added in version 0.16 of the
