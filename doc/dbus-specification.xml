@@ -3765,13 +3765,17 @@
                 </row>
                 <row>
                   <entry><literal>arg0namespace</literal></entry>
-                  <entry>Like a bus name or interface name, except that the string may contain only
-                    one element, and may end with a trailing period</entry>
+                  <entry>Like a bus name, except that the string is not
+                    required to contain a '.' (period)</entry>
                   <entry>
                     <para>Match messages whose first argument is of type STRING, and is a bus name
                       or interface name within the specified namespace. This is primarily intended
                       for watching name owner changes for a group of related bus names, rather than
                       for a single name or all name changes.</para>
+
+                    <para>Because every valid interface name is also a valid
+                      bus name, this can also be used for messages whose
+                      first argument is an interface name.</para>
 
                     <para>If the value has a trailing period, then only bus names or interface names
                       within that namespace are matched. If it has no trailing period, an exact
