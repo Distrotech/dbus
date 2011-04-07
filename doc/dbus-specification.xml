@@ -3800,6 +3800,7 @@
         encoding. To ensure that there will be no name collisions, service files
         must be namespaced using the same mechanism as messages and service
         names.
+      </para>
 
       <para>
         [FIXME the file format should be much better specified than "similar to
