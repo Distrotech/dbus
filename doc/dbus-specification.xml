@@ -3804,6 +3804,15 @@
                       argument <literal>"/ca/example/"</literal> to represent atomic modification of
                       many properties within that directory, and the interested application would be
                       notified in both cases.</para>
+                    <para>
+                      <emphasis>
+                        This match key was added in version 0.12 of the
+                        D-Bus specification, implemented for STRING
+                        arguments by the bus daemon in dbus 1.2.0 and later,
+                        and implemented for OBJECT_PATH arguments in dbus 1.5.0
+                        and later.
+                      </emphasis>
+                    </para>
                   </entry>
                 </row>
                 <row>
