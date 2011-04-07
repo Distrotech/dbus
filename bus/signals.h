@@ -60,7 +60,7 @@ dbus_bool_t bus_match_rule_set_arg          (BusMatchRule     *rule,
                                              int               arg,
                                              const DBusString *value,
                                              dbus_bool_t       is_path,
-                                             dbus_bool_t       prefix);
+                                             dbus_bool_t       is_namespace);
 
 BusMatchRule* bus_match_rule_parse (DBusConnection   *matches_go_to,
                                     const DBusString *rule_text,
