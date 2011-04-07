@@ -821,15 +821,10 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
 
           is_namespace = TRUE;
 
-          if (value_len > 0 &&
-              _dbus_string_get_byte (value, value_len - 1) == '.')
-            value_len--;
-
           if (!_dbus_validate_bus_namespace (value, 0, value_len))
             {
               dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
-                  "arg0namespace='%s' is not a valid (optionally "
-                  "period-terminated) prefix of a bus name",
+                  "arg0namespace='%s' is not a valid prefix of a bus name",
                   _dbus_string_get_const_data (value));
               goto failed;
             }
@@ -1854,14 +1849,7 @@ match_rule_matches (BusMatchRule    *rule,
                        * which is an invalid namespace, but at some point the
                        * daemon can't cover up for broken services.
                        */
-                      int expected_period_index;
-
-                      if (expected_arg[expected_length - 1] == '.')
-                        expected_period_index = expected_length - 1;
-                      else
-                        expected_period_index = expected_length;
-
-                      if (actual_arg[expected_period_index] != '.')
+                      if (actual_arg[expected_length] != '.')
                         return FALSE;
                     }
                   /* otherwise we had an exact match. */
@@ -2210,19 +2198,6 @@ test_parsing (void *data)
       bus_match_rule_unref (rule);
     }
 
-  rule = check_parse (TRUE, "arg0namespace='foo.'");
-  if (rule != NULL)
-    {
-      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
-      _dbus_assert (rule->args != NULL);
-      _dbus_assert (rule->args_len == 1);
-      _dbus_assert (strcmp (rule->args[0], "foo.") == 0);
-      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
-          == BUS_MATCH_ARG_NAMESPACE);
-
-      bus_match_rule_unref (rule);
-    }
-
   rule = check_parse (TRUE, "arg0namespace='foo.bar'");
   if (rule != NULL)
     {
@@ -2230,19 +2205,6 @@ test_parsing (void *data)
       _dbus_assert (rule->args != NULL);
       _dbus_assert (rule->args_len == 1);
       _dbus_assert (strcmp (rule->args[0], "foo.bar") == 0);
-      _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
-          == BUS_MATCH_ARG_NAMESPACE);
-
-      bus_match_rule_unref (rule);
-    }
-
-  rule = check_parse (TRUE, "arg0namespace='foo.bar.'");
-  if (rule != NULL)
-    {
-      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
-      _dbus_assert (rule->args != NULL);
-      _dbus_assert (rule->args_len == 1);
-      _dbus_assert (strcmp (rule->args[0], "foo.bar.") == 0);
       _dbus_assert ((rule->arg_lens[0] & BUS_MATCH_ARG_NAMESPACE)
           == BUS_MATCH_ARG_NAMESPACE);
 
@@ -2259,7 +2221,14 @@ test_parsing (void *data)
   rule = check_parse (FALSE, "arg0namespace=''");
   _dbus_assert (rule == NULL);
 
-  /* Two trailing periods on otherwise-valid namespaces aren't allowed. */
+  /* Trailing periods aren't allowed (earlier versions of the arg0namespace
+   * spec allowed a single trailing period, which altered the semantics) */
+  rule = check_parse (FALSE, "arg0namespace='foo.'");
+  _dbus_assert (rule == NULL);
+
+  rule = check_parse (FALSE, "arg0namespace='foo.bar.'");
+  _dbus_assert (rule == NULL);
+
   rule = check_parse (FALSE, "arg0namespace='foo..'");
   _dbus_assert (rule == NULL);
 
@@ -2454,13 +2423,9 @@ should_not_match_message_1[] = {
 
 static const char *
 should_match_message_2[] = {
-  /* EXAMPLE_NAME is in all of these namespaces, specified with and without a
-   * trailing period */
-  "arg0namespace='com.example.backend.'",
+  /* EXAMPLE_NAME is in all of these namespaces */
   "arg0namespace='com.example.backend'",
-  "arg0namespace='com.example.'",
   "arg0namespace='com.example'",
-  "arg0namespace='com.'",
   "arg0namespace='com'",
 
   /* If the client specifies the name exactly, with no trailing period, then
@@ -2476,12 +2441,6 @@ should_not_match_message_2[] = {
   /* These are not even prefixes */
   "arg0namespace='com.example.backend.foo.bar'",
   "arg0namespace='com.example.backend.foobar'",
-  "arg0namespace='com.example.backend.fo.'",
-
-  /* This should match anything within the namespace com.example.backend.foo,
-   * not including com.example.backend.foo itself.
-   */
-  "arg0namespace='com.example.backend.foo.'",
 
   /* These are prefixes, but they're not parent namespaces. */
   "arg0namespace='com.example.backend.fo'",
