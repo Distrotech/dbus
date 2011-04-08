@@ -12,8 +12,10 @@ D-Bus 1.5.0 (UNRELEASED)
     paths that are not part of the object tree, and UnknownInterface for calls
     to unknown interfaces in the bus daemon (fd.o #34527, Lennart Poettering)
 
-D-Bus 1.4.8 (UNRELEASED)
+D-Bus 1.4.8 (2011-04-08)
 ==
+
+The "It's like the beginning of a lobster" release.
 
   • Rename configure.in to configure.ac, and update it to modern conventions
     (fd.o #32245; Javier Jardón, Simon McVittie)
@@ -28,6 +30,12 @@ D-Bus 1.4.8 (UNRELEASED)
     booleans when sending them (fd.o #16338, NB#223152; Simon McVittie)
   • Add UnknownObject, UnknownInterface, UnknownProperty and PropertyReadOnly
     errors to dbus-shared.h (fd.o #34527, Lennart Poettering)
+  • Break up a huge conditional in config-parser so gcov can produce coverage
+    data (fd.o #10887, Simon McVittie)
+  • List which parts of the Desktop Entry specification are applicable to
+    .service files (fd.o #19159, Sven Herzberg)
+  • Don't suppress service activation if two services have the same Exec=
+    (fd.o #35750, Colin Walters)
   • Windows:
     · Avoid the name ELEMENT_TYPE due to namespace-pollution from winioctl.h
       (Andre Heinecke)
@@ -36,6 +44,8 @@ D-Bus 1.4.8 (UNRELEASED)
 
 D-Bus 1.4.6 (2010-02-17)
 ==
+
+The "1, 2, miss a few, 99, 100" release.
 
   • Remove unfinished changes intended to support GTest-based tests,
     which were mistakenly included in 1.4.4
