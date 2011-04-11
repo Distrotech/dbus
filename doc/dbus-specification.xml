@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.16</releaseinfo>
-    <date>(not finalized)</date>
+    <date>2011-04-11</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -56,6 +56,13 @@
        <date><ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink></date>
        <authorinitials></authorinitials>
        <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.16</revnumber>
+       <date>11 April 2011</date>
+       <authorinitials></authorinitials>
+       <revremark>add path_namespace, arg0namespace; argNpath matches object
+        paths</revremark>
      </revision>
      <revision>
        <revnumber>0.15</revnumber>

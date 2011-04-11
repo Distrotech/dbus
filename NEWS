@@ -1,6 +1,14 @@
-D-Bus 1.5.0 (UNRELEASED)
+D-Bus 1.5.0 (2011-04-11)
 ==
 
+The "you never know when you need to tow something from your giant
+flying shark" release.
+
+  • D-Bus Specification v0.16
+    · Add support for path_namespace and arg0namespace in match rules
+      (fd.o #24317, #34870; Will Thompson, David Zeuthen, Simon McVittie)
+    · Make argNpath support object paths, not just object-path-like strings,
+      and document it better (fd.o #31818, Will Thompson)
   • Let the bus daemon implement more than one interface (fd.o #33757,
     Simon McVittie)
   • Optimize _dbus_string_replace_len to reduce waste (fd.o #21261,
