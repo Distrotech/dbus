@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.16</releaseinfo>
-    <date>2011-04-11</date>
+    <releaseinfo>Version 0.17</releaseinfo>
+    <date>(not final)</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
