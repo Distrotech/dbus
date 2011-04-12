@@ -28,16 +28,18 @@ DTDS = \
 	busconfig.dtd \
 	introspect.dtd
 
-STATIC_DOCS = \
+dist_doc_DATA = \
 	diagram.png \
 	diagram.svg \
+	system-activation.txt
+
+STATIC_DOCS = \
 	dbus-faq.xml \
 	dbus-specification.xml \
 	dbus-test-plan.xml \
 	dbus-tutorial.xml \
 	dcop-howto.txt \
 	introspect.xsl \
-	system-activation.txt \
 	$(DTDS)
 
 EXTRA_DIST = \
@@ -115,10 +117,11 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
+dbus-docs: $(STATIC_DOCS) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
 	$(AM_V_at)rm -rf $@
 	$(AM_V_GEN)$(MKDIR_P) $@/api
 	$(AM_V_at)cp $(STATIC_DOCS) $@
+	$(AM_V_at)cp $(dist_doc_DATA) $@
 	$(AM_V_at)cp $(dist_html_DATA) $@
 	$(AM_V_at)cp $(MAN_HTML_FILES) $@
 	$(AM_V_at)cp $(BONUS_FILES) $@
