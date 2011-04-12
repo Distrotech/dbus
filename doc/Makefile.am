@@ -102,7 +102,7 @@ uninstall-local::
 endif
 
 if DBUS_HAVE_MAN2HTML
-all-local:: $(MAN_HTML_FILES)
+html_DATA += $(MAN_HTML_FILES)
 
 %.1.html: %.1
 	$(AM_V_GEN)( $(MAN2HTML) $< > $@.tmp && mv $@.tmp $@ )
