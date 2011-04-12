@@ -135,7 +135,7 @@ SPECIFICATION_PATH = /srv/specifications.freedesktop.org/www/dbus/1.0
 
 maintainer-upload-docs: dbus-docs.tar.gz dbus-docs
 	scp dbus-docs.tar.gz $(DOC_SERVER):$(DOC_WWW_DIR)
-	rsync -rvzP --chmod=Dg+s,ug+rwX,o=rX \
+	rsync -rpvzP --chmod=Dg+s,ug+rwX,o=rX \
 		dbus-docs/ $(DOC_SERVER):$(DOC_WWW_DIR)/doc/
 	scp -p $(DTDS) $(SPECIFICATION_SERVER):$(SPECIFICATION_PATH)
 else
