@@ -48,17 +48,16 @@ EXTRA_DIST = \
 
 html_DATA =
 
-HTML_FILES=					\
+# we distribute these in the tarball so users don't necessarily need xmlto
+dist_html_DATA = $(XMLTO_OUTPUT)
+
+XMLTO_OUTPUT=					\
 	dbus-faq.html				\
 	dbus-specification.html			\
 	dbus-test-plan.html			\
 	dbus-tutorial.html
 
 if DBUS_XML_DOCS_ENABLED
-all-local:: $(HTML_FILES)
-
-EXTRA_DIST += $(HTML_FILES)
-
 dbus-specification.html: dbus-specification.xml
 	$(XMLTO) html-nochunks $<
 
@@ -70,7 +69,6 @@ dbus-tutorial.html: dbus-tutorial.xml
 
 dbus-faq.html: dbus-faq.xml
 	$(XMLTO) html-nochunks $<
-
 endif
 
 if DBUS_DOXYGEN_DOCS_ENABLED
@@ -117,11 +115,11 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(HTML_FILES) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
+dbus-docs: $(STATIC_DOCS) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
 	$(AM_V_at)rm -rf $@
 	$(AM_V_GEN)$(MKDIR_P) $@/api
 	$(AM_V_at)cp $(STATIC_DOCS) $@
-	$(AM_V_at)cp $(HTML_FILES) $@
+	$(AM_V_at)cp $(dist_html_DATA) $@
 	$(AM_V_at)cp $(MAN_HTML_FILES) $@
 	$(AM_V_at)cp $(BONUS_FILES) $@
 	$(AM_V_at)cp -r api/html $@/api
@@ -156,4 +154,4 @@ clean-local:
 	rm -f doxygen.stamp
 
 maintainer-clean-local:
-	rm -f $(HTML_FILES)
+	rm -f $(XMLTO_OUTPUT)
