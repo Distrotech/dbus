@@ -1265,9 +1265,8 @@ fi
 AM_CONDITIONAL(DBUS_DOXYGEN_DOCS_ENABLED, test x$enable_doxygen_docs = xyes)
 AC_MSG_RESULT($enable_doxygen_docs)
 
-XSLTPROC=false
 AC_CHECK_PROGS([XSLTPROC], [xsltproc])
-AM_CONDITIONAL(DBUS_HAVE_XSLTPROC, test "$XSLTPROC" != false)
+AM_CONDITIONAL([DBUS_HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
 ### XML Documentation
 
