@@ -46,6 +46,8 @@ EXTRA_DIST = \
 	$(STATIC_DOCS) \
 	$(MAN_IN_FILES)
 
+html_DATA =
+
 HTML_FILES=					\
 	dbus-faq.html				\
 	dbus-specification.html			\
@@ -79,7 +81,7 @@ doxygen.stamp: $(wildcard $(top_srcdir)/dbus/*.[ch])
 	@touch $@
 
 if DBUS_HAVE_XSLTPROC
-api_DATA = dbus.devhelp
+html_DATA += dbus.devhelp
 
 dbus.devhelp: $(srcdir)/doxygen_to_devhelp.xsl doxygen.stamp
 	$(XSLTPROC) -o $@ $< api/xml/index.xml
@@ -147,6 +149,7 @@ maintainer-upload-docs:
 endif
 
 clean-local:
+	rm -f $(html_DATA)
 	rm -rf api
 	rm -rf dbus-docs
 	rm -f *.1.html
