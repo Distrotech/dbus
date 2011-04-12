@@ -97,6 +97,10 @@ uninstall-local::
 	rm -f $(DESTDIR)$(apidir)/*.html
 	rm -f $(DESTDIR)$(apidir)/*.png
 	rm -f $(DESTDIR)$(apidir)/*.css
+	rm -f $(DESTDIR)$(htmldir)/*.html
+	rm -f $(DESTDIR)$(docdir)/*.txt
+	rm -f $(DESTDIR)$(docdir)/*.png
+	rm -f $(DESTDIR)$(docdir)/*.svg
 	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(apidir) || \
 		rmdir $(DESTDIR)$(apidir)
 endif
