@@ -4500,9 +4500,16 @@
         <sect4>
           <title></title>
           <para>
-            [FIXME specify location of .service files, probably using
-            DESKTOP_DIRS etc. from basedir specification, though login session
-            bus is not really desktop-specific]
+            On Unix systems, the session bus should search for .service files
+            in <literal>$XDG_DATA_DIRS/dbus-1/services</literal> as defined
+            by the
+            <ulink url="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG Base Directory Specification</ulink>.
+            Implementations may also search additional locations, which
+            should be searched with lower priority than anything in
+            XDG_DATA_HOME, XDG_DATA_DIRS or their respective defaults;
+            for example, the reference implementation also
+            looks in <literal>${datadir}/dbus-1/services</literal> as
+            set at compile time.
           </para>
         </sect4>
       </sect3>
