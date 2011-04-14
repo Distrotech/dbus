@@ -1434,11 +1434,17 @@ send_no_return_values (DBusConnection *connection,
  * If you pass #NULL for the error, this function will not
  * block; the match thus won't be added until you flush the
  * connection, and if there's an error adding the match
- * (only possible error is lack of resources in the bus),
- * you won't find out about it.
+ * you won't find out about it. This is generally acceptable, since the
+ * possible errors (including a lack of resources in the bus, the connection
+ * having exceeded its quota of active match rules, or the match rule being
+ * unparseable) are generally unrecoverable.
  *
  * If you pass non-#NULL for the error this function will
- * block until it gets a reply.
+ * block until it gets a reply. This may be useful when using match rule keys
+ * introduced in recent versions of D-Bus, like 'arg0namespace', to allow the
+ * application to fall back to less efficient match rules supported by older
+ * versions of the daemon if the running version is not new enough; or when
+ * using user-supplied rules rather than rules hard-coded at compile time.
  *
  * Normal API conventions would have the function return
  * a boolean value indicating whether the error was set,
