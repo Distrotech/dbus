@@ -73,6 +73,7 @@ spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 EXTRA_DIST=
 
 modular_tests = \
+	test-corrupt \
 	test-dbus-daemon \
 	test-loopback \
 	test-relay
@@ -88,6 +89,13 @@ installcheck_environment = \
 TESTS_ENVIRONMENT = \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
 	DBUS_TEST_DATA=@abs_top_builddir@/test/data
+
+test_corrupt_SOURCES = corrupt.c
+test_corrupt_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_corrupt_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_corrupt_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
 
 test_loopback_SOURCES = loopback.c
 test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)

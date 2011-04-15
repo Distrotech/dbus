@@ -15,6 +15,7 @@ unbase64
 *.gcov
 break-loader
 spawn-test
+test-corrupt
 test-exit
 test-segfault
 test-service
