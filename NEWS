@@ -22,6 +22,8 @@ Changes:
     (fd.o #14512; Simon McVittie, loosely based on a patch from Luca Barbato)
   • Ensure that maintainers upload documentation with the right permissions
     (fd.o #36130, Simon McVittie)
+  • Don't force users of libdbus to be linked against -lpthread, -lrt
+    (fd.o #32827, Simon McVittie)
 
 D-Bus 1.5.0 (2011-04-11)
 ==
