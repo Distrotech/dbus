@@ -1142,38 +1142,6 @@ cc_supports_flag() {
   test "x$rc" = xyes
 }
 
-ld_supports_flag() {
-  AC_MSG_CHECKING([whether $LD supports "$@"])
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-    int one(void) { return 1; }
-    int two(void) { return 2; }
-  ]], [[ two();  ]])],
-    [_ac_ld_flag_supported=yes],
-    [_ac_ld_flag_supported=no])
-
-  if test "$_ac_ld_flag_supported" = "yes"; then
-    rm -f conftest.c
-    touch conftest.c
-    if $CC -c conftest.c; then
-      ld_out=`$LD $@ -o conftest conftest.o 2>&1`
-      ld_ret=$?
-      if test $ld_ret -ne 0 ; then
-        _ac_ld_flag_supported=no
-      elif echo "$ld_out" | egrep 'option ignored|^usage:|unrecognized option|illegal option' >/dev/null ; then
-        _ac_ld_flag_supported=no
-      fi
-    fi
-    rm -f conftest.c conftest.o conftest
-  fi
-
-  AC_MSG_RESULT($_ac_ld_flag_supported)
-  if test "$_ac_ld_flag_supported" = "yes" ; then
-    return 0
-  else
-    return 1
-  fi
-}
-
 # Don't bother with -Werror on Windows for now, too many warnings
 if test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = xyes; then
   if cc_supports_flag "-Werror"; then
@@ -1249,30 +1217,6 @@ dnl block.
      ;;
   esac
 
-  case " $CFLAGS " in
-  *[\ \	]-fPIC[\ \	]*) ;;
-  *) if test x$dbus_win = xno && cc_supports_flag -fPIC; then
-        PIC_CFLAGS="-fPIC"
-        if ld_supports_flag -z,relro; then
-           PIC_LDFLAGS="-Wl,-z,relro"
-        fi
-     fi
-     ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-fPIE[\ \	]*) ;;
-  *) if test x$dbus_win = xno && cc_supports_flag -fPIE; then
-        PIE_CFLAGS="-fPIE"
-        if ld_supports_flag -z,relro; then
-           PIE_LDFLAGS="-pie -Wl,-z,relro"
-        else
-           PIE_LDFLAGS="-pie"
-        fi
-     fi
-     ;;
-  esac
-
   ### Disabled warnings, and compiler flag overrides
 
   # Let's just ignore unused for now
@@ -1328,18 +1272,33 @@ dnl block.
   fi
 fi]
 
-AC_SUBST(PIC_CFLAGS)
-AC_SUBST(PIC_LDFLAGS)
-AC_SUBST(PIE_CFLAGS)
-AC_SUBST(PIE_LDFLAGS)
-
-if ld_supports_flag --gc-sections; then
-  SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-  CFLAGS="-ffunction-sections -fdata-sections $CFLAGS"
+# Disabling gc-sections makes our binaries bigger, but some toolchains
+# have known-broken support for it which discards sections that are needed.
+# See https://bugs.freedesktop.org/show_bug.cgi?id=33466
+SECTION_LDFLAGS=
+AC_ARG_ENABLE([gc-sections],
+  [AS_HELP_STRING([--disable-gc-sections],
+    [disable --gc-sections to work around broken toolchains])],
+  [enable_gc_sections=$enableval],
+  [enable_gc_sections=yes])
+if test "x$GCC,$enable_gc_sections,$dbus_win" = xyes,yes,no; then
+  save_CFLAGS="$CFLAGS"
+  save_LDFLAGS="$LDFLAGS"
+  AC_MSG_CHECKING([for ability to link with --gc-sections])
+  CFLAGS="-ffunction-sections -fdata-sections"
+  LDFLAGS="-Wl,--gc-sections"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+    [rc=yes],
+    [rc=no])
+  AC_MSG_RESULT([$rc])
+  CFLAGS="$save_CFLAGS"
+  LDFLAGS="$save_LDFLAGS"
+  if test "x$rc" = xyes; then
+    SECTION_LDFLAGS="-Wl,--gc-sections"
+    CFLAGS="-ffunction-sections -fdata-sections $CFLAGS"
+  fi
 fi
-AC_SUBST(SECTION_FLAGS)
-AC_SUBST(SECTION_LDFLAGS)
-AC_MSG_RESULT($ac_gcsections)
+AC_SUBST([SECTION_LDFLAGS])
 
 case $host_os in
     solaris*)

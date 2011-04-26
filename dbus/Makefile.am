@@ -1,9 +1,11 @@
 
 configdir=$(sysconfdir)/dbus-1
 
-INCLUDES=-I$(top_builddir) -I$(top_srcdir) $(DBUS_CLIENT_CFLAGS) @PIC_CFLAGS@ -DDBUS_COMPILATION	\
-	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\"		\
-	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\"			\
+INCLUDES = -I$(top_builddir) -I$(top_srcdir) \
+	$(DBUS_CLIENT_CFLAGS) \
+	-DDBUS_COMPILATION \
+	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
+	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
 	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\"
 
 dbusincludedir=$(includedir)/dbus-1.0/dbus
@@ -261,7 +263,7 @@ noinst_LTLIBRARIES=libdbus-internal.la
 
 libdbus_1_la_CPPFLAGS= -Ddbus_1_EXPORTS
 libdbus_1_la_LIBADD= $(DBUS_CLIENT_LIBS)
-libdbus_1_la_LDFLAGS= $(export_symbols) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -no-undefined @R_DYNAMIC_LDFLAG@ @PIC_LDFLAGS@
+libdbus_1_la_LDFLAGS= $(export_symbols) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -no-undefined @R_DYNAMIC_LDFLAG@
 
 libdbus_internal_la_CPPFLAGS = -DDBUS_STATIC_BUILD
 libdbus_internal_la_LIBADD=$(DBUS_CLIENT_LIBS)
