@@ -356,9 +356,9 @@
       </para>
 
       <para>
-        All <firstterm>basic</firstterm> types work like 
-        <literal>INT32</literal> in this example. To marshal and unmarshal 
-        basic types, you simply read one value from the data
+        All fixed types work like
+        <literal>INT32</literal> in this example: to marshal and unmarshal
+        fixed types, you simply read one value from the data
         block corresponding to each type code in the signature.
       </para>
     </sect2>
