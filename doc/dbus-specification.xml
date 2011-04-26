@@ -492,6 +492,38 @@
                 <entry>104 (ASCII 'h')</entry>
                 <entry>Unix file descriptor</entry>
               </row>
+              <row>
+                <entry>(reserved)</entry>
+                <entry>109 (ASCII 'm')</entry>
+                <entry>Reserved for <ulink
+                    url="https://bugs.freedesktop.org/show_bug.cgi?id=27857">a
+                  'maybe' type compatible with the one in GVariant</ulink>,
+                  and must not appear in signatures used on D-Bus until
+                  specified here</entry>
+              </row>
+              <row>
+                <entry>(reserved)</entry>
+                <entry>42 (ASCII '*')</entry>
+                <entry>Reserved for use in bindings/implementations to
+                  represent any <firstterm>single complete type</firstterm>,
+                  and must not appear in signatures used on D-Bus.</entry>
+              </row>
+              <row>
+                <entry>(reserved)</entry>
+                <entry>63 (ASCII '?')</entry>
+                <entry>Reserved for use in bindings/implementations to
+                  represent any <firstterm>basic type</firstterm>, and must
+                  not appear in signatures used on D-Bus.</entry>
+              </row>
+              <row>
+                <entry>(reserved)</entry>
+                <entry>64 (ASCII '@'), 38 (ASCII '&amp;'),
+                  94 (ASCII '^')</entry>
+                <entry>Reserved for internal use by bindings/implementations,
+                  and must not appear in signatures used on D-Bus.
+                  GVariant uses these type-codes to encode calling
+                  conventions.</entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
