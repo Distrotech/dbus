@@ -22,6 +22,8 @@ Changes:
     (fd.o #14512; Simon McVittie, loosely based on a patch from Luca Barbato)
   • Ensure that maintainers upload documentation with the right permissions
     (fd.o #36130, Simon McVittie)
+  • Log system-bus activation information to syslog (fd.o #35705,
+    Colin Walters)
 
 D-Bus 1.4.8 (2011-04-08)
 ==
