@@ -24,6 +24,8 @@ Changes:
     (fd.o #36130, Simon McVittie)
   • Don't force users of libdbus to be linked against -lpthread, -lrt
     (fd.o #32827, Simon McVittie)
+  • Log system-bus activation information to syslog (fd.o #35705,
+    Colin Walters)
 
 D-Bus 1.5.0 (2011-04-11)
 ==
