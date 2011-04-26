@@ -264,27 +264,13 @@
     
   </sect1>
 
-  <sect1 id="message-protocol">
-    <title>Message Protocol</title>
+  <sect1 id="type-system">
+    <title>Type System</title>
 
     <para>
-      A <firstterm>message</firstterm> consists of a
-      <firstterm>header</firstterm> and a <firstterm>body</firstterm>. If you
-      think of a message as a package, the header is the address, and the body
-      contains the package contents. The message delivery system uses the header
-      information to figure out where to send the message and how to interpret
-      it; the recipient interprets the body of the message.
-    </para>
-    
-    <para>
-      The body of the message is made up of zero or more
-      <firstterm>arguments</firstterm>, which are typed values, such as an
-      integer or a byte array.
-    </para>
-
-    <para>
-      Both header and body use the same type system and format for 
-      serializing data. Each type of value has a wire format. 
+      D-Bus has a type system, in which values of various types can be
+      serialized into a sequence of bytes referred to as the
+      <firstterm>wire format</firstterm> in a standard way.
       Converting a value from some other representation into the wire
       format is called <firstterm>marshaling</firstterm> and converting
       it back from the wire format is <firstterm>unmarshaling</firstterm>.
@@ -842,6 +828,31 @@
       </sect3>
       
     </sect2>
+
+  </sect1>
+
+  <sect1 id="message-protocol">
+    <title>Message Protocol</title>
+
+    <para>
+      A <firstterm>message</firstterm> consists of a
+      <firstterm>header</firstterm> and a <firstterm>body</firstterm>. If you
+      think of a message as a package, the header is the address, and the body
+      contains the package contents. The message delivery system uses the header
+      information to figure out where to send the message and how to interpret
+      it; the recipient interprets the body of the message.
+    </para>
+    
+    <para>
+      The body of the message is made up of zero or more
+      <firstterm>arguments</firstterm>, which are typed values, such as an
+      integer or a byte array.
+    </para>
+
+    <para>
+      Both header and body use the D-Bus <link linkend="type-system">type
+        system</link> and format for serializing data.
+    </para>
 
     <sect2 id="message-protocol-messages">
       <title>Message Format</title>
