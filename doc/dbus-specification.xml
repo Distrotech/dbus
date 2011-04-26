@@ -478,7 +478,10 @@
               </row><row>
                 <entry><literal>STRUCT</literal></entry>
                 <entry>114 (ASCII 'r'), 40 (ASCII '('), 41 (ASCII ')')</entry>
-                <entry>Struct</entry>
+                <entry>Struct; type code 114 'r' is reserved for use in
+                  bindings and implementations to represent the general
+                  concept of a struct, and must not appear in signatures
+                  used on D-Bus.</entry>
               </row><row>
                 <entry><literal>VARIANT</literal></entry>
                 <entry>118 (ASCII 'v') </entry>
@@ -486,7 +489,11 @@
               </row><row>
                 <entry><literal>DICT_ENTRY</literal></entry>
                 <entry>101 (ASCII 'e'), 123 (ASCII '{'), 125 (ASCII '}') </entry>
-                <entry>Entry in a dict or map (array of key-value pairs)</entry>
+                <entry>Entry in a dict or map (array of key-value pairs).
+                  Type code 101 'e' is reserved for use in bindings and
+                  implementations to represent the general concept of a
+                  dict or dict-entry, and must not appear in signatures
+                  used on D-Bus.</entry>
               </row><row>
                 <entry><literal>UNIX_FD</literal></entry>
                 <entry>104 (ASCII 'h')</entry>
