@@ -24,6 +24,10 @@ Changes:
     (fd.o #36130, Simon McVittie)
   • Log system-bus activation information to syslog (fd.o #35705,
     Colin Walters)
+  • On Unix, if /var/lib/dbus/machine-id cannot be read, try /etc/machine-id
+    (fd.o #35228, Lennart Poettering)
+  • In the regression tests, don't report fds as "leaked" if they were open
+    on startup (fd.o #35173, Simon McVittie)
 
 D-Bus 1.4.8 (2011-04-08)
 ==
