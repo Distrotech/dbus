@@ -54,6 +54,8 @@ check_memleaks (const char *name)
 }
 #endif /* DBUS_BUILD_TESTS */
 
+static DBusInitialFDs *initial_fds = NULL;
+
 static void
 test_pre_hook (void)
 {
@@ -62,16 +64,21 @@ test_pre_hook (void)
       && (!bus_selinux_pre_init ()
 	  || !bus_selinux_full_init ()))
     die ("could not init selinux support");
+
+  initial_fds = _dbus_check_fdleaks_enter ();
 }
 
 static char *progname = "";
+
 static void
 test_post_hook (void)
 {
   if (_dbus_getenv ("DBUS_TEST_SELINUX"))
     bus_selinux_shutdown ();
   check_memleaks (progname);
-  _dbus_check_fdleaks();
+
+  _dbus_check_fdleaks_leave (initial_fds);
+  initial_fds = NULL;
 }
 
 int

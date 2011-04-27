@@ -3349,8 +3349,19 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
                                DBusError  *error)
 {
   DBusString filename;
+  dbus_bool_t b;
+
   _dbus_string_init_const (&filename, DBUS_MACHINE_UUID_FILE);
-  return _dbus_read_uuid_file (&filename, machine_id, create_if_not_found, error);
+
+  b = _dbus_read_uuid_file (&filename, machine_id, create_if_not_found, error);
+  if (b)
+    return TRUE;
+
+  dbus_error_free (error);
+
+  /* Fallback to the system machine ID */
+  _dbus_string_init_const (&filename, "/etc/machine-id");
+  return _dbus_read_uuid_file (&filename, machine_id, FALSE, error);
 }
 
 #define DBUS_UNIX_STANDARD_SESSION_SERVICEDIR "/dbus-1/services"
