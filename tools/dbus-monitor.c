@@ -215,6 +215,21 @@ usage (char *name, int ecode)
   exit (ecode);
 }
 
+static void
+only_one_type (dbus_bool_t *seen_bus_type,
+               char        *name)
+{
+  if (*seen_bus_type)
+    {
+      fprintf (stderr, "I only support monitoring one bus at a time!\n");
+      usage (name, 1);
+    }
+  else
+    {
+      *seen_bus_type = TRUE;
+    }
+}
+
 static dbus_bool_t sigint_received = FALSE;
 
 static void
@@ -231,6 +246,7 @@ main (int argc, char *argv[])
   DBusBusType type = DBUS_BUS_SESSION;
   DBusHandleMessageFunction filter_func = monitor_filter_func;
   char *address = NULL;
+  dbus_bool_t seen_bus_type = FALSE;
   
   int i = 0, j = 0, numFilters = 0;
   char **filters = NULL;
@@ -251,19 +267,27 @@ main (int argc, char *argv[])
       char *arg = argv[i];
 
       if (!strcmp (arg, "--system"))
-	type = DBUS_BUS_SYSTEM;
+        {
+          only_one_type (&seen_bus_type, argv[0]);
+          type = DBUS_BUS_SYSTEM;
+        }
       else if (!strcmp (arg, "--session"))
-	type = DBUS_BUS_SESSION;
+        {
+          only_one_type (&seen_bus_type, argv[0]);
+          type = DBUS_BUS_SESSION;
+        }
       else if (!strcmp (arg, "--address"))
-	{
-	  if (i+1 < argc)
-	    {
-	      address = argv[i+1];
-	      i++;
-	    }
-	  else
-	    usage (argv[0], 1);
-	}
+        {
+          only_one_type (&seen_bus_type, argv[0]);
+
+          if (i+1 < argc)
+            {
+              address = argv[i+1];
+              i++;
+            }
+          else
+            usage (argv[0], 1);
+        }
       else if (!strcmp (arg, "--help"))
 	usage (argv[0], 0);
       else if (!strcmp (arg, "--monitor"))

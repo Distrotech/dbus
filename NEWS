@@ -33,6 +33,8 @@ Changes:
     (fd.o #35228, Lennart Poettering)
   • In the regression tests, don't report fds as "leaked" if they were open
     on startup (fd.o #35173, Simon McVittie)
+  • Make dbus-monitor bail out if asked to monitor more than one bus,
+    rather than silently using the last one (fd.o #26548, Will Thompson)
 
 D-Bus 1.5.0 (2011-04-11)
 ==
