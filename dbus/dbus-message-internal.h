@@ -46,8 +46,7 @@ dbus_bool_t _dbus_message_add_counter           (DBusMessage  *message,
 void        _dbus_message_add_counter_link      (DBusMessage  *message,
                                                  DBusList     *link);
 void        _dbus_message_remove_counter        (DBusMessage  *message,
-                                                 DBusCounter  *counter,
-                                                 DBusList    **link_return);
+                                                 DBusCounter  *counter);
 
 DBusMessageLoader* _dbus_message_loader_new                   (void);
 DBusMessageLoader* _dbus_message_loader_ref                   (DBusMessageLoader  *loader);

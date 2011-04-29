@@ -296,13 +296,11 @@ _dbus_message_add_counter (DBusMessage *message,
  * decrements the counter by the size/unix fds of this message.
  *
  * @param message the message
- * @param link_return return the link used
  * @param counter the counter
  */
 void
 _dbus_message_remove_counter (DBusMessage  *message,
-                              DBusCounter  *counter,
-                              DBusList    **link_return)
+                              DBusCounter  *counter)
 {
   DBusList *link;
 
@@ -310,12 +308,7 @@ _dbus_message_remove_counter (DBusMessage  *message,
                                counter);
   _dbus_assert (link != NULL);
 
-  _dbus_list_unlink (&message->counters,
-                     link);
-  if (link_return)
-    *link_return = link;
-  else
-    _dbus_list_free_link (link);
+  _dbus_list_remove_link (&message->counters, link);
 
   _dbus_counter_adjust_size (counter, - message->size_counter_delta);
 

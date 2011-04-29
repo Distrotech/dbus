@@ -666,7 +666,7 @@ _dbus_connection_message_sent_unlocked (DBusConnection *connection,
 
   /* It's OK that in principle we call the notify function, because for the
    * outgoing limit, there isn't one */
-  _dbus_message_remove_counter (message, connection->outgoing_counter, NULL);
+  _dbus_message_remove_counter (message, connection->outgoing_counter);
 
   /* The message will actually be unreffed when we unlock */
 }
@@ -2641,9 +2641,7 @@ free_outgoing_message (void *element,
   DBusMessage *message = element;
   DBusConnection *connection = data;
 
-  _dbus_message_remove_counter (message,
-                                connection->outgoing_counter,
-                                NULL);
+  _dbus_message_remove_counter (message, connection->outgoing_counter);
   dbus_message_unref (message);
 }
 
