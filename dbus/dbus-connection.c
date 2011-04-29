@@ -287,9 +287,6 @@ struct DBusConnection
 
   DBusDispatchStatus last_dispatch_status; /**< The last dispatch status we reported to the application. */
 
-  DBusList *link_cache; /**< A cache of linked list links to prevent contention
-                         *   for the global linked list mempool lock
-                         */
   DBusObjectTree *objects; /**< Object path handlers registered with this connection */
 
   char *server_guid; /**< GUID of server if we are in shared_connections, #NULL if server GUID is unknown or connection is private */
@@ -403,27 +400,15 @@ _dbus_connection_unlock (DBusConnection *connection)
   RELEASING_LOCK_CHECK (connection);
   _dbus_mutex_unlock (connection->mutex);
 
-  for (iter = _dbus_list_get_first_link (&expired_messages);
+  for (iter = _dbus_list_pop_first_link (&expired_messages);
       iter != NULL;
-      iter = _dbus_list_get_next_link (&expired_messages, iter))
+      iter = _dbus_list_pop_first_link (&expired_messages))
     {
       DBusMessage *message = iter->data;
 
       dbus_message_unref (message);
-      iter->data = NULL;
+      _dbus_list_free_link (iter);
     }
-
-  /* Take the lock back for a moment, to copy the links into the link
-   * cache. FIXME: with this extra cost, is it still advantageous to have
-   * the link cache? */
-  _dbus_mutex_lock (connection->mutex);
-
-  for (iter = _dbus_list_pop_first_link (&expired_messages);
-      iter != NULL;
-      iter = _dbus_list_pop_first_link (&expired_messages))
-    _dbus_list_prepend_link (&connection->link_cache, iter);
-
-  _dbus_mutex_unlock (connection->mutex);
 }
 
 /**
@@ -681,11 +666,7 @@ _dbus_connection_message_sent_unlocked (DBusConnection *connection,
 
   /* It's OK that in principle we call the notify function, because for the
    * outgoing limit, there isn't one */
-  _dbus_message_remove_counter (message, connection->outgoing_counter,
-                                &link);
-
-  /* Save this link in the link cache also */
-  _dbus_list_prepend_link (&connection->link_cache, link);
+  _dbus_message_remove_counter (message, connection->outgoing_counter, NULL);
 
   /* The message will actually be unreffed when we unlock */
 }
@@ -1959,31 +1940,13 @@ _dbus_connection_preallocate_send_unlocked (DBusConnection *connection)
   if (preallocated == NULL)
     return NULL;
 
-  if (connection->link_cache != NULL)
-    {
-      preallocated->queue_link =
-        _dbus_list_pop_first_link (&connection->link_cache);
-      preallocated->queue_link->data = NULL;
-    }
-  else
-    {
-      preallocated->queue_link = _dbus_list_alloc_link (NULL);
-      if (preallocated->queue_link == NULL)
-        goto failed_0;
-    }
-  
-  if (connection->link_cache != NULL)
-    {
-      preallocated->counter_link =
-        _dbus_list_pop_first_link (&connection->link_cache);
-      preallocated->counter_link->data = connection->outgoing_counter;
-    }
-  else
-    {
-      preallocated->counter_link = _dbus_list_alloc_link (connection->outgoing_counter);
-      if (preallocated->counter_link == NULL)
-        goto failed_1;
-    }
+  preallocated->queue_link = _dbus_list_alloc_link (NULL);
+  if (preallocated->queue_link == NULL)
+    goto failed_0;
+
+  preallocated->counter_link = _dbus_list_alloc_link (connection->outgoing_counter);
+  if (preallocated->counter_link == NULL)
+    goto failed_1;
 
   _dbus_counter_ref (preallocated->counter_link->data);
 
@@ -2762,8 +2725,6 @@ _dbus_connection_last_unref (DBusConnection *connection)
       _dbus_list_free_link (connection->disconnect_message_link);
     }
 
-  _dbus_list_clear (&connection->link_cache);
-  
   _dbus_condvar_free_at_location (&connection->dispatch_cond);
   _dbus_condvar_free_at_location (&connection->io_path_cond);
 
