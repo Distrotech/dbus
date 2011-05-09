@@ -357,7 +357,7 @@ dnl **********************************
 dnl we currently check for all three va_copy possibilities, so we get
 dnl all results in config.log for bug reports.
 AC_CACHE_CHECK([for an implementation of va_copy()],dbus_cv_va_copy,[
-	AC_LINK_IFELSE([#include <stdarg.h>
+	AC_LINK_IFELSE([AC_LANG_SOURCE([#include <stdarg.h>
 #include <stdlib.h>
 	static void f (int i, ...) {
 	va_list args1, args2;
@@ -370,12 +370,12 @@ AC_CACHE_CHECK([for an implementation of va_copy()],dbus_cv_va_copy,[
 	int main() {
 	  f (0, 42);
 	  return 0;
-	}],
+	}])],
 	[dbus_cv_va_copy=yes],
 	[dbus_cv_va_copy=no])
 ])
 AC_CACHE_CHECK([for an implementation of __va_copy()],dbus_cv___va_copy,[
-	AC_LINK_IFELSE([#include <stdarg.h>
+	AC_LINK_IFELSE([AC_LANG_SOURCE([#include <stdarg.h>
 #include <stdlib.h>
 	static void f (int i, ...) {
 	va_list args1, args2;
@@ -388,7 +388,7 @@ AC_CACHE_CHECK([for an implementation of __va_copy()],dbus_cv___va_copy,[
 	int main() {
 	  f (0, 42);
 	  return 0;
-	}],
+	}])],
 	[dbus_cv___va_copy=yes],
 	[dbus_cv___va_copy=no])
 ])
