@@ -1117,72 +1117,10 @@ cc_supports_flag() {
   test "x$rc" = xyes
 }
 
-# Don't bother with -Werror on Windows for now, too many warnings
-if test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = xyes; then
-  if cc_supports_flag "-Werror"; then
-    CFLAGS="$CFLAGS -Werror"
-  fi
-fi
-
 dnl This whole "if" block is in m4 quotes ([]) because it uses them
 dnl for character ranges internally. m4 macros cannot be used inside this
 dnl block.
 [if test "x$GCC" = "xyes"; then
-  case " $CFLAGS " in
-  *[\ \	]-Wall[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wall" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wchar-subscripts[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wchar-subscripts" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wmissing-declarations[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wmissing-declarations" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wmissing-prototypes[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wmissing-prototypes" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wnested-externs[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wnested-externs" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wpointer-arith[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wpointer-arith" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wcast-align[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wcast-align" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wno-address[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wno-address" ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wfloat-equal[\ \	]*) ;;
-  *) if cc_supports_flag -Wfloat-equal; then
-        CFLAGS="$CFLAGS -Wfloat-equal"
-     fi
-     ;;
-  esac
-
-  case " $CFLAGS " in
-  *[\ \	]-Wdeclaration-after-statement[\ \	]*) ;;
-  *) if cc_supports_flag -Wdeclaration-after-statement; then
-        CFLAGS="$CFLAGS -Wdeclaration-after-statement"
-     fi
-     ;;
-  esac
 
   case " $CFLAGS " in
   *[\ \	]-fno-common[\ \	]*) ;;
@@ -1193,28 +1131,6 @@ dnl block.
   esac
 
   ### Disabled warnings, and compiler flag overrides
-
-  # Let's just ignore unused for now
-  case " $CFLAGS " in
-  *[\ \	]-Wno-unused[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wno-unused" ;;
-  esac
-
-  # This group is for warnings we currently don't pass.
-  # We would like to, however.  Please fix.
-
-  # http://bugs.freedesktop.org/show_bug.cgi?id=17433
-  case " $CFLAGS " in
-  *[\ \	]-Wno-sign-compare[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wno-sign-compare" ;;
-  esac
-  case " $CFLAGS " in
-  *[\ \	]-Wno-pointer-sign[\ \	]*) ;;
-  *) if cc_supports_flag -Wno-pointer-sign; then
-        CFLAGS="$CFLAGS -Wno-pointer-sign"
-     fi
-     ;;
-  esac
 
   # This one is special - it's not a warning override.
   # http://bugs.freedesktop.org/show_bug.cgi?id=10599
@@ -1246,6 +1162,40 @@ dnl block.
     esac
   fi
 fi]
+
+TP_COMPILER_WARNINGS([WARNING_CFLAGS],
+  dnl Use -Werror by default if:
+  dnl - we're not on Windows (too many warnings), and
+  dnl - we're in maintainer mode (a D-Bus developer, not a distro or end-user)
+  dnl Override with --enable-Werror or --disable-Werror
+  [test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = xyes],
+
+  dnl enable these warnings if possible:
+  [all \
+   char-subscripts \
+   missing-declarations \
+   missing-prototypes \
+   nested-externs \
+   pointer-arith \
+   cast-align \
+   no-address \
+   float-equal \
+   declaration-after-statement \
+  ],
+
+  dnl disable these warnings if possible, make them non-fatal if possible,
+  dnl and don't enable -Werror unless we succeeded:
+  dnl (unused is by design, sign-compare and pointer-sign are fd.o #17433)
+  [unused \
+   sign-compare \
+   pointer-sign \
+  ])
+
+dnl In principle we should put WARNING_CFLAGS in each Makefile.am like
+dnl telepathy-glib does, since CFLAGS is meant to be reserved for the user...
+dnl but prepending to CFLAGS (so the user can override it with later CFLAGS)
+dnl is the next best thing
+CFLAGS="$WARNING_CFLAGS $CFLAGS"
 
 # Disabling gc-sections makes our binaries bigger, but some toolchains
 # have known-broken support for it which discards sections that are needed.
