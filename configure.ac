@@ -1117,52 +1117,6 @@ cc_supports_flag() {
   test "x$rc" = xyes
 }
 
-dnl This whole "if" block is in m4 quotes ([]) because it uses them
-dnl for character ranges internally. m4 macros cannot be used inside this
-dnl block.
-[if test "x$GCC" = "xyes"; then
-
-  case " $CFLAGS " in
-  *[\ \	]-fno-common[\ \	]*) ;;
-  *) if cc_supports_flag -fno-common; then
-        CFLAGS="$CFLAGS -fno-common"
-     fi
-     ;;
-  esac
-
-  ### Disabled warnings, and compiler flag overrides
-
-  # This one is special - it's not a warning override.
-  # http://bugs.freedesktop.org/show_bug.cgi?id=10599
-  case " $CFLAGS " in
-  *[\ \	]-fno-strict-aliasing[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -fno-strict-aliasing" ;;
-  esac
-  ### End disabled warnings
-
-  if test "x$enable_ansi" = "xyes"; then
-    case " $CFLAGS " in
-    *[\ \	]-ansi[\ \	]*) ;;
-    *) CFLAGS="$CFLAGS -ansi" ;;
-    esac
-
-    case " $CFLAGS " in
-    *[\ \	]-D_POSIX_C_SOURCE*) ;;
-    *) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=199309L" ;;
-    esac
-
-    case " $CFLAGS " in
-    *[\ \	]-D_BSD_SOURCE[\ \	]*) ;;
-    *) CFLAGS="$CFLAGS -D_BSD_SOURCE" ;;
-    esac
-
-    case " $CFLAGS " in
-    *[\ \	]-pedantic[\ \	]*) ;;
-    *) CFLAGS="$CFLAGS -pedantic" ;;
-    esac
-  fi
-fi]
-
 TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl Use -Werror by default if:
   dnl - we're not on Windows (too many warnings), and
@@ -1190,6 +1144,20 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
    sign-compare \
    pointer-sign \
   ])
+
+if test "x$GCC" = "xyes"; then
+  # We're treating -fno-common like a warning: it makes the linker more
+  # strict, because on some systems the linker is *always* this strict
+  TP_ADD_COMPILER_FLAG([WARNING_CFLAGS], [-fno-common])
+
+  # http://bugs.freedesktop.org/show_bug.cgi?id=10599
+  TP_ADD_COMPILER_FLAG([WARNING_CFLAGS], [-fno-strict-aliasing])
+
+  if test "x$enable_ansi" = "xyes"; then
+    TP_ADD_COMPILER_FLAG([WARNING_CFLAGS],
+      [-ansi -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -pedantic])
+  fi
+fi
 
 dnl In principle we should put WARNING_CFLAGS in each Makefile.am like
 dnl telepathy-glib does, since CFLAGS is meant to be reserved for the user...
