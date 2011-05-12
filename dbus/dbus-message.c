@@ -52,6 +52,37 @@ static void dbus_message_finalize (DBusMessage *message);
  * @{
  */
 
+#ifdef DBUS_BUILD_TESTS
+static dbus_bool_t
+_dbus_enable_message_cache (void)
+{
+  static int enabled = -1;
+
+  if (enabled < 0)
+    {
+      const char *s = _dbus_getenv ("DBUS_MESSAGE_CACHE");
+
+      enabled = TRUE;
+
+      if (s && *s)
+        {
+          if (*s == '0')
+            enabled = FALSE;
+          else if (*s == '1')
+            enabled = TRUE;
+          else
+            _dbus_warn ("DBUS_MESSAGE_CACHE should be 0 or 1 if set, not '%s'",
+                s);
+        }
+    }
+
+  return enabled;
+}
+#else
+    /* constant expression, should be optimized away */
+#   define _dbus_enable_message_cache() (TRUE)
+#endif
+
 /* Not thread locked, but strictly const/read-only so should be OK
  */
 /** An static string representing an empty signature */
@@ -631,6 +662,9 @@ dbus_message_cache_or_finalize (DBusMessage *message)
     }
 
   _dbus_assert (message_cache_count >= 0);
+
+  if (!_dbus_enable_message_cache ())
+    goto out;
 
   if ((_dbus_string_get_length (&message->header.data) +
        _dbus_string_get_length (&message->body)) >
