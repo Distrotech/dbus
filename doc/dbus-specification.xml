@@ -762,9 +762,29 @@
           </itemizedlist>
         </para>
 
+        <para>
+          Object paths are often namespaced by starting with a reversed
+          domain name and containing an interface version number, in the
+          same way as
+          <link linkend="message-protocol-names-interface">interface
+            names</link> and
+          <link linkend="message-protocol-names-bus">well-known
+            bus names</link>.
+          This makes it possible to implement more than one service, or
+          more than one version of a service, in the same process,
+          even if the services share a connection but cannot otherwise
+          co-operate (for instance, if they are implemented by different
+          plugins).
+        </para>
+
+        <para>
+          For instance, if the owner of <literal>example.com</literal> is
+          developing a D-Bus API for a music player, they might use the
+          hierarchy of object paths that start with
+          <literal>/com/example/MusicPlayer1</literal> for its objects.
+        </para>
       </sect3>
 
-      
       <sect3 id="message-protocol-marshaling-signature">
         <title>Valid Signatures</title>
         <para>
