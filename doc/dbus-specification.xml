@@ -2938,22 +2938,6 @@
      </sect3>
     </sect2>
    </sect1>
-   <sect1 id="naming-conventions">
-    <title>Naming Conventions</title>
-    
-    <para>
-      D-Bus namespaces are all lowercase and correspond to reversed domain
-      names, as with Java. e.g. "org.freedesktop"
-    </para>
-    <para>
-      Interface, signal, method, and property names are "WindowsStyleCaps", note
-      that the first letter is capitalized, unlike Java.
-    </para>
-    <para>
-      Object paths are normally all lowercase with underscores used rather than
-      hyphens.
-    </para>
-  </sect1>
 
   <sect1 id="uuids">
     <title>UUIDs</title>
