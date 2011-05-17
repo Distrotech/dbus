@@ -1304,6 +1304,17 @@
         <para>
           Error names have the same restrictions as interface names.
         </para>
+
+        <para>
+          Error names have the same naming conventions as interface
+          names, and often contain <literal>.Error.</literal>; for instance,
+          the owner of <literal>example.com</literal> might define the
+          errors <literal>com.example.MusicPlayer.Error.FileNotFound</literal>
+          and <literal>com.example.MusicPlayer.Error.OutOfMemory</literal>.
+          The errors defined by D-Bus itself, such as
+          <literal>org.freedesktop.DBus.Error.Failed</literal>, follow a
+          similar pattern.
+        </para>
       </sect3>
     </sect2>
 
