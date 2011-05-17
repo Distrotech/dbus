@@ -1251,6 +1251,31 @@
           Note that the hyphen ('-') character is allowed in bus names but
           not in interface names.
         </para>
+
+        <para>
+          Like <link linkend="message-protocol-names-interface">interface
+            names</link>, well-known bus names should start with the
+          reversed DNS domain name of the author of the interface (in
+          lower-case), and it is conventional for the rest of the well-known
+          bus name to consist of words run together, with initial
+          capital letters. As with interface names, including a version
+          number in well-known bus names is a good idea; it's possible to
+          have the well-known bus name for more than one version
+          simultaneously if backwards compatibility is required.
+        </para>
+
+        <para>
+          If a well-known bus name implies the presence of a "main" interface,
+          that "main" interface is often given the same name as
+          the well-known bus name, and situated at the corresponding object
+          path. For instance, if the owner of <literal>example.com</literal>
+          is developing a D-Bus API for a music player, they might define
+          that any application that takes the well-known name
+          <literal>com.example.MusicPlayer1</literal> should have an object
+          at the object path <literal>/com/example/MusicPlayer1</literal>
+          which implements the interface
+          <literal>com.example.MusicPlayer1</literal>.
+        </para>
       </sect3>
       <sect3 id="message-protocol-names-member">
         <title>Member names</title>
