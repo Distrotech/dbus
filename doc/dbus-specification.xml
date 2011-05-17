@@ -1290,6 +1290,14 @@
 	    <listitem><para>Must be at least 1 byte in length.</para></listitem>
           </itemizedlist>
         </para>
+
+        <para>
+          It is conventional for member names on D-Bus to consist of
+          capitalized words with no punctuation ("camel-case").
+          Method names should usually be verbs, such as
+          <literal>GetItems</literal>, and signal names should usually be
+          a description of an event, such as <literal>ItemsChanged</literal>.
+        </para>
       </sect3>
       <sect3 id="message-protocol-names-error">
         <title>Error names</title>
