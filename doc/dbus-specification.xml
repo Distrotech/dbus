@@ -1214,16 +1214,17 @@
         <title>Bus names</title>
         <para>
           Connections have one or more bus names associated with them.
-          A connection has exactly one bus name that is a unique connection
-          name. The unique connection name remains with the connection for
-          its entire lifetime.
+          A connection has exactly one bus name that is a <firstterm>unique
+            connection name</firstterm>. The unique connection name remains
+          with the connection for its entire lifetime.
           A bus name is of type <literal>STRING</literal>,
           meaning that it must be valid UTF-8. However, there are also
           some additional restrictions that apply to bus names 
           specifically:
           <itemizedlist>
             <listitem><para>Bus names that start with a colon (':')
-                character are unique connection names.
+                character are unique connection names. Other bus names
+                are called <firstterm>well-known bus names</firstterm>.
                 </para>
             </listitem>
             <listitem><para>Bus names are composed of 1 or more elements separated by
