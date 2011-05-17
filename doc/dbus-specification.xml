@@ -5059,6 +5059,11 @@
               can be thought of as "well-known names" and are 
               used to find applications that offer specific functionality.
         </para>
+
+        <para>
+          See <xref linkend="message-protocol-names-bus"/> for details of
+          the syntax and naming conventions for bus names.
+        </para>
       </glossdef>
     </glossentry>
       
@@ -5097,10 +5102,14 @@
 
     <glossentry id="namespace"><glossterm>Namespace</glossterm>
       <glossdef>
-	<para>
-          Used to prevent collisions when defining new interfaces or bus
-	  names. The convention used is the same one Java uses for defining
-	  classes: a reversed domain name.
+        <para>
+          Used to prevent collisions when defining new interfaces, bus names
+          etc. The convention used is the same one Java uses for defining
+          classes: a reversed domain name.
+          See <xref linkend="message-protocol-names-bus"/>,
+          <xref linkend="message-protocol-names-interface"/>,
+          <xref linkend="message-protocol-names-error"/>,
+          <xref linkend="message-protocol-marshaling-object-path"/>.
         </para>
       </glossdef>
     </glossentry>
