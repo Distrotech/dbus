@@ -3067,6 +3067,22 @@
         </programlisting>
       </para>
       <para>
+        It is conventional to give D-Bus properties names consisting of
+        capitalized words without punctuation ("CamelCase"), like
+        <link linkend="message-protocol-names-member">member names</link>.
+        For instance, the GObject property
+        <literal>connection-status</literal> or the Qt property
+        <literal>connectionStatus</literal> could be represented on D-Bus
+        as <literal>ConnectionStatus</literal>.
+      </para>
+      <para>
+        Strictly speaking, D-Bus property names are not required to follow
+        the same naming restrictions as member names, but D-Bus property
+        names that would not be valid member names (in particular,
+        GObject-style dash-separated property names) can cause interoperability
+        problems and should be avoided.
+      </para>
+      <para>
         The available properties and whether they are writable can be determined
         by calling <literal>org.freedesktop.DBus.Introspectable.Introspect</literal>,
         see <xref linkend="standard-interfaces-introspectable"/>.
