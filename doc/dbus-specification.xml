@@ -1183,6 +1183,32 @@
 	    <listitem><para>Interface names must not exceed the maximum name length.</para></listitem>
           </itemizedlist>
         </para>
+
+        <para>
+          Interface names should start with the reversed DNS domain name of
+          the author of the interface (in lower-case), like interface names
+          in Java. It is conventional for the rest of the interface name
+          to consist of words run together, with initial capital letters
+          on all words ("CamelCase"). Several levels of hierarchy can be used.
+          It is also a good idea to include the major version of the interface
+          in the name, and increment it if incompatible changes are made;
+          this way, a single object can implement several versions of an
+          interface in parallel, if necessary.
+        </para>
+
+        <para>
+          For instance, if the owner of <literal>example.com</literal> is
+          developing a D-Bus API for a music player, they might define
+          interfaces called <literal>com.example.MusicPlayer1</literal>,
+          <literal>com.example.MusicPlayer1.Track</literal> and
+          <literal>com.example.MusicPlayer1.Seekable</literal>.
+        </para>
+
+        <para>
+          D-Bus does not distinguish between the concepts that would be
+          called classes and interfaces in Java: either can be identified on
+          D-Bus by an interface name.
+        </para>
       </sect3>
       <sect3 id="message-protocol-names-bus">
         <title>Bus names</title>
