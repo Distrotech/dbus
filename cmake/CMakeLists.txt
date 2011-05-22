@@ -611,3 +611,8 @@ endif(DBUS_DISABLE_CHECKS)
 MESSAGE(" ")
 
 INCLUDE(modules/CPackInstallConfig.cmake)
+
+add_custom_target(help-options
+    cmake -LH 
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
