@@ -247,9 +247,4 @@
 #define _dbus_verbose_C_S _dbus_verbose
 #endif 
 
-#ifdef _MSC_VER
-/* avoid defines of ELEMENT_TYPE */
-#define _WINIOCTL_
-#endif
-
 #endif  // _DBUS_CONFIG_H
