@@ -1,8 +1,12 @@
 project(dbus)
 
-set (DBUS_MAJOR_VERSION "1")
-set (DBUS_MINOR_VERSION "4")
-set (DBUS_MICRO_VERSION "3")
+#########################################################################
+# detect version
+#########################################################################
+file (READ ../configure.ac configure_ac)
+string (REGEX REPLACE ".*dbus_major_version], .([0-9]+).*" "\\1" DBUS_MAJOR_VERSION ${configure_ac})
+string (REGEX REPLACE ".*dbus_minor_version], .([0-9]+).*" "\\1" DBUS_MINOR_VERSION ${configure_ac})
+string (REGEX REPLACE ".*dbus_micro_version], .([0-9]+).*" "\\1" DBUS_MICRO_VERSION ${configure_ac})
 # used by file version info
 set (DBUS_PATCH_VERSION "0")
 set (DBUS_VERSION ${DBUS_MAJOR_VERSION}.${DBUS_MINOR_VERSION}.${DBUS_MICRO_VERSION})
