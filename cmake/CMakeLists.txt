@@ -92,11 +92,11 @@ find_package(LibExpat)
 find_package(X11)
 
 if(NOT WIN32)
-	OPTION(DBUS_ENABLE_ABSTRACT_SOCKETS "enable support for abstract sockets" ON)
+	option (DBUS_ENABLE_ABSTRACT_SOCKETS "enable support for abstract sockets" ON)
 endif(NOT WIN32)
 
 #AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
-OPTION(DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
+option (DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
 
 # do config checks
 INCLUDE(ConfigureChecks.cmake)
@@ -223,24 +223,24 @@ ENABLE_TESTING()
 # TODO: take check from configure.in
 
 #AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
-OPTION(DBUS_BUILD_TESTS "enable unit test code" ON)
+option (DBUS_BUILD_TESTS "enable unit test code" ON)
  
 if(DBUS_BUILD_TESTS)
     add_definitions(-DDBUS_BUILD_TESTS)
 endif(DBUS_BUILD_TESTS)
 
-OPTION(DBUS_USE_OUTPUT_DEBUG_STRING "enable win32 debug port for message output" OFF)
+option (DBUS_USE_OUTPUT_DEBUG_STRING "enable win32 debug port for message output" OFF)
 if(DBUS_USE_OUTPUT_DEBUG_STRING)
     add_definitions(-DDBUS_USE_OUTPUT_DEBUG_STRING)
 endif(DBUS_USE_OUTPUT_DEBUG_STRING)
 
 if(WIN32)
 	# win32 dbus service support - this support is not complete
-	OPTION(DBUS_SERVICE "enable dbus service installer" OFF)
+	option (DBUS_SERVICE "enable dbus service installer" OFF)
 endif(WIN32)
 
 #AC_ARG_ENABLE(ansi, AS_HELP_STRING([--enable-ansi],[enable -ansi -pedantic gcc flags]),enable_ansi=$enableval,enable_ansi=no)
-OPTION(DBUS_ENABLE_ANSI "enable -ansi -pedantic gcc flags" OFF)
+option (DBUS_ENABLE_ANSI "enable -ansi -pedantic gcc flags" OFF)
 if(DBUS_ENABLE_ANSI)
    if(NOT MSVC)
         add_definitions(-ansi -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -pedantic)
@@ -250,14 +250,14 @@ if(DBUS_ENABLE_ANSI)
 endif(DBUS_ENABLE_ANSI)
 
 #AC_ARG_ENABLE(verbose-mode, AS_HELP_STRING([--enable-verbose-mode],[support verbose debug mode]),enable_verbose_mode=$enableval,enable_verbose_mode=$USE_MAINTAINER_MODE)
-OPTION(DBUS_ENABLE_VERBOSE_MODE "support verbose debug mode" ON)
+option (DBUS_ENABLE_VERBOSE_MODE "support verbose debug mode" ON)
 
 #AC_ARG_ENABLE(checks, AS_HELP_STRING([--enable-checks],[include sanity checks on public API]),enable_checks=$enableval,enable_checks=yes)
-OPTION(DBUS_DISABLE_CHECKS "Disable public API sanity checking" OFF)
+option (DBUS_DISABLE_CHECKS "Disable public API sanity checking" OFF)
 
 if(NOT MSVC)
     #AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),enable_gcov=$enableval,enable_gcov=no)
-    OPTION(DBUS_GCOV_ENABLED "compile with coverage profiling instrumentation (gcc only)" OFF)
+    option (DBUS_GCOV_ENABLED "compile with coverage profiling instrumentation (gcc only)" OFF)
     if(DBUS_GCOV_ENABLED)
             add_definitions(-fprofile-arcs -ftest-coverage)
             # FIXME!!!!
@@ -274,7 +274,7 @@ endif(NOT MSVC)
 
 #AC_ARG_ENABLE(dnotify, AS_HELP_STRING([--enable-dnotify],[build with dnotify support (linux only)]),enable_dnotify=$enableval,enable_dnotify=auto)
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    OPTION(DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX "build with dnotify support (linux only)" ON) # add a check !
+    option (DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX "build with dnotify support (linux only)" ON) # add a check !
 endif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 
 #AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue support (FreeBSD only)]),enable_kqueue=$enableval,enable_kqueue=auto)
@@ -283,9 +283,9 @@ endif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 #AC_ARG_ENABLE(console-owner-file, AS_HELP_STRING([--enable-console-owner-file],[enable console owner file]),enable_console_owner_file=$enableval,enable_console_owner_file=auto)
 STRING(TOUPPER ${CMAKE_SYSTEM_NAME} sysname)
 if("${sysname}" MATCHES ".*SOLARIS.*")
-    OPTION(HAVE_CONSOLE_OWNER_FILE "enable console owner file (solaris only)" ON)
+    option (HAVE_CONSOLE_OWNER_FILE "enable console owner file (solaris only)" ON)
     if(HAVE_CONSOLE_OWNER_FILE)
-        SET(DBUS_CONSOLE_OWNER_FILE "/dev/console" CACHE STRING "Directory to check for console ownerhip")
+        option (DBUS_CONSOLE_OWNER_FILE "Directory to check for console ownerhip" "/dev/console")
     endif(HAVE_CONSOLE_OWNER_FILE)
 endif("${sysname}" MATCHES ".*SOLARIS.*")
 
@@ -295,9 +295,9 @@ if(NOT LIBXML2_FOUND AND NOT LIBEXPAT_FOUND)
 endif(NOT LIBXML2_FOUND AND NOT LIBEXPAT_FOUND)
 
 if(LIBEXPAT_FOUND)
-    OPTION(DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" ON)
+    option (DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" ON)
 else(LIBEXPAT_FOUND)
-    OPTION(DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" OFF)
+    option (DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" OFF)
 endif(LIBEXPAT_FOUND)
 
 if(DBUS_USE_EXPAT)
@@ -345,11 +345,11 @@ if(CMAKE_COMPILER_IS_GNUCC AND NOT DBUS_ENABLE_ANSI)
     endif(UNAME_EXECUTABLE)
 endif(CMAKE_COMPILER_IS_GNUCC AND NOT DBUS_ENABLE_ANSI)
 
-OPTION(DBUS_HAVE_ATOMIC_INT    "Some atomic integer implementation present" ${atomic_int})
-OPTION(DBUS_USE_ATOMIC_INT_486 "Use atomic integer implementation for 486" ${atomic_int_486})
+option (DBUS_HAVE_ATOMIC_INT    "Some atomic integer implementation present" ${atomic_int})
+option (DBUS_USE_ATOMIC_INT_486 "Use atomic integer implementation for 486" ${atomic_int_486})
 
 if(X11_FOUND)
-  OPTION(DBUS_BUILD_X11 "Build with X11 autolaunch support " ON)
+  option (DBUS_BUILD_X11 "Build with X11 autolaunch support " ON)
 endif(X11_FOUND)
 
 # test binary names
@@ -439,16 +439,16 @@ set (DBUS_USER )
 
 
 if (WIN32)
-  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "system bus default address" )
-  set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "session bus default address" )
+  option (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "system bus default address" "nonce-tcp:")
+  option (DBUS_SESSION_BUS_DEFAULT_ADDRESS "session bus default address" "nonce-tcp:")
 
   set (DBUS_SYSTEM_CONFIG_FILE "etc/dbus-1/system.conf")
   set (DBUS_SESSION_CONFIG_FILE "etc/dbus-1/session.conf")
   # bus-test expects a non empty string
   set (DBUS_USER "Administrator")
 else (WIN32)
-  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "unix:tmpdir=" CACHE STRING "system bus default address" )
-  set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "unix:path=${DBUS_SESSION_SOCKET_DIR}" CACHE STRING "session bus default address" )
+  option (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "system bus default address" "unix:tmpdir=")
+  option (DBUS_SESSION_BUS_DEFAULT_ADDRESS "session bus default address" "unix:path=${DBUS_SESSION_SOCKET_DIR}")
   set (sysconfdir "")
   set (configdir ${sysconfdir}/dbus-1 )
   set (DBUS_SYSTEM_CONFIG_FILE  ${configdir}/system.conf)
@@ -456,7 +456,7 @@ else (WIN32)
   set (DBUS_USER "root")
 endif (WIN32)
 
-set(DBUS_DAEMON_NAME dbus-daemon CACHE STRING "The name of the dbus daemon executable")
+option (DBUS_DAEMON_NAME "The name of the dbus daemon executable" dbus-daemon)
 
 ########### create config.h ###############
 
