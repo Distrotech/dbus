@@ -66,10 +66,10 @@ Configuration
 dbus could be build by using autotools or cmake. 
 
 When using autotools the configure step is initiated by running ./configure 
-with our without additional configuration flags. 
+with or without additional configuration flags. 
 
 When using cmake the configure step is initiated by running the cmake 
-program with our without additional configuration flags. 
+program with or without additional configuration flags. 
 
 Configuration flags
 ===
