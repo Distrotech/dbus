@@ -3042,7 +3042,7 @@
       <title><literal>org.freedesktop.DBus.ObjectManager</literal></title>
       <para>
         An API can optionally make use of this interface for one or
-        more sub-trees of objects. The root of each sub-tree implement
+        more sub-trees of objects. The root of each sub-tree implements
         this interface so other applications can get all objects,
         interfaces and properties in a single method call.  It is
         appropriate to use this interface if users of the tree of
@@ -3132,7 +3132,7 @@
         interfaces, no calls to the
         <literal>org.freedesktop.Properties</literal> interface on the
         remote object are needed. Additionally, since the initial
-        <literal>AddMatch()</literal> rule already include signal
+        <literal>AddMatch()</literal> rule already includes signal
         messages from the newly created child object, no new
         <literal>AddMatch()</literal> call is needed.
       </para>
