@@ -295,11 +295,48 @@
     <para>
       The D-Bus protocol does not include type tags in the marshaled data; a
       block of marshaled values must have a known <firstterm>type
-      signature</firstterm>.  The type signature is made up of <firstterm>type
-      codes</firstterm>. A type code is an ASCII character representing the
+        signature</firstterm>. The type signature is made up of zero or more
+      <firstterm id="term-single-complete-type">single complete
+        types</firstterm>, each made up of one or more
+      <firstterm>type codes</firstterm>.
+    </para>
+
+    <para>
+      A type code is an ASCII character representing the
       type of a value. Because ASCII characters are used, the type signature
       will always form a valid ASCII string. A simple string compare
       determines whether two type signatures are equivalent.
+    </para>
+
+    <para>
+      A single complete type is a sequence of type codes that fully describes
+      one type: either a basic type, or a single fully-described container type.
+      A single complete type is a basic type code, a variant type code,
+      an array with its element type, or a struct with its fields (all of which
+      are defined below). So the following signatures are not single complete
+      types:
+      <programlisting>
+        "aa"
+      </programlisting>
+      <programlisting>
+        "(ii"
+      </programlisting>
+      <programlisting>
+        "ii)"
+      </programlisting>
+      And the following signatures contain multiple complete types:
+      <programlisting>
+        "ii"
+      </programlisting>
+      <programlisting>
+        "aiai"
+      </programlisting>
+      <programlisting>
+        "(ii)(ii)"
+      </programlisting>
+      Note however that a single complete type may <emphasis>contain</emphasis>
+      multiple other single complete types, by containing a struct or dict
+      entry.
     </para>
 
     <sect2 id="basic-types">
@@ -382,34 +419,6 @@
         <programlisting>
           "aai"
         </programlisting>
-      </para>
-
-      <para>
-        The phrase <firstterm>single complete type</firstterm> deserves some 
-        definition. A single complete type is a basic type code, a variant type code, 
-        an array with its element type, or a struct with its fields. 
-        So the following signatures are not single complete types:
-        <programlisting>
-          "aa"
-        </programlisting>
-        <programlisting>
-          "(ii"
-        </programlisting>
-        <programlisting>
-          "ii)"
-        </programlisting>
-        And the following signatures contain multiple complete types:
-        <programlisting>
-          "ii"
-        </programlisting>
-        <programlisting>
-          "aiai"
-        </programlisting>
-        <programlisting>
-          "(ii)(ii)"
-        </programlisting>
-        Note however that a single complete type may <emphasis>contain</emphasis>
-        multiple other single complete types.
       </para>
 
       <para>
