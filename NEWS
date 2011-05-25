@@ -40,6 +40,8 @@ Changes:
   • Clarify documentation (fd.o #35182, Simon McVittie)
   • Clean up minor dead code and some incorrect error handling
     (fd.o #33128, fd.o #29881; Simon McVittie)
+  • Check that compiler options are supported before using them (fd.o #19681,
+    Simon McVittie)
   • Windows:
     • Remove obsolete workaround for winioctl.h (fd.o #35083, Ralf Habacker)
 
