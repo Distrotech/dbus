@@ -23,6 +23,9 @@
 
 #include <config.h>
 #include "bus.h"
+
+#include <stdio.h>
+
 #include "activation.h"
 #include "connection.h"
 #include "services.h"
@@ -36,6 +39,7 @@
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-credentials.h>
 #include <dbus/dbus-internals.h>
+
 #ifdef DBUS_CYGWIN
 #include <signal.h>
 #endif
@@ -296,6 +300,8 @@ process_config_first_time_only (BusContext       *context,
 
   retval = FALSE;
   auth_mechanisms = NULL;
+
+  _dbus_init_system_log ();
 
   context->systemd_activation = systemd_activation;
 
@@ -1281,7 +1287,14 @@ bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char
   va_list args;
 
   if (!context->syslog)
-    return;
+    {
+      /* we're not syslogging; just output to stderr */
+      va_start (args, msg);
+      vfprintf (stderr, msg, args);
+      fprintf (stderr, "\n");
+      va_end (args);
+      return;
+    }
 
   va_start (args, msg);
 
@@ -1305,6 +1318,77 @@ bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char
 
 out:
   va_end (args);
+}
+
+static inline const char *
+nonnull (const char *maybe_null,
+         const char *if_null)
+{
+  return (maybe_null ? maybe_null : if_null);
+}
+
+/*
+ * Log something about a message, usually that it was rejected.
+ */
+static void
+complain_about_message (BusContext     *context,
+                        const char     *error_name,
+                        const char     *complaint,
+                        int             matched_rules,
+                        DBusMessage    *message,
+                        DBusConnection *sender,
+                        DBusConnection *proposed_recipient,
+                        dbus_bool_t     requested_reply,
+                        dbus_bool_t     log,
+                        DBusError      *error)
+{
+  DBusError stack_error = DBUS_ERROR_INIT;
+  const char *sender_name;
+  const char *sender_loginfo;
+  const char *proposed_recipient_loginfo;
+
+  if (error == NULL && !log)
+    return;
+
+  if (sender != NULL)
+    {
+      sender_name = bus_connection_get_name (sender);
+      sender_loginfo = bus_connection_get_loginfo (sender);
+    }
+  else
+    {
+      sender_name = "(unset)";
+      sender_loginfo = "(bus)";
+    }
+
+  if (proposed_recipient != NULL)
+    proposed_recipient_loginfo = bus_connection_get_loginfo (proposed_recipient);
+  else
+    proposed_recipient_loginfo = "bus";
+
+  dbus_set_error (&stack_error, error_name,
+      "%s, %d matched rules; type=\"%s\", sender=\"%s\" (%s) "
+      "interface=\"%s\" member=\"%s\" error name=\"%s\" "
+      "requested_reply=\"%d\" destination=\"%s\" (%s)",
+      complaint,
+      matched_rules,
+      dbus_message_type_to_string (dbus_message_get_type (message)),
+      sender_name,
+      sender_loginfo,
+      nonnull (dbus_message_get_interface (message), "(unset)"),
+      nonnull (dbus_message_get_member (message), "(unset)"),
+      nonnull (dbus_message_get_error_name (message), "(unset)"),
+      requested_reply,
+      nonnull (dbus_message_get_destination (message), DBUS_SERVICE_DBUS),
+      proposed_recipient_loginfo);
+
+  /* If we hit OOM while setting the error, this will syslog "out of memory"
+   * which is itself an indication that something is seriously wrong */
+  if (log)
+    bus_context_log (context, DBUS_SYSTEM_LOG_SECURITY, "%s",
+        stack_error.message);
+
+  dbus_move_error (&stack_error, error);
 }
 
 /*
@@ -1351,23 +1435,6 @@ bus_context_check_security_policy (BusContext     *context,
                 addressed_recipient != NULL ||
                 strcmp (dest, DBUS_SERVICE_DBUS) == 0);
 
-  /* Used in logging below */
-  if (sender != NULL)
-    {
-      sender_name = bus_connection_get_name (sender);
-      sender_loginfo = bus_connection_get_loginfo (sender);
-    }
-  else
-    {
-      sender_name = NULL;
-      sender_loginfo = "(bus)";
-    }
-
-  if (proposed_recipient != NULL)
-    proposed_recipient_loginfo = bus_connection_get_loginfo (proposed_recipient);
-  else
-    proposed_recipient_loginfo = "bus";
-
   switch (type)
     {
     case DBUS_MESSAGE_TYPE_METHOD_CALL:
@@ -1402,19 +1469,12 @@ bus_context_check_security_policy (BusContext     *context,
         {
           if (error != NULL && !dbus_error_is_set (error))
             {
-              dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
-                              "An SELinux policy prevents this sender "
-                              "from sending this message to this recipient "
-                              "(rejected message had sender \"%s\" interface \"%s\" "
-                              "member \"%s\" error name \"%s\" destination \"%s\")",
-                              sender_name ? sender_name : "(unset)",
-                              dbus_message_get_interface (message) ?
-                              dbus_message_get_interface (message) : "(unset)",
-                              dbus_message_get_member (message) ?
-                              dbus_message_get_member (message) : "(unset)",
-                              dbus_message_get_error_name (message) ?
-                              dbus_message_get_error_name (message) : "(unset)",
-                              dest ? dest : DBUS_SERVICE_DBUS);
+              /* don't syslog this, just set the error: avc_has_perm should
+               * have already written to either the audit log or syslog */
+              complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+                  "An SELinux policy prevents this sender from sending this "
+                  "message to this recipient",
+                  0, message, sender, proposed_recipient, FALSE, FALSE, error);
               _dbus_verbose ("SELinux security check denying send to service\n");
             }
 
@@ -1531,57 +1591,23 @@ bus_context_check_security_policy (BusContext     *context,
       const char *msg = "Rejected send message, %d matched rules; "
                         "type=\"%s\", sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" error name=\"%s\" requested_reply=%d destination=\"%s\" (%s))";
 
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED, msg,
-                      toggles,
-                      dbus_message_type_to_string (dbus_message_get_type (message)),
-                      sender_name ? sender_name : "(unset)",
-                      sender_loginfo,
-                      dbus_message_get_interface (message) ?
-                      dbus_message_get_interface (message) : "(unset)",
-                      dbus_message_get_member (message) ?
-                      dbus_message_get_member (message) : "(unset)",
-                      dbus_message_get_error_name (message) ?
-                      dbus_message_get_error_name (message) : "(unset)",
-                      requested_reply,
-                      dest ? dest : DBUS_SERVICE_DBUS,
-                      proposed_recipient_loginfo);
-      /* Needs to be duplicated to avoid calling malloc and having to handle OOM */
-      if (addressed_recipient == proposed_recipient)
-        bus_context_log (context, DBUS_SYSTEM_LOG_SECURITY, msg,
-                                  toggles,
-                                  dbus_message_type_to_string (dbus_message_get_type (message)),
-                                  sender_name ? sender_name : "(unset)",
-                                  sender_loginfo,
-                                  dbus_message_get_interface (message) ?
-                                  dbus_message_get_interface (message) : "(unset)",
-                                  dbus_message_get_member (message) ?
-                                  dbus_message_get_member (message) : "(unset)",
-                                  dbus_message_get_error_name (message) ?
-                                  dbus_message_get_error_name (message) : "(unset)",
-                                  requested_reply,
-                                  dest ? dest : DBUS_SERVICE_DBUS,
-                                  proposed_recipient_loginfo);
+      complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+          "Rejected send message", toggles,
+          message, sender, proposed_recipient, requested_reply,
+          (addressed_recipient == proposed_recipient), error);
       _dbus_verbose ("security policy disallowing message due to sender policy\n");
       return FALSE;
     }
 
   if (log)
-    bus_context_log (context, DBUS_SYSTEM_LOG_SECURITY,
-                              "Would reject message, %d matched rules; "
-                              "type=\"%s\", sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" error name=\"%s\" requested_reply=%d destination=\"%s\" (%s))",
-                              toggles,
-                              dbus_message_type_to_string (dbus_message_get_type (message)),
-                              sender_name ? sender_name : "(unset)",
-                              sender_loginfo,
-                              dbus_message_get_interface (message) ?
-                              dbus_message_get_interface (message) : "(unset)",
-                              dbus_message_get_member (message) ?
-                              dbus_message_get_member (message) : "(unset)",
-                              dbus_message_get_error_name (message) ?
-                              dbus_message_get_error_name (message) : "(unset)",
-                              requested_reply,
-                              dest ? dest : DBUS_SERVICE_DBUS,
-                              proposed_recipient_loginfo);
+    {
+      /* We want to drop this message, and are only not doing so for backwards
+       * compatibility. */
+      complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+          "Would reject message", toggles,
+          message, sender, proposed_recipient, requested_reply,
+          TRUE, NULL);
+    }
 
   if (recipient_policy &&
       !bus_client_policy_check_can_receive (recipient_policy,
@@ -1591,41 +1617,10 @@ bus_context_check_security_policy (BusContext     *context,
                                             addressed_recipient, proposed_recipient,
                                             message, &toggles))
     {
-      const char *msg = "Rejected receive message, %d matched rules; "
-                        "type=\"%s\" sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" error name=\"%s\" reply serial=%u requested_reply=%d destination=\"%s\" (%s))";
-
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED, msg,
-                      toggles,
-                      dbus_message_type_to_string (dbus_message_get_type (message)),
-                      sender_name ? sender_name : "(unset)",
-                      sender_loginfo,
-                      dbus_message_get_interface (message) ?
-                      dbus_message_get_interface (message) : "(unset)",
-                      dbus_message_get_member (message) ?
-                      dbus_message_get_member (message) : "(unset)",
-                      dbus_message_get_error_name (message) ?
-                      dbus_message_get_error_name (message) : "(unset)",
-                      dbus_message_get_reply_serial (message),
-                      requested_reply,
-                      dest ? dest : DBUS_SERVICE_DBUS,
-                      proposed_recipient_loginfo);
-      /* Needs to be duplicated to avoid calling malloc and having to handle OOM */
-      if (addressed_recipient == proposed_recipient)
-        bus_context_log (context, DBUS_SYSTEM_LOG_SECURITY, msg,
-                                  toggles,
-                                  dbus_message_type_to_string (dbus_message_get_type (message)),
-                                  sender_name ? sender_name : "(unset)",
-                                  sender_loginfo,
-                                  dbus_message_get_interface (message) ?
-                                  dbus_message_get_interface (message) : "(unset)",
-                                  dbus_message_get_member (message) ?
-                                  dbus_message_get_member (message) : "(unset)",
-                                  dbus_message_get_error_name (message) ?
-                                  dbus_message_get_error_name (message) : "(unset)",
-                                  dbus_message_get_reply_serial (message),
-                                  requested_reply,
-                                  dest ? dest : DBUS_SERVICE_DBUS,
-                                  proposed_recipient_loginfo);
+      complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+          "Rejected receive message", toggles,
+          message, sender, proposed_recipient, requested_reply,
+          (addressed_recipient == proposed_recipient), NULL);
       _dbus_verbose ("security policy disallowing message due to recipient policy\n");
       return FALSE;
     }
@@ -1635,11 +1630,10 @@ bus_context_check_security_policy (BusContext     *context,
       ((dbus_connection_get_outgoing_size (proposed_recipient) > context->limits.max_outgoing_bytes) ||
        (dbus_connection_get_outgoing_unix_fds (proposed_recipient) > context->limits.max_outgoing_unix_fds)))
     {
-      dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
-                      "The destination service \"%s\" has a full message queue",
-                      dest ? dest : (proposed_recipient ?
-                                     bus_connection_get_name (proposed_recipient) :
-                                     DBUS_SERVICE_DBUS));
+      complain_about_message (context, DBUS_ERROR_LIMITS_EXCEEDED,
+          "Rejected: destination has a full message queue",
+          0, message, sender, proposed_recipient, requested_reply, TRUE,
+          error);
       _dbus_verbose ("security policy disallowing message due to full message queue\n");
       return FALSE;
     }

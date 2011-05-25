@@ -425,7 +425,7 @@ _dbus_request_file_descriptor_limit (unsigned int limit)
 void 
 _dbus_init_system_log (void)
 {
-  openlog ("dbus", LOG_PID, LOG_DAEMON);
+  openlog ("dbus", LOG_PID | LOG_PERROR, LOG_DAEMON);
 }
 /**
  * Log a message to the system log file (e.g. syslog on Unix).

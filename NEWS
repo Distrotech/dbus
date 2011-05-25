@@ -30,6 +30,8 @@ Changes:
     (fd.o #32827, Simon McVittie)
   • Log system-bus activation information to syslog (fd.o #35705,
     Colin Walters)
+  • Log messages dropped due to quotas to syslog (fd.o #35358,
+    Simon McVittie)
   • Make the nonce-tcp transport work on Unix (fd.o #34569, Simon McVittie)
   • On Unix, if /var/lib/dbus/machine-id cannot be read, try /etc/machine-id
     (fd.o #35228, Lennart Poettering)
