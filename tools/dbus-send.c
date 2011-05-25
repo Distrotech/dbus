@@ -302,10 +302,8 @@ main (int argc, char *argv[])
 	usage (1);
       else if (path == NULL)
         path = arg;
-      else if (name == NULL)
+      else /* name == NULL guaranteed by the 'while' loop */
         name = arg;
-      else
-        usage (1);
     }
 
   if (name == NULL)

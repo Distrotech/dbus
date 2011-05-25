@@ -275,7 +275,7 @@ do_noncefile_create (DBusNonceFile *noncefile,
           }
         if (!_dbus_string_init (&noncefile->path)
             || !_dbus_string_copy (&noncefile->dir, 0, &noncefile->path, 0)
-            || !_dbus_string_append (&noncefile->dir, "/nonce"))
+            || !_dbus_string_append (&noncefile->path, "/nonce"))
           {
             dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
             goto on_error;

@@ -303,6 +303,20 @@ rules are:
  - if there's a live unresolved controversy about a change,
    don't commit it while the argument is still raging.
 
+ - at their discretion, members of the reviewer group may also commit
+   branches/patches under these conditions:
+
+   - the branch does not add or change API, ABI or wire-protocol
+
+   - the branch solves a known problem and is covered by the regression tests
+
+   - there are no objections from the rest of the review group within
+     a week of the patches being attached to Bugzilla
+
+   - the committer gets a positive review on Bugzilla from someone they
+     consider qualified to review the change (e.g. a colleague with D-Bus
+     experience; not necessarily a member of the reviewer group)
+
  - regardless of reviews, to commit a patch:
     - make check must pass
     - the test suite must be extended to cover the new code
@@ -331,5 +345,4 @@ John Palmieri <johnp@redhat.com>
 Scott James Remnant <scott@netsplit.com>
 Will Thompson <will.thompson@collabora.co.uk>
 Simon McVittie <simon.mcvittie@collabora.co.uk>
-
-
+David Zeuthen <davidz@redhat.com>

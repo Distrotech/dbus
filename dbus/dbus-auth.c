@@ -1202,18 +1202,6 @@ handle_server_data_anonymous_mech (DBusAuth         *auth,
         {
           _dbus_verbose ("%s: Received invalid UTF-8 trace data from ANONYMOUS client\n",
                          DBUS_AUTH_NAME (auth));
-
-          {
-            DBusString plaintext;
-            DBusString encoded;
-            _dbus_string_init_const (&plaintext, "D-Bus " DBUS_VERSION_STRING);
-            _dbus_string_init (&encoded);
-            _dbus_string_hex_encode (&plaintext, 0,
-                                     &encoded,
-                                     0);
-              _dbus_verbose ("%s: try '%s'\n",
-                             DBUS_AUTH_NAME (auth), _dbus_string_get_const_data (&encoded));
-          }
           return send_rejected (auth);
         }
       

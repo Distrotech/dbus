@@ -4615,9 +4615,6 @@ dbus_connection_dispatch (DBusConnection *connection)
       /* unlocks and calls user code */
       _dbus_connection_update_dispatch_status_and_unlock (connection,
                                                           DBUS_DISPATCH_NEED_MEMORY);
-
-      if (pending)
-        dbus_pending_call_unref (pending);
       dbus_connection_unref (connection);
       
       return DBUS_DISPATCH_NEED_MEMORY;
