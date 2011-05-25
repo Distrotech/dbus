@@ -292,18 +292,18 @@
       it back from the wire format is <firstterm>unmarshaling</firstterm>.
     </para>
 
-    <sect2 id="message-protocol-signatures">
-      <title>Type Signatures</title>
+    <para>
+      The D-Bus protocol does not include type tags in the marshaled data; a
+      block of marshaled values must have a known <firstterm>type
+      signature</firstterm>.  The type signature is made up of <firstterm>type
+      codes</firstterm>. A type code is an ASCII character representing the
+      type of a value. Because ASCII characters are used, the type signature
+      will always form a valid ASCII string. A simple string compare
+      determines whether two type signatures are equivalent.
+    </para>
 
-      <para>
-        The D-Bus protocol does not include type tags in the marshaled data; a
-        block of marshaled values must have a known <firstterm>type
-        signature</firstterm>.  The type signature is made up of <firstterm>type
-        codes</firstterm>. A type code is an ASCII character representing the
-        type of a value. Because ASCII characters are used, the type signature
-        will always form a valid ASCII string. A simple string compare 
-        determines whether two type signatures are equivalent.
-      </para>
+    <sect2 id="basic-types">
+      <title>Basic types</title>
 
       <para>
         As a simple example, the type code for 32-bit integer (<literal>INT32</literal>) is
@@ -323,6 +323,13 @@
         <literal>INT32</literal> in this example. To marshal and unmarshal 
         basic types, you simply read one value from the data
         block corresponding to each type code in the signature.
+      </para>
+    </sect2>
+
+    <sect2 id="container-types">
+      <title>Container types</title>
+
+      <para>
         In addition to basic types, there are four <firstterm>container</firstterm> 
         types: <literal>STRUCT</literal>, <literal>ARRAY</literal>, <literal>VARIANT</literal>, 
         and <literal>DICT_ENTRY</literal>.
@@ -435,6 +442,10 @@
         In most languages, an array of dict entry would be represented as a 
         map, hash table, or dict object.
       </para>
+    </sect2>
+
+    <sect2>
+      <title>Summary of types</title>
 
       <para>
         The following table summarizes the D-Bus types.
