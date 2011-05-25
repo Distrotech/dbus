@@ -3257,7 +3257,7 @@ _dbus_get_autolaunch_address (const char *scope,
                               DBusString *address,
                               DBusError  *error)
 {
-#ifdef DBUS_BUILD_X11
+#ifdef DBUS_ENABLE_X11_AUTOLAUNCH
   /* Perform X11-based autolaunch. (We also support launchd-based autolaunch,
    * but that's done elsewhere, and if it worked, this function wouldn't
    * be called.) */

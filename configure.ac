@@ -1100,9 +1100,6 @@ if test "x$dbus_win" = xyes; then
     fi
 
     enable_x11_autolaunch=no
-fi
-
-if test "x$enable_x11_autolaunch" = xno; then
     have_x11=no
 else
     AC_PATH_XTRA
@@ -1120,11 +1117,17 @@ if test "x$enable_x11_autolaunch,$have_x11" = xyes,no; then
     AC_MSG_ERROR([X11 auto-launch requires X headers/libraries])
 else
     # move from "auto" to "yes" or "no" if necessary
-    enable_x11_autolaunch="$have_x11"
+    if test "x$enable_x11_autolaunch" != xno; then
+        enable_x11_autolaunch="$have_x11"
+    fi
+fi
+
+if test "x$have_x11" = xyes ; then
+   AC_DEFINE([DBUS_BUILD_X11], [1], [Define to build X11 functionality])
 fi
 
 if test "x$enable_x11_autolaunch" = xyes ; then
-   AC_DEFINE([DBUS_BUILD_X11], [1], [Define to enable X11 auto-launch])
+   AC_DEFINE([DBUS_ENABLE_X11_AUTOLAUNCH], [1], [Define to enable X11 auto-launch])
 fi
 
 AC_SUBST([DBUS_X_CFLAGS])
