@@ -16,6 +16,7 @@ Changes:
   • D-Bus Specification v0.17
     · Reserve the extra characters used in signatures by GVariant
       (fd.o #34529, Simon McVittie)
+    · Define the ObjectManager interface (fd.o #34869, David Zeuthen)
   • Don't force -fPIE: distributions and libtool know better than we do whether
     it's desirable (fd.o #16621, fd.o #27215; Simon McVittie)
   • Allow --disable-gc-sections, in case your toolchain offers the
