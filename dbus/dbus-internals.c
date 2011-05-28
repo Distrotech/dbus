@@ -301,9 +301,6 @@ static dbus_bool_t verbose = TRUE;
 #include <pthread.h>
 #endif
 
-#ifdef _MSC_VER
-#define inline
-#endif
 #ifdef DBUS_USE_OUTPUT_DEBUG_STRING
 static char module_name[1024];
 #endif

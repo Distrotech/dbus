@@ -439,8 +439,8 @@ set (DBUS_USER )
 
 
 if (WIN32)
-  option (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "system bus default address" "nonce-tcp:")
-  option (DBUS_SESSION_BUS_DEFAULT_ADDRESS "session bus default address" "nonce-tcp:")
+  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "system bus default address"  FORCE)
+  set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "session bus default address" FORCE)
 
   set (DBUS_SYSTEM_CONFIG_FILE "etc/dbus-1/system.conf")
   set (DBUS_SESSION_CONFIG_FILE "etc/dbus-1/session.conf")
@@ -456,7 +456,7 @@ else (WIN32)
   set (DBUS_USER "root")
 endif (WIN32)
 
-option (DBUS_DAEMON_NAME "The name of the dbus daemon executable" dbus-daemon)
+set (DBUS_DAEMON_NAME "dbus-daemon" CACHE STRING "The name of the dbus daemon executable" FORCE)
 
 ########### create config.h ###############
 
