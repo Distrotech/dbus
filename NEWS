@@ -1,6 +1,8 @@
 D-Bus 1.5.2 (2011-06-01)
 ==
 
+The "Boar Hunter" release.
+
 Notes for distributors:
 
   This version of D-Bus no longer uses -fPIE by default. Distributions wishing
