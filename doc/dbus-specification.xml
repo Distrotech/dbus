@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.17</releaseinfo>
-    <date>(not final)</date>
+    <date>2011-06-01</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -49,6 +49,26 @@
           </address>
 	</affiliation>
       </author>
+      <author>
+        <firstname>Simon</firstname>
+        <surname>McVittie</surname>
+        <affiliation>
+          <orgname>Collabora Ltd.</orgname>
+          <address>
+            <email>simon.mcvittie@collabora.co.uk</email>
+          </address>
+        </affiliation>
+      </author>
+      <author>
+        <firstname>David</firstname>
+        <surname>Zeuthen</surname>
+        <affiliation>
+          <orgname>Red Hat, Inc.</orgname>
+          <address>
+            <email>davidz@redhat.com</email>
+          </address>
+        </affiliation>
+      </author>
     </authorgroup>
    <revhistory>
      <revision>
@@ -56,6 +76,13 @@
        <date><ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink></date>
        <authorinitials></authorinitials>
        <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.17</revnumber>
+       <date>1 June 2011</date>
+       <authorinitials>smcv/davidz</authorinitials>
+       <revremark>define ObjectManager; reserve extra pseudo-type-codes used
+         by GVariant</revremark>
      </revision>
      <revision>
        <revnumber>0.16</revnumber>
