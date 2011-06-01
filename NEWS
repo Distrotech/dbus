@@ -1,6 +1,8 @@
 D-Bus 1.4.10 (2011-06-01)
 ==
 
+The "Ape Ale" release.
+
 Notes for distributors:
 
   This version of D-Bus no longer uses -fPIE by default. Distributions wishing
