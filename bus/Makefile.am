@@ -150,7 +150,9 @@ bus_test_launch_helper_CPPFLAGS= -DDBUS_STATIC_BUILD	\
 ## even when not doing "make check"
 noinst_PROGRAMS = $(TESTS)
 dbus_daemon_exec_PROGRAMS = dbus-daemon
+if DBUS_UNIX
 libexec_PROGRAMS = dbus-daemon-launch-helper
+endif DBUS_UNIX
 
 ## note that TESTS has special meaning (stuff to use in make check)
 ## so if adding tests not to be run in make check, don't add them to
