@@ -13,15 +13,29 @@ noinst_LTLIBRARIES = libdbus-testutils.la
 if DBUS_BUILD_TESTS
 ## break-loader removed for now
 ## most of these binaries are used in tests but are not themselves tests
-TEST_BINARIES=test-service test-names test-shell-service shell-test spawn-test test-segfault test-exit test-sleep-forever
+TEST_BINARIES = \
+	shell-test \
+	spawn-test \
+	test-exit \
+	test-names \
+	test-segfault \
+	test-service \
+	test-shell-service \
+	test-sleep-forever \
+	$(NULL)
 
 ## these are the things to run in make check (i.e. they are actual tests)
 ## (binaries in here must also be in TEST_BINARIES)
-TESTS=shell-test
-else
+TESTS = \
+	shell-test \
+	$(NULL)
+
+else !DBUS_BUILD_TESTS
+
 TEST_BINARIES=
 TESTS=
-endif
+
+endif !DBUS_BUILD_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
 
