@@ -89,7 +89,7 @@ dbus_daemon_LDADD=					\
 	$(EFENCE)					\
 	$(DBUS_BUS_LIBS)
 
-dbus_daemon_LDFLAGS=@R_DYNAMIC_LDFLAG@ @SECTION_LDFLAGS@
+dbus_daemon_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 LAUNCH_HELPER_SOURCES=				\
 	$(XML_SOURCES)				\
@@ -115,7 +115,7 @@ dbus_daemon_launch_helper_LDADD=		\
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
 
-dbus_daemon_launch_helper_LDFLAGS=@R_DYNAMIC_LDFLAG@ @SECTION_LDFLAGS@
+dbus_daemon_launch_helper_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 ## we build another binary so we can do the launch testing without root privs.
 ## DO NOT INSTALL THIS FILE
@@ -127,7 +127,7 @@ dbus_daemon_launch_helper_test_LDADD=		\
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
 
-dbus_daemon_launch_helper_test_LDFLAGS=@R_DYNAMIC_LDFLAG@ @SECTION_LDFLAGS@
+dbus_daemon_launch_helper_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 dbus_daemon_launch_helper_test_CPPFLAGS= -DDBUS_STATIC_BUILD	\
 	-DACTIVATION_LAUNCHER_TEST
 
@@ -141,7 +141,7 @@ bus_test_launch_helper_LDADD=		\
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
 
-bus_test_launch_helper_LDFLAGS=@R_DYNAMIC_LDFLAG@ @SECTION_LDFLAGS@
+bus_test_launch_helper_LDFLAGS=@R_DYNAMIC_LDFLAG@
 bus_test_launch_helper_CPPFLAGS= -DDBUS_STATIC_BUILD	\
 	-DACTIVATION_LAUNCHER_TEST	\
 	-DACTIVATION_LAUNCHER_DO_OOM
