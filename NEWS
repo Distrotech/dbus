@@ -1,3 +1,20 @@
+D-Bus 1.5.4 (UNRELEASED)
+==
+
+Changes:
+
+• Don't use -Wl,--gc-sections by default: in practice the size decrease is
+  small (300KiB on x86-64) and it frequently doesn't work in unusual
+  toolchains. To optimize for minimum installed size, you should benchmark
+  various possibilities for CFLAGS and LDFLAGS, and set the best flags for
+  your particular toolchain at configure time. (fd.o #33466, Simon McVittie)
+
+• Use #!/bin/sh for run-with-tmp-session-bus.sh, making it work on *BSD
+  (fd.o #35880, Timothy Redaelli)
+
+• Windows-specific changes:
+  · don't try to build dbus-daemon-launch-helper (fd.o #37838, Mark Brand)
+
 D-Bus 1.5.2 (2011-06-01)
 ==
 
