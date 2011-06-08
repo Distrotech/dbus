@@ -12,6 +12,9 @@ Changes:
 • Use #!/bin/sh for run-with-tmp-session-bus.sh, making it work on *BSD
   (fd.o #35880, Timothy Redaelli)
 
+• Use ln -fs to set up dbus for systemd, which should fix reinstallation
+  when not using a DESTDIR (fd.o #37870, Simon McVittie)
+
 • Windows-specific changes:
   · don't try to build dbus-daemon-launch-helper (fd.o #37838, Mark Brand)
 
