@@ -82,7 +82,7 @@ spawn_dbus_daemon (gchar *binary,
   g_spawn_async_with_pipes (NULL, /* working directory */
       argv,
       NULL, /* envp */
-      G_SPAWN_DO_NOT_REAP_CHILD,
+      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
       NULL, /* child_setup */
       NULL, /* user data */
       daemon_pid,
@@ -178,30 +178,25 @@ setup (Fixture *f,
   f->ge = NULL;
   dbus_error_init (&f->e);
 
-  g_assert (g_getenv ("DBUS_TEST_DAEMON") != NULL);
-
   dbus_daemon = g_strdup (g_getenv ("DBUS_TEST_DAEMON"));
 
-  if (g_getenv ("DBUS_TEST_USE_INSTALLED") != NULL)
+  if (dbus_daemon == NULL)
+    dbus_daemon = g_strdup ("dbus-daemon");
+
+  if (g_getenv ("DBUS_TEST_SYSCONFDIR") != NULL)
     {
-      /* we strdup this because it might be clobbered by a subsequent
-       * g_getenv */
-      gchar *destdir = g_strdup (g_getenv ("DESTDIR"));
-
-      if (destdir != NULL && *destdir != '\0')
-        config = g_strdup_printf ("--config-file=%s%s/dbus-1/session.conf",
-            destdir, g_getenv ("DBUS_TEST_SYSCONFDIR"));
-      else
-        config = g_strdup ("--session");
-
-      g_free (destdir);
+      config = g_strdup_printf ("--config-file=%s/dbus-1/session.conf",
+          g_getenv ("DBUS_TEST_SYSCONFDIR"));
     }
-  else
+  else if (g_getenv ("DBUS_TEST_DATA") != NULL)
     {
-      g_assert (g_getenv ("DBUS_TEST_DATA") != NULL);
       config = g_strdup_printf (
           "--config-file=%s/valid-config-files/session.conf",
           g_getenv ("DBUS_TEST_DATA"));
+    }
+  else
+    {
+      config = g_strdup ("--session");
     }
 
   address = spawn_dbus_daemon (dbus_daemon, config, &f->daemon_pid);

@@ -78,20 +78,15 @@ testexec_PROGRAMS =
 
 installable_tests = \
 	test-corrupt \
+	test-dbus-daemon \
 	test-loopback \
 	test-relay \
 	$(NULL)
 
-modular_tests = \
-	test-dbus-daemon
-
 installcheck_tests =
 installcheck_environment = \
 	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
-	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
-	DBUS_TEST_USE_INSTALLED=1 \
-	DBUS_TEST_SYSCONFDIR=$(sysconfdir) \
-	DESTDIR=$(DESTDIR)
+	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
 
 TESTS_ENVIRONMENT = \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
@@ -126,11 +121,8 @@ test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(DBUS_GLIB_LIBS)
 
 if DBUS_ENABLE_MODULAR_TESTS
-noinst_PROGRAMS += $(modular_tests)
-TESTS += $(modular_tests)
 TESTS += $(installable_tests)
 installcheck_tests += $(installable_tests)
-installcheck_tests += $(modular_tests)
 
 if DBUS_ENABLE_INSTALLED_TESTS
   testexec_PROGRAMS += $(installable_tests)
