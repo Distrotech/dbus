@@ -70,13 +70,20 @@ shell_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 spawn_test_LDADD=$(TEST_LIBS)
 spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
-EXTRA_DIST=
+EXTRA_DIST = dbus-test-runner
+
+testexecdir = $(libdir)/dbus-1.0/test
+
+testexec_PROGRAMS =
+
+installable_tests = \
+	test-corrupt \
+	test-loopback \
+	test-relay \
+	$(NULL)
 
 modular_tests = \
-	test-corrupt \
-	test-dbus-daemon \
-	test-loopback \
-	test-relay
+	test-dbus-daemon
 
 installcheck_tests =
 installcheck_environment = \
@@ -121,12 +128,27 @@ test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
 if DBUS_ENABLE_MODULAR_TESTS
 noinst_PROGRAMS += $(modular_tests)
 TESTS += $(modular_tests)
+TESTS += $(installable_tests)
+installcheck_tests += $(installable_tests)
 installcheck_tests += $(modular_tests)
+
+if DBUS_ENABLE_INSTALLED_TESTS
+  testexec_PROGRAMS += $(installable_tests)
+else !DBUS_ENABLE_INSTALLED_TESTS
+  testexec_PROGRAMS += $(installable_tests)
+endif !DBUS_ENABLE_INSTALLED_TESTS
+
 endif DBUS_ENABLE_MODULAR_TESTS
 
 installcheck-local:
 	$(MAKE) check-TESTS TESTS='$$(installcheck_tests)' \
 		TESTS_ENVIRONMENT='$$(installcheck_environment)'
+if DBUS_ENABLE_INSTALLED_TESTS
+	$(installcheck_environment) \
+		$(srcdir)/dbus-test-runner \
+		$(testexecdir) \
+		$(testexec_PROGRAMS)
+endif DBUS_ENABLE_INSTALLED_TESTS
 
 ## keep these in creation order, i.e. uppermost dirs first 
 TESTDIRS=					\

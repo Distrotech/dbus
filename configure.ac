@@ -211,6 +211,13 @@ fi
 AM_CONDITIONAL([DBUS_ENABLE_MODULAR_TESTS],
   [test "x$enable_modular_tests" = xyes])
 
+AC_ARG_ENABLE([installed-tests],
+  AS_HELP_STRING([--enable-installed-tests],
+    [enable unit test code in the library and binaries]),
+  [], [enable_installed_tests=no])
+AM_CONDITIONAL([DBUS_ENABLE_INSTALLED_TESTS],
+  [test "x$enable_installed_tests" = xyes])
+
 if test x$enable_verbose_mode = xyes; then
     AC_DEFINE(DBUS_ENABLE_VERBOSE_MODE,1,[Support a verbose mode])
 fi
