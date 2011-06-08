@@ -204,14 +204,16 @@ install-data-hook:
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/services
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/system-services
 if HAVE_SYSTEMD
-# Install dbus.socket as default implementation of a D-Bus stack
+# Install dbus.socket as default implementation of a D-Bus stack.
+# Deliberately not using $(LN_S) here: ln -fs is not universally portable,
+# but neither is systemd, so it's OK to assume here that ln complies with SUS.
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/dbus.target.wants
-	$(LN_S) ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/dbus.target.wants/dbus.socket
+	ln -fs ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/dbus.target.wants/dbus.socket
 # Unconditionally enable D-Bus on systemd installations
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/sockets.target.wants
-	$(LN_S) ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/sockets.target.wants/dbus.socket
+	ln -fs ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/sockets.target.wants/dbus.socket
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants
-	$(LN_S) ../dbus.service $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants/dbus.service
+	ln -fs ../dbus.service $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants/dbus.service
 endif
 
 if DBUS_UNIX
