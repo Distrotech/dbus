@@ -132,10 +132,14 @@ endif !DBUS_ENABLE_INSTALLED_TESTS
 
 endif DBUS_ENABLE_MODULAR_TESTS
 
+# If we're installing the tests into a DESTDIR we can't run them
+# again using the installed copy, because we don't know how to
+# do a portable equivalent of setting LD_LIBRARY_PATH.
 installcheck-local:
 	$(MAKE) check-TESTS TESTS='$$(installcheck_tests)' \
 		TESTS_ENVIRONMENT='$$(installcheck_environment)'
 if DBUS_ENABLE_INSTALLED_TESTS
+	test -n "$(DESTDIR)" || \
 	$(installcheck_environment) \
 		$(srcdir)/dbus-test-runner \
 		$(testexecdir) \
