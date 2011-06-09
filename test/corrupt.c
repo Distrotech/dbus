@@ -228,6 +228,93 @@ test_corrupt (Fixture *f,
 }
 
 static void
+test_byte_order (Fixture *f,
+    gconstpointer addr)
+{
+  GSocket *socket;
+  GError *gerror = NULL;
+  int fd;
+  char *blob;
+  const gchar *arg = not_a_dbus_message;
+  const gchar * const *args = &arg;
+  int blob_len, len, total_sent;
+  DBusMessage *message;
+  dbus_bool_t mem;
+
+  test_message (f, addr);
+
+  message = dbus_message_new_signal ("/", "a.b", "c");
+  g_assert (message != NULL);
+  /* Append 0xFF bytes, so that the length of the body when byte-swapped
+   * is 0xFF000000, which is invalid */
+  mem = dbus_message_append_args (message,
+      DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE, &args, 0xFF,
+      DBUS_TYPE_INVALID);
+  g_assert (mem);
+  mem = dbus_message_marshal (message, &blob, &blob_len);
+  g_assert (mem);
+  g_assert_cmpuint (blob_len, >, 0xFF);
+  g_assert (blob != NULL);
+
+  dbus_message_unref (message);
+
+  /* Break the message by changing its claimed byte order, without actually
+   * byteswapping anything. We happen to know that byte order is the first
+   * byte. */
+  if (blob[0] == 'B')
+    blob[0] = 'l';
+  else
+    blob[0] = 'B';
+
+  /* OK, now the connection is working, let's break it */
+
+  dbus_connection_flush (f->server_conn);
+
+  if (!dbus_connection_get_socket (f->server_conn, &fd))
+    g_error ("failed to steal fd from server connection");
+
+  socket = g_socket_new_from_fd (fd, &gerror);
+  g_assert_no_error (gerror);
+  g_assert (socket != NULL);
+
+  total_sent = 0;
+
+  while (total_sent < blob_len)
+    {
+      len = g_socket_send_with_blocking (socket, blob + total_sent,
+          blob_len - total_sent, TRUE, NULL, &gerror);
+      g_assert_no_error (gerror);
+      g_assert (len >= 0);
+      total_sent += len;
+    }
+
+  dbus_free (blob);
+
+  /* Now spin on the client connection: the server just sent it a faulty
+   * message, so it should disconnect */
+  while (g_queue_is_empty (&f->client_messages))
+    {
+      g_print (".");
+      g_main_context_iteration (NULL, TRUE);
+    }
+
+  message = g_queue_pop_head (&f->client_messages);
+
+  g_assert (!dbus_message_contains_unix_fds (message));
+  g_assert_cmpstr (dbus_message_get_destination (message), ==, NULL);
+  g_assert_cmpstr (dbus_message_get_error_name (message), ==, NULL);
+  g_assert_cmpstr (dbus_message_get_interface (message), ==,
+      "org.freedesktop.DBus.Local");
+  g_assert_cmpstr (dbus_message_get_member (message), ==, "Disconnected");
+  g_assert_cmpstr (dbus_message_get_sender (message), ==, NULL);
+  g_assert_cmpstr (dbus_message_get_signature (message), ==, "");
+  g_assert_cmpstr (dbus_message_get_path (message), ==,
+      "/org/freedesktop/DBus/Local");
+
+  dbus_message_unref (message);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer addr G_GNUC_UNUSED)
 {
@@ -267,6 +354,9 @@ main (int argc,
   g_test_add ("/corrupt/unix", Fixture, "unix:tmpdir=/tmp", setup,
       test_corrupt, teardown);
 #endif
+
+  g_test_add ("/corrupt/byte-order/tcp", Fixture, "tcp:host=127.0.0.1", setup,
+      test_byte_order, teardown);
 
   return g_test_run ();
 }
