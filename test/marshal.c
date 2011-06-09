@@ -201,6 +201,40 @@ test_endian (Fixture *f,
 }
 
 static void
+test_needed (Fixture *f,
+    gconstpointer arg)
+{
+  const gchar *blob = arg;
+
+  /* We need at least 16 bytes to know how long the message is - that's just
+   * a fact of the D-Bus protocol. */
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, 0), ==, 0);
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, 15), ==, 0);
+  /* This is enough that we should be able to tell how much we need. */
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, 16), ==, BLOB_LENGTH);
+  /* The header is 32 bytes long (here), so that's another interesting
+   * boundary. */
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, 31), ==, BLOB_LENGTH);
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, 32), ==, BLOB_LENGTH);
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, 33), ==, BLOB_LENGTH);
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, BLOB_LENGTH - 1), ==,
+      BLOB_LENGTH);
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, BLOB_LENGTH), ==,
+      BLOB_LENGTH);
+  g_assert_cmpint (
+      dbus_message_demarshal_bytes_needed (blob, sizeof (be_blob)), ==,
+      BLOB_LENGTH);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer arg G_GNUC_UNUSED)
 {
@@ -215,6 +249,10 @@ main (int argc,
 
   g_test_add ("/demarshal/le", Fixture, le_blob, setup, test_endian, teardown);
   g_test_add ("/demarshal/be", Fixture, be_blob, setup, test_endian, teardown);
+  g_test_add ("/demarshal/needed/le", Fixture, le_blob, setup, test_needed,
+      teardown);
+  g_test_add ("/demarshal/needed/be", Fixture, be_blob, setup, test_needed,
+      teardown);
 
   return g_test_run ();
 }
