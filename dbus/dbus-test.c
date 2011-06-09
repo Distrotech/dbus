@@ -63,9 +63,9 @@ run_test (const char             *test_name,
       printf ("%s: running %s tests\n", "dbus-test", test_name);
       if (!test ())
 	die (test_name);
-    }
 
-  check_memleaks ();
+      check_memleaks ();
+    }
 }
 
 static void
@@ -79,9 +79,9 @@ run_data_test (const char             *test_name,
       printf ("%s: running %s tests\n", "dbus-test", test_name);
       if (!test (test_data_dir))
 	die (test_name);
-    }
 
-  check_memleaks ();
+      check_memleaks ();
+    }
 }
 
 #endif /* DBUS_BUILD_TESTS */
