@@ -4680,7 +4680,7 @@ dbus_message_demarshal_bytes_needed(const char *buf,
 
   if (validity == DBUS_VALID)
     {
-      _dbus_assert(have_message);
+      _dbus_assert (have_message || (header_len + body_len) > len);
       return header_len + body_len;
     }
   else
