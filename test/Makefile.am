@@ -80,6 +80,7 @@ installable_tests = \
 	test-corrupt \
 	test-dbus-daemon \
 	test-loopback \
+	test-marshal \
 	test-relay \
 	$(NULL)
 
@@ -117,6 +118,13 @@ test_dbus_daemon_SOURCES = dbus-daemon.c
 test_dbus_daemon_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_dbus_daemon_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_marshal_SOURCES = marshal.c
+test_marshal_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_marshal_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_marshal_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 

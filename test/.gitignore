@@ -27,3 +27,4 @@ test-names
 test-loopback
 test-relay
 test-dbus-daemon
+test-marshal
