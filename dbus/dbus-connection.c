@@ -3313,8 +3313,9 @@ reply_handler_timeout (void *data)
  *
  * If -1 is passed for the timeout, a sane default timeout is used. -1
  * is typically the best value for the timeout for this reason, unless
- * you want a very short or very long timeout.  If INT_MAX is passed for
- * the timeout, no timeout will be set and the call will block forever.
+ * you want a very short or very long timeout.  If #DBUS_TIMEOUT_INFINITE is
+ * passed for the timeout, no timeout will be set and the call will block
+ * forever.
  *
  * @warning if the connection is disconnected or you try to send Unix
  * file descriptors on a connection that does not support them, the
@@ -3326,7 +3327,9 @@ reply_handler_timeout (void *data)
  * object, or #NULL if connection is disconnected or when you try to
  * send Unix file descriptors on a connection that does not support
  * them.
- * @param timeout_milliseconds timeout in milliseconds, -1 for default or INT_MAX for no timeout
+ * @param timeout_milliseconds timeout in milliseconds, -1 (or
+ *  #DBUS_TIMEOUT_USE_DEFAULT) for default or #DBUS_TIMEOUT_INFINITE for no
+ *  timeout
  * @returns #FALSE if no memory, #TRUE otherwise.
  *
  */
@@ -3459,7 +3462,9 @@ dbus_connection_send_with_reply (DBusConnection     *connection,
  *
  * @param connection the connection
  * @param message the message to send
- * @param timeout_milliseconds timeout in milliseconds, -1 for default or INT_MAX for no timeout.
+ * @param timeout_milliseconds timeout in milliseconds, -1 (or
+ *  #DBUS_TIMEOUT_USE_DEFAULT) for default or #DBUS_TIMEOUT_INFINITE for no
+ *  timeout
  * @param error return location for error message
  * @returns the message that is the reply or #NULL with an error code if the
  * function fails.

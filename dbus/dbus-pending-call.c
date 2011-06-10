@@ -84,7 +84,9 @@ static dbus_int32_t notify_user_data_slot = -1;
  * Creates a new pending reply object.
  *
  * @param connection connection where reply will arrive
- * @param timeout_milliseconds length of timeout, -1 for default, INT_MAX for no timeout
+ * @param timeout_milliseconds length of timeout, -1 (or
+ *  #DBUS_TIMEOUT_USE_DEFAULT) for default,
+ *  #DBUS_TIMEOUT_INFINITE for no timeout
  * @param timeout_handler timeout handler, takes pending call as data
  * @returns a new #DBusPendingCall or #NULL if no memory.
  */
@@ -112,7 +114,7 @@ _dbus_pending_call_new_unlocked (DBusConnection    *connection,
       return NULL;
     }
 
-  if (timeout_milliseconds != _DBUS_INT_MAX)
+  if (timeout_milliseconds != DBUS_TIMEOUT_INFINITE)
     {
       timeout = _dbus_timeout_new (timeout_milliseconds,
                                    timeout_handler,
@@ -513,6 +515,26 @@ _dbus_pending_call_set_data_unlocked (DBusPendingCall  *pending,
  * when you send a message that should have a reply.
  *
  * @{
+ */
+
+/**
+ * @def DBUS_TIMEOUT_INFINITE
+ *
+ * An integer constant representing an infinite timeout. This has the
+ * numeric value 0x7fffffff (the largest 32-bit signed integer).
+ *
+ * For source compatibility with D-Bus versions earlier than 1.4.12, use
+ * 0x7fffffff, or INT32_MAX (assuming your platform has it).
+ */
+
+/**
+ * @def DBUS_TIMEOUT_USE_DEFAULT
+ *
+ * An integer constant representing a request to use the default timeout.
+ * This has numeric value -1.
+ *
+ * For source compatibility with D-Bus versions earlier than 1.4.12, use a
+ * literal -1.
  */
 
 /**
