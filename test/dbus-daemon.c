@@ -253,8 +253,9 @@ test_echo (Fixture *f,
       if (m == NULL)
         g_error ("OOM");
 
-      if (!dbus_connection_send_with_reply (f->left_conn, m, &pc, 0x7FFFFFFF)
-          || pc == NULL)
+      if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                            DBUS_TIMEOUT_INFINITE) ||
+          pc == NULL)
         g_error ("OOM");
 
       if (dbus_pending_call_get_completed (pc))
