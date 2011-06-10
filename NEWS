@@ -1,4 +1,4 @@
-D-Bus 1.2.28 (UNRELEASED)
+D-Bus 1.2.28 (2011-06-10)
 ==
 
 • Byte-swap foreign-endian messages correctly, preventing a long-standing
