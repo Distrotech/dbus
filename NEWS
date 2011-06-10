@@ -1,3 +1,13 @@
+D-Bus 1.2.28 (UNRELEASED)
+==
+
+• Byte-swap foreign-endian messages correctly, preventing a long-standing
+  local DoS if foreign-endian messages are relayed through the dbus-daemon
+  (fd.o #38120, Debian #629938, no CVE number yet; Simon McVittie)
+
+• Use AC_TRY_COMPILE in configure to avoid a symlink attack in /tmp
+  during compilation
+
 D-Bus 1.2.26 (21 December 2010)
 ==
 
