@@ -1,7 +1,7 @@
 /* Regression test for passing unmodified messages between connections
  *
  * Author: Simon McVittie <simon.mcvittie@collabora.co.uk>
- * Copyright © 2010 Nokia Corporation
+ * Copyright © 2010-2011 Nokia Corporation
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
