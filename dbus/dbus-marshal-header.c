@@ -1200,6 +1200,19 @@ _dbus_header_update_lengths (DBusHeader *header,
                             _dbus_header_get_byte_order (header));
 }
 
+/**
+ * Try to find the given field.
+ *
+ * @param header the header
+ * @param field the field code
+ * @param reader a type reader; on success this is left pointing at the struct
+ *  (uv) for the field, while on failure it is left pointing into empty space
+ *  at the end of the header fields
+ * @param realign_root another type reader; on success or failure it is left
+ *  pointing to the beginning of the array of fields (i.e. the thing that might
+ *  need realigning)
+ * @returns #TRUE on success
+ */
 static dbus_bool_t
 find_field_for_modification (DBusHeader     *header,
                              int             field,
