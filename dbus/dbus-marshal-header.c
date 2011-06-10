@@ -165,6 +165,20 @@ _dbus_header_cache_one (DBusHeader     *header,
 }
 
 /**
+ * Returns the header's byte order.
+ *
+ * @param header the header
+ * @returns the byte order
+ */
+char
+_dbus_header_get_byte_order (const DBusHeader *header)
+{
+  _dbus_assert (_dbus_string_get_length (&header->data) > BYTE_ORDER_OFFSET);
+
+  return (char) _dbus_string_get_byte (&header->data, BYTE_ORDER_OFFSET);
+}
+
+/**
  * Revalidates the fields cache
  *
  * @param header the header
@@ -1468,21 +1482,19 @@ void
 _dbus_header_byteswap (DBusHeader *header,
                        int         new_order)
 {
-  unsigned char byte_order;
+  char byte_order;
 
-  if (header->byte_order == new_order)
+  byte_order = _dbus_header_get_byte_order (header);
+
+  if (byte_order == new_order)
     return;
 
-  byte_order = _dbus_string_get_byte (&header->data, BYTE_ORDER_OFFSET);
-  _dbus_assert (header->byte_order == byte_order);
-
   _dbus_marshal_byteswap (&_dbus_header_signature_str,
-                          0, header->byte_order,
+                          0, byte_order,
                           new_order,
                           &header->data, 0);
 
   _dbus_string_set_byte (&header->data, BYTE_ORDER_OFFSET, new_order);
-  header->byte_order = new_order;
 }
 
 /** @} */

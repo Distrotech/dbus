@@ -115,8 +115,11 @@ _dbus_message_byteswap (DBusMessage *message)
 {
   const DBusString *type_str;
   int type_pos;
-  
-  if (message->byte_order == DBUS_COMPILER_BYTE_ORDER)
+  char byte_order;
+
+  byte_order = _dbus_header_get_byte_order (&message->header);
+
+  if (byte_order == DBUS_COMPILER_BYTE_ORDER)
     return;
 
   _dbus_verbose ("Swapping message into compiler byte order\n");
@@ -124,13 +127,13 @@ _dbus_message_byteswap (DBusMessage *message)
   get_const_signature (&message->header, &type_str, &type_pos);
   
   _dbus_marshal_byteswap (type_str, type_pos,
-                          message->byte_order,
+                          byte_order,
                           DBUS_COMPILER_BYTE_ORDER,
                           &message->body, 0);
 
-  message->byte_order = DBUS_COMPILER_BYTE_ORDER;
-  
   _dbus_header_byteswap (&message->header, DBUS_COMPILER_BYTE_ORDER);
+  _dbus_assert (_dbus_header_get_byte_order (&message->header) ==
+                DBUS_COMPILER_BYTE_ORDER);
 }
 
 /** byte-swap the message if it doesn't match our byte order.
@@ -139,9 +142,7 @@ _dbus_message_byteswap (DBusMessage *message)
  *  Otherwise should not be called since it would do needless
  *  work.
  */
-#define ensure_byte_order(message)                      \
- if (message->byte_order != DBUS_COMPILER_BYTE_ORDER)   \
-   _dbus_message_byteswap (message)
+#define ensure_byte_order(message) _dbus_message_byteswap (message)
 
 /**
  * Gets the data to be sent over the network for this message.
@@ -661,15 +662,19 @@ dbus_message_cache_or_finalize (DBusMessage *message)
 static dbus_bool_t
 _dbus_message_iter_check (DBusMessageRealIter *iter)
 {
+  char byte_order;
+
   if (iter == NULL)
     {
       _dbus_warn_check_failed ("dbus message iterator is NULL\n");
       return FALSE;
     }
 
+  byte_order = _dbus_header_get_byte_order (&iter->message->header);
+
   if (iter->iter_type == DBUS_MESSAGE_ITER_TYPE_READER)
     {
-      if (iter->u.reader.byte_order != iter->message->byte_order)
+      if (iter->u.reader.byte_order != byte_order)
         {
           _dbus_warn_check_failed ("dbus message changed byte order since iterator was created\n");
           return FALSE;
@@ -679,7 +684,7 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
     }
   else if (iter->iter_type == DBUS_MESSAGE_ITER_TYPE_WRITER)
     {
-      if (iter->u.writer.byte_order != iter->message->byte_order)
+      if (iter->u.writer.byte_order != byte_order)
         {
           _dbus_warn_check_failed ("dbus message changed byte order since append iterator was created\n");
           return FALSE;
@@ -1090,7 +1095,6 @@ dbus_message_new_empty_header (void)
     }
   
   message->refcount.value = 1;
-  message->byte_order = DBUS_COMPILER_BYTE_ORDER;
   message->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   message->in_cache = FALSE;
@@ -1110,12 +1114,12 @@ dbus_message_new_empty_header (void)
 
   if (from_cache)
     {
-      _dbus_header_reinit (&message->header, message->byte_order);
+      _dbus_header_reinit (&message->header, DBUS_COMPILER_BYTE_ORDER);
       _dbus_string_set_length (&message->body, 0);
     }
   else
     {
-      if (!_dbus_header_init (&message->header, message->byte_order))
+      if (!_dbus_header_init (&message->header, DBUS_COMPILER_BYTE_ORDER))
         {
           dbus_free (message);
           return NULL;
@@ -1449,7 +1453,6 @@ dbus_message_copy (const DBusMessage *message)
     return NULL;
 
   retval->refcount.value = 1;
-  retval->byte_order = message->byte_order;
   retval->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   retval->generation = message->generation;
@@ -1929,7 +1932,7 @@ dbus_message_iter_init (DBusMessage     *message,
                                   DBUS_MESSAGE_ITER_TYPE_READER);
 
   _dbus_type_reader_init (&real->u.reader,
-                          message->byte_order,
+                          _dbus_header_get_byte_order (&message->header),
                           type_str, type_pos,
                           &message->body,
                           0);
@@ -2284,7 +2287,7 @@ dbus_message_iter_init_append (DBusMessage     *message,
    * due to OOM.
    */
   _dbus_type_writer_init_types_delayed (&real->u.writer,
-                                        message->byte_order,
+                                        _dbus_header_get_byte_order (&message->header),
                                         &message->body,
                                         _dbus_string_get_length (&message->body));
 }
@@ -3994,8 +3997,6 @@ load_message (DBusMessageLoader *loader,
     }
 
   _dbus_assert (validity == DBUS_VALID);
-
-  message->byte_order = byte_order;
 
   /* 2. VALIDATE BODY */
   if (mode != DBUS_VALIDATION_MODE_WE_TRUST_THIS_DATA_ABSOLUTELY)

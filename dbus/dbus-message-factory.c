@@ -170,6 +170,7 @@ generate_many_bodies_inner (DBusMessageDataIter *iter,
   DBusMessage *message;
   DBusString signature;
   DBusString body;
+  char byte_order;
 
   /* Keeping this small makes things go faster */
   message = dbus_message_new_method_call ("o.z.F",
@@ -179,13 +180,15 @@ generate_many_bodies_inner (DBusMessageDataIter *iter,
   if (message == NULL)
     _dbus_assert_not_reached ("oom");
 
+  byte_order = _dbus_header_get_byte_order (&message->header);
+
   set_reply_serial (message);
 
   if (!_dbus_string_init (&signature) || !_dbus_string_init (&body))
     _dbus_assert_not_reached ("oom");
   
   if (dbus_internal_do_not_use_generate_bodies (iter_get_sequence (iter),
-                                                message->byte_order,
+                                                byte_order,
                                                 &signature, &body))
     {
       const char *v_SIGNATURE;
@@ -202,7 +205,7 @@ generate_many_bodies_inner (DBusMessageDataIter *iter,
 
       _dbus_marshal_set_uint32 (&message->header.data, BODY_LENGTH_OFFSET,
                                 _dbus_string_get_length (&message->body),
-                                message->byte_order);
+                                byte_order);
       
       *message_p = message;
     }
@@ -578,15 +581,18 @@ generate_special (DBusMessageDataIter   *iter,
     }
   else if (item_seq == 8)
     {
+      char byte_order;
+
       message = simple_method_call ();
+      byte_order = _dbus_header_get_byte_order (&message->header);
       generate_from_message (data, expected_validity, message);
       
       _dbus_marshal_set_uint32 (data, BODY_LENGTH_OFFSET,
                                 DBUS_MAXIMUM_MESSAGE_LENGTH / 2 + 4,
-                                message->byte_order);
+                                byte_order);
       _dbus_marshal_set_uint32 (data, FIELDS_ARRAY_LENGTH_OFFSET,
                                 DBUS_MAXIMUM_MESSAGE_LENGTH / 2 + 4,
-                                message->byte_order);
+                                byte_order);
       *expected_validity = DBUS_INVALID_MESSAGE_TOO_LONG;
     }
   else if (item_seq == 9)
