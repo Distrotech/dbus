@@ -1,4 +1,4 @@
-D-Bus 1.4.12 (UNRELEASED)
+D-Bus 1.4.12 (2011-06-10)
 ==
 
 Security (local denial of service):
@@ -15,14 +15,14 @@ New things:
   which can be used for source compatibility with older versions of libdbus.
 
 • If GLib and DBus-GLib are already installed, more tests will be built,
-  providing better coverage. They can be installed via
+  providing better coverage. The new tests can also be installed via
       ./configure --enable-installed-tests
   for system integration testing, if required. (fd.o #34570, Simon McVittie)
 
 Changes:
 
-• Consistently use atomic operations for the DBusConnection's refcount
-  (fd.o #38005, Simon McVittie)
+• Consistently use atomic operations for the DBusConnection's refcount,
+  fixing potential threading problems (fd.o #38005, Simon McVittie)
 
 • Don't use -Wl,--gc-sections by default: in practice the size decrease is
   small (300KiB on x86-64) and it frequently doesn't work in unusual
