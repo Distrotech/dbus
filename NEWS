@@ -1,7 +1,28 @@
 D-Bus 1.5.4 (UNRELEASED)
 ==
 
+Security (local denial of service):
+
+• Byte-swap foreign-endian messages correctly, preventing a long-standing
+  local DoS if foreign-endian messages are relayed through the dbus-daemon
+  (backporters: this is git commit c3223ba6c401ba81df1305851312a47c485e6cd7)
+  (fd.o #38120, Debian #629938, no CVE number yet; Simon McVittie)
+
+New things:
+
+• The constant to use for an infinite timeout now has a name,
+  DBUS_TIMEOUT_INFINITE. It is numerically equivalent to 0x7fffffff (INT32_MAX)
+  which can be used for source compatibility with older versions of libdbus.
+
+• If GLib and DBus-GLib are already installed, more tests will be built,
+  providing better coverage. They can be installed via
+      ./configure --enable-installed-tests
+  for system integration testing, if required. (fd.o #34570, Simon McVittie)
+
 Changes:
+
+• Consistently use atomic operations for the DBusConnection's refcount
+  (fd.o #38005, Simon McVittie)
 
 • Don't use -Wl,--gc-sections by default: in practice the size decrease is
   small (300KiB on x86-64) and it frequently doesn't work in unusual

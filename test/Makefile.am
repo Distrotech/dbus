@@ -52,7 +52,8 @@ test_segfault_SOURCES =				\
 test_sleep_forever_SOURCES =			\
 	test-sleep-forever.c
 
-# When any programs are not linked to libdbus-internal, fix this.
+# This assumes that most tests will be linked to libdbus-internal;
+# tests linked to only the public libdbus have their own CPPFLAGS.
 AM_CPPFLAGS=-DDBUS_STATIC_BUILD
 TEST_LIBS=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
 
@@ -69,7 +70,89 @@ shell_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 spawn_test_LDADD=$(TEST_LIBS)
 spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
-EXTRA_DIST=
+EXTRA_DIST = dbus-test-runner
+
+testexecdir = $(libdir)/dbus-1.0/test
+
+testexec_PROGRAMS =
+
+installable_tests = \
+	test-corrupt \
+	test-dbus-daemon \
+	test-loopback \
+	test-marshal \
+	test-relay \
+	$(NULL)
+
+installcheck_tests =
+installcheck_environment = \
+	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
+	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
+
+TESTS_ENVIRONMENT = \
+	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
+	DBUS_TEST_DATA=@abs_top_builddir@/test/data
+
+test_corrupt_SOURCES = corrupt.c
+test_corrupt_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_corrupt_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_corrupt_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_loopback_SOURCES = loopback.c
+test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_loopback_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_loopback_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_relay_SOURCES = relay.c
+test_relay_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_relay_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_relay_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_dbus_daemon_SOURCES = dbus-daemon.c
+test_dbus_daemon_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_dbus_daemon_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_marshal_SOURCES = marshal.c
+test_marshal_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_marshal_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_marshal_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+if DBUS_ENABLE_MODULAR_TESTS
+TESTS += $(installable_tests)
+installcheck_tests += $(installable_tests)
+
+if DBUS_ENABLE_INSTALLED_TESTS
+  testexec_PROGRAMS += $(installable_tests)
+else !DBUS_ENABLE_INSTALLED_TESTS
+  testexec_PROGRAMS += $(installable_tests)
+endif !DBUS_ENABLE_INSTALLED_TESTS
+
+endif DBUS_ENABLE_MODULAR_TESTS
+
+# If we're installing the tests into a DESTDIR we can't run them
+# again using the installed copy, because we don't know how to
+# do a portable equivalent of setting LD_LIBRARY_PATH.
+installcheck-local:
+	$(MAKE) check-TESTS TESTS='$$(installcheck_tests)' \
+		TESTS_ENVIRONMENT='$$(installcheck_environment)'
+if DBUS_ENABLE_INSTALLED_TESTS
+	test -n "$(DESTDIR)" || \
+	$(installcheck_environment) \
+		$(srcdir)/dbus-test-runner \
+		$(testexecdir) \
+		$(testexec_PROGRAMS)
+endif DBUS_ENABLE_INSTALLED_TESTS
 
 ## keep these in creation order, i.e. uppermost dirs first 
 TESTDIRS=					\
