@@ -198,7 +198,7 @@ _dbus_header_cache_revalidate (DBusHeader *header)
     }
 
   _dbus_type_reader_init (&reader,
-                          header->byte_order,
+                          _dbus_header_get_byte_order (header),
                           &_dbus_header_signature_str,
                           FIELDS_ARRAY_SIGNATURE_OFFSET,
                           &header->data,
@@ -412,7 +412,7 @@ _dbus_header_set_serial (DBusHeader    *header,
   _dbus_marshal_set_uint32 (&header->data,
                             SERIAL_OFFSET,
 			    serial,
-                            header->byte_order);
+                            _dbus_header_get_byte_order (header));
 }
 
 /**
@@ -426,7 +426,7 @@ _dbus_header_get_serial (DBusHeader *header)
 {
   return _dbus_marshal_read_uint32 (&header->data,
                                     SERIAL_OFFSET,
-                                    header->byte_order,
+                                    _dbus_header_get_byte_order (header),
                                     NULL);
 }
 
@@ -436,15 +436,12 @@ _dbus_header_get_serial (DBusHeader *header)
  * _dbus_header_create().
  *
  * @param header header to re-initialize
- * @param byte_order byte order of the header
  */
 void
-_dbus_header_reinit (DBusHeader *header,
-                     int         byte_order)
+_dbus_header_reinit (DBusHeader *header)
 {
   _dbus_string_set_length (&header->data, 0);
 
-  header->byte_order = byte_order;
   header->padding = 0;
 
   _dbus_header_cache_invalidate_all (header);
@@ -459,13 +456,12 @@ _dbus_header_reinit (DBusHeader *header,
  * @returns #FALSE if not enough memory
  */
 dbus_bool_t
-_dbus_header_init (DBusHeader *header,
-                   int         byte_order)
+_dbus_header_init (DBusHeader *header)
 {
   if (!_dbus_string_init_preallocated (&header->data, 32))
     return FALSE;
 
-  _dbus_header_reinit (header, byte_order);
+  _dbus_header_reinit (header);
 
   return TRUE;
 }
@@ -528,6 +524,7 @@ _dbus_header_copy (const DBusHeader *header,
  */
 dbus_bool_t
 _dbus_header_create (DBusHeader  *header,
+                     int          byte_order,
                      int          message_type,
                      const char  *destination,
                      const char  *path,
@@ -540,6 +537,8 @@ _dbus_header_create (DBusHeader  *header,
   DBusTypeWriter writer;
   DBusTypeWriter array;
 
+  _dbus_assert (byte_order == DBUS_LITTLE_ENDIAN ||
+                byte_order == DBUS_BIG_ENDIAN);
   _dbus_assert (((interface || message_type != DBUS_MESSAGE_TYPE_SIGNAL) && member) ||
                 (error_name) ||
                 !(interface || member || error_name));
@@ -548,12 +547,12 @@ _dbus_header_create (DBusHeader  *header,
   if (!reserve_header_padding (header))
     return FALSE;
 
-  _dbus_type_writer_init_values_only (&writer, header->byte_order,
+  _dbus_type_writer_init_values_only (&writer, byte_order,
                                       &_dbus_header_signature_str, 0,
                                       &header->data,
                                       HEADER_END_BEFORE_PADDING (header));
 
-  v_BYTE = header->byte_order;
+  v_BYTE = byte_order;
   if (!_dbus_type_writer_write_basic (&writer, DBUS_TYPE_BYTE,
                                       &v_BYTE))
     goto oom;
@@ -925,7 +924,8 @@ load_and_validate_field (DBusHeader     *header,
       _dbus_assert (bad_string_code != DBUS_VALID);
 
       len = _dbus_marshal_read_uint32 (value_str, value_pos,
-                                       header->byte_order, NULL);
+                                       _dbus_header_get_byte_order (header),
+                                       NULL);
 
 #if 0
       _dbus_verbose ("Validating string header field; code %d if fails\n",
@@ -1056,7 +1056,6 @@ _dbus_header_load (DBusHeader        *header,
   _dbus_type_reader_next (&reader);
 
   _dbus_assert (v_byte == byte_order);
-  header->byte_order = byte_order;
 
   /* MESSAGE TYPE */
   _dbus_assert (_dbus_type_reader_get_current_type (&reader) == DBUS_TYPE_BYTE);
@@ -1198,7 +1197,7 @@ _dbus_header_update_lengths (DBusHeader *header,
   _dbus_marshal_set_uint32 (&header->data,
                             BODY_LENGTH_OFFSET,
                             body_len,
-                            header->byte_order);
+                            _dbus_header_get_byte_order (header));
 }
 
 static dbus_bool_t
@@ -1212,7 +1211,7 @@ find_field_for_modification (DBusHeader     *header,
   retval = FALSE;
 
   _dbus_type_reader_init (realign_root,
-                          header->byte_order,
+                          _dbus_header_get_byte_order (header),
                           &_dbus_header_signature_str,
                           FIELDS_ARRAY_SIGNATURE_OFFSET,
                           &header->data,
@@ -1285,7 +1284,7 @@ _dbus_header_set_field_basic (DBusHeader       *header,
       DBusTypeWriter array;
 
       _dbus_type_writer_init_values_only (&writer,
-                                          header->byte_order,
+                                          _dbus_header_get_byte_order (header),
                                           &_dbus_header_signature_str,
                                           FIELDS_ARRAY_SIGNATURE_OFFSET,
                                           &header->data,
@@ -1355,7 +1354,7 @@ _dbus_header_get_field_basic (DBusHeader    *header,
 
   _dbus_marshal_read_basic (&header->data,
                             header->fields[field].value_pos,
-                            type, value, header->byte_order,
+                            type, value, _dbus_header_get_byte_order (header),
                             NULL);
 
   return TRUE;

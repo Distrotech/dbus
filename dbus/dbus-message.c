@@ -1114,12 +1114,12 @@ dbus_message_new_empty_header (void)
 
   if (from_cache)
     {
-      _dbus_header_reinit (&message->header, DBUS_COMPILER_BYTE_ORDER);
+      _dbus_header_reinit (&message->header);
       _dbus_string_set_length (&message->body, 0);
     }
   else
     {
-      if (!_dbus_header_init (&message->header, DBUS_COMPILER_BYTE_ORDER))
+      if (!_dbus_header_init (&message->header))
         {
           dbus_free (message);
           return NULL;
@@ -1160,6 +1160,7 @@ dbus_message_new (int message_type)
     return NULL;
 
   if (!_dbus_header_create (&message->header,
+                            DBUS_COMPILER_BYTE_ORDER,
                             message_type,
                             NULL, NULL, NULL, NULL, NULL))
     {
@@ -1213,6 +1214,7 @@ dbus_message_new_method_call (const char *destination,
     return NULL;
 
   if (!_dbus_header_create (&message->header,
+                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_METHOD_CALL,
                             destination, path, interface, method, NULL))
     {
@@ -1247,6 +1249,7 @@ dbus_message_new_method_return (DBusMessage *method_call)
     return NULL;
 
   if (!_dbus_header_create (&message->header,
+                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_METHOD_RETURN,
                             sender, NULL, NULL, NULL, NULL))
     {
@@ -1299,6 +1302,7 @@ dbus_message_new_signal (const char *path,
     return NULL;
 
   if (!_dbus_header_create (&message->header,
+                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_SIGNAL,
                             NULL, path, interface, name, NULL))
     {
@@ -1349,6 +1353,7 @@ dbus_message_new_error (DBusMessage *reply_to,
     return NULL;
 
   if (!_dbus_header_create (&message->header,
+                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_ERROR,
                             sender, NULL, NULL, NULL, error_name))
     {
