@@ -2067,7 +2067,7 @@ handle_client_state_waiting_for_agree_unix_fd(DBusAuth         *auth,
     case DBUS_AUTH_COMMAND_AGREE_UNIX_FD:
       _dbus_assert(auth->unix_fd_possible);
       auth->unix_fd_negotiated = TRUE;
-      _dbus_verbose("Sucessfully negotiated UNIX FD passing\n");
+      _dbus_verbose("Successfully negotiated UNIX FD passing\n");
       return send_begin (auth);
 
     case DBUS_AUTH_COMMAND_ERROR:
@@ -2794,7 +2794,7 @@ _dbus_auth_set_unix_fd_possible(DBusAuth *auth, dbus_bool_t b)
 }
 
 /**
- * Queries whether unix fd passing was sucessfully negotiated.
+ * Queries whether unix fd passing was successfully negotiated.
  *
  * @param auth the auth conversion
  * @returns #TRUE when unix fd passing was negotiated.
