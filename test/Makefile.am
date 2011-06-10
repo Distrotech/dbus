@@ -135,7 +135,7 @@ installcheck_tests += $(installable_tests)
 if DBUS_ENABLE_INSTALLED_TESTS
   testexec_PROGRAMS += $(installable_tests)
 else !DBUS_ENABLE_INSTALLED_TESTS
-  testexec_PROGRAMS += $(installable_tests)
+  noinst_PROGRAMS += $(installable_tests)
 endif !DBUS_ENABLE_INSTALLED_TESTS
 
 endif DBUS_ENABLE_MODULAR_TESTS
