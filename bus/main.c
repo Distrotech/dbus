@@ -35,6 +35,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>     /* for write() and STDERR_FILENO */
+#endif
 #include "selinux.h"
 
 static BusContext *context;
@@ -45,6 +48,7 @@ static int reload_pipe[2];
 
 static void close_reload_pipe (DBusWatch **);
 
+#ifdef DBUS_UNIX
 static void
 signal_handler (int sig)
 {
@@ -69,14 +73,24 @@ signal_handler (int sig)
              * reloaded while draining the pipe buffer, which is what we
              * wanted. It's harmless that it will be reloaded fewer times than
              * we asked for, since the reload is delayed anyway, so new changes
-             * will be picked up. */
-            _dbus_warn ("Unable to write to reload pipe.\n");
+             * will be picked up.
+             *
+             * We use write() because _dbus_warn uses vfprintf, which isn't
+             * async-signal-safe.
+             *
+             * This is necessarily Unix-specific, but so are POSIX signals,
+             * so... */
+            static const char message[] =
+              "Unable to write to reload pipe - buffer full?\n";
+
+            write (STDERR_FILENO, message, strlen (message));
           }
       }
       break;
 #endif
     }
 }
+#endif /* DBUS_UNIX */
 
 static void
 usage (void)
@@ -521,12 +535,17 @@ main (int argc, char **argv)
 
   setup_reload_pipe (bus_context_get_loop (context));
 
+#ifdef DBUS_UNIX
+  /* POSIX signals are Unix-specific, and _dbus_set_signal_handler is
+   * unimplemented (and probably unimplementable) on Windows, so there's
+   * no point in trying to make the handler portable to non-Unix. */
 #ifdef SIGHUP
   _dbus_set_signal_handler (SIGHUP, signal_handler);
 #endif
 #ifdef DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX
   _dbus_set_signal_handler (SIGIO, signal_handler);
 #endif /* DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX */
+#endif /* DBUS_UNIX */
 
   _dbus_verbose ("We are on D-Bus...\n");
   _dbus_loop_run (bus_context_get_loop (context));
