@@ -44,7 +44,6 @@ static int reload_pipe[2];
 #define RELOAD_WRITE_END 1
 
 static void close_reload_pipe (DBusWatch **);
-static void close_reload_pipe_write (void);
 
 static void
 signal_handler (int sig)
@@ -64,8 +63,14 @@ signal_handler (int sig)
         if ((reload_pipe[RELOAD_WRITE_END] > 0) &&
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
+            /* If we receive SIGHUP often enough to fill the pipe buffer (4096
+             * times on old Linux, 65536 on modern Linux) before it can be
+             * drained, let's just warn and ignore. The configuration will be
+             * reloaded while draining the pipe buffer, which is what we
+             * wanted. It's harmless that it will be reloaded fewer times than
+             * we asked for, since the reload is delayed anyway, so new changes
+             * will be picked up. */
             _dbus_warn ("Unable to write to reload pipe.\n");
-            close_reload_pipe_write ();
           }
       }
       break;
@@ -261,13 +266,6 @@ close_reload_pipe (DBusWatch **watch)
     _dbus_close_socket (reload_pipe[RELOAD_READ_END], NULL);
     reload_pipe[RELOAD_READ_END] = -1;
 
-    close_reload_pipe_write ();
-}
-
-/* this is the only bit that's safe to do from an async signal handler */
-static void
-close_reload_pipe_write (void)
-{
     _dbus_close_socket (reload_pipe[RELOAD_WRITE_END], NULL);
     reload_pipe[RELOAD_WRITE_END] = -1;
 }
