@@ -686,6 +686,14 @@
       </para>
 
       <para>
+        Unlike a message signature, the variant signature can
+        contain only a single complete type.  So "i", "ai"
+        or "(ii)" is OK, but "ii" is not.  Use of variants may not
+        cause a total message depth to be larger than 64, including
+        other container types such as structures.
+      </para>
+
+      <para>
         A <literal>DICT_ENTRY</literal> works exactly like a struct, but rather
         than parentheses it uses curly braces, and it has more restrictions.
         The restrictions are: it occurs only as an array element type; it has
@@ -884,6 +892,12 @@
         not be left uninitialized (it can't contain garbage), and more padding
         than required must not be used.
       </para>
+
+      <para>
+        As an exception to natural alignment, <literal>STRUCT</literal> and
+        <literal>DICT_ENTRY</literal> values are always aligned to an 8-byte
+        boundary, regardless of the alignments of their contents.
+      </para>
     </sect2>
 
     <sect2>
@@ -920,7 +934,49 @@
     <sect2>
       <title>Marshalling containers</title>
 
-      <para>... to be written ...</para>
+      <para>
+        Arrays are marshalled as a <literal>UINT32</literal>
+        <varname>n</varname> giving the length of the array data in bytes,
+        followed by alignment padding to the alignment boundary of the array
+        element type, followed by the <varname>n</varname> bytes of the
+        array elements marshalled in sequence. <varname>n</varname> does not
+        include the padding after the length, or any padding after the
+        last element.
+      </para>
+
+      <para>
+        For instance, if the current position in the message is a multiple
+        of 8 bytes and the byte-order is big-endian, an array containing only
+        the 64-bit integer 5 would be marshalled as:
+
+        <screen>
+00 00 00 08               <lineannotation>8 bytes of data</lineannotation>
+00 00 00 00               <lineannotation>padding to 8-byte boundary</lineannotation>
+00 00 00 00  00 00 00 05  <lineannotation>first element = 5</lineannotation>
+        </screen>
+      </para>
+
+      <para>
+        Arrays have a maximum length defined to be 2 to the 26th power or
+        67108864. Implementations must not send or accept arrays exceeding this
+        length.
+      </para>
+
+      <para>
+        Structs and dict entries are marshalled in the same way as their
+        contents, but their alignment is always to an 8-byte boundary,
+        even if their contents would normally be less strictly aligned.
+      </para>
+
+      <para>
+        Variants are marshalled as the <literal>SIGNATURE</literal> of
+        the contents (which must be a single complete type), followed by a
+        marshalled value with the type given by that signature. The
+        variant has the same 1-byte alignment as the signature, which means
+        that alignment padding before a variant is never needed.
+        Use of variants may not cause a total message depth to be larger
+        than 64, including other container types such as structures.
+      </para>
     </sect2>
 
     <sect2>
@@ -1009,14 +1065,8 @@
                 <entry><literal>ARRAY</literal></entry>
                 <entry>
                   A <literal>UINT32</literal> giving the length of the array data in bytes, followed by 
-                  alignment padding to the alignment boundary of the array element type, 
-                  followed by each array element. The array length is from the 
-                  end of the alignment padding to the end of the last element,
-                  i.e. it does not include the padding after the length,
-                  or any padding after the last element.
-                  Arrays have a maximum length defined to be 2 to the 26th power or
-                  67108864. Implementations must not send or accept arrays exceeding this
-                  length.
+                  alignment padding to the alignment boundary of the array element type,
+                  followed by each array element.
                 </entry>
                 <entry>
                   4 (for the length)
@@ -1035,14 +1085,9 @@
 	      </row><row>
                 <entry><literal>VARIANT</literal></entry>
                 <entry>
-                  A variant type has a marshaled
-                  <literal>SIGNATURE</literal> followed by a marshaled
-                  value with the type given in the signature.  Unlike
-                  a message signature, the variant signature can
-                  contain only a single complete type.  So "i", "ai"
-                  or "(ii)" is OK, but "ii" is not.  Use of variants may not
-                  cause a total message depth to be larger than 64, including
-		  other container types such as structures.
+                  The marshaled <literal>SIGNATURE</literal> of a single
+                  complete type, followed by a marshaled value with the type
+                  given in the signature.
                 </entry>
                 <entry>
                   1 (alignment of the signature)
