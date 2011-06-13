@@ -1,6 +1,11 @@
 D-Bus 1.5.6 (UNRELEASED)
 ==
 
+Fixes:
+
+• The dbus-daemon no longer busy-loops if it has a very large number of file
+  descriptors (fd.o #23194, Simon McVittie)
+
 D-Bus 1.5.4 (2011-06-10)
 ==
 
