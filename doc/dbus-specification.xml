@@ -843,9 +843,21 @@
       </para>
 
     </sect2>
+  </sect1>
 
-    <sect2 id="message-protocol-marshaling">
-      <title>Marshaling (Wire Format)</title>
+  <sect1 id="message-protocol-marshaling">
+    <title>Marshaling (Wire Format)</title>
+
+    <para>
+      D-Bus defines a marshalling format for its type system, which is
+      used in D-Bus messages. This is not the only possible marshalling
+      format for the type system: for instance, GVariant (part of GLib)
+      re-uses the D-Bus type system but implements an alternative marshalling
+      format.
+    </para>
+
+    <sect2>
+      <title>Byte order and alignment</title>
 
       <para>
         Given a type signature, a block of bytes can be converted into typed
@@ -854,11 +866,11 @@
       </para>
 
       <para>
-        A block of bytes has an associated byte order. The byte order 
-        has to be discovered in some way; for D-Bus messages, the 
-        byte order is part of the message header as described in 
-        <xref linkend="message-protocol-messages"/>. For now, assume 
-        that the byte order is known to be either little endian or big 
+        A block of bytes has an associated byte order. The byte order
+        has to be discovered in some way; for D-Bus messages, the
+        byte order is part of the message header as described in
+        <xref linkend="message-protocol-messages"/>. For now, assume
+        that the byte order is known to be either little endian or big
           endian.
       </para>
 
@@ -872,6 +884,10 @@
         not be left uninitialized (it can't contain garbage), and more padding
         than required must not be used.
       </para>
+    </sect2>
+
+    <sect2>
+      <title>Marshalling basic types</title>
 
       <para>
         To marshal and unmarshal fixed types, you simply read one value
@@ -899,6 +915,16 @@
         byte. As a result, alignment padding is never required before a
         SIGNATURE.
       </para>
+    </sect2>
+
+    <sect2>
+      <title>Marshalling containers</title>
+
+      <para>... to be written ...</para>
+    </sect2>
+
+    <sect2>
+      <title>Summary of D-Bus marshalling</title>
 
       <para>
         Given all this, the types are marshaled on the wire as follows:
