@@ -269,19 +269,12 @@ libdbus_internal_la_CPPFLAGS = -DDBUS_STATIC_BUILD
 libdbus_internal_la_LIBADD=$(DBUS_CLIENT_LIBS)
 libdbus_internal_la_LDFLAGS=$(export_symbols_internal) @R_DYNAMIC_LDFLAG@
 
-## note that TESTS has special meaning (stuff to use in make check)
-## so if adding tests not to be run in make check, don't add them to
-## TESTS
-if DBUS_BUILD_TESTS
-TESTS_ENVIRONMENT=DBUS_TEST_DATA=$(top_builddir)/test/data DBUS_TEST_HOMEDIR=$(top_builddir)/dbus
-TESTS=dbus-test
-else
-TESTS=
-endif
+noinst_PROGRAMS =
 
-## we use noinst_PROGRAMS not check_PROGRAMS so that we build
-## even when not doing "make check"
-noinst_PROGRAMS=$(TESTS)
+if DBUS_BUILD_TESTS
+# We can't actually run this til we've reached test/
+noinst_PROGRAMS += dbus-test
+endif
 
 dbus_test_SOURCES=				\
 	dbus-test-main.c
