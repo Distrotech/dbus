@@ -69,6 +69,7 @@ typedef enum
                                  *   state passed to
                                  *   dbus_watch_handle()).
                                  */
+  /* Internal to libdbus, there is also _DBUS_WATCH_NVAL in dbus-watch.h */
 } DBusWatchFlags;
 
 /**

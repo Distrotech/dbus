@@ -239,6 +239,9 @@ DBUS_UTIL_SOURCES=				\
 	dbus-shell.c				\
 	dbus-shell.h				\
 	$(DBUS_UTIL_arch_sources)		\
+	dbus-socket-set.h			\
+	dbus-socket-set.c			\
+	dbus-socket-set-poll.c			\
 	dbus-spawn.h				\
 	dbus-string-util.c			\
 	dbus-sysdeps-util.c			\

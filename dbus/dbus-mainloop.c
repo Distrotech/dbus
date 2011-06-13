@@ -1,7 +1,8 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /* dbus-mainloop.c  Main loop utility
  *
- * Copyright (C) 2003, 2004  Red Hat, Inc.
+ * Copyright © 2003, 2004  Red Hat, Inc.
+ * Copyright © 2011 Nokia Corporation
  *
  * Licensed under the Academic Free License version 2.1
  * 
@@ -28,7 +29,7 @@
 
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-list.h>
-#include <dbus/dbus-sysdeps.h>
+#include <dbus/dbus-socket-set.h>
 #include <dbus/dbus-watch.h>
 
 #define MAINLOOP_SPEW 0
@@ -66,36 +67,6 @@ struct DBusLoop
   int depth; /**< number of recursive runs */
   DBusList *need_dispatch;
 };
-
-static short
-watch_flags_to_poll_events (unsigned int flags)
-{
-  short events = 0;
-
-  if (flags & DBUS_WATCH_READABLE)
-    events |= _DBUS_POLLIN;
-  if (flags & DBUS_WATCH_WRITABLE)
-    events |= _DBUS_POLLOUT;
-
-  return events;
-}
-
-static unsigned int
-watch_flags_from_poll_revents (short revents)
-{
-  unsigned int condition = 0;
-
-  if (revents & _DBUS_POLLIN)
-    condition |= DBUS_WATCH_READABLE;
-  if (revents & _DBUS_POLLOUT)
-    condition |= DBUS_WATCH_WRITABLE;
-  if (revents & _DBUS_POLLHUP)
-    condition |= DBUS_WATCH_HANGUP;
-  if (revents & _DBUS_POLLERR)
-    condition |= DBUS_WATCH_ERROR;
-
-  return condition;
-}
 
 typedef struct
 {
@@ -568,9 +539,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
 {  
 #define N_STACK_DESCRIPTORS 64
   dbus_bool_t retval;
-  DBusPollFD *fds;
-  DBusPollFD stack_fds[N_STACK_DESCRIPTORS];
-  int n_fds;
+  DBusSocketSet *socket_set = NULL;
+  DBusSocketEvent ready_fds[N_STACK_DESCRIPTORS];
   int i;
   DBusList *link;
   int n_ready;
@@ -582,8 +552,6 @@ _dbus_loop_iterate (DBusLoop     *loop,
 
   retval = FALSE;      
 
-  fds = NULL;
-  n_fds = 0;
   oom_watch_pending = FALSE;
   orig_depth = loop->depth;
   
@@ -596,23 +564,15 @@ _dbus_loop_iterate (DBusLoop     *loop,
       loop->timeouts == NULL)
     goto next_iteration;
 
-  if (loop->watch_count > N_STACK_DESCRIPTORS)
+  socket_set = _dbus_socket_set_new (loop->watch_count);
+
+  while (socket_set == NULL)
     {
-      fds = dbus_new0 (DBusPollFD, loop->watch_count);
-      
-      while (fds == NULL)
-        {
-          _dbus_wait_for_memory ();
-          fds = dbus_new0 (DBusPollFD, loop->watch_count);
-        }
-    }
-  else
-    {      
-      fds = stack_fds;
+      _dbus_wait_for_memory ();
+      socket_set = _dbus_socket_set_new (loop->watch_count);
     }
 
   /* fill our array of fds and watches */
-  n_fds = 0;
   _dbus_hash_iter_init (loop->watches, &hash_iter);
 
   while (_dbus_hash_iter_next (&hash_iter))
@@ -620,10 +580,12 @@ _dbus_loop_iterate (DBusLoop     *loop,
       DBusList **watches;
       unsigned int flags;
       int fd;
+      dbus_bool_t enabled;
 
       fd = _dbus_hash_iter_get_int_key (&hash_iter);
       watches = _dbus_hash_iter_get_value (&hash_iter);
       flags = 0;
+      enabled = FALSE;
 
       for (link = _dbus_list_get_first_link (watches);
           link != NULL;
@@ -651,28 +613,24 @@ _dbus_loop_iterate (DBusLoop     *loop,
           else if (dbus_watch_get_enabled (watch))
             {
               flags |= dbus_watch_get_flags (watch);
+              enabled = TRUE;
             }
         }
 
-      if (flags != 0)
+      if (enabled)
         {
-          fds[n_fds].fd = fd;
-          fds[n_fds].revents = 0;
-          fds[n_fds].events = watch_flags_to_poll_events (flags);
+          _dbus_socket_set_add (socket_set, fd, flags, TRUE);
 
 #if MAINLOOP_SPEW
           _dbus_verbose ("  polling watch on fd %d  %s\n",
-                         loop->fds[loop->n_fds].fd, watch_flags_to_string (flags));
+                         fd, watch_flags_to_string (flags));
 #endif
-
-          n_fds += 1;
         }
       else
         {
 #if MAINLOOP_SPEW
           _dbus_verbose ("  skipping disabled watch on fd %d  %s\n",
-                         fd,
-                         watch_flags_to_string (dbus_watch_get_flags (watch)));
+                         fd, watch_flags_to_string (flags));
 #endif
         }
     }
@@ -741,8 +699,9 @@ _dbus_loop_iterate (DBusLoop     *loop,
 #if MAINLOOP_SPEW
   _dbus_verbose ("  polling on %d descriptors timeout %ld\n", n_fds, timeout);
 #endif
-  
-  n_ready = _dbus_poll (fds, n_fds, timeout);
+
+  n_ready = _dbus_socket_set_poll (socket_set, ready_fds,
+                                   _DBUS_N_ELEMENTS (ready_fds), timeout);
 
   initial_serial = loop->callback_list_serial;
 
@@ -805,10 +764,10 @@ _dbus_loop_iterate (DBusLoop     *loop,
           link = next;
         }
     }
-      
+
   if (n_ready > 0)
     {
-      for (i = 0; i < n_fds; i++)
+      for (i = 0; i < n_ready; i++)
         {
           DBusList **watches;
           DBusList *next;
@@ -824,16 +783,16 @@ _dbus_loop_iterate (DBusLoop     *loop,
           if (loop->depth != orig_depth)
             goto next_iteration;
 
-          if (fds[i].revents == 0)
-            continue;
+          _dbus_assert (ready_fds[i].flags != 0);
 
-          if (_DBUS_UNLIKELY (fds[i].revents & _DBUS_POLLNVAL))
+          if (_DBUS_UNLIKELY (ready_fds[i].flags & _DBUS_WATCH_NVAL))
             {
-              cull_watches_for_invalid_fd (loop, fds[i].fd);
+              cull_watches_for_invalid_fd (loop, ready_fds[i].fd);
               goto next_iteration;
             }
 
-          condition = watch_flags_from_poll_revents (fds[i].revents);
+          condition = ready_fds[i].flags;
+          _dbus_assert ((condition & _DBUS_WATCH_NVAL) == 0);
 
           /* condition may still be 0 if we got some
            * weird POLLFOO thing like POLLWRBAND
@@ -841,7 +800,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
           if (condition == 0)
             continue;
 
-          watches = _dbus_hash_table_lookup_int (loop->watches, fds[i].fd);
+          watches = _dbus_hash_table_lookup_int (loop->watches,
+                                                 ready_fds[i].fd);
 
           if (watches == NULL)
             continue;
@@ -887,9 +847,9 @@ _dbus_loop_iterate (DBusLoop     *loop,
 #if MAINLOOP_SPEW
   _dbus_verbose ("  moving to next iteration\n");
 #endif
-  
-  if (fds && fds != stack_fds)
-    dbus_free (fds);
+
+  if (socket_set)
+    _dbus_socket_set_free (socket_set);
 
   if (_dbus_loop_dispatch (loop))
     retval = TRUE;

@@ -37,6 +37,8 @@ DBUS_BEGIN_DECLS
 
 typedef struct DBusWatchList DBusWatchList;
 
+#define _DBUS_WATCH_NVAL (1<<4)
+
 /** function to run when the watch is handled */
 typedef dbus_bool_t (* DBusWatchHandler) (DBusWatch    *watch,
                                           unsigned int  flags,
