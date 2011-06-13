@@ -34,6 +34,9 @@ TESTS = \
 ## order, but we don't want to run them til we arrive in this directory,
 ## since they depend on stuff from this directory
 TESTS += \
+	../bus/bus-test \
+	../bus/bus-test-system \
+	../bus/bus-test-launch-helper \
 	../dbus/dbus-test \
 	$(NULL)
 
@@ -111,6 +114,8 @@ installcheck_environment = \
 	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
 
 TESTS_ENVIRONMENT = \
+	DBUS_BLOCK_ON_ABORT=1 \
+	DBUS_FATAL_WARNINGS=1 \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
 	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
 	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
