@@ -1021,6 +1021,9 @@ fi
 if test x$enable_epoll,$have_linux_epoll = xyes,no; then
     AC_MSG_ERROR([epoll support explicitly enabled but not available])
 fi
+if test x$have_linux_epoll = xyes; then
+  AC_DEFINE([DBUS_HAVE_LINUX_EPOLL], 1, [Define to use epoll(4) on Linux])
+fi
 AM_CONDITIONAL([HAVE_LINUX_EPOLL], [test x$have_linux_epoll = xyes])
 
 # kqueue checks

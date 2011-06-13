@@ -113,8 +113,10 @@ _dbus_socket_set_poll (DBusSocketSet    *self,
 /* concrete implementations, not necessarily built on all platforms */
 
 extern DBusSocketSetClass _dbus_socket_set_poll_class;
+extern DBusSocketSetClass _dbus_socket_set_epoll_class;
 
 DBusSocketSet *_dbus_socket_set_poll_new  (int  size_hint);
+DBusSocketSet *_dbus_socket_set_epoll_new (void);
 
 #endif /* !DOXYGEN_SHOULD_SKIP_THIS */
 #endif /* multiple-inclusion guard */
