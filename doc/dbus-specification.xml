@@ -343,6 +343,20 @@
       <title>Basic types</title>
 
       <para>
+        The simplest type codes are the <firstterm id="term-basic-type">basic
+          types</firstterm>, which are the types whose structure is entirely
+        defined by their 1-character type code. Basic types consist of
+        fixed types and string-like types.
+      </para>
+
+      <para>
+        The <firstterm id="term-fixed-type">fixed types</firstterm>
+        are basic types whose values have a fixed length, namely BYTE,
+        BOOLEAN, DOUBLE, UNIX_FD, and signed or unsigned integers of length
+        16, 32 or 64 bits.
+      </para>
+
+      <para>
         As a simple example, the type code for 32-bit integer (<literal>INT32</literal>) is
         the ASCII character 'i'. So the signature for a block of values 
         containing a single <literal>INT32</literal> would be:
@@ -356,11 +370,130 @@
       </para>
 
       <para>
-        All fixed types work like
-        <literal>INT32</literal> in this example: to marshal and unmarshal
-        fixed types, you simply read one value from the data
-        block corresponding to each type code in the signature.
+        The characteristics of the fixed types are listed in this table.
+
+        <informaltable>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Conventional name</entry>
+                <entry>ASCII type-code</entry>
+                <entry>Encoding</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry><literal>BYTE</literal></entry>
+                <entry><literal>y</literal> (121)</entry>
+                <entry>Unsigned 8-bit integer</entry>
+              </row>
+              <row>
+                <entry><literal>BOOLEAN</literal></entry>
+                <entry><literal>b</literal> (98)</entry>
+                <entry>Boolean value: 0 is false, 1 is true, any other value
+                  allowed by the marshalling format is invalid</entry>
+              </row>
+              <row>
+                <entry><literal>INT16</literal></entry>
+                <entry><literal>n</literal> (110)</entry>
+                <entry>Signed (two's complement) 16-bit integer</entry>
+              </row>
+              <row>
+                <entry><literal>UINT16</literal></entry>
+                <entry><literal>q</literal> (113)</entry>
+                <entry>Unsigned 16-bit integer</entry>
+              </row>
+              <row>
+                <entry><literal>INT32</literal></entry>
+                <entry><literal>i</literal> (105)</entry>
+                <entry>Signed (two's complement) 32-bit integer</entry>
+              </row>
+              <row>
+                <entry><literal>UINT32</literal></entry>
+                <entry><literal>u</literal> (117)</entry>
+                <entry>Unsigned 32-bit integer</entry>
+              </row>
+              <row>
+                <entry><literal>INT64</literal></entry>
+                <entry><literal>x</literal> (120)</entry>
+                <entry>Signed (two's complement) 64-bit integer
+                  (mnemonic: x and t are the first characters in "sixty" not
+                  already used for something more common)</entry>
+              </row>
+              <row>
+                <entry><literal>UINT64</literal></entry>
+                <entry><literal>t</literal> (116)</entry>
+                <entry>Unsigned 64-bit integer</entry>
+              </row>
+              <row>
+                <entry><literal>DOUBLE</literal></entry>
+                <entry><literal>d</literal> (100)</entry>
+                <entry>IEEE 754 double-precision floating point</entry>
+              </row>
+              <row>
+                <entry><literal>UNIX_FD</literal></entry>
+                <entry><literal>h</literal> (104)</entry>
+                <entry>Unsigned 32-bit integer representing an index into an
+                  out-of-band array of file descriptors, transferred via some
+                  platform-specific mechanism (mnemonic: h for handle)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </para>
+
+      <para>
+        The <firstterm id="term-string-like-type">string-like types</firstterm>
+        are basic types with a variable length. The value of any string-like
+        type is conceptually 0 or more Unicode codepoints encoded in UTF-8,
+        none of which may be U+0000. The UTF-8 text must be validated
+        strictly: in particular, it must not contain overlong sequences,
+        noncharacters such as U+FFFE, or codepoints above U+10FFFF.
+      </para>
+
+      <para>
+        The marshalling formats for the string-like types all end with a
+        single zero (NUL) byte, but that byte is not considered to be part of
+        the text.
+      </para>
+
+      <para>
+        The characteristics of the string-like types are listed in this table.
+
+        <informaltable>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Conventional name</entry>
+                <entry>ASCII type-code</entry>
+                <entry>Validity constraints</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry><literal>STRING</literal></entry>
+                <entry><literal>s</literal> (115)</entry>
+                <entry>No extra constraints</entry>
+              </row>
+              <row>
+                <entry><literal>OBJECT_PATH</literal></entry>
+                <entry><literal>o</literal> (111)</entry>
+                <entry>Must be
+                  <link linkend="message-protocol-marshaling-object-path">a
+                    syntactically valid object path</link></entry>
+              </row>
+              <row>
+                <entry><literal>SIGNATURE</literal></entry>
+                <entry><literal>g</literal> (103)</entry>
+                <entry>Zero or more
+                  <firstterm linkend="term-single-complete-type">single
+                    complete types</firstterm></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+
     </sect2>
 
     <sect2 id="container-types">
@@ -614,6 +747,33 @@
         and it must always be made up of nul bytes. The alignment padding must
         not be left uninitialized (it can't contain garbage), and more padding
         than required must not be used.
+      </para>
+
+      <para>
+        To marshal and unmarshal fixed types, you simply read one value
+        from the data block corresponding to each type code in the signature.
+        All signed integer values are encoded in two's complement, DOUBLE
+        values are IEEE 754 double-precision floating-point, and BOOLEAN
+        values are encoded in 32 bits (of which only the least significant
+        bit is used).
+      </para>
+
+      <para>
+        The string-like types are all marshalled as a
+        fixed-length unsigned integer <varname>n</varname> giving the
+        length of the variable part, followed by <varname>n</varname>
+        nonzero bytes of UTF-8 text, followed by a single zero (nul) byte
+        which is not considered to be part of the text. The alignment
+        of the string-like type is the same as the alignment of
+        <varname>n</varname>.
+      </para>
+
+      <para>
+        For the STRING and OBJECT_PATH types, <varname>n</varname> is
+        encoded in 4 bytes, leading to 4-byte alignment.
+        For the SIGNATURE type, <varname>n</varname> is encoded as a single
+        byte. As a result, alignment padding is never required before a
+        SIGNATURE.
       </para>
 
       <para>
