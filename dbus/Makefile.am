@@ -2,7 +2,6 @@
 configdir=$(sysconfdir)/dbus-1
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) \
-	$(DBUS_CLIENT_CFLAGS) \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
