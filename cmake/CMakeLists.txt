@@ -473,7 +473,7 @@ endif(MINGW)
 
 # compiler definitions
 add_definitions(-DHAVE_CONFIG_H=1)
-add_definitions(${DBUS_BUS_CFLAGS} -DDBUS_API_SUBJECT_TO_CHANGE)
+add_definitions(${DBUS_BUS_CFLAGS})
 
 
 if (DBUS_BUILD_TESTS)
