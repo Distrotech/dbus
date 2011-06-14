@@ -1,8 +1,22 @@
 configdir=$(sysconfdir)/dbus-1
 dbus_daemon_execdir = $(DBUS_DAEMONDIR)
 
+DBUS_BUS_LIBS = \
+	$(XML_LIBS) \
+	$(SELINUX_LIBS) \
+	$(THREAD_LIBS) \
+	$(ADT_LIBS) \
+	$(NETWORK_libs) \
+	$(NULL)
+
+DBUS_LAUNCHER_LIBS = \
+	$(XML_LIBS) \
+	$(THREAD_LIBS) \
+	$(NETWORK_libs) \
+	$(NULL)
+
 INCLUDES = -I$(top_srcdir) \
-	$(DBUS_BUS_CFLAGS) \
+	$(XML_CFLAGS) \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
 	-DDBUS_COMPILATION
 
