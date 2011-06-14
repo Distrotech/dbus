@@ -4,7 +4,7 @@
 SUBDIRS= . name-test 
 DIST_SUBDIRS=name-test
 
-INCLUDES=-I$(top_srcdir) $(DBUS_TEST_CFLAGS) 
+INCLUDES=-I$(top_srcdir)
 
 libdbus_testutils_la_SOURCES = test-utils.h test-utils.c
 
