@@ -29,7 +29,6 @@ dbus_res = versioninfo.o
 dbus_res_ldflag = -Wl,$(dbus_res)
 no_undefined = -no-undefined
 export_symbols =
-export_symvols_internal =
 
 libdbus_1_la_DEPENDENCIES = $(dbus_res)
 intllibs =
@@ -41,7 +40,6 @@ no_undefined =
 ## don't export symbols that start with "_" (we use this
 ## convention for internal symbols)
 export_symbols = -export-symbols-regex "^[^_].*"
-export_symbols_internal =
 
 intllibs = @LTLIBINTL@
 
@@ -271,10 +269,6 @@ libdbus_1_la_LDFLAGS = \
 
 libdbus_internal_la_CPPFLAGS = -DDBUS_STATIC_BUILD
 libdbus_internal_la_LIBADD=$(DBUS_CLIENT_LIBS)
-libdbus_internal_la_LDFLAGS = \
-	$(AM_LDFLAGS) \
-	$(export_symbols_internal) \
-	$(NULL)
 
 noinst_PROGRAMS =
 
