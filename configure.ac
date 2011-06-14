@@ -890,6 +890,8 @@ if $dbus_use_libxml; then
    XML_LIBS=$LIBXML_LIBS
    XML_CFLAGS=$LIBXML_CFLAGS
 fi
+AC_SUBST([XML_CFLAGS])
+AC_SUBST([XML_LIBS])
 
 # Thread lib detection
 AC_CHECK_FUNC(pthread_cond_timedwait,[AC_CHECK_LIB(pthread,pthread_cond_timedwait,
@@ -919,6 +921,8 @@ else
 fi
 fi
 LIBS="$save_libs"
+
+AC_SUBST([THREAD_LIBS])
 
 # SELinux detection
 if test x$enable_selinux = xno ; then
@@ -1087,7 +1091,9 @@ if test x$have_libaudit = xyes ; then
     AC_DEFINE(HAVE_LIBAUDIT,1,[audit daemon SELinux support])
 fi
 
-# Check for ADT API
+AC_SUBST([SELINUX_LIBS])
+
+# Check for ADT API (Solaris Basic Security Mode auditing)
 AC_MSG_CHECKING(for ADT API)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <bsm/adt.h>
@@ -1103,6 +1109,7 @@ then
 else
    AC_MSG_RESULT(no)
 fi
+AC_SUBST([ADT_LIBS])
 
 # Check for SCM_RIGHTS
 AC_MSG_CHECKING([for SCM_RIGHTS])
@@ -1123,6 +1130,8 @@ if test x$dbus_win = xyes ; then
     NETWORK_libs="-lws2_32"
   fi
 fi
+
+AC_SUBST([NETWORK_libs])
 
 #### Set up final flags
 DBUS_CLIENT_LIBS="$THREAD_LIBS $NETWORK_libs"
