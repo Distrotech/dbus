@@ -1,11 +1,14 @@
 
 configdir=$(sysconfdir)/dbus-1
 
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) \
+AM_CPPFLAGS = \
+	-I$(top_builddir) \
+	-I$(top_srcdir) \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
-	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\"
+	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\" \
+	$(NULL)
 
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
@@ -258,7 +261,10 @@ EXTRA_DIST=dbus-arch-deps.h.in
 ## and is only used for static linking within the dbus package.
 noinst_LTLIBRARIES=libdbus-internal.la
 
-libdbus_1_la_CPPFLAGS= -Ddbus_1_EXPORTS
+libdbus_1_la_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
+	-Ddbus_1_EXPORTS \
+	$(NULL)
 libdbus_1_la_LIBADD= $(LIBDBUS_LIBS)
 libdbus_1_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
@@ -267,7 +273,10 @@ libdbus_1_la_LDFLAGS = \
 	-no-undefined \
 	$(NULL)
 
-libdbus_internal_la_CPPFLAGS = -DDBUS_STATIC_BUILD
+libdbus_internal_la_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
+	-DDBUS_STATIC_BUILD \
+	$(NULL)
 libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS)
 
 noinst_PROGRAMS =
