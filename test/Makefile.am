@@ -4,7 +4,11 @@
 SUBDIRS= . name-test 
 DIST_SUBDIRS=name-test
 
-INCLUDES=-I$(top_srcdir)
+AM_CPPFLAGS = \
+	-I$(top_srcdir) \
+	$(GLIB_CFLAGS) \
+	$(DBUS_GLIB_CFLAGS) \
+	$(NULL)
 
 # improve backtraces from test stuff
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
@@ -135,25 +139,21 @@ TESTS_ENVIRONMENT = \
 	$(NULL)
 
 test_corrupt_SOURCES = corrupt.c
-test_corrupt_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_corrupt_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_loopback_SOURCES = loopback.c
-test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_loopback_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_relay_SOURCES = relay.c
-test_relay_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_relay_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_dbus_daemon_SOURCES = dbus-daemon.c
-test_dbus_daemon_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
@@ -166,7 +166,6 @@ test_dbus_daemon_eavesdrop_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(DBUS_GLIB_LIBS)
 
 test_marshal_SOURCES = marshal.c
-test_marshal_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_marshal_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
