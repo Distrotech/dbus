@@ -1,5 +1,8 @@
 INCLUDES=-I$(top_srcdir) -DDBUS_COMPILATION
 
+# if assertions are enabled, improve backtraces
+AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+
 ## note that TESTS has special meaning (stuff to use in make check)
 ## so if adding tests not to be run in make check, don't add them to 
 ## TESTS
@@ -23,52 +26,44 @@ test_pending_call_dispatch_SOURCES =		\
 	test-pending-call-dispatch.c
 
 test_pending_call_dispatch_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
-test_pending_call_dispatch_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_pending_call_timeout_SOURCES =		\
 	test-pending-call-timeout.c
 
 test_pending_call_timeout_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
-test_pending_call_timeout_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_threads_init_SOURCES =            \
 	test-threads-init.c
 
 test_threads_init_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
-test_threads_init_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_ids_SOURCES =            \
 	test-ids.c
 
 test_ids_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
-test_ids_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_shutdown_SOURCES =            \
 	test-shutdown.c
 
 test_shutdown_CFLAGS=
 test_shutdown_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la $(DBUS_TEST_LIBS)
-test_shutdown_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_privserver_SOURCES =            \
 	test-privserver.c
 
 test_privserver_CFLAGS=
 test_privserver_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la $(DBUS_TEST_LIBS)
-test_privserver_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_privserver_client_SOURCES =            \
 	test-privserver-client.c
 
 test_privserver_client_CFLAGS=
 test_privserver_client_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la $(DBUS_TEST_LIBS)
-test_privserver_client_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_autolaunch_SOURCES =            \
 	test-autolaunch.c
 
 test_autolaunch_CFLAGS=
 test_autolaunch_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la $(DBUS_TEST_LIBS)
-test_autolaunch_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 endif

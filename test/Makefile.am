@@ -6,6 +6,9 @@ DIST_SUBDIRS=name-test
 
 INCLUDES=-I$(top_srcdir)
 
+# improve backtraces from test stuff
+AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+
 libdbus_testutils_la_SOURCES = test-utils.h test-utils.c
 
 noinst_LTLIBRARIES = libdbus-testutils.la
@@ -85,17 +88,11 @@ AM_CPPFLAGS=-DDBUS_STATIC_BUILD
 TEST_LIBS=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
 
 test_service_LDADD=libdbus-testutils.la $(TEST_LIBS)
-test_service_LDFLAGS=@R_DYNAMIC_LDFLAG@
 test_names_LDADD=libdbus-testutils.la $(TEST_LIBS)
-test_names_LDFLAGS=@R_DYNAMIC_LDFLAG@
 ## break_loader_LDADD= $(TEST_LIBS)
-## break_loader_LDFLAGS=@R_DYNAMIC_LDFLAG@
 test_shell_service_LDADD=libdbus-testutils.la $(TEST_LIBS)
-test_shell_service_LDFLAGS=@R_DYNAMIC_LDFLAG@
 shell_test_LDADD=libdbus-testutils.la $(TEST_LIBS)
-shell_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 spawn_test_LDADD=$(TEST_LIBS)
-spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 EXTRA_DIST = dbus-test-runner
 
@@ -127,28 +124,24 @@ TESTS_ENVIRONMENT = \
 
 test_corrupt_SOURCES = corrupt.c
 test_corrupt_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
-test_corrupt_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_corrupt_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_loopback_SOURCES = loopback.c
 test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
-test_loopback_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_loopback_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_relay_SOURCES = relay.c
 test_relay_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
-test_relay_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_relay_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_dbus_daemon_SOURCES = dbus-daemon.c
 test_dbus_daemon_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
-test_dbus_daemon_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
@@ -162,7 +155,6 @@ test_dbus_daemon_eavesdrop_LDADD = $(top_builddir)/dbus/libdbus-1.la \
 
 test_marshal_SOURCES = marshal.c
 test_marshal_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
-test_marshal_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_marshal_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)

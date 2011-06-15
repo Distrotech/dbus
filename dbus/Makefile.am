@@ -7,6 +7,9 @@ INCLUDES = -I$(top_builddir) -I$(top_srcdir) \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
 	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\"
 
+# if assertions are enabled, improve backtraces
+AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+
 dbusincludedir=$(includedir)/dbus-1.0/dbus
 dbusarchincludedir=$(libdir)/dbus-1.0/include/dbus
 
@@ -259,11 +262,19 @@ noinst_LTLIBRARIES=libdbus-internal.la
 
 libdbus_1_la_CPPFLAGS= -Ddbus_1_EXPORTS
 libdbus_1_la_LIBADD= $(DBUS_CLIENT_LIBS)
-libdbus_1_la_LDFLAGS= $(export_symbols) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -no-undefined @R_DYNAMIC_LDFLAG@
+libdbus_1_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(export_symbols) \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-no-undefined \
+	$(NULL)
 
 libdbus_internal_la_CPPFLAGS = -DDBUS_STATIC_BUILD
 libdbus_internal_la_LIBADD=$(DBUS_CLIENT_LIBS)
-libdbus_internal_la_LDFLAGS=$(export_symbols_internal) @R_DYNAMIC_LDFLAG@
+libdbus_internal_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(export_symbols_internal) \
+	$(NULL)
 
 noinst_PROGRAMS =
 
@@ -276,7 +287,6 @@ dbus_test_SOURCES=				\
 	dbus-test-main.c
 
 dbus_test_LDADD=libdbus-internal.la $(DBUS_TEST_LIBS)
-dbus_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 ## mop up the gcov files
 clean-local:

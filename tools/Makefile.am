@@ -2,6 +2,9 @@ configdir=$(sysconfdir)/dbus-1
 
 INCLUDES=-I$(top_srcdir) $(DBUS_X_CFLAGS) -DDBUS_LOCALEDIR=\"@EXPANDED_DATADIR@/locale\" -DDBUS_COMPILATION -DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\"
 
+# if assertions are enabled, improve backtraces
+AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+
 extra_bin_programs=
 if DBUS_UNIX
 extra_bin_programs += dbus-cleanup-sockets dbus-uuidgen
@@ -37,16 +40,12 @@ dbus_uuidgen_SOURCES=				\
 	dbus-uuidgen.c
 
 dbus_send_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
-dbus_send_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 dbus_monitor_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
-dbus_monitor_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 dbus_uuidgen_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
-dbus_uuidgen_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 dbus_launch_LDADD= $(DBUS_X_LIBS) $(DBUS_CLIENT_LIBS)
-dbus_launch_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\
