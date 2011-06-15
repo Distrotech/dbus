@@ -34,11 +34,14 @@ TESTS = \
 ## order, but we don't want to run them til we arrive in this directory,
 ## since they depend on stuff from this directory
 TESTS += \
-	../bus/bus-test \
-	../bus/bus-test-system \
-	../bus/bus-test-launch-helper \
-	../dbus/dbus-test \
+	../bus/bus-test$(EXEEXT) \
+	../bus/bus-test-system$(EXEEXT) \
+	../dbus/dbus-test$(EXEEXT) \
 	$(NULL)
+
+if DBUS_UNIX
+TESTS += ../bus/bus-test-launch-helper$(EXEEXT)
+endif
 
 else !DBUS_BUILD_TESTS
 
