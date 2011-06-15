@@ -1,6 +1,12 @@
 configdir=$(sysconfdir)/dbus-1
 
-INCLUDES=-I$(top_srcdir) $(DBUS_X_CFLAGS) -DDBUS_LOCALEDIR=\"@EXPANDED_DATADIR@/locale\" -DDBUS_COMPILATION -DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\"
+AM_CPPFLAGS = \
+	-I$(top_srcdir) \
+	$(DBUS_X_CFLAGS) \
+	-DDBUS_LOCALEDIR=\"@EXPANDED_DATADIR@/locale\" \
+	-DDBUS_COMPILATION \
+	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
+	$(NULL)
 
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
