@@ -45,13 +45,22 @@ dbus_cleanup_sockets_SOURCES=			\
 dbus_uuidgen_SOURCES=				\
 	dbus-uuidgen.c
 
-dbus_send_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
+dbus_send_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(NULL)
 
-dbus_monitor_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
+dbus_monitor_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(NETWORK_libs) \
+	$(NULL)
 
-dbus_uuidgen_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
+dbus_uuidgen_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(NULL)
 
-dbus_launch_LDADD= $(DBUS_X_LIBS) $(DBUS_CLIENT_LIBS)
+dbus_launch_LDADD = \
+	$(DBUS_X_LIBS) \
+	$(NULL)
 
 EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\
