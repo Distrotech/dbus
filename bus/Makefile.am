@@ -15,10 +15,13 @@ DBUS_LAUNCHER_LIBS = \
 	$(NETWORK_libs) \
 	$(NULL)
 
-INCLUDES = -I$(top_srcdir) \
+AM_CPPFLAGS = \
+	-I$(top_srcdir) \
 	$(XML_CFLAGS) \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
-	-DDBUS_COMPILATION
+	-DDBUS_COMPILATION \
+	-DDBUS_STATIC_BUILD \
+	$(NULL)
 
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
@@ -102,7 +105,6 @@ dbus_daemon_SOURCES=				\
 	$(BUS_SOURCES)				\
 	main.c
 
-dbus_daemon_CPPFLAGS = -DDBUS_STATIC_BUILD
 dbus_daemon_LDADD=					\
 	$(top_builddir)/dbus/libdbus-internal.la	\
 	$(EFENCE)					\
@@ -127,7 +129,6 @@ dbus_daemon_launch_helper_SOURCES=		\
 	activation-helper-bin.c			\
 	$(LAUNCH_HELPER_SOURCES)
 
-dbus_daemon_launch_helper_CPPFLAGS = -DDBUS_STATIC_BUILD
 dbus_daemon_launch_helper_LDADD=		\
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
@@ -142,7 +143,8 @@ dbus_daemon_launch_helper_test_LDADD=		\
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
 
-dbus_daemon_launch_helper_test_CPPFLAGS= -DDBUS_STATIC_BUILD	\
+dbus_daemon_launch_helper_test_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
 	-DACTIVATION_LAUNCHER_TEST
 
 ## we build yet another binary so we can do the OOM tests
@@ -155,7 +157,8 @@ bus_test_launch_helper_LDADD=		\
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
 
-bus_test_launch_helper_CPPFLAGS= -DDBUS_STATIC_BUILD	\
+bus_test_launch_helper_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
 	-DACTIVATION_LAUNCHER_TEST	\
 	-DACTIVATION_LAUNCHER_DO_OOM
 
@@ -196,14 +199,12 @@ bus_test_system_SOURCES=			\
 	utils.h					\
 	test-system.c
 
-bus_test_system_CPPFLAGS = -DDBUS_STATIC_BUILD
 bus_test_system_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
 
 bus_test_SOURCES=				\
 	$(BUS_SOURCES)				\
 	test-main.c
 
-bus_test_CPPFLAGS = -DDBUS_STATIC_BUILD
 bus_test_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
 
 ## mop up the gcov files
