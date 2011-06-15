@@ -9,7 +9,13 @@ INCLUDES=-I$(top_srcdir)
 # improve backtraces from test stuff
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
-libdbus_testutils_la_SOURCES = test-utils.h test-utils.c
+libdbus_testutils_la_SOURCES = \
+	test-utils.c \
+	test-utils.h \
+	$(NULL)
+libdbus_testutils_la_LIBADD = \
+	$(top_builddir)/dbus/libdbus-internal.la \
+	$(NULL)
 
 noinst_LTLIBRARIES = libdbus-testutils.la
 
@@ -86,11 +92,11 @@ test_sleep_forever_SOURCES =			\
 # tests linked to only the public libdbus have their own CPPFLAGS.
 AM_CPPFLAGS=-DDBUS_STATIC_BUILD
 
-test_service_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
-test_names_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
+test_service_LDADD = libdbus-testutils.la
+test_names_LDADD = libdbus-testutils.la
 ## break_loader_LDADD = $(top_builddir)/dbus/libdbus-internal.la
-test_shell_service_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
-shell_test_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
+test_shell_service_LDADD = libdbus-testutils.la
+shell_test_LDADD = libdbus-testutils.la
 spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 EXTRA_DIST = dbus-test-runner

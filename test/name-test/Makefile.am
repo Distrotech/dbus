@@ -46,24 +46,24 @@ test_shutdown_SOURCES =            \
 	test-shutdown.c
 
 test_shutdown_CFLAGS=
-test_shutdown_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la
+test_shutdown_LDADD=../libdbus-testutils.la
 
 test_privserver_SOURCES =            \
 	test-privserver.c
 
 test_privserver_CFLAGS=
-test_privserver_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la
+test_privserver_LDADD=../libdbus-testutils.la
 
 test_privserver_client_SOURCES =            \
 	test-privserver-client.c
 
 test_privserver_client_CFLAGS=
-test_privserver_client_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la
+test_privserver_client_LDADD=../libdbus-testutils.la
 
 test_autolaunch_SOURCES =            \
 	test-autolaunch.c
 
 test_autolaunch_CFLAGS=
-test_autolaunch_LDADD=$(top_builddir)/dbus/libdbus-internal.la ../libdbus-testutils.la
+test_autolaunch_LDADD=../libdbus-testutils.la
 
 endif
