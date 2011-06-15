@@ -188,9 +188,6 @@ DBUS_LIB_SOURCES=				\
 	dbus-watch.c				\
 	dbus-watch.h
 
-##	dbus-md5.c				\
-##	dbus-md5.h				\
-
 ### source code that goes in the installed client library
 ### AND is generic utility functionality used by the
 ### daemon or test programs (all symbols in here should
