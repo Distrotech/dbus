@@ -26,44 +26,14 @@ if DBUS_BUILD_TESTS
 ## build even when not doing "make check"
 noinst_PROGRAMS=test-pending-call-dispatch test-pending-call-timeout test-threads-init test-ids test-shutdown test-privserver test-privserver-client test-autolaunch
 
-test_pending_call_dispatch_SOURCES =		\
-	test-pending-call-dispatch.c
-
 test_pending_call_dispatch_LDADD=$(top_builddir)/dbus/libdbus-internal.la
-
-test_pending_call_timeout_SOURCES =		\
-	test-pending-call-timeout.c
-
 test_pending_call_timeout_LDADD=$(top_builddir)/dbus/libdbus-internal.la
-
-test_threads_init_SOURCES =            \
-	test-threads-init.c
-
 test_threads_init_LDADD=$(top_builddir)/dbus/libdbus-internal.la
-
-test_ids_SOURCES =            \
-	test-ids.c
-
 test_ids_LDADD=$(top_builddir)/dbus/libdbus-internal.la
 
-test_shutdown_SOURCES =            \
-	test-shutdown.c
-
 test_shutdown_LDADD=../libdbus-testutils.la
-
-test_privserver_SOURCES =            \
-	test-privserver.c
-
 test_privserver_LDADD=../libdbus-testutils.la
-
-test_privserver_client_SOURCES =            \
-	test-privserver-client.c
-
 test_privserver_client_LDADD=../libdbus-testutils.la
-
-test_autolaunch_SOURCES =            \
-	test-autolaunch.c
-
 test_autolaunch_LDADD=../libdbus-testutils.la
 
 endif

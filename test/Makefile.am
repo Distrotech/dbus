@@ -65,33 +65,6 @@ endif !DBUS_BUILD_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
 
-test_service_SOURCES=				\
-	test-service.c
-
-test_names_SOURCES=				\
-	test-names.c
-
-##break_loader_SOURCES=				\
-##	break-loader.c
-
-test_shell_service_SOURCES =			\
-	test-shell-service.c
-
-shell_test_SOURCES=                             \
-        shell-test.c
-
-spawn_test_SOURCES=				\
-	spawn-test.c
-
-test_exit_SOURCES =				\
-	test-exit.c
-
-test_segfault_SOURCES =				\
-	test-segfault.c
-
-test_sleep_forever_SOURCES =			\
-	test-sleep-forever.c
-
 static_cppflags = \
 	$(AM_CPPFLAGS) \
 	-DDBUS_STATIC_BUILD \
