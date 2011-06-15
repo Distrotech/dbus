@@ -31,7 +31,6 @@ set (dbusinclude_HEADERS
 set (DBUS_LIB_SOURCES
 	${DBUS_DIR}/dbus-address.c
 	${DBUS_DIR}/dbus-auth.c
-	${DBUS_DIR}/dbus-auth-script.c
 	${DBUS_DIR}/dbus-bus.c
 	${DBUS_DIR}/dbus-connection.c
 	${DBUS_DIR}/dbus-credentials.c
@@ -74,7 +73,6 @@ endif(UNIX)
 
 set (DBUS_LIB_HEADERS
 	${DBUS_DIR}/dbus-auth.h
-	${DBUS_DIR}/dbus-auth-script.h
 	${DBUS_DIR}/dbus-connection-internal.h
 	${DBUS_DIR}/dbus-credentials.h
 	${DBUS_DIR}/dbus-keyring.h
@@ -149,6 +147,7 @@ set (DBUS_SHARED_HEADERS
 ### should be underscore-prefixed but don't really need 
 ### to be unless they move to DBUS_SHARED_SOURCES later)
 set (DBUS_UTIL_SOURCES
+	${DBUS_DIR}/dbus-auth-script.c
 	${DBUS_DIR}/dbus-auth-util.c
 	${DBUS_DIR}/dbus-credentials-util.c
 	${DBUS_DIR}/dbus-mainloop.c
@@ -170,6 +169,7 @@ if (DBUS_BUILD_TESTS)
 endif (DBUS_BUILD_TESTS)
 
 set (DBUS_UTIL_HEADERS
+	${DBUS_DIR}/dbus-auth-script.h
 	${DBUS_DIR}/dbus-mainloop.h
 	${DBUS_DIR}/dbus-message-factory.h
 	${DBUS_DIR}/dbus-shell.h

@@ -139,8 +139,6 @@ DBUS_LIB_SOURCES=				\
 	dbus-address.c				\
 	dbus-auth.c				\
 	dbus-auth.h				\
-	dbus-auth-script.c			\
-	dbus-auth-script.h			\
 	dbus-bus.c				\
 	dbus-connection.c			\
 	dbus-connection-internal.h		\
@@ -226,6 +224,8 @@ DBUS_SHARED_SOURCES=				\
 ### should be underscore-prefixed but don't really need
 ### to be unless they move to DBUS_SHARED_SOURCES later)
 DBUS_UTIL_SOURCES=				\
+	dbus-auth-script.c			\
+	dbus-auth-script.h			\
 	dbus-auth-util.c			\
 	dbus-credentials-util.c			\
 	dbus-mainloop.c				\
