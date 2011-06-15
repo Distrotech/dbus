@@ -280,7 +280,7 @@ endif
 dbus_test_SOURCES=				\
 	dbus-test-main.c
 
-dbus_test_LDADD=libdbus-internal.la $(DBUS_TEST_LIBS)
+dbus_test_LDADD = libdbus-internal.la
 
 ## mop up the gcov files
 clean-local:

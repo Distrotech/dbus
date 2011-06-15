@@ -85,14 +85,13 @@ test_sleep_forever_SOURCES =			\
 # This assumes that most tests will be linked to libdbus-internal;
 # tests linked to only the public libdbus have their own CPPFLAGS.
 AM_CPPFLAGS=-DDBUS_STATIC_BUILD
-TEST_LIBS=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
 
-test_service_LDADD=libdbus-testutils.la $(TEST_LIBS)
-test_names_LDADD=libdbus-testutils.la $(TEST_LIBS)
-## break_loader_LDADD= $(TEST_LIBS)
-test_shell_service_LDADD=libdbus-testutils.la $(TEST_LIBS)
-shell_test_LDADD=libdbus-testutils.la $(TEST_LIBS)
-spawn_test_LDADD=$(TEST_LIBS)
+test_service_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
+test_names_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
+## break_loader_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+test_shell_service_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
+shell_test_LDADD = libdbus-testutils.la $(top_builddir)/dbus/libdbus-internal.la
+spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 EXTRA_DIST = dbus-test-runner
 
