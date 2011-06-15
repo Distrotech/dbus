@@ -5,12 +5,18 @@ INCLUDES=-I$(top_srcdir) $(DBUS_X_CFLAGS) -DDBUS_LOCALEDIR=\"@EXPANDED_DATADIR@/
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
-extra_bin_programs=
-if DBUS_UNIX
-extra_bin_programs += dbus-cleanup-sockets dbus-uuidgen
-endif
+bin_PROGRAMS = \
+	dbus-launch \
+	dbus-monitor \
+	dbus-send \
+	$(NULL)
 
-bin_PROGRAMS=dbus-launch dbus-send dbus-monitor $(extra_bin_programs)
+if DBUS_UNIX
+bin_PROGRAMS += \
+	dbus-cleanup-sockets \
+	dbus-uuidgen \
+	$(NULL)
+endif
 
 dbus_send_SOURCES=				\
 	dbus-print-message.c			\
