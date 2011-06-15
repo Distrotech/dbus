@@ -3,7 +3,6 @@ configdir=$(sysconfdir)/dbus-1
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(DBUS_X_CFLAGS) \
-	-DDBUS_LOCALEDIR=\"@EXPANDED_DATADIR@/locale\" \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
 	$(NULL)
