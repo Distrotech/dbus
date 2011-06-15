@@ -88,15 +88,22 @@ test_segfault_SOURCES =				\
 test_sleep_forever_SOURCES =			\
 	test-sleep-forever.c
 
-# This assumes that most tests will be linked to libdbus-internal;
-# tests linked to only the public libdbus have their own CPPFLAGS.
-AM_CPPFLAGS=-DDBUS_STATIC_BUILD
+static_cppflags = \
+	$(AM_CPPFLAGS) \
+	-DDBUS_STATIC_BUILD \
+	$(NULL)
 
+test_service_CPPFLAGS = $(static_cppflags)
 test_service_LDADD = libdbus-testutils.la
+test_names_CPPFLAGS = $(static_cppflags)
 test_names_LDADD = libdbus-testutils.la
+## break_loader_CPPFLAGS = $(static_cppflags)
 ## break_loader_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+test_shell_service_CPPFLAGS = $(static_cppflags)
 test_shell_service_LDADD = libdbus-testutils.la
+shell_test_CPPFLAGS = $(static_cppflags)
 shell_test_LDADD = libdbus-testutils.la
+spawn_test_CPPFLAGS = $(static_cppflags)
 spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 EXTRA_DIST = dbus-test-runner
