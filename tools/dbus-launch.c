@@ -43,6 +43,47 @@
 extern Display *xdisplay;
 #endif
 
+/* PROCESSES
+ *
+ * If you are in a shell and run "dbus-launch myapp", here is what happens:
+ *
+ * shell [*]
+ *   \- main()               --exec--> myapp[*]
+ *      \- "intermediate parent"
+ *         \- bus-runner     --exec--> dbus-daemon --fork
+ *         \- babysitter[*]            \- final dbus-daemon[*]
+ *
+ * Processes marked [*] survive the initial flurry of activity.
+ *
+ * If you run "dbus-launch --sh-syntax" then the diagram is the same, except
+ * that main() prints variables and exits 0 instead of exec'ing myapp.
+ *
+ * PIPES
+ *
+ * dbus-daemon --print-pid     -> bus_pid_to_launcher_pipe     -> main
+ * dbus-daemon --print-address -> bus_address_to_launcher_pipe -> main
+ * main                        -> bus_pid_to_babysitter_pipe   -> babysitter
+ *
+ * The intermediate parent looks pretty useless at first glance. Its purpose
+ * is to avoid the bus-runner becoming a zombie: when the intermediate parent
+ * terminates, the bus-runner and babysitter are reparented to init, which
+ * reaps them if they have finished. We can't rely on main() to reap arbitrary
+ * children because it might exec myapp, after which it can't be relied on to
+ * reap its children. We *can* rely on main() to reap the intermediate parent,
+ * because that happens before it execs myapp.
+ *
+ * It's unclear why dbus-daemon needs to fork, but we explicitly tell it to
+ * for some reason, then wait for it. If we left it undefined, a forking
+ * dbus-daemon would get the parent process reparented to init and reaped
+ * when the intermediate parent terminated, and a non-forking dbus-daemon
+ * would get reparented to init and carry on there.
+ *
+ * myapp is exec'd by the process that initially ran main() so that it's
+ * the shell's child, so the shell knows how to do job control and stuff.
+ * This is desirable for the "dbus-launch an application" use-case, less so
+ * for the "dbus-launch a test suite in an isolated session" use-case.
+ */
+
 static char* machine_uuid = NULL;
 
 const char*
