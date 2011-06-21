@@ -549,6 +549,10 @@ int _dbus_printf_string_upper_bound (const char *format,
       bufsize *= 2;
 
       p = malloc (bufsize);
+
+      if (p == NULL)
+        return -1;
+
       len = _vsnprintf (p, bufsize - 1, format, args);
       free (p);
     }
