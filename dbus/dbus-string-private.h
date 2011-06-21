@@ -24,6 +24,7 @@
 #ifndef DBUS_STRING_PRIVATE_H
 #define DBUS_STRING_PRIVATE_H
 
+#include <dbus/dbus-internals.h>
 #include <dbus/dbus-memory.h>
 #include <dbus/dbus-types.h>
 
@@ -51,6 +52,7 @@ typedef struct
   unsigned int   align_offset : 3; /**< str - align_offset is the actual malloc block */
 } DBusRealString;
 
+_DBUS_STATIC_ASSERT (sizeof (DBusRealString) == sizeof (DBusString));
 
 /**
  * @defgroup DBusStringInternals DBusString implementation details

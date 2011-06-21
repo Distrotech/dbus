@@ -362,6 +362,12 @@ dbus_bool_t _dbus_read_uuid_file (const DBusString *filename,
 
 dbus_bool_t _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str);
 
+#define _DBUS_PASTE2(a, b) a ## b
+#define _DBUS_PASTE(a, b) _DBUS_PASTE2 (a, b)
+#define _DBUS_STATIC_ASSERT(expr) \
+  typedef struct { char _assertion[(expr) ? 1 : -1]; } \
+  _DBUS_PASTE (_DBUS_STATIC_ASSERT_, __LINE__)
+
 DBUS_END_DECLS
 
 #endif /* DBUS_INTERNALS_H */
