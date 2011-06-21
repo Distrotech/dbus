@@ -29,6 +29,39 @@
 
 #include <string.h>
 
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+# define _DBUS_ASSERT_ALIGNMENT(type, op, val) \
+  _DBUS_STATIC_ASSERT (__extension__ __alignof__ (type) op val)
+#else
+# define _DBUS_ASSERT_ALIGNMENT(type, op, val) do { } while (0)
+#endif
+
+/* True by definition, but just for completeness... */
+_DBUS_STATIC_ASSERT (sizeof (char) == 1);
+_DBUS_ASSERT_ALIGNMENT (char, ==, 1);
+
+_DBUS_STATIC_ASSERT (sizeof (dbus_int16_t) == 2);
+_DBUS_ASSERT_ALIGNMENT (dbus_int16_t, <=, 2);
+_DBUS_STATIC_ASSERT (sizeof (dbus_uint16_t) == 2);
+_DBUS_ASSERT_ALIGNMENT (dbus_uint16_t, <=, 2);
+
+_DBUS_STATIC_ASSERT (sizeof (dbus_int32_t) == 4);
+_DBUS_ASSERT_ALIGNMENT (dbus_int32_t, <=, 4);
+_DBUS_STATIC_ASSERT (sizeof (dbus_uint32_t) == 4);
+_DBUS_ASSERT_ALIGNMENT (dbus_uint32_t, <=, 4);
+_DBUS_STATIC_ASSERT (sizeof (dbus_bool_t) == 4);
+_DBUS_ASSERT_ALIGNMENT (dbus_bool_t, <=, 4);
+
+_DBUS_STATIC_ASSERT (sizeof (double) == 8);
+_DBUS_ASSERT_ALIGNMENT (double, <=, 8);
+
+#ifdef DBUS_HAVE_INT64
+_DBUS_STATIC_ASSERT (sizeof (dbus_int64_t) == 8);
+_DBUS_ASSERT_ALIGNMENT (dbus_int64_t, <=, 8);
+_DBUS_STATIC_ASSERT (sizeof (dbus_uint64_t) == 8);
+_DBUS_ASSERT_ALIGNMENT (dbus_uint64_t, <=, 8);
+#endif
+
 /**
  * @defgroup DBusMarshal marshaling and unmarshaling
  * @ingroup  DBusInternals
