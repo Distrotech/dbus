@@ -426,32 +426,6 @@ _dbus_connection_wakeup_mainloop (DBusConnection *connection)
 }
 
 #ifdef DBUS_BUILD_TESTS
-/* For now this function isn't used */
-/**
- * Adds a message to the incoming message queue, returning #FALSE
- * if there's insufficient memory to queue the message.
- * Does not take over refcount of the message.
- *
- * @param connection the connection.
- * @param message the message to queue.
- * @returns #TRUE on success.
- */
-dbus_bool_t
-_dbus_connection_queue_received_message (DBusConnection *connection,
-                                         DBusMessage    *message)
-{
-  DBusList *link;
-
-  link = _dbus_list_alloc_link (message);
-  if (link == NULL)
-    return FALSE;
-
-  dbus_message_ref (message);
-  _dbus_connection_queue_received_message_link (connection, link);
-
-  return TRUE;
-}
-
 /**
  * Gets the locks so we can examine them
  *

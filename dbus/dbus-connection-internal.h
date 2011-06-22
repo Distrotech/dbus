@@ -48,8 +48,6 @@ void              _dbus_connection_lock                        (DBusConnection  
 void              _dbus_connection_unlock                      (DBusConnection     *connection);
 DBusConnection *  _dbus_connection_ref_unlocked                (DBusConnection     *connection);
 void              _dbus_connection_unref_unlocked              (DBusConnection     *connection);
-dbus_bool_t       _dbus_connection_queue_received_message      (DBusConnection     *connection,
-                                                                DBusMessage        *message);
 void              _dbus_connection_queue_received_message_link (DBusConnection     *connection,
                                                                 DBusList           *link);
 dbus_bool_t       _dbus_connection_has_messages_to_send_unlocked (DBusConnection     *connection);
