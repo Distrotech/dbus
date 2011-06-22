@@ -665,59 +665,6 @@ _dbus_string_steal_data (DBusString        *str,
   return TRUE;
 }
 
-#ifdef DBUS_BUILD_TESTS
-/**
- * Like _dbus_string_get_data_len(), but removes the gotten data from
- * the original string. The caller must free the data returned. This
- * function may fail due to lack of memory, and return #FALSE.
- * The returned string is nul-terminated and has length len.
- *
- * @todo this function is broken because on failure it
- * may corrupt the source string.
- * 
- * @param str the string
- * @param data_return location to return the buffer
- * @param start the start of segment to steal
- * @param len the length of segment to steal
- * @returns #TRUE on success
- */
-dbus_bool_t
-_dbus_string_steal_data_len (DBusString        *str,
-                             char             **data_return,
-                             int                start,
-                             int                len)
-{
-  DBusString dest;
-  DBUS_STRING_PREAMBLE (str);
-  _dbus_assert (data_return != NULL);
-  _dbus_assert (start >= 0);
-  _dbus_assert (len >= 0);
-  _dbus_assert (start <= real->len);
-  _dbus_assert (len <= real->len - start);
-
-  if (!_dbus_string_init (&dest))
-    return FALSE;
-
-  set_max_length (&dest, real->max_length);
-  
-  if (!_dbus_string_move_len (str, start, len, &dest, 0))
-    {
-      _dbus_string_free (&dest);
-      return FALSE;
-    }
-
-  _dbus_warn ("Broken code in _dbus_string_steal_data_len(), see @todo, FIXME\n");
-  if (!_dbus_string_steal_data (&dest, data_return))
-    {
-      _dbus_string_free (&dest);
-      return FALSE;
-    }
-
-  _dbus_string_free (&dest);
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */
-
 /**
  * Copies the data from the string into a char*
  *
@@ -784,53 +731,6 @@ _dbus_string_copy_to_buffer_with_nul (const DBusString  *str,
   
   memcpy (buffer, real->str, real->len+1);
 }
-
-#ifdef DBUS_BUILD_TESTS
-/**
- * Copies a segment of the string into a char*
- *
- * @param str the string
- * @param data_return place to return the data
- * @param start start index
- * @param len length to copy
- * @returns #FALSE if no memory
- */
-dbus_bool_t
-_dbus_string_copy_data_len (const DBusString  *str,
-                            char             **data_return,
-                            int                start,
-                            int                len)
-{
-  DBusString dest;
-
-  DBUS_CONST_STRING_PREAMBLE (str);
-  _dbus_assert (data_return != NULL);
-  _dbus_assert (start >= 0);
-  _dbus_assert (len >= 0);
-  _dbus_assert (start <= real->len);
-  _dbus_assert (len <= real->len - start);
-
-  if (!_dbus_string_init (&dest))
-    return FALSE;
-
-  set_max_length (&dest, real->max_length);
-
-  if (!_dbus_string_copy_len (str, start, len, &dest, 0))
-    {
-      _dbus_string_free (&dest);
-      return FALSE;
-    }
-
-  if (!_dbus_string_steal_data (&dest, data_return))
-    {
-      _dbus_string_free (&dest);
-      return FALSE;
-    }
-
-  _dbus_string_free (&dest);
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */
 
 /* Only have the function if we don't have the macro */
 #ifndef _dbus_string_get_length
