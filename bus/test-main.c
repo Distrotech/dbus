@@ -28,7 +28,7 @@
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-sysdeps.h>
 #include <dbus/dbus-internals.h>
-#include <dbus/dbus-message-private.h>
+#include <dbus/dbus-message-internal.h>
 #include "selinux.h"
 
 #ifdef DBUS_BUILD_TESTS

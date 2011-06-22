@@ -98,6 +98,10 @@ void               _dbus_message_loader_set_max_message_unix_fds(DBusMessageLoad
                                                                  long                n);
 long               _dbus_message_loader_get_max_message_unix_fds(DBusMessageLoader  *loader);
 
+typedef struct DBusInitialFDs DBusInitialFDs;
+DBusInitialFDs *_dbus_check_fdleaks_enter (void);
+void            _dbus_check_fdleaks_leave (DBusInitialFDs *fds);
+
 DBUS_END_DECLS
 
 #endif /* DBUS_MESSAGE_INTERNAL_H */

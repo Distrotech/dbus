@@ -136,10 +136,6 @@ dbus_bool_t _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
                                                 int              first_arg_type,
                                                 va_list          var_args);
 
-typedef struct DBusInitialFDs DBusInitialFDs;
-DBusInitialFDs *_dbus_check_fdleaks_enter (void);
-void            _dbus_check_fdleaks_leave (DBusInitialFDs *fds);
-
 /** @} */
 
 DBUS_END_DECLS
