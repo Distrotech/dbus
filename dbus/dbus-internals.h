@@ -259,8 +259,6 @@ void _dbus_verbose_bytes_of_string (const DBusString    *str,
                                     int                  start,
                                     int                  len);
 
-const char* _dbus_header_field_to_string (int header_field);
-
 extern const char *_dbus_no_memory_message;
 #define _DBUS_SET_OOM(error) dbus_set_error_const ((error), DBUS_ERROR_NO_MEMORY, _dbus_no_memory_message)
 

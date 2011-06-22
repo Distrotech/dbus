@@ -828,42 +828,6 @@ _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str)
   return ok;
 }
 
-#ifdef DBUS_BUILD_TESTS
-/**
- * Returns a string describing the given name.
- *
- * @param header_field the field to describe
- * @returns a constant string describing the field
- */
-const char *
-_dbus_header_field_to_string (int header_field)
-{
-  switch (header_field)
-    {
-    case DBUS_HEADER_FIELD_INVALID:
-      return "invalid";
-    case DBUS_HEADER_FIELD_PATH:
-      return "path";
-    case DBUS_HEADER_FIELD_INTERFACE:
-      return "interface";
-    case DBUS_HEADER_FIELD_MEMBER:
-      return "member";
-    case DBUS_HEADER_FIELD_ERROR_NAME:
-      return "error-name";
-    case DBUS_HEADER_FIELD_REPLY_SERIAL:
-      return "reply-serial";
-    case DBUS_HEADER_FIELD_DESTINATION:
-      return "destination";
-    case DBUS_HEADER_FIELD_SENDER:
-      return "sender";
-    case DBUS_HEADER_FIELD_SIGNATURE:
-      return "signature";
-    default:
-      return "unknown";
-    }
-}
-#endif /* DBUS_BUILD_TESTS */
-
 #ifndef DBUS_DISABLE_CHECKS
 /** String used in _dbus_return_if_fail macro */
 const char *_dbus_return_if_fail_warning_format =
