@@ -142,7 +142,7 @@ _dbus_open_socket (int              *fd_p,
  * @param error return location for an error
  * @returns #FALSE if error is set
  */
-dbus_bool_t
+static dbus_bool_t
 _dbus_open_unix_socket (int              *fd,
                         DBusError        *error)
 {
