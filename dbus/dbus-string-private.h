@@ -44,7 +44,6 @@ typedef struct
   unsigned char *str;            /**< String data, plus nul termination */
   int            len;            /**< Length without nul */
   int            allocated;      /**< Allocated size of data */
-  int            max_length;     /**< Max length of this string, without nul byte */
   unsigned int   constant : 1;   /**< String data is not owned by DBusString */
   unsigned int   locked : 1;     /**< DBusString has been locked and can't be changed */
   unsigned int   invalid : 1;    /**< DBusString is invalid (e.g. already freed) */
@@ -63,10 +62,9 @@ typedef struct
  */
 
 /**
- * This is the maximum max length (and thus also the maximum length)
- * of a DBusString
+ * The maximum length of a DBusString
  */
-#define _DBUS_STRING_MAX_MAX_LENGTH (_DBUS_INT32_MAX - _DBUS_STRING_ALLOCATION_PADDING)
+#define _DBUS_STRING_MAX_LENGTH (_DBUS_INT32_MAX - _DBUS_STRING_ALLOCATION_PADDING)
 
 /**
  * Checks a bunch of assertions about a string object
@@ -79,9 +77,8 @@ typedef struct
       _dbus_assert (!(real)->invalid); \
       _dbus_assert ((real)->len >= 0); \
       _dbus_assert ((real)->allocated >= 0); \
-      _dbus_assert ((real)->max_length >= 0); \
       _dbus_assert ((real)->len <= ((real)->allocated - _DBUS_STRING_ALLOCATION_PADDING)); \
-      _dbus_assert ((real)->len <= (real)->max_length); \
+      _dbus_assert ((real)->len <= _DBUS_STRING_MAX_LENGTH); \
   } while (0)
 
 /**

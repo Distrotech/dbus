@@ -120,26 +120,6 @@ _dbus_string_find_byte_backward (const DBusString  *str,
 #include <stdio.h>
 
 static void
-test_max_len (DBusString *str,
-              int         max_len)
-{
-  if (max_len > 0)
-    {
-      if (!_dbus_string_set_length (str, max_len - 1))
-        _dbus_assert_not_reached ("setting len to one less than max should have worked");
-    }
-
-  if (!_dbus_string_set_length (str, max_len))
-    _dbus_assert_not_reached ("setting len to max len should have worked");
-
-  if (_dbus_string_set_length (str, max_len + 1))
-    _dbus_assert_not_reached ("setting len to one more than max len should not have worked");
-
-  if (!_dbus_string_set_length (str, 0))
-    _dbus_assert_not_reached ("setting len to zero should have worked");
-}
-
-static void
 test_hex_roundtrip (const unsigned char *data,
                     int                  len)
 {
@@ -232,25 +212,6 @@ test_roundtrips (TestRoundtripFunc func)
   }
 }
 
-#ifdef DBUS_BUILD_TESTS
-/* The max length thing is sort of a historical artifact
- * from a feature that turned out to be dumb; perhaps
- * we should purge it entirely. The problem with
- * the feature is that it looks like memory allocation
- * failure, but is not a transient or resolvable failure.
- */
-static void
-set_max_length (DBusString *str,
-                int         max_length)
-{
-  DBusRealString *real;
-  
-  real = (DBusRealString*) str;
-
-  real->max_length = max_length;
-}
-#endif /* DBUS_BUILD_TESTS */
-
 /**
  * @ingroup DBusStringInternals
  * Unit test for DBusString.
@@ -272,20 +233,6 @@ _dbus_string_test (void)
   int lens[] = { 0, 1, 2, 3, 4, 5, 10, 16, 17, 18, 25, 31, 32, 33, 34, 35, 63, 64, 65, 66, 67, 68, 69, 70, 71, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136 };
   char *s;
   dbus_unichar_t ch;
-  
-  i = 0;
-  while (i < _DBUS_N_ELEMENTS (lens))
-    {
-      if (!_dbus_string_init (&str))
-        _dbus_assert_not_reached ("failed to init string");
-
-      set_max_length (&str, lens[i]);
-      
-      test_max_len (&str, lens[i]);
-      _dbus_string_free (&str);
-
-      ++i;
-    }
 
   /* Test shortening and setting length */
   i = 0;
@@ -296,8 +243,6 @@ _dbus_string_test (void)
       if (!_dbus_string_init (&str))
         _dbus_assert_not_reached ("failed to init string");
 
-      set_max_length (&str, lens[i]);
-      
       if (!_dbus_string_set_length (&str, lens[i]))
         _dbus_assert_not_reached ("failed to set string length");
 

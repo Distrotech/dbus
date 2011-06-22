@@ -154,7 +154,6 @@ _dbus_string_init_preallocated (DBusString *str,
   real->len = 0;
   real->str[real->len] = '\0';
   
-  real->max_length = _DBUS_STRING_MAX_MAX_LENGTH;
   real->constant = FALSE;
   real->locked = FALSE;
   real->invalid = FALSE;
@@ -177,25 +176,6 @@ _dbus_string_init (DBusString *str)
 {
   return _dbus_string_init_preallocated (str, 0);
 }
-
-#ifdef DBUS_BUILD_TESTS
-/* The max length thing is sort of a historical artifact
- * from a feature that turned out to be dumb; perhaps
- * we should purge it entirely. The problem with
- * the feature is that it looks like memory allocation
- * failure, but is not a transient or resolvable failure.
- */
-static void
-set_max_length (DBusString *str,
-                int         max_length)
-{
-  DBusRealString *real;
-  
-  real = (DBusRealString*) str;
-
-  real->max_length = max_length;
-}
-#endif /* DBUS_BUILD_TESTS */
 
 /**
  * Initializes a constant string. The value parameter is not copied
@@ -235,7 +215,7 @@ _dbus_string_init_const_len (DBusString *str,
   
   _dbus_assert (str != NULL);
   _dbus_assert (len == 0 || value != NULL);
-  _dbus_assert (len <= _DBUS_STRING_MAX_MAX_LENGTH);
+  _dbus_assert (len <= _DBUS_STRING_MAX_LENGTH);
   _dbus_assert (len >= 0);
   
   real = (DBusRealString*) str;
@@ -243,7 +223,6 @@ _dbus_string_init_const_len (DBusString *str,
   real->str = (unsigned char*) value;
   real->len = len;
   real->allocated = real->len + _DBUS_STRING_ALLOCATION_PADDING; /* a lie, just to avoid special-case assertions... */
-  real->max_length = real->len + 1;
   real->constant = TRUE;
   real->locked = TRUE;
   real->invalid = FALSE;
@@ -336,8 +315,8 @@ reallocate_for_length (DBusRealString *real,
   /* at least double our old allocation to avoid O(n), avoiding
    * overflow
    */
-  if (real->allocated > (_DBUS_STRING_MAX_MAX_LENGTH + _DBUS_STRING_ALLOCATION_PADDING) / 2)
-    new_allocated = _DBUS_STRING_MAX_MAX_LENGTH + _DBUS_STRING_ALLOCATION_PADDING;
+  if (real->allocated > (_DBUS_STRING_MAX_LENGTH + _DBUS_STRING_ALLOCATION_PADDING) / 2)
+    new_allocated = _DBUS_STRING_MAX_LENGTH + _DBUS_STRING_ALLOCATION_PADDING;
   else
     new_allocated = real->allocated * 2;
 
@@ -400,7 +379,7 @@ set_length (DBusRealString *real,
   /* Note, we are setting the length not including nul termination */
 
   /* exceeding max length is the same as failure to allocate memory */
-  if (_DBUS_UNLIKELY (new_length > real->max_length))
+  if (_DBUS_UNLIKELY (new_length > _DBUS_STRING_MAX_LENGTH))
     return FALSE;
   else if (new_length > (real->allocated - _DBUS_STRING_ALLOCATION_PADDING) &&
            _DBUS_UNLIKELY (!reallocate_for_length (real, new_length)))
@@ -421,7 +400,7 @@ open_gap (int             len,
   if (len == 0)
     return TRUE;
 
-  if (len > dest->max_length - dest->len)
+  if (len > _DBUS_STRING_MAX_LENGTH - dest->len)
     return FALSE; /* detected overflow of dest->len + len below */
   
   if (!set_length (dest, dest->len + len))
@@ -640,7 +619,6 @@ dbus_bool_t
 _dbus_string_steal_data (DBusString        *str,
                          char             **data_return)
 {
-  int old_max_length;
   DBUS_STRING_PREAMBLE (str);
   _dbus_assert (data_return != NULL);
 
@@ -648,8 +626,6 @@ _dbus_string_steal_data (DBusString        *str,
   
   *data_return = (char*) real->str;
 
-  old_max_length = real->max_length;
-  
   /* reset the string */
   if (!_dbus_string_init (str))
     {
@@ -659,8 +635,6 @@ _dbus_string_steal_data (DBusString        *str,
       fixup_alignment (real);
       return FALSE;
     }
-
-  real->max_length = old_max_length;
 
   return TRUE;
 }
@@ -767,7 +741,7 @@ _dbus_string_lengthen (DBusString *str,
   DBUS_STRING_PREAMBLE (str);  
   _dbus_assert (additional_length >= 0);
 
-  if (_DBUS_UNLIKELY (additional_length > real->max_length - real->len))
+  if (_DBUS_UNLIKELY (additional_length > _DBUS_STRING_MAX_LENGTH - real->len))
     return FALSE; /* would overflow */
   
   return set_length (real,
@@ -833,7 +807,7 @@ align_insert_point_then_open_gap (DBusString *str,
   gap_pos = _DBUS_ALIGN_VALUE (insert_at, alignment);
   new_len = real->len + (gap_pos - insert_at) + gap_size;
   
-  if (_DBUS_UNLIKELY (new_len > (unsigned long) real->max_length))
+  if (_DBUS_UNLIKELY (new_len > (unsigned long) _DBUS_STRING_MAX_LENGTH))
     return FALSE;
   
   delta = new_len - real->len;
@@ -945,7 +919,7 @@ _dbus_string_append (DBusString *str,
   _dbus_assert (buffer != NULL);
   
   buffer_len = strlen (buffer);
-  if (buffer_len > (unsigned long) real->max_length)
+  if (buffer_len > (unsigned long) _DBUS_STRING_MAX_LENGTH)
     return FALSE;
   
   return append (real, buffer, buffer_len);
@@ -1289,7 +1263,7 @@ _dbus_string_append_unichar (DBusString    *str,
       len = 6;
     }
 
-  if (len > (real->max_length - real->len))
+  if (len > (_DBUS_STRING_MAX_LENGTH - real->len))
     return FALSE; /* real->len + len would overflow */
   
   if (!set_length (real, real->len + len))
@@ -1438,9 +1412,6 @@ _dbus_string_copy (const DBusString *source,
  * Like _dbus_string_move(), but can move a segment from
  * the middle of the source string.
  *
- * @todo this doesn't do anything with max_length field.
- * we should probably just kill the max_length field though.
- * 
  * @param source the source string
  * @param start first byte of source string to move
  * @param len length of segment to move
