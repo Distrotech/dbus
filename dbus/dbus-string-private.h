@@ -73,7 +73,16 @@ typedef struct
  *
  * @param real the DBusRealString
  */
-#define DBUS_GENERIC_STRING_PREAMBLE(real) _dbus_assert ((real) != NULL); _dbus_assert (!(real)->invalid); _dbus_assert ((real)->len >= 0); _dbus_assert ((real)->allocated >= 0); _dbus_assert ((real)->max_length >= 0); _dbus_assert ((real)->len <= ((real)->allocated - _DBUS_STRING_ALLOCATION_PADDING)); _dbus_assert ((real)->len <= (real)->max_length)
+#define DBUS_GENERIC_STRING_PREAMBLE(real) \
+  do { \
+      _dbus_assert ((real) != NULL); \
+      _dbus_assert (!(real)->invalid); \
+      _dbus_assert ((real)->len >= 0); \
+      _dbus_assert ((real)->allocated >= 0); \
+      _dbus_assert ((real)->max_length >= 0); \
+      _dbus_assert ((real)->len <= ((real)->allocated - _DBUS_STRING_ALLOCATION_PADDING)); \
+      _dbus_assert ((real)->len <= (real)->max_length); \
+  } while (0)
 
 /**
  * Checks assertions about a string object that needs to be
