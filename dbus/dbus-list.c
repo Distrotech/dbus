@@ -325,37 +325,6 @@ _dbus_list_prepend_link (DBusList **list,
   link_before (list, *list, link);
 }
 
-#ifdef DBUS_BUILD_TESTS
-/**
- * Inserts data into the list before the given existing link.
- * 
- * @param list the list to modify
- * @param before_this_link existing link to insert before, or #NULL to append
- * @param data the value to insert
- * @returns #TRUE on success, #FALSE if memory allocation fails
- */
-dbus_bool_t
-_dbus_list_insert_before (DBusList **list,
-                          DBusList  *before_this_link,
-                          void      *data)
-{
-  DBusList *link;
-  
-  if (before_this_link == NULL)
-    return _dbus_list_append (list, data);
-  else
-    {
-      link = alloc_link (data);
-      if (link == NULL)
-        return FALSE;
-  
-      link_before (list, before_this_link, link);
-    }
-  
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */
-
 /**
  * Inserts data into the list after the given existing link.
  * 
@@ -1349,31 +1318,6 @@ _dbus_list_test (void)
 
   _dbus_list_clear (&list1);
   _dbus_list_clear (&list2);
-  
-  /* insert_before on empty list */
-  _dbus_list_insert_before (&list1, NULL,
-                            _DBUS_INT_TO_POINTER (0));
-  verify_list (&list1);
-
-  /* inserting before first element */
-  _dbus_list_insert_before (&list1, list1,
-                            _DBUS_INT_TO_POINTER (2));
-  verify_list (&list1);
-  _dbus_assert (is_descending_sequence (&list1));
-
-  /* inserting in the middle */
-  _dbus_list_insert_before (&list1, list1->next,
-                            _DBUS_INT_TO_POINTER (1));
-  verify_list (&list1);
-  _dbus_assert (is_descending_sequence (&list1));  
-
-  /* using insert_before to append */
-  _dbus_list_insert_before (&list1, NULL,
-                            _DBUS_INT_TO_POINTER (-1));
-  verify_list (&list1);
-  _dbus_assert (is_descending_sequence (&list1));
-  
-  _dbus_list_clear (&list1);
 
   /* insert_after on empty list */
   _dbus_list_insert_after (&list1, NULL,
