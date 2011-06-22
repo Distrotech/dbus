@@ -150,8 +150,6 @@ dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *speci
 
   run_test ("marshal-validate", specific_test, _dbus_marshal_validate_test);
 
-  run_test ("marshal-header", specific_test, _dbus_marshal_header_test);
-  
   run_data_test ("message", specific_test, _dbus_message_test, test_data_dir);
   
   run_test ("hash", specific_test, _dbus_hash_test);
