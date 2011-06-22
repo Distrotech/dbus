@@ -1161,14 +1161,6 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
   struct addrinfo hints;
   struct addrinfo *ai, *tmp;
 
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-
-  if (!_dbus_open_tcp_socket (&fd, error))
-    {
-      _DBUS_ASSERT_ERROR_IS_SET(error);
-      return -1;
-    }
-
   _DBUS_ASSERT_ERROR_IS_CLEAR(error);
 
   _DBUS_ZERO (hints);
