@@ -808,19 +808,3 @@ dbus_pending_call_get_data (DBusPendingCall   *pending,
 }
 
 /** @} */
-
-#ifdef DBUS_BUILD_TESTS
-
-/**
- * @ingroup DBusPendingCallInternals
- * Unit test for DBusPendingCall.
- *
- * @returns #TRUE on success.
- */
-dbus_bool_t
-_dbus_pending_call_test (const char *test_data_dir)
-{  
-
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */

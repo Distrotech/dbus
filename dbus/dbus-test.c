@@ -170,8 +170,6 @@ dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *speci
   
   run_data_test ("auth", specific_test, _dbus_auth_test, test_data_dir);
 
-  run_data_test ("pending-call", specific_test, _dbus_pending_call_test, test_data_dir);
-  
   printf ("%s: completed successfully\n", "dbus-test");
 #else
   printf ("Not compiled with unit tests, not running any\n");
