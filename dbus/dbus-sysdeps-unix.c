@@ -132,13 +132,6 @@ _dbus_open_socket (int              *fd_p,
     }
 }
 
-dbus_bool_t
-_dbus_open_tcp_socket (int              *fd,
-                       DBusError        *error)
-{
-  return _dbus_open_socket(fd, AF_INET, SOCK_STREAM, 0, error);
-}
-
 /**
  * Opens a UNIX domain socket (as in the socket() call).
  * Does not bind the socket.
