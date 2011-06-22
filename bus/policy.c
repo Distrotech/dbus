@@ -1280,18 +1280,3 @@ bus_client_policy_check_can_own (BusClientPolicy  *policy,
 
   return allowed;
 }
-
-#ifdef DBUS_BUILD_TESTS
-
-dbus_bool_t
-bus_policy_test (const DBusString *test_data_dir)
-{
-  /* This doesn't do anything for now because I decided to do it in
-   * dispatch.c instead by having some of the clients in dispatch.c
-   * have particular policies applied to them.
-   */
-  
-  return TRUE;
-}
-
-#endif /* DBUS_BUILD_TESTS */
