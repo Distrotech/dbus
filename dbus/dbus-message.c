@@ -1549,7 +1549,7 @@ dbus_message_unref (DBusMessage *message)
 
   old_refcount = _dbus_atomic_dec (&message->refcount);
 
-  _dbus_assert (old_refcount >= 0);
+  _dbus_assert (old_refcount >= 1);
 
   if (old_refcount == 1)
     {
