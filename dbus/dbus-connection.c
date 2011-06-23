@@ -341,8 +341,14 @@ static dbus_bool_t        _dbus_connection_peek_for_reply_unlocked           (DB
 static DBusMessageFilter *
 _dbus_message_filter_ref (DBusMessageFilter *filter)
 {
-  _dbus_assert (filter->refcount.value > 0);
+#ifdef DBUS_DISABLE_ASSERT
   _dbus_atomic_inc (&filter->refcount);
+#else
+  dbus_int32_t old_value;
+
+  old_value = _dbus_atomic_inc (&filter->refcount);
+  _dbus_assert (old_value > 0);
+#endif
 
   return filter;
 }
@@ -350,9 +356,12 @@ _dbus_message_filter_ref (DBusMessageFilter *filter)
 static void
 _dbus_message_filter_unref (DBusMessageFilter *filter)
 {
-  _dbus_assert (filter->refcount.value > 0);
+  dbus_int32_t old_value;
 
-  if (_dbus_atomic_dec (&filter->refcount) == 1)
+  old_value = _dbus_atomic_dec (&filter->refcount);
+  _dbus_assert (old_value > 0);
+
+  if (old_value == 1)
     {
       if (filter->free_user_data_function)
         (* filter->free_user_data_function) (filter->user_data);
@@ -5415,8 +5424,8 @@ dbus_connection_add_filter (DBusConnection            *connection,
   if (filter == NULL)
     return FALSE;
 
-  filter->refcount.value = 1;
-  
+  _dbus_atomic_inc (&filter->refcount);
+
   CONNECTION_LOCK (connection);
 
   if (!_dbus_list_append (&connection->filter_list,
