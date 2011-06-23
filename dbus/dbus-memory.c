@@ -588,8 +588,11 @@ dbus_realloc (void  *memory,
           block = realloc (((unsigned char*)memory) - GUARD_START_OFFSET,
                            bytes + GUARD_EXTRA_SIZE);
 
-	  old_bytes = *(dbus_uint32_t*)block;
-          if (block && bytes >= old_bytes)
+          if (block == NULL)
+            return NULL;
+
+          old_bytes = *(dbus_uint32_t*)block;
+          if (bytes >= old_bytes)
             /* old guards shouldn't have moved */
             check_guards (((unsigned char*)block) + GUARD_START_OFFSET, FALSE);
           
