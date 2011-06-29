@@ -74,6 +74,19 @@ signal_handler (int sig)
         if ((reload_pipe[RELOAD_WRITE_END] > 0) &&
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
+            /* If we receive SIGHUP often enough to fill the pipe buffer (4096
+             * times on old Linux, 65536 on modern Linux) before it can be
+             * drained, let's just warn and ignore. The configuration will be
+             * reloaded while draining the pipe buffer, which is what we
+             * wanted. It's harmless that it will be reloaded fewer times than
+             * we asked for, since the reload is delayed anyway, so new changes
+             * will be picked up.
+             *
+             * We use write() because _dbus_warn uses vfprintf, which isn't
+             * async-signal-safe.
+             *
+             * This is necessarily Unix-specific, but so are POSIX signals,
+             * so... */
             static const char message[] =
               "Unable to write to reload pipe - buffer full?\n";
 
