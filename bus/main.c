@@ -54,6 +54,7 @@ typedef enum
    ACTION_QUIT = 'q'
  } SignalAction;
 
+#ifdef DBUS_UNIX
 static void
 signal_handler (int sig)
 {
@@ -99,6 +100,7 @@ signal_handler (int sig)
       break;
     }
 }
+#endif /* DBUS_UNIX */
 
 static void
 usage (void)
@@ -572,6 +574,11 @@ main (int argc, char **argv)
 
   setup_reload_pipe (bus_context_get_loop (context));
 
+#ifdef DBUS_UNIX
+  /* POSIX signals are Unix-specific, and _dbus_set_signal_handler is
+   * unimplemented (and probably unimplementable) on Windows, so there's
+   * no point in trying to make the handler portable to non-Unix. */
+
   _dbus_set_signal_handler (SIGTERM, signal_handler);
 #ifdef SIGHUP
   _dbus_set_signal_handler (SIGHUP, signal_handler);
@@ -579,6 +586,7 @@ main (int argc, char **argv)
 #ifdef DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX
   _dbus_set_signal_handler (SIGIO, signal_handler);
 #endif /* DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX */
+#endif /* DBUS_UNIX */
 
   _dbus_verbose ("We are on D-Bus...\n");
   _dbus_loop_run (bus_context_get_loop (context));
