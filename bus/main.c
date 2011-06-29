@@ -101,13 +101,19 @@ signal_handler (int sig)
         DBusString str;
         char action[2] = { ACTION_QUIT, '\0' };
         _dbus_string_init_const (&str, action);
-        if ((reload_pipe[RELOAD_WRITE_END] > 0) &&
+        if ((reload_pipe[RELOAD_WRITE_END] < 0) ||
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
+            /* If we can't write to the socket, dying seems a more
+             * important response to SIGTERM than cleaning up sockets,
+             * so we exit. We'd use exit(), but that's not async-signal-safe,
+             * so we'll have to resort to _exit(). */
             static const char message[] =
-              "Unable to write to reload pipe - buffer full?\n";
+              "Unable to write termination signal to pipe - buffer full?\n"
+              "Will exit instead.\n";
 
             write (STDERR_FILENO, message, strlen (message));
+            _exit (1);
           }
       }
       break;
