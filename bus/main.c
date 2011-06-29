@@ -32,6 +32,7 @@
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
+#include <unistd.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -45,10 +46,15 @@ static int reload_pipe[2];
 
 static void close_reload_pipe (void);
 
+typedef enum
+ {
+   ACTION_RELOAD = 'r',
+   ACTION_QUIT = 'q'
+ } SignalAction;
+
 static void
 signal_handler (int sig)
 {
-
   switch (sig)
     {
 #ifdef DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX
@@ -59,16 +65,36 @@ signal_handler (int sig)
     case SIGHUP:
       {
         DBusString str;
-        _dbus_string_init_const (&str, "foo");
+        char action[2] = { ACTION_RELOAD, '\0' };
+
+        _dbus_string_init_const (&str, action);
         if ((reload_pipe[RELOAD_WRITE_END] > 0) &&
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
-            _dbus_warn ("Unable to write to reload pipe.\n");
-            close_reload_pipe ();
+            static const char message[] =
+              "Unable to write to reload pipe - buffer full?\n";
+
+            write (STDERR_FILENO, message, strlen (message));
           }
       }
       break;
 #endif
+
+    case SIGTERM:
+      {
+        DBusString str;
+        char action[2] = { ACTION_QUIT, '\0' };
+        _dbus_string_init_const (&str, action);
+        if ((reload_pipe[RELOAD_WRITE_END] > 0) &&
+            !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
+          {
+            static const char message[] =
+              "Unable to write to reload pipe - buffer full?\n";
+
+            write (STDERR_FILENO, message, strlen (message));
+          }
+      }
+      break;
     }
 }
 
@@ -170,6 +196,8 @@ handle_reload_watch (DBusWatch    *watch,
 {
   DBusError error;
   DBusString str;
+  char *action_str;
+  char action = '\0';
 
   while (!_dbus_string_init (&str))
     _dbus_wait_for_memory ();
@@ -181,6 +209,12 @@ handle_reload_watch (DBusWatch    *watch,
       close_reload_pipe ();
       return TRUE;
     }
+
+  action_str = _dbus_string_get_data (&str);
+  if (action_str != NULL)
+    {
+      action = action_str[0];
+    }
   _dbus_string_free (&str);
 
   /* this can only fail if we don't understand the config file
@@ -188,15 +222,42 @@ handle_reload_watch (DBusWatch    *watch,
    * loaded config.
    */
   dbus_error_init (&error);
-  if (! bus_context_reload_config (context, &error))
+
+  switch (action)
     {
-      _DBUS_ASSERT_ERROR_IS_SET (&error);
-      _dbus_assert (dbus_error_has_name (&error, DBUS_ERROR_FAILED) ||
-		    dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY));
-      _dbus_warn ("Unable to reload configuration: %s\n",
-		  error.message);
-      dbus_error_free (&error);
+    case ACTION_RELOAD:
+      if (! bus_context_reload_config (context, &error))
+        {
+          _DBUS_ASSERT_ERROR_IS_SET (&error);
+          _dbus_assert (dbus_error_has_name (&error, DBUS_ERROR_FAILED) ||
+                        dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY));
+          _dbus_warn ("Unable to reload configuration: %s\n",
+                      error.message);
+          dbus_error_free (&error);
+        }
+      break;
+
+    case ACTION_QUIT:
+      {
+        DBusLoop *loop;
+        /*
+         * On OSs without abstract sockets, we want to quit
+         * gracefully rather than being killed by SIGTERM,
+         * so that DBusServer gets a chance to clean up the
+         * sockets from the filesystem. fd.o #38656
+         */
+        loop = bus_context_get_loop (context);
+        if (loop != NULL)
+          {
+            _dbus_loop_quit (loop);
+          }
+      }
+      break;
+
+    default:
+      break;
     }
+
   return TRUE;
 }
 
@@ -509,6 +570,7 @@ main (int argc, char **argv)
 
   setup_reload_pipe (bus_context_get_loop (context));
 
+  _dbus_set_signal_handler (SIGTERM, signal_handler);
 #ifdef SIGHUP
   _dbus_set_signal_handler (SIGHUP, signal_handler);
 #endif
