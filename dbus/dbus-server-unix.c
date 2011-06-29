@@ -251,11 +251,18 @@ _dbus_server_new_for_domain_socket (const char     *path,
       goto failed_0;
     }
 
-  path_copy = _dbus_strdup (path);
-  if (path_copy == NULL)
+  if (abstract)
     {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
-      goto failed_0;
+      path_copy = NULL;
+    }
+  else
+    {
+      path_copy = _dbus_strdup (path);
+      if (path_copy == NULL)
+        {
+          dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+          goto failed_0;
+        }
     }
 
   listen_fd = _dbus_listen_unix_socket (path, abstract, error);
@@ -273,7 +280,8 @@ _dbus_server_new_for_domain_socket (const char     *path,
       goto failed_2;
     }
 
-  _dbus_server_socket_own_filename(server, path_copy);
+  if (path_copy != NULL)
+    _dbus_server_socket_own_filename(server, path_copy);
 
   _dbus_string_free (&address);
 
