@@ -98,6 +98,8 @@ endif(NOT WIN32)
 #AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
 OPTION(DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
 
+option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
+
 # do config checks
 INCLUDE(ConfigureChecks.cmake)
 
@@ -557,6 +559,7 @@ message("        Building unit tests:      ${DBUS_BUILD_TESTS}                 "
 message("        Building verbose mode:    ${DBUS_ENABLE_VERBOSE_MODE}         ")
 message("        Building w/o assertions:  ${DBUS_DISABLE_ASSERTS}             ")
 message("        Building w/o checks:      ${DBUS_DISABLE_CHECKS}              ")
+message("        Building bus stats API:   ${DBUS_ENABLE_STATS}                ")
 message("        installing system libs:   ${DBUS_INSTALL_SYSTEM_LIBS}         ")
 #message("        Building SELinux support: ${have_selinux}                     ")
 #message("        Building dnotify support: ${have_dnotify}                     ")
