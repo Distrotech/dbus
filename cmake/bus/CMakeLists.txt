@@ -74,6 +74,12 @@ set (BUS_SOURCES
 	${XML_SOURCES}
 	${DIR_WATCH_SOURCE}
 )
+if(DBUS_ENABLE_STATS)
+	list(APPEND BUS_SOURCES
+		${BUS_DIR}/stats.c
+		${BUS_DIR}/stats.h
+	)
+endif()
 
 include_directories(${XML_INCLUDE_DIR})
 
