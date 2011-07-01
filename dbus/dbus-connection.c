@@ -5512,6 +5512,49 @@ dbus_connection_remove_filter (DBusConnection            *connection,
 }
 
 /**
+ * Registers a handler for a given path or subsection in the object
+ * hierarchy. The given vtable handles messages sent to exactly the
+ * given path or also for paths bellow that, depending on fallback
+ * parameter.
+ *
+ * @param connection the connection
+ * @param fallback whether to handle messages also for "subdirectory"
+ * @param path a '/' delimited string of path elements
+ * @param vtable the virtual table
+ * @param user_data data to pass to functions in the vtable
+ * @param error address where an error can be returned
+ * @returns #FALSE if an error (#DBUS_ERROR_NO_MEMORY or
+ *    #DBUS_ERROR_OBJECT_PATH_IN_USE) is reported
+ */
+static dbus_bool_t
+_dbus_connection_register_object_path (DBusConnection              *connection,
+                                       dbus_bool_t                  fallback,
+                                       const char                  *path,
+                                       const DBusObjectPathVTable  *vtable,
+                                       void                        *user_data,
+                                       DBusError                   *error)
+{
+  char **decomposed_path;
+  dbus_bool_t retval;
+
+  if (!_dbus_decompose_path (path, strlen (path), &decomposed_path, NULL))
+    return FALSE;
+
+  CONNECTION_LOCK (connection);
+
+  retval = _dbus_object_tree_register (connection->objects,
+                                       fallback,
+                                       (const char **) decomposed_path, vtable,
+                                       user_data, error);
+
+  CONNECTION_UNLOCK (connection);
+
+  dbus_free_string_array (decomposed_path);
+
+  return retval;
+}
+
+/**
  * Registers a handler for a given path in the object hierarchy.
  * The given vtable handles messages sent to exactly the given path.
  *
@@ -5530,29 +5573,12 @@ dbus_connection_try_register_object_path (DBusConnection              *connectio
                                           void                        *user_data,
                                           DBusError                   *error)
 {
-  char **decomposed_path;
-  dbus_bool_t retval;
-  
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (path != NULL, FALSE);
   _dbus_return_val_if_fail (path[0] == '/', FALSE);
   _dbus_return_val_if_fail (vtable != NULL, FALSE);
 
-  if (!_dbus_decompose_path (path, strlen (path), &decomposed_path, NULL))
-    return FALSE;
-
-  CONNECTION_LOCK (connection);
-
-  retval = _dbus_object_tree_register (connection->objects,
-                                       FALSE,
-                                       (const char **) decomposed_path, vtable,
-                                       user_data, error);
-
-  CONNECTION_UNLOCK (connection);
-
-  dbus_free_string_array (decomposed_path);
-
-  return retval;
+  return _dbus_connection_register_object_path (connection, FALSE, path, vtable, user_data, error);
 }
 
 /**
@@ -5576,7 +5602,6 @@ dbus_connection_register_object_path (DBusConnection              *connection,
                                       const DBusObjectPathVTable  *vtable,
                                       void                        *user_data)
 {
-  char **decomposed_path;
   dbus_bool_t retval;
   DBusError error = DBUS_ERROR_INIT;
 
@@ -5585,19 +5610,7 @@ dbus_connection_register_object_path (DBusConnection              *connection,
   _dbus_return_val_if_fail (path[0] == '/', FALSE);
   _dbus_return_val_if_fail (vtable != NULL, FALSE);
 
-  if (!_dbus_decompose_path (path, strlen (path), &decomposed_path, NULL))
-    return FALSE;
-
-  CONNECTION_LOCK (connection);
-
-  retval = _dbus_object_tree_register (connection->objects,
-                                       FALSE,
-                                       (const char **) decomposed_path, vtable,
-                                       user_data, &error);
-
-  CONNECTION_UNLOCK (connection);
-
-  dbus_free_string_array (decomposed_path);
+  retval = _dbus_connection_register_object_path (connection, FALSE, path, vtable, user_data, &error);
 
   if (dbus_error_has_name (&error, DBUS_ERROR_OBJECT_PATH_IN_USE))
     {
@@ -5630,29 +5643,12 @@ dbus_connection_try_register_fallback (DBusConnection              *connection,
                                        void                        *user_data,
                                        DBusError                   *error)
 {
-  char **decomposed_path;
-  dbus_bool_t retval;
-
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (path != NULL, FALSE);
   _dbus_return_val_if_fail (path[0] == '/', FALSE);
   _dbus_return_val_if_fail (vtable != NULL, FALSE);
 
-  if (!_dbus_decompose_path (path, strlen (path), &decomposed_path, NULL))
-    return FALSE;
-
-  CONNECTION_LOCK (connection);
-
-  retval = _dbus_object_tree_register (connection->objects,
-                                       TRUE,
-                                       (const char **) decomposed_path, vtable,
-                                       user_data, error);
-
-  CONNECTION_UNLOCK (connection);
-
-  dbus_free_string_array (decomposed_path);
-
-  return retval;
+  return _dbus_connection_register_object_path (connection, TRUE, path, vtable, user_data, error);
 }
 
 /**
@@ -5678,7 +5674,6 @@ dbus_connection_register_fallback (DBusConnection              *connection,
                                    const DBusObjectPathVTable  *vtable,
                                    void                        *user_data)
 {
-  char **decomposed_path;
   dbus_bool_t retval;
   DBusError error = DBUS_ERROR_INIT;
 
@@ -5687,19 +5682,7 @@ dbus_connection_register_fallback (DBusConnection              *connection,
   _dbus_return_val_if_fail (path[0] == '/', FALSE);
   _dbus_return_val_if_fail (vtable != NULL, FALSE);
 
-  if (!_dbus_decompose_path (path, strlen (path), &decomposed_path, NULL))
-    return FALSE;
-
-  CONNECTION_LOCK (connection);
-
-  retval = _dbus_object_tree_register (connection->objects,
-                                       TRUE,
-				       (const char **) decomposed_path, vtable,
-                                       user_data, &error);
-
-  CONNECTION_UNLOCK (connection);
-
-  dbus_free_string_array (decomposed_path);
+  retval = _dbus_connection_register_object_path (connection, TRUE, path, vtable, user_data, &error);
 
   if (dbus_error_has_name (&error, DBUS_ERROR_OBJECT_PATH_IN_USE))
     {
