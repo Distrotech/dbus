@@ -5521,7 +5521,7 @@ dbus_connection_remove_filter (DBusConnection            *connection,
  * @param user_data data to pass to functions in the vtable
  * @param error address where an error can be returned
  * @returns #FALSE if an error (#DBUS_ERROR_NO_MEMORY or
- *    #DBUS_ERROR_ADDRESS_IN_USE) is reported
+ *    #DBUS_ERROR_OBJECT_PATH_IN_USE) is reported
  */
 dbus_bool_t
 dbus_connection_try_register_object_path (DBusConnection              *connection,
@@ -5567,7 +5567,8 @@ dbus_connection_try_register_object_path (DBusConnection              *connectio
  * @param path a '/' delimited string of path elements
  * @param vtable the virtual table
  * @param user_data data to pass to functions in the vtable
- * @returns #FALSE if not enough memory
+ * @returns #FALSE if an error (#DBUS_ERROR_NO_MEMORY or
+ *    #DBUS_ERROR_OBJECT_PATH_IN_USE) ocurred
  */
 dbus_bool_t
 dbus_connection_register_object_path (DBusConnection              *connection,
@@ -5598,7 +5599,7 @@ dbus_connection_register_object_path (DBusConnection              *connection,
 
   dbus_free_string_array (decomposed_path);
 
-  if (dbus_error_has_name (&error, DBUS_ERROR_ADDRESS_IN_USE))
+  if (dbus_error_has_name (&error, DBUS_ERROR_OBJECT_PATH_IN_USE))
     {
       _dbus_warn ("%s\n", error.message);
       dbus_error_free (&error);
@@ -5620,7 +5621,7 @@ dbus_connection_register_object_path (DBusConnection              *connection,
  * @param user_data data to pass to functions in the vtable
  * @param error address where an error can be returned
  * @returns #FALSE if an error (#DBUS_ERROR_NO_MEMORY or
- *    #DBUS_ERROR_ADDRESS_IN_USE) is reported
+ *    #DBUS_ERROR_OBJECT_PATH_IN_USE) is reported
  */
 dbus_bool_t
 dbus_connection_try_register_fallback (DBusConnection              *connection,
@@ -5668,7 +5669,8 @@ dbus_connection_try_register_fallback (DBusConnection              *connection,
  * @param path a '/' delimited string of path elements
  * @param vtable the virtual table
  * @param user_data data to pass to functions in the vtable
- * @returns #FALSE if not enough memory
+ * @returns #FALSE if an error (#DBUS_ERROR_NO_MEMORY or
+ *    #DBUS_ERROR_OBJECT_PATH_IN_USE) occured
  */
 dbus_bool_t
 dbus_connection_register_fallback (DBusConnection              *connection,
@@ -5699,7 +5701,7 @@ dbus_connection_register_fallback (DBusConnection              *connection,
 
   dbus_free_string_array (decomposed_path);
 
-  if (dbus_error_has_name (&error, DBUS_ERROR_ADDRESS_IN_USE))
+  if (dbus_error_has_name (&error, DBUS_ERROR_OBJECT_PATH_IN_USE))
     {
       _dbus_warn ("%s\n", error.message);
       dbus_error_free (&error);
