@@ -1129,6 +1129,9 @@ _dbus_string_append_printf_valist  (DBusString        *str,
   /* Measure the message length without terminating nul */
   len = _dbus_printf_string_upper_bound (format, args);
 
+  if (len < 0)
+    return FALSE;
+
   if (!_dbus_string_lengthen (str, len))
     {
       /* don't leak the copy */
