@@ -35,6 +35,8 @@
 
 #include "dbus-print-message.h"
 
+#define EAVESDROPPING_RULE "eavesdrop=true"
+
 #ifdef DBUS_WIN
 
 /* gettimeofday is not defined on windows */
@@ -75,6 +77,13 @@ gettimeofday (struct timeval *__p,
   return 0;
 }
 #endif
+
+inline static void
+oom (const char *doing)
+{
+  fprintf (stderr, "OOM while %s\n", doing);
+  exit (1);
+}
 
 static DBusHandlerResult
 monitor_filter_func (DBusConnection     *connection,
@@ -299,11 +308,21 @@ main (int argc, char *argv[])
       else if (arg[0] == '-')
 	usage (argv[0], 1);
       else {
-	numFilters++;
-       filters = (char **)realloc(filters, numFilters * sizeof(char *));
-	filters[j] = (char *)malloc((strlen(arg) + 1) * sizeof(char *));
-	snprintf(filters[j], strlen(arg) + 1, "%s", arg);
-	j++;
+          unsigned int filter_len;
+          numFilters++;
+          /* Prepend a rule (and a comma) to enable the monitor to eavesdrop.
+           * Prepending allows the user to add eavesdrop=false at command line
+           * in order to disable eavesdropping when needed */
+          filter_len = strlen (EAVESDROPPING_RULE) + 1 + strlen (arg) + 1;
+
+          filters = (char **) realloc (filters, numFilters * sizeof (char *));
+          if (filters == NULL)
+            oom ("adding a new filter slot");
+          filters[j] = (char *) malloc (filter_len * sizeof (char *));
+          if (filters[j] == NULL)
+            oom ("adding a new filter");
+          snprintf (filters[j], filter_len, "%s,%s", EAVESDROPPING_RULE, arg);
+          j++;
       }
     }
 
