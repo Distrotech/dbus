@@ -9,59 +9,74 @@ Building
 --------
 
 Win32 MinGW
-1. install cmake and libexpat 
+1. install cmake and libexpat
 2. get dbus sources
 3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
 4. mkdir dbus-build
 5. cd dbus-build
 6. run 
-	cmake -G "MinGW Makefiles" [<options, see below>] <dbus-src-root>/cmake
+    cmake -G "MinGW Makefiles" [<options, see below>] <dbus-src-root>/cmake
     mingw32-make
     mingw32-make install
-	
-Win32 Microsoft nmake 
-1. install cmake and libexpat 
+
+Win32 Microsoft nmake
+1. install cmake and libexpat
 2. get dbus sources
 3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
 4. mkdir dbus-build
 5. cd dbus-build
 6. run 
-	cmake -G "NMake Makefiles" [<options, see below>] <dbus-src-root>/cmake
+    cmake -G "NMake Makefiles" [<options, see below>] <dbus-src-root>/cmake
     nmake
     nmake install
-	
-Win32 Visual Studio IDE
-1. install cmake and libexpat 
+
+Win32 Visual Studio Express IDE
+1. install cmake and libexpat
+2. get dbus sources
+3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
+4. mkdir dbus-build
+5. cd dbus-build
+6. run
+      cmake -G "Visual Studio 10" [<options, see below>] <dbus-src-root>/cmake
+7a. open IDE with
+      vcexpress dbus.sln
+7b. for immediate build run
+      vcexpress dbus.sln /build
+
+Win32 Visual Studio Professional IDE
+1. install cmake and libexpat
 2. get dbus sources
 3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
 4. mkdir dbus-build
 5. cd dbus-build
 6. run 
-	cmake -G "Visual Studio 10" [<options, see below>] <dbus-src-root>/cmake
-    start 
-    nmake install
+      cmake -G "Visual Studio 10" [<options, see below>] <dbus-src-root>/cmake
+7a. open IDE with
+      devenv dbus.sln
+7b. for immediate build run
+      devenv dbus.sln /build
 
 Linux
-1. install cmake and libexpat 
+1. install cmake and libexpat
 2. get dbus sources
 3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
 4. mkdir dbus-build
 5. cd dbus-build
 6. run 
-	cmake -G "<for available targets, see cmake --help for a list>" [<options, see below>] <dbus-src-root>/cmake
+    cmake -G "<for available targets, see cmake --help for a list>" [<options, see below>] <dbus-src-root>/cmake
     make
     make install
 
 For other compilers see cmake --help in the Generators section
-	
+
 Configuration flags
 -------------------
-	
+
 When using the cmake build system the dbus-specific configuration flags that can be given 
 to the cmake program are these (use -D<key>=<value> on command line). The listed values 
-are the defaults. 
+are the defaults.
 
-// Choose the type of build, options are: None(CMAKE_CXX_FLAGS or 
+// Choose the type of build, options are: None(CMAKE_CXX_FLAGS or
 // CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
 CMAKE_BUILD_TYPE:STRING=Debug
 
