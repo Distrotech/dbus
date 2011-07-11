@@ -100,6 +100,8 @@ option (DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
+option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
+
 # do config checks
 INCLUDE(ConfigureChecks.cmake)
 
