@@ -215,6 +215,20 @@ match_rule_to_string (BusMatchRule *rule)
         goto nomem;
     }
 
+  if (rule->flags & BUS_MATCH_CLIENT_IS_EAVESDROPPING)
+    {
+      if (_dbus_string_get_length (&str) > 0)
+        {
+          if (!_dbus_string_append (&str, ","))
+            goto nomem;
+        }
+
+      if (!_dbus_string_append_printf (&str, "eavesdrop='%s'",
+            (rule->flags & BUS_MATCH_CLIENT_IS_EAVESDROPPING) ?
+            "true" : "false"))
+        goto nomem;
+    }
+
   if (rule->flags & BUS_MATCH_ARGS)
     {
       int i;
@@ -352,6 +366,16 @@ bus_match_rule_set_destination (BusMatchRule *rule,
   rule->destination = new;
 
   return TRUE;
+}
+
+void
+bus_match_rule_set_client_is_eavesdropping (BusMatchRule *rule,
+                                            dbus_bool_t is_eavesdropping)
+{
+  if (is_eavesdropping)
+    rule->flags |= BUS_MATCH_CLIENT_IS_EAVESDROPPING;
+  else
+    rule->flags &= ~(BUS_MATCH_CLIENT_IS_EAVESDROPPING);
 }
 
 dbus_bool_t
@@ -1030,6 +1054,31 @@ bus_match_rule_parse (DBusConnection   *matches_go_to,
               goto failed;
             }
         }
+      else if (strcmp (key, "eavesdrop") == 0)
+        {
+          /* do not detect "eavesdrop" being used more than once in rule:
+           * 1) it's not possible, it's only in the flags
+           * 2) it might be used twice to disable eavesdropping when it's
+           * automatically added (eg dbus-monitor/bustle) */
+
+          /* we accept only "true|false" as possible values */
+          if ((strcmp (value, "true") == 0))
+            {
+              bus_match_rule_set_client_is_eavesdropping (rule, TRUE);
+            }
+          else if (strcmp (value, "false") == 0)
+            {
+              bus_match_rule_set_client_is_eavesdropping (rule, FALSE);
+            }
+          else
+            {
+              dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
+                              "eavesdrop='%s' is invalid, "
+                              "it should be 'true' or 'false'\n",
+                              value);
+              goto failed;
+            }
+        }
       else if (strncmp (key, "arg", 3) == 0)
         {
           if (!bus_match_rule_parse_arg_match (rule, key, &tmp_str, error))
@@ -1352,6 +1401,9 @@ match_rule_equal (BusMatchRule *a,
       strcmp (a->destination, b->destination) != 0)
     return FALSE;
 
+  /* we already compared the value of flags, and
+   * BUS_MATCH_CLIENT_IS_EAVESDROPPING does not have another struct member */
+
   if (a->flags & BUS_MATCH_ARGS)
     {
       int i;
@@ -1619,6 +1671,7 @@ match_rule_matches (BusMatchRule    *rule,
                     DBusMessage     *message,
                     BusMatchFlags    already_matched)
 {
+  dbus_bool_t wants_to_eavesdrop = FALSE;
   int flags;
 
   /* All features of the match rule are AND'd together,
@@ -1632,6 +1685,9 @@ match_rule_matches (BusMatchRule    *rule,
 
   /* Don't bother re-matching features we've already checked implicitly. */
   flags = rule->flags & (~already_matched);
+
+  if (flags & BUS_MATCH_CLIENT_IS_EAVESDROPPING)
+    wants_to_eavesdrop = TRUE;
 
   if (flags & BUS_MATCH_MESSAGE_TYPE)
     {
@@ -1686,6 +1742,24 @@ match_rule_matches (BusMatchRule    *rule,
         }
     }
 
+  /* Note: this part is relevant for eavesdropper rules:
+   * Two cases:
+   * 1) rule has a destination to be matched
+   *   (flag BUS_MATCH_DESTINATION present). Rule will match if:
+   *   - rule->destination matches the addressed_recipient
+   *   AND
+   *   - wants_to_eavesdrop=TRUE
+   *
+   *   Note: (the case in which addressed_recipient is the actual rule owner
+   *   is handled elsewere in dispatch.c:bus_dispatch_matches().
+   *
+   * 2) rule has no destination. Rule will match if:
+   *    - message has no specified destination (ie broadcasts)
+   *      (Note: this will rule out unicast method calls and unicast signals,
+   *      fixing FDO#269748)
+   *    OR
+   *    - wants_to_eavesdrop=TRUE (destination-catch-all situation)
+   */
   if (flags & BUS_MATCH_DESTINATION)
     {
       const char *destination;
@@ -1694,6 +1768,12 @@ match_rule_matches (BusMatchRule    *rule,
 
       destination = dbus_message_get_destination (message);
       if (destination == NULL)
+        /* broadcast, but this rule specified a destination: no match */
+        return FALSE;
+
+      /* rule owner does not intend to eavesdrop: we'll deliver only msgs
+       * directed to it, NOT MATCHING */
+      if (!wants_to_eavesdrop)
         return FALSE;
 
       if (addressed_recipient == NULL)
@@ -1707,6 +1787,19 @@ match_rule_matches (BusMatchRule    *rule,
           if (!connection_is_primary_owner (addressed_recipient, rule->destination))
             return FALSE;
         }
+    } else { /* no destination in rule */
+        dbus_bool_t msg_is_broadcast;
+
+        _dbus_assert (rule->destination == NULL);
+
+        msg_is_broadcast = (dbus_message_get_destination (message) == NULL);
+
+        if (!wants_to_eavesdrop && !msg_is_broadcast)
+          return FALSE;
+
+        /* if we are here rule owner intends to eavesdrop
+         * OR
+         * message is being broadcasted */
     }
 
   if (flags & BUS_MATCH_PATH)
