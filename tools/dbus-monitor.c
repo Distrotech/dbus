@@ -388,22 +388,22 @@ main (int argc, char *argv[])
   else
     {
       dbus_bus_add_match (connection,
-		          "type='signal'",
+		          EAVESDROPPING_RULE ",type='signal'",
 		          &error);
       if (dbus_error_is_set (&error))
         goto lose;
       dbus_bus_add_match (connection,
-		          "type='method_call'",
+		          EAVESDROPPING_RULE ",type='method_call'",
 		          &error);
       if (dbus_error_is_set (&error))
         goto lose;
       dbus_bus_add_match (connection,
-		          "type='method_return'",
+		          EAVESDROPPING_RULE ",type='method_return'",
 		          &error);
       if (dbus_error_is_set (&error))
         goto lose;
       dbus_bus_add_match (connection,
-		          "type='error'",
+		          EAVESDROPPING_RULE ",type='error'",
 		          &error);
       if (dbus_error_is_set (&error))
         goto lose;
