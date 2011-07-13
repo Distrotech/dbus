@@ -79,6 +79,7 @@ testexec_PROGRAMS =
 installable_tests = \
 	test-corrupt \
 	test-dbus-daemon \
+	test-dbus-daemon-eavesdrop \
 	test-loopback \
 	test-marshal \
 	test-relay \
@@ -118,6 +119,13 @@ test_dbus_daemon_SOURCES = dbus-daemon.c
 test_dbus_daemon_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
 test_dbus_daemon_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
+
+test_dbus_daemon_eavesdrop_SOURCES = dbus-daemon-eavesdrop.c
+test_dbus_daemon_eavesdrop_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_dbus_daemon_eavesdrop_LDFLAGS = @R_DYNAMIC_LDFLAG@
+test_dbus_daemon_eavesdrop_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
