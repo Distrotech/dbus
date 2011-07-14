@@ -2116,23 +2116,15 @@ _dbus_connection_send_and_unlock (DBusConnection *connection,
 void
 _dbus_connection_close_if_only_one_ref (DBusConnection *connection)
 {
-  dbus_int32_t tmp_refcount;
+  dbus_int32_t refcount;
 
   CONNECTION_LOCK (connection);
 
-  /* We increment and then decrement the refcount, because there is no
-   * _dbus_atomic_get (mirroring the fact that there's no InterlockedGet
-   * on Windows). */
-  _dbus_atomic_inc (&connection->refcount);
-  tmp_refcount = _dbus_atomic_dec (&connection->refcount);
+  refcount = _dbus_atomic_get (&connection->refcount);
+  /* The caller should have at least one ref */
+  _dbus_assert (refcount >= 1);
 
-  /* The caller should have one ref, and this function temporarily took
-   * one more, which is reflected in this count even though we already
-   * released it (relying on the caller's ref) due to _dbus_atomic_dec
-   * semantics */
-  _dbus_assert (tmp_refcount >= 2);
-
-  if (tmp_refcount == 2)
+  if (refcount == 1)
     _dbus_connection_close_possibly_shared_and_unlock (connection);
   else
     CONNECTION_UNLOCK (connection);
