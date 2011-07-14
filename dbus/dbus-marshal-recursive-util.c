@@ -3326,7 +3326,6 @@ dict_write_value (TestTypeNode   *node,
   DBusString dict_entry_signature;
   int i;
   int n_entries;
-  int entry_value_type;
   TestTypeNode *child;
 
   n_entries = node->klass->subclass_detail;
@@ -3363,9 +3362,7 @@ dict_write_value (TestTypeNode   *node,
   if (!_dbus_string_append_byte (&dict_entry_signature,
                                  DBUS_DICT_ENTRY_END_CHAR))
     goto oom;
-  
-  entry_value_type = _dbus_first_type_in_signature (&entry_value_signature, 0);
-  
+
   if (!_dbus_type_writer_recurse (writer, DBUS_TYPE_ARRAY,
                                   &dict_entry_signature, 0,
                                   &sub))
