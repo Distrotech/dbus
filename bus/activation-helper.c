@@ -403,12 +403,15 @@ get_correct_parser (BusConfigParser **parser, DBusError *error)
 {
   DBusString config_file;
   dbus_bool_t retval;
+#ifdef ACTIVATION_LAUNCHER_TEST
   const char *test_config_file;
+#endif
 
   retval = FALSE;
-  test_config_file = NULL;
 
 #ifdef ACTIVATION_LAUNCHER_TEST
+  test_config_file = NULL;
+
   /* there is no _way_ we should be setuid if this define is set.
    * but we should be doubly paranoid and check... */
   if (getuid() != geteuid())
