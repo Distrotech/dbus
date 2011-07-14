@@ -942,6 +942,9 @@ generate_byte_changed (DBusMessageDataIter *iter,
   return TRUE;
 }
 
+#if 0
+/* This is really expensive and doesn't add too much coverage */
+
 static dbus_bool_t
 find_next_typecode (DBusMessageDataIter *iter,
                     DBusString          *data,
@@ -1024,7 +1027,7 @@ static const int typecodes[] = {
   DBUS_TYPE_UNIX_FD,
   255 /* random invalid typecode */
 };
-  
+
 static dbus_bool_t
 generate_typecode_changed (DBusMessageDataIter *iter,
                            DBusString          *data,
@@ -1081,6 +1084,7 @@ generate_typecode_changed (DBusMessageDataIter *iter,
   *expected_validity = DBUS_VALIDITY_UNKNOWN;
   return TRUE;
 }
+#endif
 
 typedef struct
 {
