@@ -2493,8 +2493,6 @@ void
 _dbus_get_current_time (long *tv_sec,
                         long *tv_usec)
 {
-  struct timeval t;
-
 #ifdef HAVE_MONOTONIC_CLOCK
   struct timespec ts;
   clock_gettime (CLOCK_MONOTONIC, &ts);
@@ -2504,6 +2502,8 @@ _dbus_get_current_time (long *tv_sec,
   if (tv_usec)
     *tv_usec = ts.tv_nsec / 1000;
 #else
+  struct timeval t;
+
   gettimeofday (&t, NULL);
 
   if (tv_sec)
