@@ -184,6 +184,7 @@ clear_environment (DBusError *error)
 static dbus_bool_t
 check_permissions (const char *dbus_user, DBusError *error)
 {
+#ifndef ACTIVATION_LAUNCHER_TEST
   uid_t uid, euid;
   struct passwd *pw;
 
@@ -191,7 +192,6 @@ check_permissions (const char *dbus_user, DBusError *error)
   uid = 0;
   euid = 0;
 
-#ifndef ACTIVATION_LAUNCHER_TEST
   /* bail out unless the dbus user is invoking the helper */
   pw = getpwnam(dbus_user);
   if (!pw)
