@@ -244,6 +244,7 @@ struct DBusAtomic
 
 dbus_int32_t _dbus_atomic_inc (DBusAtomic *atomic);
 dbus_int32_t _dbus_atomic_dec (DBusAtomic *atomic);
+dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
 
 
 /* AIX uses different values for poll */
