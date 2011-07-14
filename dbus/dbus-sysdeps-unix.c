@@ -3421,10 +3421,10 @@ _dbus_lookup_launchd_socket (DBusString *socket_path,
 #endif
 }
 
+#ifdef DBUS_ENABLE_LAUNCHD
 static dbus_bool_t
 _dbus_lookup_session_address_launchd (DBusString *address, DBusError  *error)
 {
-#ifdef DBUS_ENABLE_LAUNCHD
   dbus_bool_t valid_socket;
   DBusString socket_path;
 
@@ -3466,12 +3466,8 @@ _dbus_lookup_session_address_launchd (DBusString *address, DBusError  *error)
 
   _dbus_string_free(&socket_path);
   return TRUE;
-#else
-  dbus_set_error(error, DBUS_ERROR_NOT_SUPPORTED,
-                "can't lookup session address from launchd; launchd support not compiled in");
-  return FALSE;
-#endif
 }
+#endif
 
 /**
  * Determines the address of the session bus by querying a
