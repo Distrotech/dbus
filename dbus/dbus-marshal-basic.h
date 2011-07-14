@@ -255,7 +255,6 @@ dbus_uint32_t _dbus_marshal_read_uint32       (const DBusString *str,
                                                int               byte_order,
                                                int              *new_pos);
 int           _dbus_type_get_alignment        (int               typecode);
-dbus_bool_t   _dbus_type_is_fixed             (int               typecode);
 int           _dbus_type_get_alignment        (int               typecode);
 const char*   _dbus_type_to_string            (int               typecode);
 
