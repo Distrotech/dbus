@@ -1519,14 +1519,20 @@ dbus_message_copy (const DBusMessage *message)
 DBusMessage *
 dbus_message_ref (DBusMessage *message)
 {
+#ifndef DBUS_DISABLE_ASSERT
   dbus_int32_t old_refcount;
+#endif
 
   _dbus_return_val_if_fail (message != NULL, NULL);
   _dbus_return_val_if_fail (message->generation == _dbus_current_generation, NULL);
   _dbus_return_val_if_fail (!message->in_cache, NULL);
-  
+
+#ifdef DBUS_DISABLE_ASSERT
+  _dbus_atomic_inc (&message->refcount);
+#else
   old_refcount = _dbus_atomic_inc (&message->refcount);
   _dbus_assert (old_refcount >= 1);
+#endif
 
   return message;
 }
