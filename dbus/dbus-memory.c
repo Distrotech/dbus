@@ -233,7 +233,6 @@ _dbus_get_fail_alloc_failures (void)
 }
 
 #ifdef DBUS_BUILD_TESTS
-static dbus_bool_t called = 0;
 /**
  * Called when about to alloc some memory; if
  * it returns #TRUE, then the allocation should
@@ -248,6 +247,8 @@ _dbus_decrement_fail_alloc_counter (void)
   _dbus_initialize_malloc_debug ();
 #ifdef DBUS_WIN_FIXME
   {
+    static dbus_bool_t called = 0;
+
     if (!called)
       {
         _dbus_verbose("TODO: memory allocation testing errors disabled for now\n");
