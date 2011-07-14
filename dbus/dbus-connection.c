@@ -1318,8 +1318,9 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
   
   if (_dbus_modify_sigpipe)
     _dbus_disable_sigpipe ();
-  
-  connection->refcount.value = 1;
+
+  /* initialized to 0: use atomic op to avoid mixing atomic and non-atomic */
+  _dbus_atomic_inc (&connection->refcount);
   connection->transport = transport;
   connection->watches = watch_list;
   connection->timeouts = timeout_list;
@@ -2655,9 +2656,9 @@ _dbus_connection_last_unref (DBusConnection *connection)
   DBusList *link;
 
   _dbus_verbose ("Finalizing connection %p\n", connection);
-  
-  _dbus_assert (connection->refcount.value == 0);
-  
+
+  _dbus_assert (_dbus_atomic_get (&connection->refcount) == 0);
+
   /* You have to disconnect the connection before unref:ing it. Otherwise
    * you won't get the disconnected message.
    */
