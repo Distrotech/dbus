@@ -239,14 +239,6 @@ only_one_type (dbus_bool_t *seen_bus_type,
     }
 }
 
-static dbus_bool_t sigint_received = FALSE;
-
-static void
-sigint_handler (int signum)
-{
-  sigint_received = TRUE;
-}
-
 int
 main (int argc, char *argv[])
 {
