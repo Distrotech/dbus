@@ -150,8 +150,6 @@ echo_filter (DBusConnection *connection,
     void *user_data)
 {
   DBusMessage *reply;
-  DBusError error = DBUS_ERROR_INIT;
-  int *sleep_ms = user_data;
 
   if (dbus_message_get_type (message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;

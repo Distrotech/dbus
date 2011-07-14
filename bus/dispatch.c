@@ -4773,7 +4773,6 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   DBusConnection *foo, *bar;
   DBusError error;
   DBusMessage *m;
-  dbus_bool_t b;
   int one[2], two[2], x, y, z;
   char r;
 

@@ -288,7 +288,6 @@ main (int argc, char **argv)
   int i;
   dbus_bool_t print_address;
   dbus_bool_t print_pid;
-  dbus_bool_t is_session_bus;
   int force_fork;
   dbus_bool_t systemd_activation;
 
@@ -306,7 +305,6 @@ main (int argc, char **argv)
 
   print_address = FALSE;
   print_pid = FALSE;
-  is_session_bus = FALSE;
   force_fork = FORK_FOLLOW_CONFIG_FILE;
   systemd_activation = FALSE;
 

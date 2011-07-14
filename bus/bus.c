@@ -481,7 +481,6 @@ process_config_every_time (BusContext      *context,
   DBusString full_address;
   DBusList *link;
   DBusList **dirs;
-  BusActivation *new_activation;
   char *addr;
   const char *servicehelper;
   char *s;
@@ -688,7 +687,6 @@ bus_context_new (const DBusString *config_file,
                  dbus_bool_t      systemd_activation,
                  DBusError        *error)
 {
-  DBusString log_prefix;
   BusContext *context;
   BusConfigParser *parser;
 
@@ -1393,9 +1391,6 @@ bus_context_check_security_policy (BusContext     *context,
   dbus_bool_t log;
   int type;
   dbus_bool_t requested_reply;
-  const char *sender_name;
-  const char *sender_loginfo;
-  const char *proposed_recipient_loginfo;
 
   type = dbus_message_get_type (message);
   dest = dbus_message_get_destination (message);
@@ -1561,9 +1556,6 @@ bus_context_check_security_policy (BusContext     *context,
                                          proposed_recipient,
                                          message, &toggles, &log))
     {
-      const char *msg = "Rejected send message, %d matched rules; "
-                        "type=\"%s\", sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" error name=\"%s\" requested_reply=%d destination=\"%s\" (%s))";
-
       complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
           "Rejected send message", toggles,
           message, sender, proposed_recipient, requested_reply,

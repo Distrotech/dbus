@@ -71,7 +71,6 @@ open_shutdown_private_connection (dbus_bool_t use_guid)
   DBusMessage *reply;
   DBusConnection *privconn;
   char *addr;
-  char *comma;
   dbus_bool_t service_died;
   dbus_bool_t private_conn_lost;
 

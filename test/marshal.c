@@ -146,7 +146,6 @@ test_endian (Fixture *f,
     gconstpointer arg)
 {
   const gchar *blob = arg;
-  const gchar *native_blob;
   char *output;
   DBusMessage *m;
   int len;

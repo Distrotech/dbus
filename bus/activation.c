@@ -881,8 +881,6 @@ bus_activation_new (BusContext        *context,
                     DBusError         *error)
 {
   BusActivation *activation;
-  DBusList      *link;
-  char          *dir;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1671,7 +1669,6 @@ bus_activation_activate_service (BusActivation  *activation,
   char **envp = NULL;
   int argc;
   dbus_bool_t retval;
-  DBusHashIter iter;
   dbus_bool_t was_pending_activation;
   DBusString command;
 
