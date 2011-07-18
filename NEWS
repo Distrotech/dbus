@@ -1,6 +1,34 @@
 D-Bus 1.4.14 (UNRELEASED)
 ==
 
+Changes:
+
+• Use DBUS_ERROR_OBJECT_PATH_IN_USE if dbus_connection_try_register_object_path
+  or dbus_connection_try_register_fallback fails, not ...ADDRESS_IN_USE
+  (fd.o #38874, Jiří Klimeš)
+
+• Consistently use atomic operations on the refcounts of DBusPendingCall
+  and DBusServer, as was done for DBusConnection in 1.4.12 (fd.o #38005,
+  Simon McVittie)
+
+• Fix a file descriptor leak when connecting to a TCP socket (fd.o #37258,
+  Simon McVittie)
+
+• Make "make check" in a clean tree work, by not running tests until
+  test data has been set up (fd.o #34405, Simon McVittie)
+
+• Documentation (fd.o #36156, Simon McVittie):
+  · let xsltproc be overridden as usual: ./configure XSLTPROC=myxsltproc
+  · install more documentation automatically, including man2html output
+  · put dbus.devhelp in the right place (it must go in ${htmldir})
+
+• Unix-specific (fd.o #33465, Simon McVittie):
+  · opt-in to fd passing on Solaris
+
+• Windows-specific (Ralf Habacker):
+  · fix use of a mutex for autolaunch server detection
+  · don't crash on malloc failure in _dbus_printf_string_upper_bound
+
 D-Bus 1.4.12 (2011-06-10)
 ==
 
@@ -9,7 +37,7 @@ Security (local denial of service):
 • Byte-swap foreign-endian messages correctly, preventing a long-standing
   local DoS if foreign-endian messages are relayed through the dbus-daemon
   (backporters: this is git commit c3223ba6c401ba81df1305851312a47c485e6cd7)
-  (fd.o #38120, Debian #629938, no CVE number yet; Simon McVittie)
+  (CVE-2011-2200, fd.o #38120, Debian #629938; Simon McVittie)
 
 New things:
 
