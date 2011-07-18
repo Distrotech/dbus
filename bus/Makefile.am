@@ -148,25 +148,27 @@ bus_test_launch_helper_CPPFLAGS= -DDBUS_STATIC_BUILD	\
 	-DACTIVATION_LAUNCHER_TEST	\
 	-DACTIVATION_LAUNCHER_DO_OOM
 
-## we use noinst_PROGRAMS not check_PROGRAMS so that we build
-## even when not doing "make check"
-noinst_PROGRAMS = $(TESTS)
+noinst_PROGRAMS =
 dbus_daemon_exec_PROGRAMS = dbus-daemon
 if DBUS_UNIX
 libexec_PROGRAMS = dbus-daemon-launch-helper
 endif DBUS_UNIX
 
-## note that TESTS has special meaning (stuff to use in make check)
-## so if adding tests not to be run in make check, don't add them to
-## TESTS
-TESTS =
+## Note that TESTS has special meaning (stuff to use in make check).
+## We don't actually want to run any of these tests until test/ has been
+## compiled, so we don't put them in TESTS here; we run them in test/
+## instead.
 
 if DBUS_BUILD_TESTS
-TESTS_ENVIRONMENT=DBUS_TEST_DATA=$(top_builddir)/test/data DBUS_TEST_HOMEDIR=$(top_builddir)/dbus DBUS_FATAL_WARNINGS=1 DBUS_BLOCK_ON_ABORT=1
-TESTS += bus-test bus-test-system
+## we use noinst_PROGRAMS not check_PROGRAMS so that we build
+## even when not doing "make check"
+
+# run as a test by test/Makefile.am
+noinst_PROGRAMS += bus-test bus-test-system
 
 if DBUS_UNIX
-TESTS += bus-test-launch-helper
+# run as a test by test/Makefile.am
+noinst_PROGRAMS += bus-test-launch-helper
 # this is used by the tests but is not,itself, a test
 noinst_PROGRAMS += dbus-daemon-launch-helper-test
 endif DBUS_UNIX

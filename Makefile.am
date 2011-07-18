@@ -1,5 +1,4 @@
-SUBDIRS=dbus bus doc tools test
-DIST_SUBDIRS=dbus bus doc tools test
+SUBDIRS=dbus bus tools test doc
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dbus-1.pc

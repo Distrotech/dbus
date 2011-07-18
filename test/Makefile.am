@@ -13,15 +13,42 @@ noinst_LTLIBRARIES = libdbus-testutils.la
 if DBUS_BUILD_TESTS
 ## break-loader removed for now
 ## most of these binaries are used in tests but are not themselves tests
-TEST_BINARIES=test-service test-names test-shell-service shell-test spawn-test test-segfault test-exit test-sleep-forever
+TEST_BINARIES = \
+	shell-test \
+	spawn-test \
+	test-exit \
+	test-names \
+	test-segfault \
+	test-service \
+	test-shell-service \
+	test-sleep-forever \
+	$(NULL)
 
 ## these are the things to run in make check (i.e. they are actual tests)
 ## (binaries in here must also be in TEST_BINARIES)
-TESTS=shell-test
-else
+TESTS = \
+	shell-test \
+	$(NULL)
+
+## These are conceptually part of directories that come earlier in SUBDIRS
+## order, but we don't want to run them til we arrive in this directory,
+## since they depend on stuff from this directory
+TESTS += \
+	../bus/bus-test$(EXEEXT) \
+	../bus/bus-test-system$(EXEEXT) \
+	../dbus/dbus-test$(EXEEXT) \
+	$(NULL)
+
+if DBUS_UNIX
+TESTS += ../bus/bus-test-launch-helper$(EXEEXT)
+endif
+
+else !DBUS_BUILD_TESTS
+
 TEST_BINARIES=
 TESTS=
-endif
+
+endif !DBUS_BUILD_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
 
@@ -91,8 +118,12 @@ installcheck_environment = \
 	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
 
 TESTS_ENVIRONMENT = \
+	DBUS_BLOCK_ON_ABORT=1 \
+	DBUS_FATAL_WARNINGS=1 \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
-	DBUS_TEST_DATA=@abs_top_builddir@/test/data
+	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
+	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
+	$(NULL)
 
 test_corrupt_SOURCES = corrupt.c
 test_corrupt_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
