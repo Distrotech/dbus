@@ -3386,7 +3386,8 @@
 
       <para>
         Messages may have a <literal>DESTINATION</literal> field (see <xref
-        linkend="message-protocol-header-fields"/>).  If the
+          linkend="message-protocol-header-fields"/>), resulting in a
+        <firstterm>unicast message</firstterm>.  If the
         <literal>DESTINATION</literal> field is present, it specifies a message
         recipient by name. Method calls and replies normally specify this field.
         The message bus must send messages (of any type) with the
@@ -3396,9 +3397,26 @@
       </para>
 
       <para>
-        Signals normally do not specify a destination; they are sent to all
+        When the message bus receives a signal, if the
+        <literal>DESTINATION</literal> field is absent, it is considered to
+        be a <firstterm>broadcast signal</firstterm>, and is sent to all
         applications with <firstterm>message matching rules</firstterm> that
-        match the message.
+        match the message. Most signal messages are broadcasts.
+      </para>
+
+      <para>
+        Unicast signal messages (those with a <literal>DESTINATION</literal>
+        field) are not commonly used, but they are treated like any unicast
+        message: they are delivered to the specified receipient,
+        regardless of its match rules.  One use for unicast signals is to
+        avoid a race condition in which a signal is emitted before the intended
+        recipient can call <xref linkend="bus-messages-add-match"/> to
+        receive that signal: if the signal is sent directly to that recipient
+        using a unicast message, it does not need to add a match rule at all,
+        and there is no race condition.  Another use for unicast signals,
+        on message buses whose security policy prevents eavesdropping, is to
+        send sensitive information which should only be visible to one
+        recipient.
       </para>
 
       <para>
