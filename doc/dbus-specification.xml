@@ -3385,57 +3385,10 @@
       </para>
 
       <para>
-        Messages may have a <literal>DESTINATION</literal> field (see <xref
-          linkend="message-protocol-header-fields"/>), resulting in a
-        <firstterm>unicast message</firstterm>.  If the
-        <literal>DESTINATION</literal> field is present, it specifies a message
-        recipient by name. Method calls and replies normally specify this field.
-        The message bus must send messages (of any type) with the
-        <literal>DESTINATION</literal> field set to the specified recipient,
-        regardless of whether the recipient has set up a match rule matching
-        the message.
-      </para>
-
-      <para>
-        When the message bus receives a signal, if the
-        <literal>DESTINATION</literal> field is absent, it is considered to
-        be a <firstterm>broadcast signal</firstterm>, and is sent to all
-        applications with <firstterm>message matching rules</firstterm> that
-        match the message. Most signal messages are broadcasts.
-      </para>
-
-      <para>
-        Unicast signal messages (those with a <literal>DESTINATION</literal>
-        field) are not commonly used, but they are treated like any unicast
-        message: they are delivered to the specified receipient,
-        regardless of its match rules.  One use for unicast signals is to
-        avoid a race condition in which a signal is emitted before the intended
-        recipient can call <xref linkend="bus-messages-add-match"/> to
-        receive that signal: if the signal is sent directly to that recipient
-        using a unicast message, it does not need to add a match rule at all,
-        and there is no race condition.  Another use for unicast signals,
-        on message buses whose security policy prevents eavesdropping, is to
-        send sensitive information which should only be visible to one
-        recipient.
-      </para>
-
-      <para>
-        When the message bus receives a method call, if the
-        <literal>DESTINATION</literal> field is absent, the call is taken to be
-        a standard one-to-one message and interpreted by the message bus
-        itself. For example, sending an
-        <literal>org.freedesktop.DBus.Peer.Ping</literal> message with no
-        <literal>DESTINATION</literal> will cause the message bus itself to
-        reply to the ping immediately; the message bus will not make this
-        message visible to other applications.
-      </para>
-
-      <para>
-        Continuing the <literal>org.freedesktop.DBus.Peer.Ping</literal> example, if
-        the ping message were sent with a <literal>DESTINATION</literal> name of
-        <literal>com.yoyodyne.Screensaver</literal>, then the ping would be
-        forwarded, and the Yoyodyne Corporation screensaver application would be
-        expected to reply to the ping.
+        Applications may send <firstterm>unicast messages</firstterm> to
+        a specific recipient or to the message bus itself, or
+        <firstterm>broadcast messages</firstterm> to all interested recipients.
+        See <xref linkend="message-bus-routing"/> for details.
       </para>
     </sect2>
 
@@ -3869,8 +3822,59 @@
 
     <sect2 id="message-bus-routing">
       <title>Message Bus Message Routing</title>
+
       <para>
-        FIXME 
+        Messages may have a <literal>DESTINATION</literal> field (see <xref
+          linkend="message-protocol-header-fields"/>), resulting in a
+        <firstterm>unicast message</firstterm>.  If the
+        <literal>DESTINATION</literal> field is present, it specifies a message
+        recipient by name. Method calls and replies normally specify this field.
+        The message bus must send messages (of any type) with the
+        <literal>DESTINATION</literal> field set to the specified recipient,
+        regardless of whether the recipient has set up a match rule matching
+        the message.
+      </para>
+
+      <para>
+        When the message bus receives a signal, if the
+        <literal>DESTINATION</literal> field is absent, it is considered to
+        be a <firstterm>broadcast signal</firstterm>, and is sent to all
+        applications with <firstterm>message matching rules</firstterm> that
+        match the message. Most signal messages are broadcasts.
+      </para>
+
+      <para>
+        Unicast signal messages (those with a <literal>DESTINATION</literal>
+        field) are not commonly used, but they are treated like any unicast
+        message: they are delivered to the specified receipient,
+        regardless of its match rules.  One use for unicast signals is to
+        avoid a race condition in which a signal is emitted before the intended
+        recipient can call <xref linkend="bus-messages-add-match"/> to
+        receive that signal: if the signal is sent directly to that recipient
+        using a unicast message, it does not need to add a match rule at all,
+        and there is no race condition.  Another use for unicast signals,
+        on message buses whose security policy prevents eavesdropping, is to
+        send sensitive information which should only be visible to one
+        recipient.
+      </para>
+
+      <para>
+        When the message bus receives a method call, if the
+        <literal>DESTINATION</literal> field is absent, the call is taken to be
+        a standard one-to-one message and interpreted by the message bus
+        itself. For example, sending an
+        <literal>org.freedesktop.DBus.Peer.Ping</literal> message with no
+        <literal>DESTINATION</literal> will cause the message bus itself to
+        reply to the ping immediately; the message bus will not make this
+        message visible to other applications.
+      </para>
+
+      <para>
+        Continuing the <literal>org.freedesktop.DBus.Peer.Ping</literal> example, if
+        the ping message were sent with a <literal>DESTINATION</literal> name of
+        <literal>com.yoyodyne.Screensaver</literal>, then the ping would be
+        forwarded, and the Yoyodyne Corporation screensaver application would be
+        expected to reply to the ping.
       </para>
 
       <sect3 id="message-bus-routing-eavesdropping">
