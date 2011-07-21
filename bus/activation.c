@@ -427,8 +427,11 @@ update_desktop_file_entry (BusActivation       *activation,
 
       if (_dbus_hash_table_lookup_string (activation->entries, name))
         {
-          _dbus_verbose ("The new service name \"%s\" of service file \"%s\" already in cache, ignoring\n",
+          _dbus_verbose ("The new service name \"%s\" of service file \"%s\" is already in cache, ignoring\n",
                          name, _dbus_string_get_const_data (&file_path));
+          dbus_set_error (error, DBUS_ERROR_FAILED,
+                          "The new service name \"%s\" of service file \"%s\" is already in cache, ignoring\n",
+                          name, _dbus_string_get_const_data (&file_path));
           goto out;
         }
 
