@@ -3877,6 +3877,14 @@
         expected to reply to the ping.
       </para>
 
+      <para>
+        Message bus implementations may impose a security policy which
+        prevents certain messages from being sent or received.
+        When a message cannot be sent or received due to a security
+        policy, the message bus should send an error reply, unless the
+        original message had the <literal>NO_REPLY</literal> flag.
+      </para>
+
       <sect3 id="message-bus-routing-eavesdropping">
         <title>Eavesdropping</title>
         <para>
