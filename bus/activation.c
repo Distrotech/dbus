@@ -457,8 +457,7 @@ update_desktop_file_entry (BusActivation       *activation,
            * the entries hash table */
           _dbus_hash_table_remove_string (entry->s_dir->entries,
                                           entry->filename);
-          bus_activation_entry_unref (entry);
-          return FALSE;
+          goto out;
         }
     }
 
