@@ -3857,14 +3857,19 @@
       <sect3 id="message-bus-routing-match-rules">
         <title>Match Rules</title>
         <para>
-	  An important part of the message bus routing protocol is match  
-	  rules. Match rules describe what messages can be sent to a client
-          based on the contents of the message.  When a message is routed
-          through the bus it is compared to clients' match rules.  If any
-          of the rules match, the message is dispatched to the client.
-          If none of the rules match the message never leaves the bus.  This
-          is an effective way to control traffic over the bus and to make sure
-          only relevant message need to be processed by the client.
+	  An important part of the message bus routing protocol is match
+          rules. Match rules describe the messages that should be sent to a
+          client, based on the contents of the message.  Broadcast signals
+          are only sent to clients which have a suitable match rule: this
+          avoids waking up client processes to deal with signals that are
+          not relevant to that client.
+        </para>
+        <para>
+          Messages that list a client as their <literal>DESTINATION</literal>
+          do not need to match the client's match rules, and are sent to that
+          client regardless. As a result, match rules are mainly used to
+          receive a subset of broadcast signals.
+        </para>
         </para>
         <para>
           Match rules are added using the AddMatch bus method 
