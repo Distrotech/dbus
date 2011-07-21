@@ -268,6 +268,7 @@ update_desktop_file_entry (BusActivation       *activation,
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
+  retval = FALSE;
   name = NULL;
   exec = NULL;
   user = NULL;
@@ -478,7 +479,7 @@ out:
   if (entry)
     bus_activation_entry_unref (entry);
 
-  return FALSE;
+  return retval;
 }
 
 static dbus_bool_t
