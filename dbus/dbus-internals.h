@@ -118,6 +118,14 @@ static void _dbus_verbose(const char * x,...) {;}
 #  define _dbus_is_verbose() FALSE 
 #endif /* !DBUS_ENABLE_VERBOSE_MODE */
 
+void _dbus_trace_ref (const char *obj_name,
+                      void       *obj,
+                      int         old_refcount,
+                      int         new_refcount,
+                      const char *why,
+                      const char *env_var,
+                      int        *enabled);
+
 const char* _dbus_strerror (int error_number);
 
 #ifdef DBUS_DISABLE_ASSERT

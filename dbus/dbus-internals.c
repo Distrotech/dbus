@@ -26,6 +26,7 @@
 #include "dbus-protocol.h"
 #include "dbus-marshal-basic.h"
 #include "dbus-test.h"
+#include "dbus-valgrind-internal.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -463,6 +464,72 @@ void
 _dbus_verbose_reset_real (void)
 {
   verbose_initted = FALSE;
+}
+
+void
+_dbus_trace_ref (const char *obj_name,
+                 void       *obj,
+                 int         old_refcount,
+                 int         new_refcount,
+                 const char *why,
+                 const char *env_var,
+                 int        *enabled)
+{
+  _dbus_assert (obj_name != NULL);
+  _dbus_assert (obj != NULL);
+  _dbus_assert (old_refcount >= -1);
+  _dbus_assert (new_refcount >= -1);
+
+  if (old_refcount == -1)
+    {
+      _dbus_assert (new_refcount == -1);
+    }
+  else
+    {
+      _dbus_assert (new_refcount >= 0);
+      _dbus_assert (old_refcount >= 0);
+      _dbus_assert (old_refcount > 0 || new_refcount > 0);
+    }
+
+  _dbus_assert (why != NULL);
+  _dbus_assert (env_var != NULL);
+  _dbus_assert (enabled != NULL);
+
+  if (*enabled < 0)
+    {
+      const char *s = _dbus_getenv (env_var);
+
+      *enabled = FALSE;
+
+      if (s && *s)
+        {
+          if (*s == '0')
+            *enabled = FALSE;
+          else if (*s == '1')
+            *enabled = TRUE;
+          else
+            _dbus_warn ("%s should be 0 or 1 if set, not '%s'", env_var, s);
+        }
+    }
+
+  if (*enabled)
+    {
+      if (old_refcount == -1)
+        {
+          VALGRIND_PRINTF_BACKTRACE ("%s %p ref stolen (%s)",
+                                     obj_name, obj, why);
+          _dbus_verbose ("%s %p ref stolen (%s)",
+                         obj_name, obj, why);
+        }
+      else
+        {
+          VALGRIND_PRINTF_BACKTRACE ("%s %p %d -> %d refs (%s)",
+                                     obj_name, obj,
+                                     old_refcount, new_refcount, why);
+          _dbus_verbose ("%s %p %d -> %d refs (%s)",
+                         obj_name, obj, old_refcount, new_refcount, why);
+        }
+    }
 }
 
 #endif /* DBUS_ENABLE_VERBOSE_MODE */
