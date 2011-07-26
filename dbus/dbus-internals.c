@@ -390,14 +390,13 @@ _dbus_is_verbose_real (void)
  * @param format printf-style format string.
  */
 void
+_dbus_verbose_real (
 #ifdef DBUS_CPP_SUPPORTS_VARIABLE_MACRO_ARGUMENTS
-_dbus_verbose_real (const char *file, 
+                    const char *file,
                     const int line, 
                     const char *function, 
-                    const char *format,
-#else
-_dbus_verbose_real (const char *format,
 #endif
+                    const char *format,
                     ...)
 {
   va_list args;
