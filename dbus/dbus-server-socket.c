@@ -343,6 +343,7 @@ _dbus_server_new_for_socket (int              *fds,
 
   SERVER_UNLOCK (server);
 
+  _dbus_server_trace_ref (&socket_server->base, 0, 1, "new_for_socket");
   return (DBusServer*) socket_server;
 
  failed_2:

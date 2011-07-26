@@ -126,6 +126,20 @@ DBusServerListenResult _dbus_server_listen_platform_specific (DBusAddressEntry  
                                                               DBusServer       **server_p,
                                                               DBusError         *error);
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+void _dbus_server_trace_ref (DBusServer *server,
+    int old_refcount,
+    int new_refcount,
+    const char *why);
+#else
+#define _dbus_server_trace_ref(s,o,n,w) \
+  do \
+  {\
+    (void) (o); \
+    (void) (n); \
+  } while (0)
+#endif
+
 #ifdef DBUS_DISABLE_CHECKS
 #define TOOK_LOCK_CHECK(server)
 #define RELEASING_LOCK_CHECK(server)

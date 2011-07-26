@@ -53,6 +53,20 @@
  * @{
  */
 
+#ifndef _dbus_server_trace_ref
+void
+_dbus_server_trace_ref (DBusServer *server,
+    int old_refcount,
+    int new_refcount,
+    const char *why)
+{
+  static int enabled = -1;
+
+  _dbus_trace_ref ("DBusServer", server, old_refcount, new_refcount, why,
+      "DBUS_SERVER_TRACE", &enabled);
+}
+#endif
+
 /* this is a little fragile since it assumes the address doesn't
  * already have a guid, but it shouldn't
  */
@@ -442,18 +456,15 @@ _dbus_server_toggle_timeout (DBusServer  *server,
 void
 _dbus_server_ref_unlocked (DBusServer *server)
 {
+  dbus_int32_t old_refcount;
+
   _dbus_assert (server != NULL);
   HAVE_LOCK_CHECK (server);
 
-#ifdef DBUS_DISABLE_ASSERT
-  _dbus_atomic_inc (&server->refcount);
-#else
-    {
-      dbus_int32_t old_refcount = _dbus_atomic_inc (&server->refcount);
-
-      _dbus_assert (old_refcount > 0);
-    }
-#endif
+  old_refcount = _dbus_atomic_inc (&server->refcount);
+  _dbus_assert (old_refcount > 0);
+  _dbus_server_trace_ref (server, old_refcount, old_refcount + 1,
+      "ref_unlocked");
 }
 
 /**
@@ -474,6 +485,9 @@ _dbus_server_unref_unlocked (DBusServer *server)
 
   old_refcount = _dbus_atomic_dec (&server->refcount);
   _dbus_assert (old_refcount > 0);
+
+  _dbus_server_trace_ref (server, old_refcount, old_refcount - 1,
+      "unref_unlocked");
 
   if (old_refcount == 1)
     {
@@ -681,28 +695,26 @@ dbus_server_listen (const char     *address,
 DBusServer *
 dbus_server_ref (DBusServer *server)
 {
+  dbus_int32_t old_refcount;
+
   _dbus_return_val_if_fail (server != NULL, NULL);
 
-#ifdef DBUS_DISABLE_CHECKS
-  _dbus_atomic_inc (&server->refcount);
-#else
+  /* can't get the refcount without a side-effect */
+  old_refcount = _dbus_atomic_inc (&server->refcount);
+
+#ifndef DBUS_DISABLE_CHECKS
+  if (_DBUS_UNLIKELY (old_refcount <= 0))
     {
-      dbus_int32_t old_refcount;
-
-      /* can't get the refcount without a side-effect */
-      old_refcount = _dbus_atomic_inc (&server->refcount);
-
-      if (_DBUS_UNLIKELY (old_refcount <= 0))
-        {
-          /* undo side-effect first */
-          _dbus_atomic_dec (&server->refcount);
-          _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,
-                                   _DBUS_FUNCTION_NAME, "old_refcount > 0",
-                                   __FILE__, __LINE__);
-          return NULL;
-        }
+      /* undo side-effect first */
+      _dbus_atomic_dec (&server->refcount);
+      _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,
+                               _DBUS_FUNCTION_NAME, "old_refcount > 0",
+                               __FILE__, __LINE__);
+      return NULL;
     }
 #endif
+
+  _dbus_server_trace_ref (server, old_refcount, old_refcount + 1, "ref");
 
   return server;
 }
@@ -738,6 +750,8 @@ dbus_server_unref (DBusServer *server)
       return;
     }
 #endif
+
+  _dbus_server_trace_ref (server, old_refcount, old_refcount - 1, "unref");
 
   if (old_refcount == 1)
     {
