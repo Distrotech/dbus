@@ -7,10 +7,9 @@ Changes:
   or dbus_connection_try_register_fallback fails, not ...ADDRESS_IN_USE
   (fd.o #38874, Jiří Klimeš)
 
-• Consistently use atomic operations on the refcounts of DBusPendingCall,
-  DBusServer, DBusMessageFilter and DBusObjectTree, as was done for
-  DBusConnection in 1.4.12, and make the use of atomic operations
-  more thorough for DBusConnection (fd.o #38005, Simon McVittie)
+• Consistently use atomic operations on everything that is ever manipulated
+  via atomic ops, as was done for changes to DBusConnection's refcount in
+  1.4.12 (fd.o #38005, Simon McVittie)
 
 • Fix a file descriptor leak when connecting to a TCP socket (fd.o #37258,
   Simon McVittie)
