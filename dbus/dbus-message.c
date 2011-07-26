@@ -527,7 +527,8 @@ dbus_message_get_cached (void)
   _dbus_assert (i < MAX_MESSAGE_CACHE_SIZE);
   _dbus_assert (message != NULL);
 
-  _dbus_assert (message->refcount.value == 0);
+  _dbus_assert (_dbus_atomic_get (&message->refcount) == 0);
+
   _dbus_assert (message->counters == NULL);
   
   _DBUS_UNLOCK (message_cache);
@@ -587,8 +588,8 @@ dbus_message_cache_or_finalize (DBusMessage *message)
 {
   dbus_bool_t was_cached;
   int i;
-  
-  _dbus_assert (message->refcount.value == 0);
+
+  _dbus_assert (_dbus_atomic_get (&message->refcount) == 0);
 
   /* This calls application code and has to be done first thing
    * without holding the lock
@@ -650,8 +651,8 @@ dbus_message_cache_or_finalize (DBusMessage *message)
 #endif
 
  out:
-  _dbus_assert (message->refcount.value == 0);
-  
+  _dbus_assert (_dbus_atomic_get (&message->refcount) == 0);
+
   _DBUS_UNLOCK (message_cache);
   
   if (!was_cached)
@@ -1044,7 +1045,7 @@ dbus_message_get_reply_serial  (DBusMessage *message)
 static void
 dbus_message_finalize (DBusMessage *message)
 {
-  _dbus_assert (message->refcount.value == 0);
+  _dbus_assert (_dbus_atomic_get (&message->refcount) == 0);
 
   /* This calls application callbacks! */
   _dbus_data_slot_list_free (&message->slot_list);
@@ -1061,8 +1062,8 @@ dbus_message_finalize (DBusMessage *message)
   dbus_free(message->unix_fds);
 #endif
 
-  _dbus_assert (message->refcount.value == 0);
-  
+  _dbus_assert (_dbus_atomic_get (&message->refcount) == 0);
+
   dbus_free (message);
 }
 
@@ -1081,7 +1082,7 @@ dbus_message_new_empty_header (void)
   else
     {
       from_cache = FALSE;
-      message = dbus_new (DBusMessage, 1);
+      message = dbus_new0 (DBusMessage, 1);
       if (message == NULL)
         return NULL;
 #ifndef DBUS_DISABLE_CHECKS
@@ -1093,8 +1094,9 @@ dbus_message_new_empty_header (void)
       message->n_unix_fds_allocated = 0;
 #endif
     }
-  
-  message->refcount.value = 1;
+
+  _dbus_atomic_inc (&message->refcount);
+
   message->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   message->in_cache = FALSE;
@@ -1457,7 +1459,8 @@ dbus_message_copy (const DBusMessage *message)
   if (retval == NULL)
     return NULL;
 
-  retval->refcount.value = 1;
+  _dbus_atomic_inc (&retval->refcount);
+
   retval->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   retval->generation = message->generation;

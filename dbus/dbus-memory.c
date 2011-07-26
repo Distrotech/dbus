@@ -295,7 +295,7 @@ _dbus_decrement_fail_alloc_counter (void)
 int
 _dbus_get_malloc_blocks_outstanding (void)
 {
-  return n_blocks_outstanding.value;
+  return _dbus_atomic_get (&n_blocks_outstanding);
 }
 
 /**
@@ -634,10 +634,15 @@ dbus_free (void  *memory)
       check_guards (memory, TRUE);
       if (memory)
         {
-	  _dbus_atomic_dec (&n_blocks_outstanding);
-          
-	  _dbus_assert (n_blocks_outstanding.value >= 0);
-          
+#ifdef DBUS_DISABLE_ASSERT
+          _dbus_atomic_dec (&n_blocks_outstanding);
+#else
+          dbus_int32_t old_value;
+
+          old_value = _dbus_atomic_dec (&n_blocks_outstanding);
+          _dbus_assert (old_value >= 1);
+#endif
+
           free (((unsigned char*)memory) - GUARD_START_OFFSET);
         }
       
@@ -648,9 +653,14 @@ dbus_free (void  *memory)
   if (memory) /* we guarantee it's safe to free (NULL) */
     {
 #ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_DISABLE_ASSERT
       _dbus_atomic_dec (&n_blocks_outstanding);
-      
-      _dbus_assert (n_blocks_outstanding.value >= 0);
+#else
+      dbus_int32_t old_value;
+
+      old_value = _dbus_atomic_dec (&n_blocks_outstanding);
+      _dbus_assert (old_value >= 1);
+#endif
 #endif
 
       free (memory);
