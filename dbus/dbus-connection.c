@@ -203,6 +203,27 @@
  * @{
  */
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+static void
+_dbus_connection_trace_ref (DBusConnection *connection,
+    int old_refcount,
+    int new_refcount,
+    const char *why)
+{
+  static int enabled = -1;
+
+  _dbus_trace_ref ("DBusConnection", connection, old_refcount, new_refcount,
+      why, "DBUS_CONNECTION_TRACE", &enabled);
+}
+#else
+#define _dbus_connection_trace_ref(c,o,n,w) \
+  do \
+  {\
+    (void) (o); \
+    (void) (n); \
+  } while (0)
+#endif
+
 /**
  * Internal struct representing a message filter function 
  */
@@ -1355,7 +1376,8 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
   _dbus_transport_ref (transport);
 
   CONNECTION_UNLOCK (connection);
-  
+
+  _dbus_connection_trace_ref (connection, 0, 1, "new_for_transport");
   return connection;
   
  error:
@@ -1402,13 +1424,17 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
  */
 DBusConnection *
 _dbus_connection_ref_unlocked (DBusConnection *connection)
-{  
+{
+  dbus_int32_t old_refcount;
+
   _dbus_assert (connection != NULL);
   _dbus_assert (connection->generation == _dbus_current_generation);
 
   HAVE_LOCK_CHECK (connection);
 
-  _dbus_atomic_inc (&connection->refcount);
+  old_refcount = _dbus_atomic_inc (&connection->refcount);
+  _dbus_connection_trace_ref (connection, old_refcount, old_refcount + 1,
+      "ref_unlocked");
 
   return connection;
 }
@@ -1422,15 +1448,18 @@ _dbus_connection_ref_unlocked (DBusConnection *connection)
 void
 _dbus_connection_unref_unlocked (DBusConnection *connection)
 {
-  dbus_bool_t last_unref;
+  dbus_int32_t old_refcount;
 
   HAVE_LOCK_CHECK (connection);
-  
+
   _dbus_assert (connection != NULL);
 
-  last_unref = (_dbus_atomic_dec (&connection->refcount) == 1);
+  old_refcount = _dbus_atomic_dec (&connection->refcount);
 
-  if (last_unref)
+  _dbus_connection_trace_ref (connection, old_refcount, old_refcount - 1,
+      "unref_unlocked");
+
+  if (old_refcount == 1)
     _dbus_connection_last_unref (connection);
 }
 
@@ -2607,10 +2636,13 @@ dbus_connection_open_private (const char     *address,
 DBusConnection *
 dbus_connection_ref (DBusConnection *connection)
 {
+  dbus_int32_t old_refcount;
+
   _dbus_return_val_if_fail (connection != NULL, NULL);
   _dbus_return_val_if_fail (connection->generation == _dbus_current_generation, NULL);
-
-  _dbus_atomic_inc (&connection->refcount);
+  old_refcount = _dbus_atomic_inc (&connection->refcount);
+  _dbus_connection_trace_ref (connection, old_refcount, old_refcount + 1,
+      "ref");
 
   return connection;
 }
@@ -2739,14 +2771,17 @@ _dbus_connection_last_unref (DBusConnection *connection)
 void
 dbus_connection_unref (DBusConnection *connection)
 {
-  dbus_bool_t last_unref;
+  dbus_int32_t old_refcount;
 
   _dbus_return_if_fail (connection != NULL);
   _dbus_return_if_fail (connection->generation == _dbus_current_generation);
 
-  last_unref = (_dbus_atomic_dec (&connection->refcount) == 1);
+  old_refcount = _dbus_atomic_dec (&connection->refcount);
 
-  if (last_unref)
+  _dbus_connection_trace_ref (connection, old_refcount, old_refcount - 1,
+      "unref");
+
+  if (old_refcount == 1)
     {
 #ifndef DBUS_DISABLE_CHECKS
       if (_dbus_transport_get_is_connected (connection->transport))
