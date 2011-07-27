@@ -100,6 +100,9 @@ OPTION(DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
+# analogous to AC_USE_SYSTEM_EXTENSIONS in configure.ac
+add_definitions(-D_POSIX_C_SOURCE=199309L -D_GNU_SOURCE)
+
 # do config checks
 INCLUDE(ConfigureChecks.cmake)
 
