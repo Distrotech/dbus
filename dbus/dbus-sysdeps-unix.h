@@ -132,6 +132,8 @@ dbus_uid_t    _dbus_geteuid (void);
 dbus_bool_t _dbus_parse_uid (const DBusString  *uid_str,
                              dbus_uid_t        *uid);
 
+void _dbus_close_all (void);
+
 /** @} */
 
 DBUS_END_DECLS
