@@ -826,8 +826,6 @@ _dbus_connect_unix_socket (const char     *path,
                       path, _dbus_strerror (errno));
 
       _dbus_close (fd, NULL);
-      fd = -1;
-
       return -1;
     }
 
@@ -836,8 +834,6 @@ _dbus_connect_unix_socket (const char     *path,
       _DBUS_ASSERT_ERROR_IS_SET (error);
 
       _dbus_close (fd, NULL);
-      fd = -1;
-
       return -1;
     }
 
