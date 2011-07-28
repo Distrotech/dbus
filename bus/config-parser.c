@@ -3395,6 +3395,10 @@ static const char *test_system_service_dir_matches[] =
          "/testusr/testshare/dbus-1/system-services",
 #endif
          DBUS_DATADIR"/dbus-1/system-services",
+#ifdef DBUS_UNIX
+         "/lib/dbus-1/system-services",
+#endif
+
 #ifdef DBUS_WIN
          NULL,
 #endif
