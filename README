@@ -140,3 +140,24 @@ Note that the high-level bindings are _separate projects_ from the
 main D-Bus package, and have their own release cycles, levels of
 maturity, and ABI stability policies. Please consult the documentation
 for your binding.
+
+Bootstrapping D-Bus on new platforms
+===
+
+A full build of D-Bus, with all regression tests enabled and run, has some
+dependencies which themselves depend on D-Bus, either for compilation or
+for some of *their* regression tests: GLib, dbus-glib and dbus-python are
+currently affected.
+
+To avoid circular dependencies, when bootstrapping D-Bus for the first time
+on a new OS or CPU architecture, you can either cross-compile some of
+those components, or choose the build order and options carefully:
+
+* build and install D-Bus without tests
+  - do not use the --enable-modular-tests=yes configure option
+  - do not use the --enable-tests=yes configure option
+* build and install GLib, again without tests
+* use those versions of libdbus and GLib to build and install dbus-glib
+* ... and use those to install dbus-python
+* rebuild libdbus; this time you can run all of the tests
+* rebuild GLib; this time you can run all of the tests
