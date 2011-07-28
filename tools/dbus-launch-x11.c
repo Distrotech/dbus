@@ -248,7 +248,7 @@ init_x_atoms (Display *display)
   user = getpwuid (getuid ());
   if (user == NULL)
     {
-      verbose ("Could not determine the user informations; aborting X11 integration.\n");
+      verbose ("Could not determine user information; aborting X11 integration.\n");
       return FALSE;
     }
   user_name = xstrdup(user->pw_name);

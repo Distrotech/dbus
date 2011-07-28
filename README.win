@@ -14,9 +14,9 @@ test not running yet and there is help needed to get them running.
 
 Building
 --------
-DBus could be build on windows using automake or cmake. See the
-file README for more informations.
-Special cmake build instructions could be found in cmake/readme-cmake.txt
+DBus can be built on windows using automake or cmake. See the
+file README for more information.
+Special cmake build instructions can be found in cmake/readme-cmake.txt
 
 
 windbus and dbus4win Ports
@@ -78,7 +78,7 @@ FAQ
 
 - Do you have any clue if dbus-win32 can run in a Windows CE environment?
 
-  dbus has been ported to wince, see README.wince for more informations
+  dbus has been ported to wince, see README.wince for more information
 
 - Do you know if the C++ binding made by OpenWengo will be easily portable to Windows?
 

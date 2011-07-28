@@ -188,7 +188,7 @@ bus_config_parser_start_element (BusConfigParser   *parser,
     default:
       {
         /* we really don't care about the others... */
-        _dbus_verbose (" START We dont care about '%s' type '%i'\n", element_name, parser->type);
+        _dbus_verbose (" START We don't care about '%s' type '%i'\n", element_name, parser->type);
         break;
       }
     }
@@ -289,7 +289,7 @@ bus_config_parser_content (BusConfigParser   *parser,
     default:
       {
         /* we don't care about the others... really */
-        _dbus_verbose (" CONTENTS We dont care '%s' type '%i'\n", _dbus_string_get_const_data (&content_sane), parser->type);
+        _dbus_verbose (" CONTENTS We don't care about '%s' type '%i'\n", _dbus_string_get_const_data (&content_sane), parser->type);
         break;
       }
     }
