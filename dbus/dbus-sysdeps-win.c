@@ -3082,6 +3082,21 @@ _dbus_atomic_dec (DBusAtomic *atomic)
 }
 
 /**
+ * Atomically get the value of an integer. It may change at any time
+ * thereafter, so this is mostly only useful for assertions.
+ *
+ * @param atomic pointer to the integer to get
+ * @returns the value at this moment
+ */
+dbus_int32_t
+_dbus_atomic_get (DBusAtomic *atomic)
+{
+  /* this is what GLib does, hopefully it's right... */
+  MemoryBarrier ();
+  return atomic->value;
+}
+
+/**
  * Called when the bus daemon is signaled to reload its configuration; any
  * caches should be nuked. Of course any caches that need explicit reload
  * are probably broken, but c'est la vie.
