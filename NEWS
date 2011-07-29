@@ -17,13 +17,19 @@ Changes:
 • Make "make check" in a clean tree work, by not running tests until
   test data has been set up (fd.o #34405, Simon McVittie)
 
+• Fix various typos (fd.o #27227, fd.o #38284; Sascha Silbe, Simon McVittie)
+
 • Documentation (fd.o #36156, Simon McVittie):
   · let xsltproc be overridden as usual: ./configure XSLTPROC=myxsltproc
   · install more documentation automatically, including man2html output
   · put dbus.devhelp in the right place (it must go in ${htmldir})
 
-• Unix-specific (fd.o #33465, Simon McVittie):
-  · opt-in to fd passing on Solaris
+• Unix-specific:
+  · look for system services in /lib/dbus-1/system-services in addition to all
+    the other well-known locations; note that this should always be /lib,
+    even on platforms where shared libraries on the root FS would go in /lib64,
+    /lib/x86_64-linux-gnu or similar (fd.o #35229, Lennart Poettering)
+  · opt-in to fd passing on Solaris (fd.o #33465, Simon McVittie)
 
 • Windows-specific (Ralf Habacker):
   · fix use of a mutex for autolaunch server detection
