@@ -29,9 +29,15 @@ Other changes:
 • The dbus-daemon no longer busy-loops if it has a very large number of file
   descriptors (fd.o #23194, Simon McVittie)
 
+• Refactor message flow through dispatching to avoid locking violations if
+  the bus daemon's message limit is hit; remove the per-connection link cache,
+  which was meant to improve performance, but now reduces it (fd.o #34393,
+  Simon McVittie)
+
 • Some cmake fixes (Ralf Habacker)
 
-• Remove dead code, mainly from DBusString (fd.o #38570, Simon McVittie)
+• Remove dead code, mainly from DBusString (fd.o #38570, fd.o #39610;
+  Simon McVittie, Lennart Poettering)
 
 • Stop storing two extra byte order indicators in each D-Bus message
   (fd.o #38287, Simon McVittie)
