@@ -3872,6 +3872,40 @@
       <para>
         FIXME 
       </para>
+
+      <sect3 id="message-bus-routing-eavesdropping">
+        <title>Eavesdropping</title>
+        <para>
+          Receiving a unicast message whose <literal>DESTINATION</literal>
+          indicates a different recipient is called
+          <firstterm>eavesdropping</firstterm>. On a message bus which acts as
+          a security boundary (like the standard system bus), the security
+          policy should usually prevent eavesdropping, since unicast messages
+          are normally kept private and may contain security-sensitive
+          information.
+        </para>
+
+        <para>
+          Eavesdropping is mainly useful for debugging tools, such as
+          the <literal>dbus-monitor</literal> tool in the reference
+          implementation of D-Bus. Tools which eavesdrop on the message bus
+          should be careful to avoid sending a reply or error in response to
+          messages intended for a different client.
+        </para>
+
+        <para>
+          Clients may attempt to eavesdrop by adding match rules
+          (see <xref linkend="message-bus-routing-match-rules"/>) containing
+          the <literal>eavesdrop='true'</literal> match. If the message bus'
+          security policy does not allow eavesdropping, the match rule can
+          still be added, but will not have any practical effect. For
+          compatibility with older message bus implementations, if adding such
+          a match rule results in an error reply, the client may fall back to
+          adding the same rule with the <literal>eavesdrop</literal> match
+          omitted.
+        </para>
+      </sect3>
+
       <sect3 id="message-bus-routing-match-rules">
         <title>Match Rules</title>
         <para>
@@ -3888,6 +3922,10 @@
           client regardless. As a result, match rules are mainly used to
           receive a subset of broadcast signals.
         </para>
+        <para>
+          Match rules can also be used for eavesdropping
+          (see <xref linkend="message-bus-routing-eavesdropping"/>),
+          if the security policy of the message bus allows it.
         </para>
         <para>
           Match rules are added using the AddMatch bus method 
@@ -4063,6 +4101,28 @@
                         daemon in dbus 1.5.0 and later.
                       </emphasis>
                     </para>
+                  </entry>
+                </row>
+                <row>
+                  <entry><literal>eavesdrop</literal></entry>
+                  <entry><literal>'true'</literal>, <literal>'false'</literal></entry>
+                  <entry>Since D-Bus 1.5.UNRELEASED, match rules do not
+                    match messages which have a <literal>DESTINATION</literal>
+                    field unless the match rule specifically
+                    requests this
+                    (see <xref linkend="message-bus-routing-eavesdropping"/>)
+                    by specifying <literal>eavesdrop='true'</literal>
+                    in the match rule.  <literal>eavesdrop='false'</literal>
+                    restores the default behaviour. Messages are
+                    delivered to their <literal>DESTINATION</literal>
+                    regardless of match rules, so this match does not
+                    affect normal delivery of unicast messages.
+                    If the message bus has a security policy which forbids
+                    eavesdropping, this match may still be used without error,
+                    but will not have any practical effect.
+                    In older versions of D-Bus, this match was not allowed
+                    in match rules, and all match rules behaved as if
+                    <literal>eavesdrop='true'</literal> had been used.
                   </entry>
                 </row>
               </tbody>
