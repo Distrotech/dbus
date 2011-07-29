@@ -2348,6 +2348,29 @@ _dbus_atomic_dec (DBusAtomic *atomic)
 #endif
 }
 
+/**
+ * Atomically get the value of an integer. It may change at any time
+ * thereafter, so this is mostly only useful for assertions.
+ *
+ * @param atomic pointer to the integer to get
+ * @returns the value at this moment
+ */
+dbus_int32_t
+_dbus_atomic_get (DBusAtomic *atomic)
+{
+#if DBUS_USE_SYNC
+  __sync_synchronize ();
+  return atomic->value;
+#else
+  dbus_int32_t res;
+
+  _DBUS_LOCK (atomic);
+  res = atomic->value;
+  _DBUS_UNLOCK (atomic);
+  return res;
+#endif
+}
+
 #ifdef DBUS_BUILD_TESTS
 /** Gets our GID
  * @returns process GID

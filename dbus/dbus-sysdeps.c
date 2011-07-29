@@ -1067,30 +1067,6 @@ _dbus_strerror_from_errno (void)
   return _dbus_strerror (errno);
 }
 
-/**
- * Atomically get the value of an integer. It may change at any time
- * thereafter, so this is mostly only useful for assertions.
- *
- * This function temporarily increases the atomic integer, so only
- * use it in contexts where that would be OK (such as refcounts).
- *
- * @param atomic pointer to the integer to increment
- * @returns the value at this moment
- */
-dbus_int32_t
-_dbus_atomic_get (DBusAtomic *atomic)
-{
-  dbus_int32_t old_value;
-
-  /* On Windows we use InterlockedIncrement and InterlockedDecrement,
-   * and there is no InterlockedGet, so we have to change the value.
-   * Increasing it is less likely to have bad side-effects (for instance,
-   * it's OK for refcounts). */
-  old_value = _dbus_atomic_inc (atomic);
-  _dbus_atomic_dec (atomic);
-  return old_value;
-}
-
 /** @} end of sysdeps */
 
 /* tests in dbus-sysdeps-util.c */
