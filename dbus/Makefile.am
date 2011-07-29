@@ -259,7 +259,7 @@ EXTRA_DIST=dbus-arch-deps.h.in
 noinst_LTLIBRARIES=libdbus-internal.la
 
 libdbus_1_la_CPPFLAGS= -Ddbus_1_EXPORTS
-libdbus_1_la_LIBADD= $(DBUS_CLIENT_LIBS)
+libdbus_1_la_LIBADD= $(LIBDBUS_LIBS)
 libdbus_1_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
 	$(export_symbols) \
@@ -268,7 +268,7 @@ libdbus_1_la_LDFLAGS = \
 	$(NULL)
 
 libdbus_internal_la_CPPFLAGS = -DDBUS_STATIC_BUILD
-libdbus_internal_la_LIBADD=$(DBUS_CLIENT_LIBS)
+libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS)
 
 noinst_PROGRAMS =
 
