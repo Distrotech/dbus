@@ -78,6 +78,13 @@
        <revremark></revremark>
      </revision>
      <revision>
+       <revnumber>0.18</revnumber>
+       <date>29 July 2011</date>
+       <authorinitials>smcv</authorinitials>
+       <revremark>define eavesdropping, unicast, broadcast; add eavesdrop
+         match keyword; promote type system to a top-level section</revremark>
+     </revision>
+     <revision>
        <revnumber>0.17</revnumber>
        <date>1 June 2011</date>
        <authorinitials>smcv/davidz</authorinitials>
@@ -4118,7 +4125,7 @@
                 <row>
                   <entry><literal>eavesdrop</literal></entry>
                   <entry><literal>'true'</literal>, <literal>'false'</literal></entry>
-                  <entry>Since D-Bus 1.5.UNRELEASED, match rules do not
+                  <entry>Since D-Bus 1.5.6, match rules do not
                     match messages which have a <literal>DESTINATION</literal>
                     field unless the match rule specifically
                     requests this
