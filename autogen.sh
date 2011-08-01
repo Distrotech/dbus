@@ -85,8 +85,9 @@ autoconf || echo "autoconf failed - version 2.5x is probably required"
 
 cd $ORIGDIR
 
-run_configure=true
-for arg in $*; do
+if test x"$NOCONFIGURE" = x; then
+  run_configure=true
+  for arg in $*; do
     case $arg in 
         --no-configure)
             run_configure=false
@@ -94,7 +95,10 @@ for arg in $*; do
         *)
             ;;
     esac
-done
+  done
+else
+  run_configure=false
+fi
 
 if $run_configure; then
     $srcdir/configure --enable-maintainer-mode --config-cache "$@"
