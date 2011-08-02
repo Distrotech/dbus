@@ -128,7 +128,6 @@ void        _dbus_group_info_free     (DBusGroupInfo    *info);
 
 dbus_uid_t    _dbus_getuid (void);
 dbus_uid_t    _dbus_geteuid (void);
-dbus_gid_t    _dbus_getgid (void);
 
 dbus_bool_t _dbus_parse_uid (const DBusString  *uid_str,
                              dbus_uid_t        *uid);

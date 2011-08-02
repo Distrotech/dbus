@@ -2403,17 +2403,6 @@ _dbus_atomic_get (DBusAtomic *atomic)
 #endif
 }
 
-#ifdef DBUS_BUILD_TESTS
-/** Gets our GID
- * @returns process GID
- */
-dbus_gid_t
-_dbus_getgid (void)
-{
-  return getgid ();
-}
-#endif
-
 /**
  * Wrapper for poll().
  *
