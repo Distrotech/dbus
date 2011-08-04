@@ -137,12 +137,15 @@ test_connect (Fixture *f,
     gconstpointer data G_GNUC_UNUSED)
 {
   dbus_bool_t have_mem;
+  char *address;
 
   g_assert (f->left_server_conn == NULL);
   g_assert (f->right_server_conn == NULL);
 
-  f->left_client_conn = dbus_connection_open_private (
-      dbus_server_get_address (f->server), &f->e);
+  address = dbus_server_get_address (f->server);
+  g_assert (address != NULL);
+
+  f->left_client_conn = dbus_connection_open_private (address, &f->e);
   assert_no_error (&f->e);
   g_assert (f->left_client_conn != NULL);
   dbus_connection_setup_with_g_main (f->left_client_conn, NULL);
@@ -153,11 +156,12 @@ test_connect (Fixture *f,
       g_main_context_iteration (NULL, TRUE);
     }
 
-  f->right_client_conn = dbus_connection_open_private (
-      dbus_server_get_address (f->server), &f->e);
+  f->right_client_conn = dbus_connection_open_private (address, &f->e);
   assert_no_error (&f->e);
   g_assert (f->right_client_conn != NULL);
   dbus_connection_setup_with_g_main (f->right_client_conn, NULL);
+
+  dbus_free (address);
 
   while (f->right_server_conn == NULL)
     {
