@@ -97,6 +97,10 @@ shell_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 spawn_test_LDADD=$(TEST_LIBS)
 spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
+test_refs_SOURCES = internals/refs.c
+test_refs_CPPFLAGS = -DDBUS_STATIC_BUILD $(GLIB_CFLAGS)
+test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS) $(TEST_LIBS)
+
 EXTRA_DIST = dbus-test-runner
 
 testexecdir = $(libdir)/dbus-1.0/test
@@ -108,6 +112,7 @@ installable_tests = \
 	test-dbus-daemon \
 	test-loopback \
 	test-marshal \
+	test-refs \
 	test-relay \
 	$(NULL)
 
