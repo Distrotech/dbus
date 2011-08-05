@@ -13,6 +13,13 @@ AM_CPPFLAGS = \
 # improve backtraces from test stuff
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
+static_cppflags = \
+	$(AM_CPPFLAGS) \
+	-DDBUS_STATIC_BUILD \
+	$(NULL)
+
+libdbus_testutils_la_CPPFLAGS = \
+	$(static_cppflags)
 libdbus_testutils_la_SOURCES = \
 	test-utils.c \
 	test-utils.h \
@@ -64,11 +71,6 @@ TESTS=
 endif !DBUS_BUILD_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
-
-static_cppflags = \
-	$(AM_CPPFLAGS) \
-	-DDBUS_STATIC_BUILD \
-	$(NULL)
 
 test_service_CPPFLAGS = $(static_cppflags)
 test_service_LDADD = libdbus-testutils.la
