@@ -403,14 +403,6 @@ free_connection_data (void *data)
   dbus_free (d);
 }
 
-static void
-call_timeout_callback (DBusTimeout   *timeout,
-                       void          *data)
-{
-  /* can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 BusConnections*
 bus_connections_new (BusContext *context)
 {
