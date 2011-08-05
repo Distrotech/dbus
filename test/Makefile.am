@@ -83,6 +83,10 @@ shell_test_LDADD = libdbus-testutils.la
 spawn_test_CPPFLAGS = $(static_cppflags)
 spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
+test_refs_SOURCES = internals/refs.c
+test_refs_CPPFLAGS = $(static_cppflags)
+test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS)
+
 EXTRA_DIST = dbus-test-runner
 
 testexecdir = $(libdir)/dbus-1.0/test
@@ -95,6 +99,7 @@ installable_tests = \
 	test-dbus-daemon-eavesdrop \
 	test-loopback \
 	test-marshal \
+	test-refs \
 	test-relay \
 	$(NULL)
 
