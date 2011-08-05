@@ -253,4 +253,10 @@
 #define _dbus_verbose_C_S _dbus_verbose
 #endif 
 
+#ifdef _MSC_VER
+#define DBUS_INLINE __inline
+#else
+#define DBUS_INLINE inline
+#endif
+
 #endif  // _DBUS_CONFIG_H
