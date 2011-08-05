@@ -48,13 +48,13 @@ static int reload_pipe[2];
 
 static void close_reload_pipe (DBusWatch **);
 
-#ifdef DBUS_UNIX
 typedef enum
  {
    ACTION_RELOAD = 'r',
    ACTION_QUIT = 'q'
  } SignalAction;
 
+#ifdef DBUS_UNIX
 static void
 signal_handler (int sig)
 {
