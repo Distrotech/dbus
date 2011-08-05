@@ -272,6 +272,8 @@ clean-local:
 			REVERSEDIRS="$$D $$REVERSEDIRS" ;		\
 		done ;							\
 		for D in $$REVERSEDIRS; do				\
-			rmdir $(top_builddir)/test/$$D || exit 1 ;	\
+			rmdir $(top_builddir)/test/$$D || 		\
+				test ! -d $(top_builddir)/test/$$D ||	\
+				exit 1 ;	\
 		done ;							\
 	fi
