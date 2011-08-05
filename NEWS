@@ -1,3 +1,14 @@
+D-Bus 1.4.16 (UNRELEASED)
+==
+
+• Add a regression test for fd.o #38005 (fd.o #39836, Simon McVittie)
+
+• Unix-specific:
+  · Clean up (non-abstract) Unix sockets on bus daemon exit (fd.o #38656;
+    Brian Cameron, Simon McVittie)
+  · Make the cmake build work again on GNU platforms (fd.o #29228,
+    Simon McVittie)
+
 D-Bus 1.4.14 (2011-07-29)
 ==
 
