@@ -144,10 +144,10 @@ out_all:
 static dbus_bool_t
 clear_environment (DBusError *error)
 {
-  const char *debug_env = NULL;
   const char *starter_env = NULL;
-
 #ifdef DBUS_ENABLE_VERBOSE_MODE
+  const char *debug_env = NULL;
+
   /* are we debugging */
   debug_env = _dbus_getenv ("DBUS_VERBOSE");
 #endif
