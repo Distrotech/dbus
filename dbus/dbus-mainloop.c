@@ -253,7 +253,6 @@ cull_watches_for_invalid_fd (DBusLoop  *loop,
                              int        fd)
 {
   DBusList *link;
-  DBusList *next;
   DBusList **watches;
 
   _dbus_warn ("invalid request, socket fd %d not open\n", fd);

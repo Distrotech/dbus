@@ -502,8 +502,7 @@ compose_string (char **strings, char separator)
   int n = 0;
   char *buf;
   char *p;
-  const char *ptr;
-  
+
   if (!strings || !strings[0])
     return 0;
   for (i = 0; strings[i]; i++)
@@ -583,7 +582,7 @@ static DWORD __stdcall
 babysitter (void *parameter)
 {
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
-  int fd;
+
   PING();
   _dbus_babysitter_ref (sitter);
 
