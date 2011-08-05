@@ -827,7 +827,6 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   DBusMessageIter iter;
   DBusMessageIter dict_iter;
   DBusMessageIter dict_entry_iter;
-  int msg_type;
   int array_type;
   int key_type;
   DBusList *keys, *key_link;
@@ -842,9 +841,13 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   /* The message signature has already been checked for us,
    * so let's just assert it's right.
    */
-  msg_type = dbus_message_iter_get_arg_type (&iter);
+#ifndef DBUS_DISABLE_ASSERT
+    {
+      int msg_type = dbus_message_iter_get_arg_type (&iter);
 
-  _dbus_assert (msg_type == DBUS_TYPE_ARRAY);
+      _dbus_assert (msg_type == DBUS_TYPE_ARRAY);
+    }
+#endif
 
   dbus_message_iter_recurse (&iter, &dict_iter);
 
@@ -1930,7 +1933,7 @@ bus_driver_handle_message (DBusConnection *connection,
 			   DBusMessage    *message,
                            DBusError      *error)
 {
-  const char *name, *sender, *interface;
+  const char *name, *interface;
   const InterfaceHandler *ih;
   const MessageHandler *mh;
   dbus_bool_t found_interface = FALSE;
@@ -1957,13 +1960,17 @@ bus_driver_handle_message (DBusConnection *connection,
   _dbus_assert (dbus_message_get_member (message) != NULL);
 
   name = dbus_message_get_member (message);
-  sender = dbus_message_get_sender (message);
 
-  _dbus_verbose ("Driver got a method call: %s\n",
-		 dbus_message_get_member (message));
+  _dbus_verbose ("Driver got a method call: %s\n", name);
 
   /* security checks should have kept this from getting here */
-  _dbus_assert (sender != NULL || strcmp (name, "Hello") == 0);
+#ifndef DBUS_DISABLE_ASSERT
+    {
+      const char *sender = dbus_message_get_sender (message);
+
+      _dbus_assert (sender != NULL || strcmp (name, "Hello") == 0);
+    }
+#endif
 
   for (ih = interface_handlers; ih->name != NULL; ih++)
     {

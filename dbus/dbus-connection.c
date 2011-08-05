@@ -3884,7 +3884,8 @@ dbus_connection_steal_borrowed_message (DBusConnection *connection,
 
   pop_message = _dbus_list_pop_first (&connection->incoming_messages);
   _dbus_assert (message == pop_message);
-  
+  (void) pop_message; /* unused unless asserting */
+
   connection->n_incoming -= 1;
  
   _dbus_verbose ("Incoming message %p stolen from queue, %d incoming\n",

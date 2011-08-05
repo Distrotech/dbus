@@ -75,6 +75,7 @@ _DBUS_STATIC_ASSERT (sizeof (DBusRealString) == sizeof (DBusString));
  */
 #define DBUS_GENERIC_STRING_PREAMBLE(real) \
   do { \
+      (void) real; /* might be unused unless asserting */ \
       _dbus_assert ((real) != NULL); \
       _dbus_assert (!(real)->invalid); \
       _dbus_assert ((real)->len >= 0); \
