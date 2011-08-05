@@ -1,3 +1,20 @@
+D-Bus 1.5.8 (UNRELEASED)
+==
+
+• Clean up dead code (fd.o #39231, Simon McVittie)
+
+• Add a regression test for fd.o #38005 (fd.o #39836, Simon McVittie)
+
+• Make "NOCONFIGURE=1 ./autogen.sh" not run configure (Colin Walters)
+
+• Unix-specific:
+  · Clean up (non-abstract) Unix sockets on bus daemon exit (fd.o #38656;
+    Brian Cameron, Simon McVittie)
+  · On systems that use libcap-ng but not systemd, drop supplemental groups
+    when switching to the daemon user (Red Hat #726953, Steve Grubb)
+  · Make the cmake build work again on GNU platforms (fd.o #29228,
+    Simon McVittie)
+
 D-Bus 1.5.6 (2011-07-29)
 ==
 
