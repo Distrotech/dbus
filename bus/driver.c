@@ -2009,7 +2009,6 @@ bus_driver_handle_message (DBusConnection *connection,
         }
     }
 
- unknown:
   _dbus_verbose ("No driver handler for message \"%s\"\n",
                  name);
 
