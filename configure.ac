@@ -249,6 +249,7 @@ fi
 
 if test x$enable_asserts = xno; then
     AC_DEFINE(DBUS_DISABLE_ASSERT,1,[Disable assertion checking])
+    DISABLE_UNUSED_WARNINGS="unused-label"
     R_DYNAMIC_LDFLAG=""
 else
     # -rdynamic is needed for glibc's backtrace_symbols to work.
@@ -266,6 +267,7 @@ AC_SUBST(R_DYNAMIC_LDFLAG)
 if test x$enable_checks = xno; then
     AC_DEFINE(DBUS_DISABLE_CHECKS,1,[Disable public API sanity checking])
     AC_DEFINE(G_DISABLE_CHECKS,1,[Disable GLib public API sanity checking])
+    DISABLE_UNUSED_WARNINGS="unused-label"
 fi
 
 if test x$enable_userdb_cache = xyes; then
@@ -1233,8 +1235,9 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl Override with --enable-Werror or --disable-Werror
   [test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = xyes],
 
-  dnl enable these warnings if possible:
+  dnl Enable these warnings if possible:
   [all \
+   extra \
    char-subscripts \
    missing-declarations \
    missing-prototypes \
@@ -1246,12 +1249,25 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
    declaration-after-statement \
   ],
 
-  dnl disable these warnings if possible, make them non-fatal if possible,
-  dnl and don't enable -Werror unless we succeeded:
-  dnl (unused is by design, sign-compare and pointer-sign are fd.o #17433)
-  [unused \
+  dnl Disable these warnings if possible, make them non-fatal if possible,
+  dnl and don't enable -Werror unless we succeeded.
+  dnl
+  dnl Intentional:
+  dnl - $DISABLE_UNUSED_WARNINGS disables unused-label warnings if not
+  dnl   checking or not asserting
+  dnl - missing field initializers being 0 is a C feature, not a bug
+  dnl - unused-parameter is to make writing callbacks less annoying
+  dnl
+  dnl To be fixed one day:
+  dnl - sign-compare and pointer-sign are workarounds for fd.o #17433
+  dnl - type-limits is probably a bug too, but having the rest of -Wextra
+  dnl   is better than nothing
+  [$DISABLE_UNUSED_WARNINGS \
+   missing-field-initializers \
+   unused-parameter \
    sign-compare \
    pointer-sign \
+   type-limits \
   ])
 
 if test "x$GCC" = "xyes"; then
