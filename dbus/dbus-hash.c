@@ -222,6 +222,8 @@ typedef struct
   int n_entries_on_init;     /**< used to detect table resize since initialization */
 } DBusRealHashIter;
 
+_DBUS_STATIC_ASSERT (sizeof (DBusRealHashIter) == sizeof (DBusHashIter));
+
 static DBusHashEntry* find_direct_function      (DBusHashTable          *table,
                                                  void                   *key,
                                                  dbus_bool_t             create_if_not_found,
