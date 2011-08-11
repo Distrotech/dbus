@@ -42,6 +42,8 @@
 
 static BusContext *context;
 
+#ifdef DBUS_UNIX
+
 static int reload_pipe[2];
 #define RELOAD_READ_END 0
 #define RELOAD_WRITE_END 1
@@ -54,7 +56,6 @@ typedef enum
    ACTION_QUIT = 'q'
  } SignalAction;
 
-#ifdef DBUS_UNIX
 static void
 signal_handler (int sig)
 {
@@ -212,6 +213,7 @@ check_two_pid_descriptors (const DBusString *pid_fd,
     }
 }
 
+#ifdef DBUS_UNIX
 static dbus_bool_t
 handle_reload_watch (DBusWatch    *watch,
 		     unsigned int  flags,
@@ -341,6 +343,7 @@ close_reload_pipe (void)
     _dbus_close_socket (reload_pipe[RELOAD_WRITE_END], NULL);
     reload_pipe[RELOAD_WRITE_END] = -1;
 }
+#endif /* DBUS_UNIX */
 
 int
 main (int argc, char **argv)
@@ -591,9 +594,9 @@ main (int argc, char **argv)
    * print_pid_pipe
    */
 
+#ifdef DBUS_UNIX
   setup_reload_pipe (bus_context_get_loop (context));
 
-#ifdef DBUS_UNIX
   /* POSIX signals are Unix-specific, and _dbus_set_signal_handler is
    * unimplemented (and probably unimplementable) on Windows, so there's
    * no point in trying to make the handler portable to non-Unix. */
