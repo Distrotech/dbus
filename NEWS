@@ -23,6 +23,7 @@ D-Bus 1.5.8 (UNRELEASED)
 • Windows-specific:
   · Fix compilation on MSVC, which doesn't understand "inline" with its
     C99 meaning (Ralf Habacker)
+  · Fix misuse of GPid in test/dbus-daemon.c (fd.o #40003, Simon McVittie)
 
 D-Bus 1.5.6 (2011-07-29)
 ==
