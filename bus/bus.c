@@ -1320,12 +1320,7 @@ out:
   va_end (args);
 }
 
-/* TODO: move to autotools generated config.h like done in cmake */
-#ifndef DBUS_INLINE
-#define DBUS_INLINE inline
-#endif
-
-static DBUS_INLINE const char *
+static inline const char *
 nonnull (const char *maybe_null,
          const char *if_null)
 {
