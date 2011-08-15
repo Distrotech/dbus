@@ -33,7 +33,10 @@
 # define _DBUS_ASSERT_ALIGNMENT(type, op, val) \
   _DBUS_STATIC_ASSERT (__extension__ __alignof__ (type) op val)
 #else
-# define _DBUS_ASSERT_ALIGNMENT(type, op, val) do { } while (0)
+  /* not gcc, so probably no alignof operator: just use a no-op statement
+   * that's valid in the same contexts */
+# define _DBUS_ASSERT_ALIGNMENT(type, op, val) \
+  _DBUS_STATIC_ASSERT (TRUE)
 #endif
 
 /* True by definition, but just for completeness... */
