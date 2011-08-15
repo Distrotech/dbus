@@ -28,10 +28,7 @@ DTDS = \
 	busconfig.dtd \
 	introspect.dtd
 
-dist_doc_DATA = \
-	diagram.png \
-	diagram.svg \
-	system-activation.txt
+dist_doc_DATA = system-activation.txt
 
 STATIC_DOCS = \
 	dbus-faq.xml \
@@ -51,7 +48,10 @@ EXTRA_DIST = \
 html_DATA =
 
 # we distribute these in the tarball so users don't necessarily need xmlto
-dist_html_DATA = $(XMLTO_OUTPUT)
+dist_html_DATA = \
+	diagram.png \
+	diagram.svg \
+	$(XMLTO_OUTPUT)
 
 XMLTO_OUTPUT=					\
 	dbus-faq.html				\
@@ -99,8 +99,8 @@ uninstall-local::
 	rm -f $(DESTDIR)$(apidir)/*.css
 	rm -f $(DESTDIR)$(htmldir)/*.html
 	rm -f $(DESTDIR)$(docdir)/*.txt
-	rm -f $(DESTDIR)$(docdir)/*.png
-	rm -f $(DESTDIR)$(docdir)/*.svg
+	rm -f $(DESTDIR)$(htmldir)/*.png
+	rm -f $(DESTDIR)$(htmldir)/*.svg
 	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(apidir) || \
 		rmdir $(DESTDIR)$(apidir)
 endif
