@@ -90,6 +90,38 @@
 #define socklen_t int
 #endif
 
+#if defined (__sun) || defined (__sun__)
+/*
+ * CMS_SPACE etc. definitions for Solaris < 10, based on
+ *   http://mailman.videolan.org/pipermail/vlc-devel/2006-May/024402.html
+ * via
+ *   http://wiki.opencsw.org/porting-faq#toc10
+ *
+ * These are only redefined for Solaris, for now: if your OS needs these too,
+ * please file a bug. (Or preferably, improve your OS so they're not needed.)
+ */
+
+# ifndef CMSG_ALIGN
+#   ifdef __sun__
+#     define CMSG_ALIGN(len) _CMSG_DATA_ALIGN (len)
+#   else
+      /* aligning to sizeof (long) is assumed to be portable (fd.o#40235) */
+#     define CMSG_ALIGN(len) (((len) + sizeof (long) - 1) & \
+                              ~(sizeof (long) - 1))
+#   endif
+# endif
+
+# ifndef CMSG_SPACE
+#   define CMSG_SPACE(len) (CMSG_ALIGN (sizeof (struct cmsghdr)) + \
+                            CMSG_ALIGN (len))
+# endif
+
+# ifndef CMSG_LEN
+#   define CMSG_LEN(len) (CMSG_ALIGN (sizeof (struct cmsghdr)) + (len))
+# endif
+
+#endif /* Solaris */
+
 static dbus_bool_t
 _dbus_open_socket (int              *fd_p,
                    int               domain,
