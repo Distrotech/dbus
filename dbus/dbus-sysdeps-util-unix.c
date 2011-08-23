@@ -422,11 +422,16 @@ _dbus_request_file_descriptor_limit (unsigned int limit)
 #endif
 }
 
-void 
+void
 _dbus_init_system_log (void)
 {
+#ifdef HAVE_DECL_LOG_PERROR
   openlog ("dbus", LOG_PID | LOG_PERROR, LOG_DAEMON);
+#else
+  openlog ("dbus", LOG_PID, LOG_DAEMON);
+#endif
 }
+
 /**
  * Log a message to the system log file (e.g. syslog on Unix).
  *
@@ -475,6 +480,19 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
       default:
         return;
     }
+
+#ifndef HAVE_DECL_LOG_PERROR
+    {
+      /* vsyslog() won't write to stderr, so we'd better do it */
+      va_list tmp;
+
+      DBUS_VA_COPY (tmp, args);
+      fprintf (stderr, "dbus[" DBUS_PID_FORMAT "]: ", _dbus_getpid ());
+      vfprintf (stderr, msg, tmp);
+      fputc ('\n', stderr);
+      va_end (tmp);
+    }
+#endif
 
   vsyslog (flags, msg, args);
 

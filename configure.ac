@@ -520,6 +520,11 @@ AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl,gethostbyname)])
 
 AC_CHECK_FUNCS(vsnprintf vasprintf nanosleep usleep setenv clearenv unsetenv socketpair getgrouplist fpathconf setrlimit poll setlocale localeconv strtoll strtoull)
 
+AC_CHECK_HEADERS([syslog.h])
+if test "x$ac_cv_header_syslog_h" = "xyes"; then
+  AC_CHECK_DECLS([LOG_PERROR], [], [], [[#include <syslog.h>]])
+fi
+
 #### Check for broken poll; taken from Glib's configure
 
 AC_MSG_CHECKING([for broken poll])
