@@ -218,6 +218,15 @@ AC_ARG_ENABLE([installed-tests],
 AM_CONDITIONAL([DBUS_ENABLE_INSTALLED_TESTS],
   [test "x$enable_installed_tests" = xyes])
 
+if test "x$enable_tests" = xyes; then
+  # full test coverage is required, Python is a hard dependency
+  AC_MSG_NOTICE([Full test coverage (--enable-tests=yes) requires Python])
+  AM_PATH_PYTHON([2.6])
+else
+  # --enable-tests not given: do not abort if Python is missing
+  AM_PATH_PYTHON([2.6], [], [:])
+fi
+
 if test x$enable_verbose_mode = xyes; then
     AC_DEFINE(DBUS_ENABLE_VERBOSE_MODE,1,[Support a verbose mode])
 fi
