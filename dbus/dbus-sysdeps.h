@@ -31,6 +31,10 @@
 #include <stdint.h>
 #endif
 
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 #include <dbus/dbus-errors.h>
 #include <dbus/dbus-file.h>
 #include <dbus/dbus-string.h>
