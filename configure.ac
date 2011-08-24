@@ -163,7 +163,14 @@ AC_ARG_ENABLE([modular-tests],
 AC_ARG_ENABLE([tests],
   AS_HELP_STRING([--enable-tests],
     [enable/disable all tests, overriding embedded-tests/modular-tests]),
-  [enable_embedded_tests=$enableval; enable_modular_tests=$enableval],
+  [
+  if test "x$enableval" = xyes; then
+    AC_MSG_NOTICE([Full test coverage was requested with --enable-tests=yes])
+    AC_MSG_NOTICE([This has many dependencies (GLib, dbus-glib, Python)])
+  fi
+  enable_embedded_tests=$enableval
+  enable_modular_tests=$enableval
+  ],
   [])
 
 # DBUS_ENABLE_EMBEDDED_TESTS controls unit tests built in to .c files
@@ -187,7 +194,8 @@ if test "x$enable_modular_tests" != xno; then
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.22, gio-2.0 >= 2.22],
     [],
     [if test "x$enable_modular_tests" = xyes; then
-      AC_MSG_ERROR([GLib is required by the modular tests])
+      AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires GLib])
+      AC_MSG_ERROR([$GLIB_ERRORS])
     else # assumed to be "auto"
       enable_modular_tests=no
     fi])
@@ -195,7 +203,8 @@ if test "x$enable_modular_tests" != xno; then
   PKG_CHECK_MODULES([DBUS_GLIB], [dbus-glib-1],
     [],
     [if test "x$enable_modular_tests" = xyes; then
-      AC_MSG_ERROR([dbus-glib is required by the modular tests (for now)])
+      AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires dbus-glib])
+      AC_MSG_ERROR([$DBUS_GLIB_ERRORS])
     else # assumed to be "auto"
       enable_modular_tests=no
     fi])
