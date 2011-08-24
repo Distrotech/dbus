@@ -229,8 +229,15 @@ AM_CONDITIONAL([DBUS_ENABLE_INSTALLED_TESTS],
 
 if test "x$enable_tests" = xyes; then
   # full test coverage is required, Python is a hard dependency
-  AC_MSG_NOTICE([Full test coverage (--enable-tests=yes) requires Python])
+  AC_MSG_NOTICE([Full test coverage (--enable-tests=yes) requires Python, dbus-python, pygobject])
   AM_PATH_PYTHON([2.6])
+  AC_MSG_CHECKING([for Python modules for full test coverage])
+  if "$PYTHON" -c "import dbus, gobject, dbus.mainloop.glib"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([cannot import dbus, gobject, dbus.mainloop.glib Python modules])
+  fi
 else
   # --enable-tests not given: do not abort if Python is missing
   AM_PATH_PYTHON([2.6], [], [:])
