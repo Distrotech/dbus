@@ -160,6 +160,38 @@ test_message (Fixture *f,
   dbus_message_unref (outgoing);
 }
 
+static void
+send_n_bytes (GSocket *socket,
+              const gchar *blob,
+              gssize blob_len)
+{
+  gssize len, total_sent;
+  GError *gerror = NULL;
+
+  total_sent = 0;
+
+  while (total_sent < blob_len)
+    {
+      len = g_socket_send (socket,
+                           blob + total_sent,
+                           blob_len - total_sent,
+                           NULL, &gerror);
+
+      /* this is NULL-safe: a NULL error does not match */
+      if (g_error_matches (gerror, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK))
+        {
+          /* we could wait for G_IO_OUT, but life's too short; just sleep */
+          g_clear_error (&gerror);
+          g_usleep (G_USEC_PER_SEC / 10);
+          continue;
+        }
+
+      g_assert_no_error (gerror);
+      g_assert (len >= 0);
+      total_sent += len;
+    }
+}
+
 /* Enough bytes for it to be obvious that this connection is broken */
 #define CORRUPT_LEN 1024
 
@@ -174,7 +206,6 @@ test_corrupt (Fixture *f,
   GSocket *socket;
   GError *gerror = NULL;
   int fd;
-  gssize len, total_sent;
   DBusMessage *incoming;
 
   test_message (f, addr);
@@ -191,17 +222,7 @@ test_corrupt (Fixture *f,
   g_assert_no_error (gerror);
   g_assert (socket != NULL);
 
-  total_sent = 0;
-
-  while (total_sent < CORRUPT_LEN)
-    {
-      len = g_socket_send_with_blocking (socket,
-          not_a_dbus_message + total_sent, CORRUPT_LEN - total_sent,
-          TRUE, NULL, &gerror);
-      g_assert_no_error (gerror);
-      g_assert (len >= 0);
-      total_sent += len;
-    }
+  send_n_bytes (socket, not_a_dbus_message, CORRUPT_LEN);
 
   /* Now spin on the client connection: the server just sent it complete
    * rubbish, so it should disconnect */
@@ -225,6 +246,7 @@ test_corrupt (Fixture *f,
       "/org/freedesktop/DBus/Local");
 
   dbus_message_unref (incoming);
+  g_object_unref (socket);
 }
 
 static void
@@ -237,7 +259,7 @@ test_byte_order (Fixture *f,
   char *blob;
   const gchar *arg = not_a_dbus_message;
   const gchar * const *args = &arg;
-  int blob_len, len, total_sent;
+  int blob_len;
   DBusMessage *message;
   dbus_bool_t mem;
 
@@ -277,16 +299,7 @@ test_byte_order (Fixture *f,
   g_assert_no_error (gerror);
   g_assert (socket != NULL);
 
-  total_sent = 0;
-
-  while (total_sent < blob_len)
-    {
-      len = g_socket_send_with_blocking (socket, blob + total_sent,
-          blob_len - total_sent, TRUE, NULL, &gerror);
-      g_assert_no_error (gerror);
-      g_assert (len >= 0);
-      total_sent += len;
-    }
+  send_n_bytes (socket, blob, blob_len);
 
   dbus_free (blob);
 
@@ -312,6 +325,7 @@ test_byte_order (Fixture *f,
       "/org/freedesktop/DBus/Local");
 
   dbus_message_unref (message);
+  g_object_unref (socket);
 }
 
 static void
