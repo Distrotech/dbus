@@ -4,7 +4,7 @@
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
   <listen>@TEST_LISTEN@</listen>
-  <servicedir>@TEST_VALID_SERVICE_DIR@</servicedir>
+  <servicedir>@DBUS_TEST_DATA@/valid-service-files</servicedir>
   <policy context="default">
     <allow send_interface="*"/>
     <allow receive_interface="*"/>

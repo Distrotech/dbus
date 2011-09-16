@@ -6,7 +6,7 @@
   <listen>@TEST_LISTEN@</listen>
   <type>system</type>
   <servicehelper>@TEST_LAUNCH_HELPER_BINARY@</servicehelper>
-  <servicedir>@TEST_INVALID_SERVICE_SYSTEM_DIR@</servicedir>
+  <servicedir>@DBUS_TEST_DATA@/invalid-service-files-system</servicedir>
   <policy context="default">
     <allow send_interface="*"/>
     <allow receive_interface="*"/>

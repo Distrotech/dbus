@@ -1519,12 +1519,6 @@ DBUS_PWD=`pwd`
 # Useful in a cross-compilation environment, where the tests are run on the host system.
 AC_ARG_WITH(dbus-test-dir, AS_HELP_STRING([--with-dbus-test-dir=[dirname]],[path where the tests tools are available]),
 			   DBUS_PWD=$withval)
-AC_DEFUN([TEST_PATH], [
-TEST_$1=${DBUS_PWD}/test/$2
-AC_DEFINE_UNQUOTED(TEST_$1, "$TEST_$1",
-                   [Full path to test file test/$2 in builddir])
-AC_SUBST(TEST_$1)
-])
 AC_DEFUN([TEST_PROG], [
 TEST_$1=${DBUS_PWD}/test/$2
 AC_DEFINE_UNQUOTED(TEST_$1, "$TEST_$1$EXEEXT",
@@ -1532,10 +1526,9 @@ AC_DEFINE_UNQUOTED(TEST_$1, "$TEST_$1$EXEEXT",
 AC_SUBST(TEST_$1)
 ])
 
-TEST_PATH(VALID_SERVICE_DIR, data/valid-service-files)
-TEST_PATH(INVALID_SERVICE_DIR, data/invalid-service-files)
-TEST_PATH(VALID_SERVICE_SYSTEM_DIR, data/valid-service-files-system)
-TEST_PATH(INVALID_SERVICE_SYSTEM_DIR, data/invalid-service-files-system)
+DBUS_TEST_DATA="$DBUS_PWD/test/data"
+AC_SUBST([DBUS_TEST_DATA])
+
 TEST_PROG(SERVICE_BINARY, test-service)
 TEST_PROG(SHELL_SERVICE_BINARY, test-shell-service)
 TEST_PROG(EXIT_BINARY, test-exit)
