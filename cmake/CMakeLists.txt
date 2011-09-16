@@ -383,8 +383,6 @@ if (MSVC_IDE)
 	FILE(REMOVE ${CMAKE_BINARY_DIR}/data/dbus-1/services)
 endif (MSVC_IDE)
 
-set(TEST_SERVICE_DIR          ${CMAKE_BINARY_DIR}/test/data/valid-service-files     CACHE STRING "Full path to test file test/data/valid-service-files in builddir" )
-
 #### Find socket directories
  if (NOT $ENV{TMPDIR} STREQUAL "")
      set (DBUS_SESSION_SOCKET_DIR $ENV{TMPDIR})
