@@ -33,18 +33,11 @@
 #define TEST_CONNECTION   "@TEST_CONNECTION@"
 
 // test binaries
+#define DBUS_TEST_EXEC "@DBUS_TEST_EXEC@"
+#define DBUS_EXEEXT "@EXEEXT@"
+
 /* Full path to test file test/test-exit in builddir */
 #define TEST_BUS_BINARY          "@TEST_BUS_BINARY@"
-/* Full path to test file test/test-exit in builddir */
-#define TEST_EXIT_BINARY          "@TEST_EXIT_BINARY@"
-/* Full path to test file test/test-segfault in builddir */
-#define TEST_SEGFAULT_BINARY      "@TEST_SEGFAULT_BINARY@"
-/* Full path to test file test/test-service in builddir */
-#define TEST_SERVICE_BINARY       "@TEST_SERVICE_BINARY@"
-/* Full path to test file test/test-shell-service in builddir */
-#define TEST_SHELL_SERVICE_BINARY "@TEST_SHELL_SERVICE_BINARY@"
-/* Full path to test file test/test-sleep-forever in builddir */
-#define TEST_SLEEP_FOREVER_BINARY "@TEST_SLEEP_FOREVER_BINARY@"
 
 /* Some dbus features */
 #cmakedefine DBUS_BUILD_TESTS 1

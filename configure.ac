@@ -1519,24 +1519,19 @@ DBUS_PWD=`pwd`
 # Useful in a cross-compilation environment, where the tests are run on the host system.
 AC_ARG_WITH(dbus-test-dir, AS_HELP_STRING([--with-dbus-test-dir=[dirname]],[path where the tests tools are available]),
 			   DBUS_PWD=$withval)
-AC_DEFUN([TEST_PROG], [
-TEST_$1=${DBUS_PWD}/test/$2
-AC_DEFINE_UNQUOTED(TEST_$1, "$TEST_$1$EXEEXT",
-                   [Full path to test file test/$2 in builddir])
-AC_SUBST(TEST_$1)
-])
 
+DBUS_TEST_EXEC="$DBUS_PWD/test"
 DBUS_TEST_DATA="$DBUS_PWD/test/data"
+
 AC_SUBST([DBUS_TEST_DATA])
+AC_SUBST([DBUS_TEST_EXEC])
 
-TEST_PROG(SERVICE_BINARY, test-service)
-TEST_PROG(SHELL_SERVICE_BINARY, test-shell-service)
-TEST_PROG(EXIT_BINARY, test-exit)
-TEST_PROG(SEGFAULT_BINARY, test-segfault)
-TEST_PROG(SLEEP_FOREVER_BINARY, test-sleep-forever)
-TEST_PROG(PRIVSERVER_BINARY, name-test/test-privserver)
+AC_DEFINE_UNQUOTED([DBUS_TEST_EXEC], ["$DBUS_TEST_EXEC"],
+                   [Full path to the daemon in the builddir])
+AC_DEFINE_UNQUOTED([DBUS_EXEEXT], ["$EXEEXT"],
+                   [Extension for executables, typically empty or .exe])
 
-AC_DEFINE_UNQUOTED(TEST_BUS_BINARY, "$DBUS_PWD/bus/dbus-daemon$EXEEXT",
+AC_DEFINE_UNQUOTED(TEST_BUS_BINARY, ["$DBUS_PWD/bus/dbus-daemon$EXEEXT"],
                    [Full path to the daemon in the builddir])
 AC_SUBST(TEST_BUS_BINARY)
 

@@ -754,6 +754,30 @@ _dbus_babysitter_set_result_function  (DBusBabysitter             *sitter,
 
 #ifdef DBUS_BUILD_TESTS
 
+static char *
+get_test_exec (const char *exe,
+               DBusString *scratch_space)
+{
+  const char *dbus_test_exec;
+
+  dbus_test_exec = _dbus_getenv ("DBUS_TEST_EXEC");
+
+  if (dbus_test_exec == NULL)
+    dbus_test_exec = DBUS_TEST_EXEC;
+
+  if (!_dbus_string_init (scratch_space))
+    return NULL;
+
+  if (!_dbus_string_append_printf (scratch_space, "%s/%s%s",
+                                   dbus_test_exec, exe, DBUS_EXEEXT))
+    {
+      _dbus_string_free (scratch_space);
+      return NULL;
+    }
+
+  return _dbus_string_get_data (scratch_space);
+}
+
 #define LIVE_CHILDREN(sitter) ((sitter)->child_handle != NULL)
 
 static void
@@ -816,6 +840,7 @@ check_spawn_segfault (void *data)
   char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter;
   DBusError error;
+  DBusString argv0;
 
   sitter = NULL;
 
@@ -823,7 +848,14 @@ check_spawn_segfault (void *data)
 
   /*** Test launching segfault binary */
 
-  argv[0] = TEST_SEGFAULT_BINARY;
+  argv[0] = get_test_exec ("test-segfault", &argv0);
+
+  if (argv[0] == NULL)
+    {
+      /* OOM was simulated, never mind */
+      return TRUE;
+    }
+
   if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
                                          NULL, NULL,
                                          &error))
@@ -831,6 +863,8 @@ check_spawn_segfault (void *data)
       _dbus_babysitter_block_for_child_exit (sitter);
       _dbus_babysitter_set_child_exit_error (sitter, &error);
     }
+
+  _dbus_string_free (&argv0);
 
   if (sitter)
     _dbus_babysitter_unref (sitter);
@@ -861,6 +895,7 @@ check_spawn_exit (void *data)
   char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter;
   DBusError error;
+  DBusString argv0;
 
   sitter = NULL;
 
@@ -868,7 +903,14 @@ check_spawn_exit (void *data)
 
   /*** Test launching exit failure binary */
 
-  argv[0] = TEST_EXIT_BINARY;
+  argv[0] = get_test_exec ("test-exit", &argv0);
+
+  if (argv[0] == NULL)
+    {
+      /* OOM was simulated, never mind */
+      return TRUE;
+    }
+
   if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
                                          NULL, NULL,
                                          &error))
@@ -876,6 +918,8 @@ check_spawn_exit (void *data)
       _dbus_babysitter_block_for_child_exit (sitter);
       _dbus_babysitter_set_child_exit_error (sitter, &error);
     }
+
+  _dbus_string_free (&argv0);
 
   if (sitter)
     _dbus_babysitter_unref (sitter);
@@ -906,6 +950,7 @@ check_spawn_and_kill (void *data)
   char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter;
   DBusError error;
+  DBusString argv0;
 
   sitter = NULL;
 
@@ -913,7 +958,14 @@ check_spawn_and_kill (void *data)
 
   /*** Test launching sleeping binary then killing it */
 
-  argv[0] = TEST_SLEEP_FOREVER_BINARY;
+  argv[0] = get_test_exec ("test-sleep-forever", &argv0);
+
+  if (argv[0] == NULL)
+    {
+      /* OOM was simulated, never mind */
+      return TRUE;
+    }
+
   if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
                                          NULL, NULL,
                                          &error))
@@ -924,6 +976,8 @@ check_spawn_and_kill (void *data)
 
       _dbus_babysitter_set_child_exit_error (sitter, &error);
     }
+
+  _dbus_string_free (&argv0);
 
   if (sitter)
     _dbus_babysitter_unref (sitter);
