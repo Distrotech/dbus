@@ -30,6 +30,21 @@
 
 DBUS_BEGIN_DECLS
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+void _dbus_message_trace_ref (DBusMessage *message,
+                              int          old_refcount,
+                              int          new_refcount,
+                              const char  *why);
+#else
+/* this bypasses any "unused" warnings for the old and new refcount */
+#define _dbus_message_trace_ref(m, o, n, w) \
+  do \
+  {\
+    (void) (o); \
+    (void) (n); \
+  } while (0)
+#endif
+
 typedef struct DBusMessageLoader DBusMessageLoader;
 
 void _dbus_message_get_network_data  (DBusMessage       *message,

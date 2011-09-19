@@ -83,6 +83,20 @@ _dbus_enable_message_cache (void)
 #   define _dbus_enable_message_cache() (TRUE)
 #endif
 
+#ifndef _dbus_message_trace_ref
+void
+_dbus_message_trace_ref (DBusMessage *message,
+                         int          old_refcount,
+                         int          new_refcount,
+                         const char  *why)
+{
+  static int enabled = -1;
+
+  _dbus_trace_ref ("DBusMessage", message, old_refcount, new_refcount, why,
+      "DBUS_MESSAGE_TRACE", &enabled);
+}
+#endif
+
 /* Not thread locked, but strictly const/read-only so should be OK
  */
 /** An static string representing an empty signature */
@@ -1136,6 +1150,8 @@ dbus_message_new_empty_header (void)
 
   _dbus_atomic_inc (&message->refcount);
 
+  _dbus_message_trace_ref (message, 0, 1, "new_empty_header");
+
   message->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   message->in_cache = FALSE;
@@ -1542,6 +1558,7 @@ dbus_message_copy (const DBusMessage *message)
 
 #endif
 
+  _dbus_message_trace_ref (retval, 0, 1, "copy");
   return retval;
 
  failed_copy:
@@ -1569,20 +1586,15 @@ dbus_message_copy (const DBusMessage *message)
 DBusMessage *
 dbus_message_ref (DBusMessage *message)
 {
-#ifndef DBUS_DISABLE_ASSERT
   dbus_int32_t old_refcount;
-#endif
 
   _dbus_return_val_if_fail (message != NULL, NULL);
   _dbus_return_val_if_fail (message->generation == _dbus_current_generation, NULL);
   _dbus_return_val_if_fail (!message->in_cache, NULL);
 
-#ifdef DBUS_DISABLE_ASSERT
-  _dbus_atomic_inc (&message->refcount);
-#else
   old_refcount = _dbus_atomic_inc (&message->refcount);
   _dbus_assert (old_refcount >= 1);
-#endif
+  _dbus_message_trace_ref (message, old_refcount, old_refcount + 1, "ref");
 
   return message;
 }
@@ -1606,6 +1618,8 @@ dbus_message_unref (DBusMessage *message)
   old_refcount = _dbus_atomic_dec (&message->refcount);
 
   _dbus_assert (old_refcount >= 1);
+
+  _dbus_message_trace_ref (message, old_refcount, old_refcount - 1, "unref");
 
   if (old_refcount == 1)
     {

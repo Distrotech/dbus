@@ -24,6 +24,7 @@
 #include <config.h>
 #include "dbus-internals.h"
 #include "dbus-connection-internal.h"
+#include "dbus-message-internal.h"
 #include "dbus-pending-call-internal.h"
 #include "dbus-pending-call.h"
 #include "dbus-list.h"
@@ -680,7 +681,8 @@ dbus_pending_call_steal_reply (DBusPendingCall *pending)
   pending->reply = NULL;
 
   CONNECTION_UNLOCK (pending->connection);
-  
+
+  _dbus_message_trace_ref (message, -1, -1, "dbus_pending_call_steal_reply");
   return message;
 }
 

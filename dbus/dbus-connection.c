@@ -513,7 +513,11 @@ _dbus_connection_queue_received_message_link (DBusConnection  *connection,
                  dbus_message_get_signature (message),
                  dbus_message_get_reply_serial (message),
                  connection,
-                 connection->n_incoming);}
+                 connection->n_incoming);
+
+  _dbus_message_trace_ref (message, -1, -1,
+      "_dbus_conection_queue_received_message_link");
+}
 
 /**
  * Adds a link + message to the incoming message queue.
@@ -534,7 +538,10 @@ _dbus_connection_queue_synthesized_message_link (DBusConnection *connection,
   connection->n_incoming += 1;
 
   _dbus_connection_wakeup_mainloop (connection);
-  
+
+  _dbus_message_trace_ref (link->data, -1, -1,
+      "_dbus_connection_queue_synthesized_message_link");
+
   _dbus_verbose ("Synthesized message %p added to incoming queue %p, %d incoming\n",
                  link->data, connection, connection->n_incoming);
 }
@@ -3795,6 +3802,8 @@ dbus_connection_borrow_message (DBusConnection *connection)
 
   CONNECTION_UNLOCK (connection);
 
+  _dbus_message_trace_ref (message, -1, -1, "dbus_connection_borrow_message");
+
   /* We don't update dispatch status until it's returned or stolen */
   
   return message;
@@ -3829,6 +3838,8 @@ dbus_connection_return_message (DBusConnection *connection,
 
   status = _dbus_connection_get_dispatch_status_unlocked (connection);
   _dbus_connection_update_dispatch_status_and_unlock (connection, status);
+
+  _dbus_message_trace_ref (message, -1, -1, "dbus_connection_return_message");
 }
 
 /**
@@ -3871,6 +3882,8 @@ dbus_connection_steal_borrowed_message (DBusConnection *connection,
 
   status = _dbus_connection_get_dispatch_status_unlocked (connection);
   _dbus_connection_update_dispatch_status_and_unlock (connection, status);
+  _dbus_message_trace_ref (message, -1, -1,
+      "dbus_connection_steal_borrowed_message");
 }
 
 /* See dbus_connection_pop_message, but requires the caller to own
@@ -3904,6 +3917,9 @@ _dbus_connection_pop_message_link_unlocked (DBusConnection *connection)
                      "no member",
                      dbus_message_get_signature (link->data),
                      connection, connection->n_incoming);
+
+      _dbus_message_trace_ref (link->data, -1, -1,
+          "_dbus_connection_pop_message_link_unlocked");
 
       check_disconnected_message_arrived_unlocked (connection, link->data);
       
@@ -3966,6 +3982,9 @@ _dbus_connection_putback_message_link_unlocked (DBusConnection *connection,
                  "no member",
                  dbus_message_get_signature (message_link->data),
                  connection, connection->n_incoming);
+
+  _dbus_message_trace_ref (message_link->data, -1, -1,
+      "_dbus_connection_putback_message_link_unlocked");
 }
 
 /**
