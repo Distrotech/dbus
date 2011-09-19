@@ -1924,6 +1924,14 @@ make_and_run_test_nodes (void)
     node_destroy (node);
   }
 
+  if (_dbus_getenv ("DBUS_TEST_SLOW") == NULL ||
+      atoi (_dbus_getenv ("DBUS_TEST_SLOW")) < 1)
+    {
+      fprintf (stderr, "skipping remaining marshal-recursive tests, "
+          "run with DBUS_TEST_SLOW=1 (or more) to enable\n");
+      goto out;
+    }
+
   start_next_test ("Each container of each container of each value %d iterations\n",
                    N_CONTAINERS * N_CONTAINERS * N_VALUES);
   for (i = 0; i < N_CONTAINERS; i++)
@@ -1996,8 +2004,15 @@ make_and_run_test_nodes (void)
       node_destroy (outer_container);
     }
 
-#if 0
-  /* This one takes a really long time, so comment it out for now */
+  /* This one takes a really long time (10 minutes on a Core2), so only enable
+   * it if you're really sure */
+  if (atoi (_dbus_getenv ("DBUS_TEST_SLOW")) < 2)
+    {
+      fprintf (stderr, "skipping really slow marshal-recursive test, "
+          "run with DBUS_TEST_SLOW=2 (or more) to enable\n");
+      goto out;
+    }
+
   start_next_test ("Each value,value,value triplet combination as toplevel, in all orders %d iterations\n",
                    N_VALUES * N_VALUES * N_VALUES);
   {
@@ -2021,8 +2036,8 @@ make_and_run_test_nodes (void)
         node_destroy (nodes[0]);
       }
   }
-#endif /* #if 0 expensive test */
 
+out:
   fprintf (stderr, "%d total iterations of recursive marshaling tests\n",
            n_iterations_completed_total);
   fprintf (stderr, "each iteration ran at initial offsets 0 through %d in both big and little endian\n",
