@@ -89,25 +89,12 @@ _dbus_counter_new (void)
 {
   DBusCounter *counter;
 
-  counter = dbus_new (DBusCounter, 1);
+  counter = dbus_new0 (DBusCounter, 1);
   if (counter == NULL)
     return NULL;
-  
+
   counter->refcount = 1;
-  counter->size_value = 0;
-  counter->unix_fd_value = 0;
 
-#ifdef DBUS_ENABLE_STATS
-  counter->peak_size_value = 0;
-  counter->peak_unix_fd_value = 0;
-#endif
-
-  counter->notify_size_guard_value = 0;
-  counter->notify_unix_fd_guard_value = 0;
-  counter->notify_function = NULL;
-  counter->notify_data = NULL;
-  counter->notify_pending = FALSE;
-  
   return counter;
 }
 
