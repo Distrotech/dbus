@@ -13,11 +13,6 @@ set (DBUS_VERSION ${DBUS_MAJOR_VERSION}.${DBUS_MINOR_VERSION}.${DBUS_MICRO_VERSI
 
 set (DBUS_VERSION_STRING "${DBUS_VERSION}")
 
-if (NOT DBUS_BUILD_TIMESTAMP)
-    message(STATUS "FIXME set DBUS_BUILD_TIMESTAMP to current date or fix current time stamp generation for having actual build date in version file info")
-    set (DBUS_BUILD_TIMESTAMP 20091231)
-endif (NOT DBUS_BUILD_TIMESTAMP)
-
 # we need to be up to date
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.4 FATAL_ERROR)
 if(COMMAND cmake_policy)
@@ -26,6 +21,9 @@ endif(COMMAND cmake_policy)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+
+include(Macros)
+TIMESTAMP(DBUS_BUILD_TIMESTAMP)
 
 ########### basic vars ###############
 
