@@ -1,9 +1,13 @@
-D-Bus 1.5.8 (UNRELEASED)
+D-Bus 1.5.8 (2011-09-21)
 ==
 
 The "cross-metering" release.
 
-• Clean up dead code (fd.o #39231, Simon McVittie)
+In addition to dead code removal and refactoring, this release contains all
+of the bugfixes from 1.4.16.
+
+• Clean up dead code, and make more warnings fatal in development builds
+  (fd.o #39231, fd.o #41012; Simon McVittie)
 
 • If full test coverage is requested via --enable-tests, strictly require
   Python, pygobject and dbus-python, which are required by some tests; if not,
