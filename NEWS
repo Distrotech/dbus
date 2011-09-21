@@ -1,6 +1,16 @@
 D-Bus 1.4.16 (UNRELEASED)
 ==
 
+The "this answerphone fails to answer the phone" release.
+
+• If full test coverage is requested via --enable-tests, strictly require
+  Python, pygobject and dbus-python, which are required by some tests; if not,
+  and Python is missing, skip those tests rather than failing
+  (fd.o #37847, Simon McVittie)
+
+• When using cmake, provide the same version-info API in the installed headers
+  as for autotools (DBUS_VERSION, etc.) (fd.o #40905, Ralf Habacker)
+
 • Add a regression test for fd.o #38005 (fd.o #39836, Simon McVittie)
 
 • Make "NOCONFIGURE=1 ./autogen.sh" not run configure (Colin Walters)
@@ -22,6 +32,12 @@ D-Bus 1.4.16 (UNRELEASED)
     Simon McVittie)
   · Fix compilation on non-C99 systems that have inttypes.h but not stdint.h,
     like Solaris (fd.o #40313, Dagobert Michelsen)
+  · Define CMSG_ALIGN, CMSG_LEN, CMSG_SPACE on Solaris < 10
+    (fd.o #40235, Simon McVittie)
+  · Cope with Unixes that don't have LOG_PERROR, like Solaris 10
+    (fd.o #39987, Simon McVittie)
+  · Cope with platforms whose vsnprintf violates both POSIX and C99, like
+    Tru64, IRIX and HP-UX (fd.o #11668, Simon McVittie)
 
 • Windows-specific:
   · Fix compilation on MSVC, which doesn't understand "inline" with its
