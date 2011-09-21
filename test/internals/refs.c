@@ -181,7 +181,6 @@ new_conn_cb (DBusServer *server,
     void *data)
 {
   Fixture *f = data;
-  dbus_bool_t have_mem;
 
   g_assert (f->server_connection == NULL);
   f->server_connection = dbus_connection_ref (server_connection);
