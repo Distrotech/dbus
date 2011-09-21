@@ -23,6 +23,9 @@ The "this answerphone fails to answer the phone" release.
 • Fix broken links from dbus-tutorial.html if $(htmldir) != $(docdir)
   (fd.o #39879, Chris Mayo)
 
+• Fix a small memory leak, and a failure to report errors, when updating
+  a service file entry for activation (fd.o #39230, Simon McVittie)
+
 • Unix-specific:
   · Clean up (non-abstract) Unix sockets on bus daemon exit (fd.o #38656;
     Brian Cameron, Simon McVittie)
