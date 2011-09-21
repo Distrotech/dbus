@@ -89,6 +89,10 @@ test_refs_SOURCES = internals/refs.c
 test_refs_CPPFLAGS = $(static_cppflags)
 test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 
+test_syslog_SOURCES = internals/syslog.c
+test_syslog_CPPFLAGS = -DDBUS_STATIC_BUILD $(GLIB_CFLAGS)
+test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS) $(TEST_LIBS)
+
 EXTRA_DIST = dbus-test-runner
 
 testexecdir = $(libdir)/dbus-1.0/test
@@ -103,6 +107,7 @@ installable_tests = \
 	test-marshal \
 	test-refs \
 	test-relay \
+	test-syslog \
 	$(NULL)
 
 installcheck_tests =
@@ -258,6 +263,8 @@ clean-local:
 			REVERSEDIRS="$$D $$REVERSEDIRS" ;		\
 		done ;							\
 		for D in $$REVERSEDIRS; do				\
-			rmdir $(top_builddir)/test/$$D || exit 1 ;	\
+			rmdir $(top_builddir)/test/$$D || 		\
+				test ! -d $(top_builddir)/test/$$D ||	\
+				exit 1 ;	\
 		done ;							\
 	fi

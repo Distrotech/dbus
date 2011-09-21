@@ -163,7 +163,14 @@ AC_ARG_ENABLE([modular-tests],
 AC_ARG_ENABLE([tests],
   AS_HELP_STRING([--enable-tests],
     [enable/disable all tests, overriding embedded-tests/modular-tests]),
-  [enable_embedded_tests=$enableval; enable_modular_tests=$enableval],
+  [
+  if test "x$enableval" = xyes; then
+    AC_MSG_NOTICE([Full test coverage was requested with --enable-tests=yes])
+    AC_MSG_NOTICE([This has many dependencies (GLib, dbus-glib, Python)])
+  fi
+  enable_embedded_tests=$enableval
+  enable_modular_tests=$enableval
+  ],
   [])
 
 # DBUS_ENABLE_EMBEDDED_TESTS controls unit tests built in to .c files
@@ -187,7 +194,8 @@ if test "x$enable_modular_tests" != xno; then
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.22, gio-2.0 >= 2.22],
     [],
     [if test "x$enable_modular_tests" = xyes; then
-      AC_MSG_ERROR([GLib is required by the modular tests])
+      AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires GLib])
+      AC_MSG_ERROR([$GLIB_ERRORS])
     else # assumed to be "auto"
       enable_modular_tests=no
     fi])
@@ -195,7 +203,8 @@ if test "x$enable_modular_tests" != xno; then
   PKG_CHECK_MODULES([DBUS_GLIB], [dbus-glib-1],
     [],
     [if test "x$enable_modular_tests" = xyes; then
-      AC_MSG_ERROR([dbus-glib is required by the modular tests (for now)])
+      AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires dbus-glib])
+      AC_MSG_ERROR([$DBUS_GLIB_ERRORS])
     else # assumed to be "auto"
       enable_modular_tests=no
     fi])
@@ -217,6 +226,22 @@ AC_ARG_ENABLE([installed-tests],
   [], [enable_installed_tests=no])
 AM_CONDITIONAL([DBUS_ENABLE_INSTALLED_TESTS],
   [test "x$enable_installed_tests" = xyes])
+
+if test "x$enable_tests" = xyes; then
+  # full test coverage is required, Python is a hard dependency
+  AC_MSG_NOTICE([Full test coverage (--enable-tests=yes) requires Python, dbus-python, pygobject])
+  AM_PATH_PYTHON([2.6])
+  AC_MSG_CHECKING([for Python modules for full test coverage])
+  if "$PYTHON" -c "import dbus, gobject, dbus.mainloop.glib"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([cannot import dbus, gobject, dbus.mainloop.glib Python modules])
+  fi
+else
+  # --enable-tests not given: do not abort if Python is missing
+  AM_PATH_PYTHON([2.6], [], [:])
+fi
 
 if test x$enable_verbose_mode = xyes; then
     AC_DEFINE(DBUS_ENABLE_VERBOSE_MODE,1,[Support a verbose mode])
@@ -544,6 +569,11 @@ AC_SEARCH_LIBS(socket,[socket network])
 AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl,gethostbyname)])
 
 AC_CHECK_FUNCS(vsnprintf vasprintf nanosleep usleep setenv clearenv unsetenv socketpair getgrouplist fpathconf setrlimit poll setlocale localeconv strtoll strtoull)
+
+AC_CHECK_HEADERS([syslog.h])
+if test "x$ac_cv_header_syslog_h" = "xyes"; then
+  AC_CHECK_DECLS([LOG_PERROR], [], [], [[#include <syslog.h>]])
+fi
 
 #### Check for broken poll; taken from Glib's configure
 
@@ -1367,7 +1397,12 @@ AM_CONDITIONAL(DBUS_INIT_SCRIPTS_CYGWIN, test x$with_init_scripts = xcygwin)
 ##### systemd unit files
 AC_ARG_WITH([systemdsystemunitdir],
 AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
-        [], [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+    [],
+    [
+    PKG_CHECK_EXISTS([systemd],
+      [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)],
+      [with_systemdsystemunitdir=no])
+    ])
 if test "x$with_systemdsystemunitdir" != xno; then
    AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
