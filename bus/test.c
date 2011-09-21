@@ -40,8 +40,6 @@ static dbus_bool_t
 add_client_watch (DBusWatch      *watch,
                   void           *data)
 {
-  DBusConnection *connection = data;
-
   return _dbus_loop_add_watch (client_loop, watch);
 }
 
@@ -49,8 +47,6 @@ static void
 remove_client_watch (DBusWatch      *watch,
                      void           *data)
 {
-  DBusConnection *connection = data;
-
   _dbus_loop_remove_watch (client_loop, watch);
 }
 
@@ -58,8 +54,6 @@ static dbus_bool_t
 add_client_timeout (DBusTimeout    *timeout,
                     void           *data)
 {
-  DBusConnection *connection = data;
-
   return _dbus_loop_add_timeout (client_loop, timeout);
 }
 
@@ -67,8 +61,6 @@ static void
 remove_client_timeout (DBusTimeout    *timeout,
                        void           *data)
 {
-  DBusConnection *connection = data;
-
   _dbus_loop_remove_timeout (client_loop, timeout);
 }
 

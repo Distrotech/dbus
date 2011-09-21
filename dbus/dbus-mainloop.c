@@ -99,7 +99,6 @@ watch_flags_from_poll_revents (short revents)
 
 typedef struct
 {
-  int refcount;
   DBusTimeout *timeout;
   unsigned long last_tv_sec;
   unsigned long last_tv_usec;
@@ -119,31 +118,13 @@ timeout_callback_new (DBusTimeout         *timeout)
   cb->timeout = timeout;
   _dbus_get_current_time (&cb->last_tv_sec,
                           &cb->last_tv_usec);
-  cb->refcount = 1;
-  return cb;
-}
-
-static TimeoutCallback *
-timeout_callback_ref (TimeoutCallback *cb)
-{
-  _dbus_assert (cb->refcount > 0);
-  
-  cb->refcount += 1;
-
   return cb;
 }
 
 static void
-timeout_callback_unref (TimeoutCallback *cb)
+timeout_callback_free (TimeoutCallback *cb)
 {
-  _dbus_assert (cb->refcount > 0);
-
-  cb->refcount -= 1;
-
-  if (cb->refcount == 0)
-    {
-      dbus_free (cb);
-    }
+  dbus_free (cb);
 }
 
 static void
@@ -253,7 +234,6 @@ cull_watches_for_invalid_fd (DBusLoop  *loop,
                              int        fd)
 {
   DBusList *link;
-  DBusList *next;
   DBusList **watches;
 
   _dbus_warn ("invalid request, socket fd %d not open\n", fd);
@@ -379,7 +359,7 @@ _dbus_loop_add_timeout (DBusLoop           *loop,
     }
   else
     {
-      timeout_callback_unref (tcb);
+      timeout_callback_free (tcb);
       return FALSE;
     }
   
@@ -403,7 +383,7 @@ _dbus_loop_remove_timeout (DBusLoop           *loop,
           _dbus_list_remove_link (&loop->timeouts, link);
           loop->callback_list_serial += 1;
           loop->timeout_count -= 1;
-          timeout_callback_unref (this);
+          timeout_callback_free (this);
 
           return;
         }

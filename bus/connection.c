@@ -403,14 +403,6 @@ free_connection_data (void *data)
   dbus_free (d);
 }
 
-static void
-call_timeout_callback (DBusTimeout   *timeout,
-                       void          *data)
-{
-  /* can return FALSE on OOM but we just let it fire again later */
-  dbus_timeout_handle (timeout);
-}
-
 BusConnections*
 bus_connections_new (BusContext *context)
 {
@@ -838,12 +830,7 @@ bus_connection_get_unix_groups  (DBusConnection   *connection,
                                  int              *n_groups,
                                  DBusError        *error)
 {
-  BusConnectionData *d;
   unsigned long uid;
-  
-  d = BUS_CONNECTION_DATA (connection);
-
-  _dbus_assert (d != NULL);
 
   *groups = NULL;
   *n_groups = 0;
@@ -1459,13 +1446,7 @@ bus_connections_check_limits (BusConnections  *connections,
                               DBusConnection  *requesting_completion,
                               DBusError       *error)
 {
-  BusConnectionData *d;
   unsigned long uid;
-  
-  d = BUS_CONNECTION_DATA (requesting_completion);
-  _dbus_assert (d != NULL);
-
-  _dbus_assert (d->name == NULL);
 
   if (connections->n_completed >=
       bus_context_get_max_completed_connections (connections->context))

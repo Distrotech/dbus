@@ -1103,7 +1103,9 @@ babysit (pid_t grandchild_pid,
         {
           char b;
           if (read (sigchld_pipe[READ_END], &b, 1) == -1)
-            /* ignore */;
+            {
+              /* ignore */
+            }
           /* do waitpid check */
           check_babysit_events (grandchild_pid, parent_pipe, 0);
         }

@@ -2267,12 +2267,14 @@ dbus_message_iter_get_fixed_array (DBusMessageIter  *iter,
                                    int              *n_elements)
 {
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
+#ifndef DBUS_DISABLE_CHECKS
   int subtype = _dbus_type_reader_get_current_type(&real->u.reader);
 
   _dbus_return_if_fail (_dbus_message_iter_check (real));
   _dbus_return_if_fail (value != NULL);
   _dbus_return_if_fail ((subtype == DBUS_TYPE_INVALID) ||
                         (dbus_type_is_fixed (subtype) && subtype != DBUS_TYPE_UNIX_FD));
+#endif
 
   _dbus_type_reader_read_fixed_multi (&real->u.reader,
                                       value, n_elements);
@@ -2824,12 +2826,14 @@ dbus_message_iter_abandon_container (DBusMessageIter *iter,
                                      DBusMessageIter *sub)
 {
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
+#ifndef DBUS_DISABLE_CHECKS
   DBusMessageRealIter *real_sub = (DBusMessageRealIter *)sub;
 
   _dbus_return_if_fail (_dbus_message_iter_append_check (real));
   _dbus_return_if_fail (real->iter_type == DBUS_MESSAGE_ITER_TYPE_WRITER);
   _dbus_return_if_fail (_dbus_message_iter_append_check (real_sub));
   _dbus_return_if_fail (real_sub->iter_type == DBUS_MESSAGE_ITER_TYPE_WRITER);
+#endif
 
   _dbus_message_iter_abandon_signature (real);
 }
@@ -4701,6 +4705,7 @@ dbus_message_demarshal_bytes_needed(const char *buf,
   if (validity == DBUS_VALID)
     {
       _dbus_assert (have_message || (header_len + body_len) > len);
+      (void) have_message; /* unused unless asserting */
       return header_len + body_len;
     }
   else
