@@ -90,8 +90,8 @@ test_refs_CPPFLAGS = $(static_cppflags)
 test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 
 test_syslog_SOURCES = internals/syslog.c
-test_syslog_CPPFLAGS = -DDBUS_STATIC_BUILD $(GLIB_CFLAGS)
-test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS) $(TEST_LIBS)
+test_syslog_CPPFLAGS = $(static_cppflags)
+test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 
 EXTRA_DIST = dbus-test-runner
 
