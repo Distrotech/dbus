@@ -33,7 +33,6 @@ dbus_bool_t _dbus_list_test              (void);
 dbus_bool_t _dbus_marshal_test           (void);
 dbus_bool_t _dbus_marshal_recursive_test (void);
 dbus_bool_t _dbus_marshal_byteswap_test  (void);
-dbus_bool_t _dbus_marshal_header_test    (void);
 dbus_bool_t _dbus_marshal_validate_test  (void);
 dbus_bool_t _dbus_misc_test              (void);
 dbus_bool_t _dbus_signature_test         (void);
@@ -51,7 +50,6 @@ dbus_bool_t _dbus_spawn_test             (const char *test_data_dir);
 dbus_bool_t _dbus_userdb_test            (const char *test_data_dir);
 dbus_bool_t _dbus_memory_test            (void);
 dbus_bool_t _dbus_object_tree_test       (void);
-dbus_bool_t _dbus_pending_call_test      (const char *test_data_dir);
 dbus_bool_t _dbus_credentials_test       (const char *test_data_dir);
 
 void        dbus_internal_do_not_use_run_tests         (const char          *test_data_dir,

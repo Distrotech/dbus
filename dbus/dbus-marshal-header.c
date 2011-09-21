@@ -1497,16 +1497,3 @@ _dbus_header_byteswap (DBusHeader *header,
 }
 
 /** @} */
-
-#ifdef DBUS_BUILD_TESTS
-#include "dbus-test.h"
-#include <stdio.h>
-
-dbus_bool_t
-_dbus_marshal_header_test (void)
-{
-
-  return TRUE;
-}
-
-#endif /* DBUS_BUILD_TESTS */
