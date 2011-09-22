@@ -13,11 +13,6 @@ set (DBUS_VERSION ${DBUS_MAJOR_VERSION}.${DBUS_MINOR_VERSION}.${DBUS_MICRO_VERSI
 
 set (DBUS_VERSION_STRING "${DBUS_VERSION}")
 
-if (NOT DBUS_BUILD_TIMESTAMP)
-    message(STATUS "FIXME set DBUS_BUILD_TIMESTAMP to current date or fix current time stamp generation for having actual build date in version file info")
-    set (DBUS_BUILD_TIMESTAMP 20091231)
-endif (NOT DBUS_BUILD_TIMESTAMP)
-
 # we need to be up to date
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.4 FATAL_ERROR)
 if(COMMAND cmake_policy)
@@ -26,6 +21,9 @@ endif(COMMAND cmake_policy)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+
+include(Macros)
+TIMESTAMP(DBUS_BUILD_TIMESTAMP)
 
 ########### basic vars ###############
 
@@ -87,9 +85,8 @@ if (WIN32)
     include(Win32Macros)
     addExplorerWrapper(${CMAKE_PROJECT_NAME})
 endif (WIN32)
-find_package(LibXml2)
-find_package(LibExpat)
-find_package(X11)
+
+option (DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" ON)
 
 if(NOT WIN32)
 	option (DBUS_ENABLE_ABSTRACT_SOCKETS "enable support for abstract sockets" ON)
@@ -101,6 +98,13 @@ option (DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
+
+if (DBUS_USE_EXPAT)
+    find_package(LibExpat)
+else ()
+    find_package(LibXml2)
+endif ()
+find_package(X11)
 
 # analogous to AC_USE_SYSTEM_EXTENSIONS in configure.ac
 add_definitions(-D_POSIX_C_SOURCE=199309L -D_GNU_SOURCE)
@@ -116,7 +120,6 @@ include (MacroLibrary)
 
 if(VCS)
 	set(DBUS_VERBOSE_C_S 1 CACHE STRING "verbose mode" FORCE)
-	set(DBUS_VERBOSE_C_S 1)
 endif(VCS)
 
 if(WIN32)
@@ -300,12 +303,6 @@ endif("${sysname}" MATCHES ".*SOLARIS.*")
 if(NOT LIBXML2_FOUND AND NOT LIBEXPAT_FOUND)
     message(FATAL "Neither expat nor libxml2 found!")
 endif(NOT LIBXML2_FOUND AND NOT LIBEXPAT_FOUND)
-
-if(LIBEXPAT_FOUND)
-    option (DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" ON)
-else(LIBEXPAT_FOUND)
-    option (DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" OFF)
-endif(LIBEXPAT_FOUND)
 
 if(DBUS_USE_EXPAT)
     SET(XML_LIB "Expat")
