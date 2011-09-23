@@ -2,7 +2,7 @@ project(dbus-lib)
 
 SET(DBUS_DIR ${CMAKE_SOURCE_DIR}/../dbus)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dbus-arch-deps.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/dbus-arch-deps.h )
+configure_file(${DBUS_DIR}/dbus-arch-deps.h.in ${CMAKE_CURRENT_BINARY_DIR}/dbus-arch-deps.h )
 
 add_definitions(-DDBUS_COMPILATION)
 
