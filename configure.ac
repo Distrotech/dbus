@@ -1562,6 +1562,15 @@ fi
 AC_SUBST(TEST_SOCKET_DIR)
 AC_DEFINE_UNQUOTED(DBUS_TEST_SOCKET_DIR, "$TEST_SOCKET_DIR", [Where to put test sockets])
 
+if test "x$dbus_unix" = xyes; then
+  TEST_LISTEN="unix:tmpdir=$TEST_SOCKET_DIR"
+else
+  TEST_LISTEN="tcp:host=localhost"
+fi
+AC_SUBST([TEST_LISTEN])
+AC_DEFINE_UNQUOTED([TEST_LISTEN], ["$TEST_LISTEN"],
+  [Listening address for regression tests])
+
 if ! test -z "$with_session_socket_dir" ; then
    DBUS_SESSION_SOCKET_DIR="$with_session_socket_dir"
 else

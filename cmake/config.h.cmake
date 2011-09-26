@@ -30,7 +30,6 @@
 #define VERSION DBUS_VERSION_STRING
 
 #define TEST_LISTEN       "@TEST_LISTEN@"
-#define TEST_CONNECTION   "@TEST_CONNECTION@"
 
 // test binaries
 #define DBUS_TEST_EXEC "@DBUS_TEST_EXEC@"
