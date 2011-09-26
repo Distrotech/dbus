@@ -15,6 +15,7 @@ bin_PROGRAMS = \
 	dbus-launch \
 	dbus-monitor \
 	dbus-send \
+	dbus-test-tool \
 	$(NULL)
 
 if DBUS_UNIX
@@ -80,6 +81,16 @@ examplesdir = ${docdir}/examples
 dist_examples_SCRIPTS = \
 	GetAllMatchRules.py \
 	$(NULL)
+
+dbus_test_tool_SOURCES = \
+	dbus-echo.c \
+	dbus-spam.c \
+	tool-common.c \
+	tool-common.h \
+	test-tool.c \
+	test-tool.h \
+	$(NULL)
+dbus_test_tool_LDADD = $(top_builddir)/dbus/libdbus-1.la
 
 EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\
