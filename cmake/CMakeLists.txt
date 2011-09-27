@@ -358,8 +358,8 @@ endif(X11_FOUND)
 
 # test binary names
 if (WIN32)
-	set (EXT ".exe")
-	# compatible with Automake .in files
+	# Automake calls this EXEEXT, and CMake doesn't have a standard name
+	# for it; follow Automake's naming convention so we can share .in files
 	set (EXEEXT ".exe")
 endif(WIN32)
 

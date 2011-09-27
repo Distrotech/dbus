@@ -54,7 +54,7 @@ target_link_libraries(test-names dbus-testutils)
 
 add_executable(shell-test ${shell-test_SOURCES})
 target_link_libraries(shell-test ${DBUS_INTERNAL_LIBRARIES})
-ADD_TEST(shell-test ${EXECUTABLE_OUTPUT_PATH}/shell-test${EXT})
+ADD_TEST(shell-test ${EXECUTABLE_OUTPUT_PATH}/shell-test${EXEEXT})
 
 add_executable(test-shell-service ${test-shell-service_SOURCES})
 target_link_libraries(test-shell-service dbus-testutils)
