@@ -65,6 +65,13 @@ _DBUS_STATIC_ASSERT (sizeof (dbus_uint64_t) == 8);
 _DBUS_ASSERT_ALIGNMENT (dbus_uint64_t, <=, 8);
 #endif
 
+_DBUS_STATIC_ASSERT (sizeof (DBusBasicValue) >= 8);
+/* The alignment of a DBusBasicValue might conceivably be > 8 because of the
+ * pointer, so we don't assert about it */
+
+_DBUS_STATIC_ASSERT (sizeof (DBus8ByteStruct) == 8);
+_DBUS_ASSERT_ALIGNMENT (DBus8ByteStruct, <=, 8);
+
 /**
  * @defgroup DBusMarshal marshaling and unmarshaling
  * @ingroup  DBusInternals
@@ -119,7 +126,7 @@ pack_8_octets (DBusBasicValue     value,
   else
     *((dbus_uint64_t*)(data)) = DBUS_UINT64_TO_BE (value.u64);
 #else
-  *(DBus8ByteStruct*)data = value.u64;
+  *(DBus8ByteStruct*)data = value.eight;
   swap_8_octets ((DBusBasicValue*)data, byte_order);
 #endif
 }
@@ -169,7 +176,7 @@ swap_8_octets (DBusBasicValue    *value,
 #ifdef DBUS_HAVE_INT64
       value->u64 = DBUS_UINT64_SWAP_LE_BE (value->u64);
 #else
-      swap_bytes ((unsigned char *)value, 8);
+      swap_bytes (&value->bytes, 8);
 #endif
     }
 }
@@ -190,7 +197,7 @@ unpack_8_octets (int                  byte_order,
   else
     r.u64 = DBUS_UINT64_FROM_BE (*(dbus_uint64_t*)data);
 #else
-  r.u64 = *(DBus8ByteStruct*)data;
+  r.eight = *(DBus8ByteStruct*)data;
   swap_8_octets (&r, byte_order);
 #endif
 

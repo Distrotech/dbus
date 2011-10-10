@@ -38,8 +38,8 @@ basic_value_zero (DBusBasicValue *value)
 #ifdef DBUS_HAVE_INT64
   value->u64 = 0;
 #else
-  value->u64.first32 = 0;
-  value->u64.second32 = 0;
+  value->eight.first32 = 0;
+  value->eight.second32 = 0;
 #endif
 }
 
@@ -59,8 +59,8 @@ basic_value_equal (int             type,
 #ifdef DBUS_HAVE_INT64
       return lhs->u64 == rhs->u64;
 #else
-      return lhs->u64.first32 == rhs->u64.first32 &&
-        lhs->u64.second32 == rhs->u64.second32;
+      return lhs->eight.first32 == rhs->eight.first32 &&
+        lhs->eight.second32 == rhs->eight.second32;
 #endif
     }
 }

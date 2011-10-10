@@ -2191,22 +2191,22 @@ dbus_message_iter_get_signature (DBusMessageIter *iter)
  * descriptors), you can get all the array elements at once with
  * dbus_message_iter_get_fixed_array(). Otherwise, you have to iterate
  * over the container's contents one value at a time.
- * 
- * All basic-typed values are guaranteed to fit in 8 bytes. So you can
- * write code like this:
+ *
+ * All basic-typed values are guaranteed to fit in a #DBusBasicValue,
+ * so in versions of libdbus that have that type, you can write code like this:
  *
  * @code
- * dbus_uint64_t value;
+ * DBusBasicValue value;
  * int type;
  * dbus_message_iter_get_basic (&read_iter, &value);
  * type = dbus_message_iter_get_arg_type (&read_iter);
  * dbus_message_iter_append_basic (&write_iter, type, &value);
  * @endcode
  *
- * On some really obscure platforms dbus_uint64_t might not exist, if
- * you need to worry about this you will know.  dbus_uint64_t is just
- * one example of a type that's large enough to hold any possible
- * value, you could use a struct or char[8] instead if you like.
+ * (All D-Bus basic types are either numeric and 8 bytes or smaller, or
+ * behave like a string; so in older versions of libdbus, DBusBasicValue
+ * can be replaced with union { char *string; unsigned char bytes[8]; },
+ * for instance.)
  *
  * @param iter the iterator
  * @param value location to store the value
