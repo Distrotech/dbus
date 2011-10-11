@@ -2707,6 +2707,7 @@ _dbus_connection_last_unref (DBusConnection *connection)
   dbus_connection_set_dispatch_status_function (connection, NULL, NULL, NULL);
   dbus_connection_set_wakeup_main_function (connection, NULL, NULL, NULL);
   dbus_connection_set_unix_user_function (connection, NULL, NULL, NULL);
+  dbus_connection_set_windows_user_function (connection, NULL, NULL, NULL);
   
   _dbus_watch_list_free (connection->watches);
   connection->watches = NULL;
