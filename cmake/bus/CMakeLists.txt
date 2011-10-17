@@ -89,6 +89,7 @@ set_target_properties(dbus-daemon PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIEN
 
 install_targets(/bin dbus-daemon)
 install_files(/etc/dbus-1 FILES ${config_DATA})
+install(DIRECTORY .  DESTINATION etc/dbus-1/session.d  FILES_MATCHING PATTERN "*.conf")
 
 if (DBUS_SERVICE)
 	set (dbus_service_SOURCES 
