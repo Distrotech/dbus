@@ -2862,20 +2862,35 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
   if (!SearchPathA(NULL, daemon_name, NULL, sizeof(dbus_exe_path), dbus_exe_path, &lpFile))
     {
       // Look in directory containing dbus shared library
-      HMODULE hmod = _dbus_win_get_dll_hmodule();
+      HMODULE hmod;
       char dbus_module_path[MAX_PATH];
-      DWORD rc = GetModuleFileNameA(hmod, dbus_module_path, sizeof(dbus_module_path));
-      if (rc > 0)
+      DWORD rc;
+
+      _dbus_verbose( "did not found dbus daemon executable on default search path, "
+            "trying path where dbus shared library is located");
+
+      hmod = _dbus_win_get_dll_hmodule();
+      rc = GetModuleFileNameA(hmod, dbus_module_path, sizeof(dbus_module_path));
+      if (rc <= 0)
+        {
+          dbus_set_error_const (error, DBUS_ERROR_FAILED, "could not retrieve dbus shared library file name");
+          retval = FALSE;
+          goto out;
+        }
+      else
         {
           char *ext_idx = strrchr(dbus_module_path, '\\');
           if (ext_idx)
           *ext_idx = '\0';
           if (!SearchPathA(dbus_module_path, daemon_name, NULL, sizeof(dbus_exe_path), dbus_exe_path, &lpFile))
             {
+              dbus_set_error_const (error, DBUS_ERROR_FAILED, "could not find dbus-daemon executable");
+              retval = FALSE;
               printf ("please add the path to %s to your PATH environment variable\n", daemon_name);
               printf ("or start the daemon manually\n\n");
               goto out;
             }
+          _dbus_verbose( "found dbus daemon executable at %s",dbus_module_path);
         }
     }
 
