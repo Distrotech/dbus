@@ -1,5 +1,8 @@
 project(test)
 
+set (DBUS_SESSION_SERVICE_DIRS "<servicedir>${CMAKE_BINARY_DIR}/test/data/valid-service-files</servicedir>")
+CONFIGURE_FILE( "../../bus/session.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/run-with-tmp-session-bus.conf" IMMEDIATE @ONLY)
+
 add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
 add_library(dbus-testutils STATIC

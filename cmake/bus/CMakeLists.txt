@@ -10,6 +10,8 @@ set (config_DATA
 	system.conf
 )
 
+# setup parameters for conf generating
+set (DBUS_SESSION_SERVICE_DIRS "<standard_session_servicedirs />")
 # config files for installation 
 CONFIGURE_FILE( "${BUS_DIR}/session.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/session.conf" IMMEDIATE @ONLY)
 CONFIGURE_FILE( "system.conf.cmake" "${CMAKE_CURRENT_BINARY_DIR}/system.conf" IMMEDIATE @ONLY)
