@@ -113,6 +113,7 @@ installable_tests = \
 installcheck_tests =
 installcheck_environment = \
 	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
+	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
 	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
 
 TESTS_ENVIRONMENT = \
