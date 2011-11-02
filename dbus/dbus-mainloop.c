@@ -157,8 +157,14 @@ _dbus_loop_new (void)
 
   loop->socket_set = _dbus_socket_set_new (0);
 
-  if (loop->watches == NULL)
+  if (loop->watches == NULL || loop->socket_set == NULL)
     {
+      if (loop->watches != NULL)
+        _dbus_hash_table_unref (loop->watches);
+
+      if (loop->socket_set != NULL)
+        _dbus_socket_set_free (loop->socket_set);
+
       dbus_free (loop);
       return NULL;
     }
