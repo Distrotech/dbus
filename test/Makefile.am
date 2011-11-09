@@ -32,9 +32,8 @@ noinst_LTLIBRARIES = libdbus-testutils.la
 
 if DBUS_BUILD_TESTS
 ## break-loader removed for now
-## most of these binaries are used in tests but are not themselves tests
+## these binaries are used in tests but are not themselves tests
 TEST_BINARIES = \
-	shell-test \
 	spawn-test \
 	test-exit \
 	test-names \
@@ -44,16 +43,10 @@ TEST_BINARIES = \
 	test-sleep-forever \
 	$(NULL)
 
-## these are the things to run in make check (i.e. they are actual tests)
-## (binaries in here must also be in TEST_BINARIES)
-TESTS = \
-	shell-test \
-	$(NULL)
-
 ## These are conceptually part of directories that come earlier in SUBDIRS
 ## order, but we don't want to run them til we arrive in this directory,
 ## since they depend on stuff from this directory
-TESTS += \
+TESTS = \
 	../bus/bus-test$(EXEEXT) \
 	../bus/bus-test-system$(EXEEXT) \
 	../dbus/dbus-test$(EXEEXT) \
@@ -100,6 +93,7 @@ testexecdir = $(libdir)/dbus-1.0/test
 testexec_PROGRAMS =
 
 installable_tests = \
+	shell-test \
 	$(NULL)
 
 if DBUS_WITH_GLIB
