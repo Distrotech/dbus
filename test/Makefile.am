@@ -100,6 +100,10 @@ testexecdir = $(libdir)/dbus-1.0/test
 testexec_PROGRAMS =
 
 installable_tests = \
+	$(NULL)
+
+if DBUS_WITH_GLIB
+installable_tests += \
 	test-corrupt \
 	test-dbus-daemon \
 	test-dbus-daemon-eavesdrop \
@@ -109,6 +113,7 @@ installable_tests = \
 	test-relay \
 	test-syslog \
 	$(NULL)
+endif DBUS_WITH_GLIB
 
 installcheck_tests =
 installcheck_environment = \

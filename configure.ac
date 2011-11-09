@@ -193,6 +193,9 @@ fi
 # These use GTest, from GLib, because life's too short. They're enabled by
 # default (unless you don't have GLib), because they don't bloat the library
 # or binaries.
+
+with_glib=yes
+
 if test "x$enable_modular_tests" != xno; then
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.24, gio-2.0 >= 2.24],
     [],
@@ -200,7 +203,7 @@ if test "x$enable_modular_tests" != xno; then
       AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires GLib])
       AC_MSG_ERROR([$GLIB_ERRORS])
     else # assumed to be "auto"
-      enable_modular_tests=no
+      with_glib=no
     fi])
   # If dbus-gmain.[ch] returned to libdbus then we wouldn't need this
   PKG_CHECK_MODULES([DBUS_GLIB], [dbus-glib-1],
@@ -209,19 +212,21 @@ if test "x$enable_modular_tests" != xno; then
       AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires dbus-glib])
       AC_MSG_ERROR([$DBUS_GLIB_ERRORS])
     else # assumed to be "auto"
-      enable_modular_tests=no
+      with_glib=no
     fi])
-  if test "x$enable_modular_tests" != xno; then
-    # dependencies checked, switch from auto to yes
-    enable_modular_tests=yes
-  fi
 fi
-if test "x$enable_modular_tests" = xyes; then
+if test "x$enable_modular_tests" != xno; then
   AC_DEFINE([DBUS_ENABLE_MODULAR_TESTS], [1],
-    [Define to build independent test binaries (requires GLib)])
+    [Define to build independent test binaries])
 fi
 AM_CONDITIONAL([DBUS_ENABLE_MODULAR_TESTS],
-  [test "x$enable_modular_tests" = xyes])
+  [test "x$enable_modular_tests" != xno])
+
+if test "x$with_glib" != xno; then
+  AC_DEFINE([DBUS_WITH_GLIB], [1],
+    [Define if GLib, GObject, GIO are available])
+fi
+AM_CONDITIONAL([DBUS_WITH_GLIB], [test "x$with_glib" != xno])
 
 AC_ARG_ENABLE([installed-tests],
   AS_HELP_STRING([--enable-installed-tests],
@@ -1743,6 +1748,7 @@ echo "
         gcc coverage profiling:   ${enable_compiler_coverage}
         Building embedded tests:  ${enable_embedded_tests}
         Building modular tests:   ${enable_modular_tests}
+            - with GLib:          ${with_glib}
         Building verbose mode:    ${enable_verbose_mode}
         Building assertions:      ${enable_asserts}
         Building checks:          ${enable_checks}
