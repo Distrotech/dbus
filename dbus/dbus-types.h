@@ -161,6 +161,7 @@ typedef union
   dbus_uint16_t u16;   /**< as int16 */
   dbus_int32_t  i32;   /**< as int32 */
   dbus_uint32_t u32;   /**< as int32 */
+  dbus_bool_t   bool_val; /**< as boolean */
 #ifdef DBUS_HAVE_INT64
   dbus_int64_t  i64;   /**< as int64 */
   dbus_uint64_t u64;   /**< as int64 */
@@ -168,7 +169,8 @@ typedef union
   DBus8ByteStruct eight; /**< as 8-byte struct */
   double dbl;          /**< as double */
   unsigned char byt;   /**< as byte */
-  char *str;           /**< as char* */
+  char *str;           /**< as char* (string, object path or signature) */
+  int fd;              /**< as Unix file descriptor */
 } DBusBasicValue;
 
 /** @} */
