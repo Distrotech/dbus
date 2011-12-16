@@ -118,7 +118,7 @@ if DBUS_HAVE_MAN2HTML
 html_DATA += $(MAN_HTML_FILES)
 
 %.1.html: %.1
-	$(AM_V_GEN)( $(MAN2HTML) $< > $@.tmp && mv $@.tmp $@ )
+	$(AM_V_GEN)( $(MAN2HTML) < $< > $@.tmp && mv $@.tmp $@ )
 endif
 
 if DBUS_CAN_UPLOAD_DOCS
