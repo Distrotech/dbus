@@ -1331,13 +1331,14 @@ _dbus_listen_tcp_socket (const char     *host,
   hints.ai_flags = AI_ADDRCONFIG | AI_PASSIVE;
 
  redo_lookup_with_port:
+  ai = NULL;
   if ((res = getaddrinfo(host, port, &hints, &ai)) != 0 || !ai)
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (errno),
                       "Failed to lookup host/port: \"%s:%s\": %s (%d)",
                       host ? host : "*", port, gai_strerror(res), res);
-      return -1;
+      goto failed;
     }
 
   tmp = ai;
