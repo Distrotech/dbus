@@ -11,6 +11,10 @@ DBus comes with a test suite which is used on unix to guarantate
 production quality and this test suite runs mostly. There are some
 test not running yet and there is help needed to get them running.
 
+Supported compilers
+-------------------
+On windows Microsoft Visual Studio 2010 (Express and professional variants) 
+and mingw-w64|32 are known to work.
 
 Building
 --------

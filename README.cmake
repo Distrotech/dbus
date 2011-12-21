@@ -3,57 +3,63 @@ This file describes how to compile dbus using the cmake build system
 Requirements
 ------------
 - cmake version >= 2.4.4 see http://www.cmake.org
-- installed libexpat
+- installed libexpat see http://sourceforge.net/projects/expat/ 
+    unsupported RelWithDebInfo builds could be fetched 
+    from http://sourceforge.net/projects/kde-windows/files/expat/
 
 Building
 --------
 
-Win32 MinGW
-1. install cmake and libexpat
-2. get dbus sources
-3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
-4. mkdir dbus-build
-5. cd dbus-build
-6. run 
+Win32 MinGW-w64|32
+1. install mingw-w64 from http://sourceforge.net/projects/mingw-w64/
+2. install cmake and libexpat
+3. get dbus sources
+4. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
+5. mkdir dbus-build
+6. cd dbus-build
+7. run 
     cmake -G "MinGW Makefiles" [<options, see below>] <dbus-src-root>/cmake
     mingw32-make
     mingw32-make install
 
 Win32 Microsoft nmake
-1. install cmake and libexpat
-2. get dbus sources
-3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
-4. mkdir dbus-build
-5. cd dbus-build
-6. run 
+1. install MSVC 2010 Express Version from http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+2. install cmake and libexpat
+3. get dbus sources
+4. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
+5. mkdir dbus-build
+6. cd dbus-build
+7. run 
     cmake -G "NMake Makefiles" [<options, see below>] <dbus-src-root>/cmake
     nmake
     nmake install
 
-Win32 Visual Studio Express IDE
-1. install cmake and libexpat
-2. get dbus sources
-3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
-4. mkdir dbus-build
-5. cd dbus-build
-6. run
+Win32 Visual Studio 2010 Express IDE
+1. install MSVC 2010 Express Version from http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+2. install cmake and libexpat
+3. get dbus sources
+4. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
+5. mkdir dbus-build
+6. cd dbus-build
+7. run
       cmake -G "Visual Studio 10" [<options, see below>] <dbus-src-root>/cmake
-7a. open IDE with
+8a. open IDE with
       vcexpress dbus.sln
-7b. for immediate build run
+8b. for immediate build run
       vcexpress dbus.sln /build
 
-Win32 Visual Studio Professional IDE
-1. install cmake and libexpat
-2. get dbus sources
-3. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
-4. mkdir dbus-build
-5. cd dbus-build
-6. run 
+Win32 Visual Studio 2010 Professional IDE
+1. install MSVC 2010 Professional Version
+2. install cmake and libexpat
+3. get dbus sources
+4. unpack dbus sources into a sub directory (referred as <dbus-src-root> later)
+5. mkdir dbus-build
+6. cd dbus-build
+7. run 
       cmake -G "Visual Studio 10" [<options, see below>] <dbus-src-root>/cmake
-7a. open IDE with
+8a. open IDE with
       devenv dbus.sln
-7b. for immediate build run
+8b. for immediate build run
       devenv dbus.sln /build
 
 Linux
