@@ -1,18 +1,5 @@
 project(dbus)
 
-#########################################################################
-# detect version
-#########################################################################
-file (READ ../configure.ac configure_ac)
-string (REGEX REPLACE ".*dbus_major_version], .([0-9]+).*" "\\1" DBUS_MAJOR_VERSION ${configure_ac})
-string (REGEX REPLACE ".*dbus_minor_version], .([0-9]+).*" "\\1" DBUS_MINOR_VERSION ${configure_ac})
-string (REGEX REPLACE ".*dbus_micro_version], .([0-9]+).*" "\\1" DBUS_MICRO_VERSION ${configure_ac})
-# used by file version info
-set (DBUS_PATCH_VERSION "0")
-set (DBUS_VERSION ${DBUS_MAJOR_VERSION}.${DBUS_MINOR_VERSION}.${DBUS_MICRO_VERSION})
-
-set (DBUS_VERSION_STRING "${DBUS_VERSION}")
-
 # we need to be up to date
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.4 FATAL_ERROR)
 if(COMMAND cmake_policy)
@@ -21,6 +8,12 @@ endif(COMMAND cmake_policy)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+
+# detect version
+include(MacrosAutotools)
+autoversion(../configure.ac dbus)
+# used by file version info
+set (DBUS_PATCH_VERSION "0")
 
 include(Macros)
 TIMESTAMP(DBUS_BUILD_TIMESTAMP)
