@@ -431,8 +431,8 @@ set (DBUS_USER )
 
 
 if (WIN32)
-  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "system bus default address")
-  set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "session bus default address")
+  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "autolaunch:" CACHE STRING "system bus default address")
+  set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "autolaunch:" CACHE STRING "session bus default address")
 
   set (DBUS_SYSTEM_CONFIG_FILE "etc/dbus-1/system.conf")
   set (DBUS_SESSION_CONFIG_FILE "etc/dbus-1/session.conf")
