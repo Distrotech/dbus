@@ -42,6 +42,7 @@
 #include "dbus-protocol.h"
 
 #define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 //#define STRICT
 //#include <windows.h>
 //#undef STRICT
@@ -563,10 +564,10 @@ spawn_program (char* name, char** argv, char** envp)
   // handle relative pathes
   if (strlen(name) > 2 && name[0] != '\\' && name[0] != '/' && name[1] != ':')
     {
-      _dbus_verbose ("babysitter: spawning %s", name);
       char install_root[2*MAX_PATH];
       LPSTR lpFile;
       char *p;
+      _dbus_verbose ("babysitter: spawning %s", name);
       if (!_dbus_get_install_root (install_root, sizeof(install_root)))
         return INVALID_HANDLE_VALUE;
 
