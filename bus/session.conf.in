@@ -14,7 +14,7 @@
 
   <listen>@DBUS_SESSION_BUS_DEFAULT_ADDRESS@</listen>
 
-  @DBUS_SESSION_SERVICE_DIRS@
+  <standard_session_servicedirs />
 
   <policy context="default">
     <!-- Allow everything to be sent -->
