@@ -1,7 +1,27 @@
 D-Bus 1.5.10 (UNRELEASED)
 ==
 
-…
+• Improve cmake build system (Ralf Habacker):
+  · simplify XML parser dependencies (fd.o #41027)
+  · generate build timestamp (fd.o #41029)
+  · only create batch files on Windows
+  · fix option and cache syntax
+  · add help-options target
+  · share dbus-arch-deps.h.in with autotools rather than having our
+    own version (fd.o #41033)
+
+• Build tests successfully with older GLib, as found in e.g. Debian 6
+  (fd.o #41219, Simon McVittie)
+
+• Unix-specific:
+  · Avoid a highly unlikely fd leak (fd.o #29881, Simon McVittie)
+  · Don't close invalid fd -1 if getaddrinfo fails (fd.o #37258, eXeC001er)
+  · Don't touch ~/.dbus and ~/.dbus-keyrings when running 'make installcheck'
+    (fd.o #41218, Simon McVittie)
+
+• Windows-specific:
+  · Find the dbus-daemon executable next to the shared library (fd.o #41558;
+    Jesper Dam, Ralf Habacker)
 
 D-Bus 1.5.8 (2011-09-21)
 ==
