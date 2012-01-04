@@ -820,6 +820,9 @@ _dbus_full_duplex_pipe (int        *fd1,
   struct sockaddr_in saddr;
   int len;
   u_long arg;
+  fd_set read_set, write_set;
+  struct timeval tv;
+  int res;
 
   _dbus_win_startup_winsock ();
 
@@ -955,6 +958,7 @@ _dbus_poll (DBusPollFD *fds,
   msgp += sprintf (msgp, "WSAEventSelect: to=%d\n\t", timeout_milliseconds);
   for (i = 0; i < n_fds; i++)
     {
+      static dbus_bool_t warned = FALSE;
       DBusPollFD *fdp = &fds[i];
 
 
@@ -1092,6 +1096,7 @@ _dbus_poll (DBusPollFD *fds,
   msgp += sprintf (msgp, "select: to=%d\n\t", timeout_milliseconds);
   for (i = 0; i < n_fds; i++)
     {
+      static dbus_bool_t warned = FALSE;
       DBusPollFD *fdp = &fds[i];
 
 
@@ -2618,7 +2623,9 @@ dbus_bool_t
 _dbus_daemon_is_session_bus_address_published (const char *scope)
 {
   HANDLE lock;
+  HANDLE mutex;
   DBusString mutex_name;
+  DWORD ret;
 
   if (!_dbus_get_mutex_name(&mutex_name,scope))
     {
@@ -2663,6 +2670,8 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
 {
   HANDLE lock;
   char *shared_addr = NULL;
+  DWORD ret;
+  char addressInfo[1024];
   DBusString shm_name;
   DBusString mutex_name;
 
@@ -3151,6 +3160,8 @@ dbus_bool_t
 _dbus_get_install_root(char *prefix, int len)
 {
     //To find the prefix, we cut the filename and also \bin\ if present
+    char* p = 0;
+    int i;
     DWORD pathLength;
     char *lastSlash;
     SetLastError( 0 );
@@ -3304,6 +3315,7 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
 {
   DBusString homedir;
   DBusString dotdir;
+  dbus_uid_t uid;
   const char *homepath;
   const char *homedrive;
 

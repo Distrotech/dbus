@@ -13,5 +13,5 @@ Name: dbus
 Description: Free desktop message bus (uninstalled copy)
 Version: @VERSION@
 Libs: ${abs_top_builddir}/dbus/libdbus-1.la
-Libs.private: @LIBDBUS_LIBS@
+Libs.private: @DBUS_CLIENT_LIBS@
 Cflags: -I${abs_top_srcdir}

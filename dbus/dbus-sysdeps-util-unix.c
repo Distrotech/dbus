@@ -389,6 +389,7 @@ _dbus_request_file_descriptor_limit (unsigned int limit)
 #ifdef HAVE_SETRLIMIT
   struct rlimit lim;
   struct rlimit target_lim;
+  unsigned int current_limit;
 
   /* No point to doing this practically speaking
    * if we're not uid 0.  We expect the system

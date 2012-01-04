@@ -72,16 +72,12 @@ live_messages_notify (DBusCounter *counter,
   _dbus_verbose ("Unix FD counter value is now %d\n",
                  (int) _dbus_counter_get_unix_fd_value (counter));
 #endif
-
+  
   /* disable or re-enable the read watch for the transport if
    * required.
    */
   if (transport->vtable->live_messages_changed)
-    {
-      _dbus_connection_lock (transport->connection);
-      (* transport->vtable->live_messages_changed) (transport);
-      _dbus_connection_unlock (transport->connection);
-    }
+    (* transport->vtable->live_messages_changed) (transport);
 
   _dbus_transport_unref (transport);
 }
@@ -1148,13 +1144,6 @@ _dbus_transport_queue_messages (DBusTransport *transport)
         }
       else
         {
-          /* We didn't call the notify function when we added the counter, so
-           * catch up now. Since we have the connection's lock, it's desirable
-           * that we bypass the notify function and call this virtual method
-           * directly. */
-          if (transport->vtable->live_messages_changed)
-            (* transport->vtable->live_messages_changed) (transport);
-
           /* pass ownership of link and message ref to connection */
           _dbus_connection_queue_received_message_link (transport->connection,
                                                         link);
@@ -1492,27 +1481,5 @@ _dbus_transport_set_allow_anonymous (DBusTransport              *transport,
 {
   transport->allow_anonymous = value != FALSE;
 }
-
-#ifdef DBUS_ENABLE_STATS
-void
-_dbus_transport_get_stats (DBusTransport  *transport,
-                           dbus_uint32_t  *queue_bytes,
-                           dbus_uint32_t  *queue_fds,
-                           dbus_uint32_t  *peak_queue_bytes,
-                           dbus_uint32_t  *peak_queue_fds)
-{
-  if (queue_bytes != NULL)
-    *queue_bytes = _dbus_counter_get_size_value (transport->live_messages);
-
-  if (queue_fds != NULL)
-    *queue_fds = _dbus_counter_get_unix_fd_value (transport->live_messages);
-
-  if (peak_queue_bytes != NULL)
-    *peak_queue_bytes = _dbus_counter_get_peak_size_value (transport->live_messages);
-
-  if (peak_queue_fds != NULL)
-    *peak_queue_fds = _dbus_counter_get_peak_unix_fd_value (transport->live_messages);
-}
-#endif /* DBUS_ENABLE_STATS */
 
 /** @} */

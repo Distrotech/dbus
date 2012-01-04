@@ -50,26 +50,12 @@ struct DBusWatch
   void *data;                          /**< Application data. */
   DBusFreeFunction free_data_function; /**< Free the application data. */
   unsigned int enabled : 1;            /**< Whether it's enabled. */
-  unsigned int oom_last_time : 1;      /**< Whether it was OOM last time. */
 };
 
 dbus_bool_t
 _dbus_watch_get_enabled (DBusWatch *watch)
 {
   return watch->enabled;
-}
-
-dbus_bool_t
-_dbus_watch_get_oom_last_time (DBusWatch *watch)
-{
-  return watch->oom_last_time;
-}
-
-void
-_dbus_watch_set_oom_last_time (DBusWatch   *watch,
-                               dbus_bool_t  oom)
-{
-  watch->oom_last_time = oom;
 }
 
 /**
@@ -143,9 +129,6 @@ _dbus_watch_unref (DBusWatch *watch)
   watch->refcount -= 1;
   if (watch->refcount == 0)
     {
-      if (watch->fd != -1)
-        _dbus_warn ("this watch should have been invalidated");
-
       dbus_watch_set_data (watch, NULL, NULL); /* call free_data_function */
 
       if (watch->free_handler_data_function)

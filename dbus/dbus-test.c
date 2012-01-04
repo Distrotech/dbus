@@ -150,6 +150,8 @@ dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *speci
 
   run_test ("marshal-validate", specific_test, _dbus_marshal_validate_test);
 
+  run_test ("marshal-header", specific_test, _dbus_marshal_header_test);
+  
   run_data_test ("message", specific_test, _dbus_message_test, test_data_dir);
   
   run_test ("hash", specific_test, _dbus_hash_test);
@@ -170,6 +172,8 @@ dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *speci
   
   run_data_test ("auth", specific_test, _dbus_auth_test, test_data_dir);
 
+  run_data_test ("pending-call", specific_test, _dbus_pending_call_test, test_data_dir);
+  
   printf ("%s: completed successfully\n", "dbus-test");
 #else
   printf ("Not compiled with unit tests, not running any\n");

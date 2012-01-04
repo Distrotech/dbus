@@ -164,6 +164,13 @@ _dbus_open_socket (int              *fd_p,
     }
 }
 
+dbus_bool_t
+_dbus_open_tcp_socket (int              *fd,
+                       DBusError        *error)
+{
+  return _dbus_open_socket(fd, AF_INET, SOCK_STREAM, 0, error);
+}
+
 /**
  * Opens a UNIX domain socket (as in the socket() call).
  * Does not bind the socket.
@@ -174,7 +181,7 @@ _dbus_open_socket (int              *fd_p,
  * @param error return location for an error
  * @returns #FALSE if error is set
  */
-static dbus_bool_t
+dbus_bool_t
 _dbus_open_unix_socket (int              *fd,
                         DBusError        *error)
 {
@@ -2526,6 +2533,8 @@ void
 _dbus_get_current_time (long *tv_sec,
                         long *tv_usec)
 {
+  struct timeval t;
+
 #ifdef HAVE_MONOTONIC_CLOCK
   struct timespec ts;
   clock_gettime (CLOCK_MONOTONIC, &ts);
@@ -2535,8 +2544,6 @@ _dbus_get_current_time (long *tv_sec,
   if (tv_usec)
     *tv_usec = ts.tv_nsec / 1000;
 #else
-  struct timeval t;
-
   gettimeofday (&t, NULL);
 
   if (tv_sec)
@@ -3500,10 +3507,10 @@ _dbus_lookup_launchd_socket (DBusString *socket_path,
 #endif
 }
 
-#ifdef DBUS_ENABLE_LAUNCHD
 static dbus_bool_t
 _dbus_lookup_session_address_launchd (DBusString *address, DBusError  *error)
 {
+#ifdef DBUS_ENABLE_LAUNCHD
   dbus_bool_t valid_socket;
   DBusString socket_path;
 
@@ -3545,8 +3552,12 @@ _dbus_lookup_session_address_launchd (DBusString *address, DBusError  *error)
 
   _dbus_string_free(&socket_path);
   return TRUE;
-}
+#else
+  dbus_set_error(error, DBUS_ERROR_NOT_SUPPORTED,
+                "can't lookup session address from launchd; launchd support not compiled in");
+  return FALSE;
 #endif
+}
 
 /**
  * Determines the address of the session bus by querying a

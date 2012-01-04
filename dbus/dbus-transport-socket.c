@@ -677,8 +677,8 @@ do_writing (DBusTransport *transport)
               _dbus_string_set_length (&socket_transport->encoded_outgoing, 0);
               _dbus_string_compact (&socket_transport->encoded_outgoing, 2048);
 
-              _dbus_connection_message_sent_unlocked (transport->connection,
-                                                      message);
+              _dbus_connection_message_sent (transport->connection,
+                                             message);
             }
         }
     }
@@ -1278,10 +1278,8 @@ _dbus_transport_new_for_socket (int               fd,
   return (DBusTransport*) socket_transport;
 
  failed_4:
-  _dbus_watch_invalidate (socket_transport->read_watch);
   _dbus_watch_unref (socket_transport->read_watch);
  failed_3:
-  _dbus_watch_invalidate (socket_transport->write_watch);
   _dbus_watch_unref (socket_transport->write_watch);
  failed_2:
   _dbus_string_free (&socket_transport->encoded_incoming);

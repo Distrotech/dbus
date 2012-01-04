@@ -745,8 +745,7 @@ handle_default_introspect_and_unlock (DBusObjectTree          *tree,
  */
 DBusHandlerResult
 _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
-                                       DBusMessage             *message,
-                                       dbus_bool_t             *found_object)
+                                       DBusMessage             *message)
 {
   char **path;
   dbus_bool_t exact_match;
@@ -792,9 +791,6 @@ _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
   /* Find the deepest path that covers the path in the message */
   subtree = find_handler (tree, (const char**) path, &exact_match);
   
-  if (found_object)
-    *found_object = !!subtree;
-
   /* Build a list of all paths that cover the path in the message */
 
   list = NULL;
@@ -1395,7 +1391,7 @@ do_test_dispatch (DBusObjectTree *tree,
       ++j;
     }
 
-  result = _dbus_object_tree_dispatch_and_unlock (tree, message, NULL);
+  result = _dbus_object_tree_dispatch_and_unlock (tree, message);
   if (result == DBUS_HANDLER_RESULT_NEED_MEMORY)
     goto oom;
 

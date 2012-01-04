@@ -353,8 +353,6 @@ _dbus_pending_call_set_timeout_error_unlocked (DBusPendingCall *pending,
   reply_link = _dbus_list_alloc_link (reply);
   if (reply_link == NULL)
     {
-      /* it's OK to unref this, nothing that could have attached a callback
-       * has ever seen it */
       dbus_message_unref (reply);
       return FALSE;
     }
@@ -808,3 +806,19 @@ dbus_pending_call_get_data (DBusPendingCall   *pending,
 }
 
 /** @} */
+
+#ifdef DBUS_BUILD_TESTS
+
+/**
+ * @ingroup DBusPendingCallInternals
+ * Unit test for DBusPendingCall.
+ *
+ * @returns #TRUE on success.
+ */
+dbus_bool_t
+_dbus_pending_call_test (const char *test_data_dir)
+{  
+
+  return TRUE;
+}
+#endif /* DBUS_BUILD_TESTS */

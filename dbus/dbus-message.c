@@ -115,11 +115,8 @@ _dbus_message_byteswap (DBusMessage *message)
 {
   const DBusString *type_str;
   int type_pos;
-  char byte_order;
-
-  byte_order = _dbus_header_get_byte_order (&message->header);
-
-  if (byte_order == DBUS_COMPILER_BYTE_ORDER)
+  
+  if (message->byte_order == DBUS_COMPILER_BYTE_ORDER)
     return;
 
   _dbus_verbose ("Swapping message into compiler byte order\n");
@@ -127,13 +124,13 @@ _dbus_message_byteswap (DBusMessage *message)
   get_const_signature (&message->header, &type_str, &type_pos);
   
   _dbus_marshal_byteswap (type_str, type_pos,
-                          byte_order,
+                          message->byte_order,
                           DBUS_COMPILER_BYTE_ORDER,
                           &message->body, 0);
 
+  message->byte_order = DBUS_COMPILER_BYTE_ORDER;
+  
   _dbus_header_byteswap (&message->header, DBUS_COMPILER_BYTE_ORDER);
-  _dbus_assert (_dbus_header_get_byte_order (&message->header) ==
-                DBUS_COMPILER_BYTE_ORDER);
 }
 
 /** byte-swap the message if it doesn't match our byte order.
@@ -142,7 +139,9 @@ _dbus_message_byteswap (DBusMessage *message)
  *  Otherwise should not be called since it would do needless
  *  work.
  */
-#define ensure_byte_order(message) _dbus_message_byteswap (message)
+#define ensure_byte_order(message)                      \
+ if (message->byte_order != DBUS_COMPILER_BYTE_ORDER)   \
+   _dbus_message_byteswap (message)
 
 /**
  * Gets the data to be sent over the network for this message.
@@ -218,11 +217,6 @@ dbus_message_set_serial (DBusMessage   *message,
  * itself not incremented.  Ownership of link and counter refcount is
  * passed to the message.
  *
- * This function may be called with locks held. As a result, the counter's
- * notify function is not called; the caller is expected to either call
- * _dbus_counter_notify() on the counter when they are no longer holding
- * locks, or take the same action that would be taken by the notify function.
- *
  * @param message the message
  * @param link link with counter as data
  */
@@ -266,11 +260,6 @@ _dbus_message_add_counter_link (DBusMessage  *message,
  * of this message, and decremented by the size/unix fds of this
  * message when this message if finalized.
  *
- * This function may be called with locks held. As a result, the counter's
- * notify function is not called; the caller is expected to either call
- * _dbus_counter_notify() on the counter when they are no longer holding
- * locks, or take the same action that would be taken by the notify function.
- *
  * @param message the message
  * @param counter the counter
  * @returns #FALSE if no memory
@@ -296,11 +285,13 @@ _dbus_message_add_counter (DBusMessage *message,
  * decrements the counter by the size/unix fds of this message.
  *
  * @param message the message
+ * @param link_return return the link used
  * @param counter the counter
  */
 void
 _dbus_message_remove_counter (DBusMessage  *message,
-                              DBusCounter  *counter)
+                              DBusCounter  *counter,
+                              DBusList    **link_return)
 {
   DBusList *link;
 
@@ -308,7 +299,12 @@ _dbus_message_remove_counter (DBusMessage  *message,
                                counter);
   _dbus_assert (link != NULL);
 
-  _dbus_list_remove_link (&message->counters, link);
+  _dbus_list_unlink (&message->counters,
+                     link);
+  if (link_return)
+    *link_return = link;
+  else
+    _dbus_list_free_link (link);
 
   _dbus_counter_adjust_size (counter, - message->size_counter_delta);
 
@@ -316,7 +312,6 @@ _dbus_message_remove_counter (DBusMessage  *message,
   _dbus_counter_adjust_unix_fd (counter, - message->unix_fd_counter_delta);
 #endif
 
-  _dbus_counter_notify (counter);
   _dbus_counter_unref (counter);
 }
 
@@ -579,7 +574,6 @@ free_counter (void *element,
   _dbus_counter_adjust_unix_fd (counter, - message->unix_fd_counter_delta);
 #endif
 
-  _dbus_counter_notify (counter);
   _dbus_counter_unref (counter);
 }
 
@@ -668,19 +662,15 @@ dbus_message_cache_or_finalize (DBusMessage *message)
 static dbus_bool_t
 _dbus_message_iter_check (DBusMessageRealIter *iter)
 {
-  char byte_order;
-
   if (iter == NULL)
     {
       _dbus_warn_check_failed ("dbus message iterator is NULL\n");
       return FALSE;
     }
 
-  byte_order = _dbus_header_get_byte_order (&iter->message->header);
-
   if (iter->iter_type == DBUS_MESSAGE_ITER_TYPE_READER)
     {
-      if (iter->u.reader.byte_order != byte_order)
+      if (iter->u.reader.byte_order != iter->message->byte_order)
         {
           _dbus_warn_check_failed ("dbus message changed byte order since iterator was created\n");
           return FALSE;
@@ -690,7 +680,7 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
     }
   else if (iter->iter_type == DBUS_MESSAGE_ITER_TYPE_WRITER)
     {
-      if (iter->u.writer.byte_order != byte_order)
+      if (iter->u.writer.byte_order != iter->message->byte_order)
         {
           _dbus_warn_check_failed ("dbus message changed byte order since append iterator was created\n");
           return FALSE;
@@ -1102,6 +1092,7 @@ dbus_message_new_empty_header (void)
 
   _dbus_atomic_inc (&message->refcount);
 
+  message->byte_order = DBUS_COMPILER_BYTE_ORDER;
   message->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   message->in_cache = FALSE;
@@ -1121,12 +1112,12 @@ dbus_message_new_empty_header (void)
 
   if (from_cache)
     {
-      _dbus_header_reinit (&message->header);
+      _dbus_header_reinit (&message->header, message->byte_order);
       _dbus_string_set_length (&message->body, 0);
     }
   else
     {
-      if (!_dbus_header_init (&message->header))
+      if (!_dbus_header_init (&message->header, message->byte_order))
         {
           dbus_free (message);
           return NULL;
@@ -1167,7 +1158,6 @@ dbus_message_new (int message_type)
     return NULL;
 
   if (!_dbus_header_create (&message->header,
-                            DBUS_COMPILER_BYTE_ORDER,
                             message_type,
                             NULL, NULL, NULL, NULL, NULL))
     {
@@ -1221,7 +1211,6 @@ dbus_message_new_method_call (const char *destination,
     return NULL;
 
   if (!_dbus_header_create (&message->header,
-                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_METHOD_CALL,
                             destination, path, interface, method, NULL))
     {
@@ -1256,7 +1245,6 @@ dbus_message_new_method_return (DBusMessage *method_call)
     return NULL;
 
   if (!_dbus_header_create (&message->header,
-                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_METHOD_RETURN,
                             sender, NULL, NULL, NULL, NULL))
     {
@@ -1309,7 +1297,6 @@ dbus_message_new_signal (const char *path,
     return NULL;
 
   if (!_dbus_header_create (&message->header,
-                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_SIGNAL,
                             NULL, path, interface, name, NULL))
     {
@@ -1360,7 +1347,6 @@ dbus_message_new_error (DBusMessage *reply_to,
     return NULL;
 
   if (!_dbus_header_create (&message->header,
-                            DBUS_COMPILER_BYTE_ORDER,
                             DBUS_MESSAGE_TYPE_ERROR,
                             sender, NULL, NULL, NULL, error_name))
     {
@@ -1465,7 +1451,7 @@ dbus_message_copy (const DBusMessage *message)
     return NULL;
 
   _dbus_atomic_inc (&retval->refcount);
-
+  retval->byte_order = message->byte_order;
   retval->locked = FALSE;
 #ifndef DBUS_DISABLE_CHECKS
   retval->generation = message->generation;
@@ -1951,7 +1937,7 @@ dbus_message_iter_init (DBusMessage     *message,
                                   DBUS_MESSAGE_ITER_TYPE_READER);
 
   _dbus_type_reader_init (&real->u.reader,
-                          _dbus_header_get_byte_order (&message->header),
+                          message->byte_order,
                           type_str, type_pos,
                           &message->body,
                           0);
@@ -2267,14 +2253,12 @@ dbus_message_iter_get_fixed_array (DBusMessageIter  *iter,
                                    int              *n_elements)
 {
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
-#ifndef DBUS_DISABLE_CHECKS
   int subtype = _dbus_type_reader_get_current_type(&real->u.reader);
 
   _dbus_return_if_fail (_dbus_message_iter_check (real));
   _dbus_return_if_fail (value != NULL);
   _dbus_return_if_fail ((subtype == DBUS_TYPE_INVALID) ||
                         (dbus_type_is_fixed (subtype) && subtype != DBUS_TYPE_UNIX_FD));
-#endif
 
   _dbus_type_reader_read_fixed_multi (&real->u.reader,
                                       value, n_elements);
@@ -2308,7 +2292,7 @@ dbus_message_iter_init_append (DBusMessage     *message,
    * due to OOM.
    */
   _dbus_type_writer_init_types_delayed (&real->u.writer,
-                                        _dbus_header_get_byte_order (&message->header),
+                                        message->byte_order,
                                         &message->body,
                                         _dbus_string_get_length (&message->body));
 }
@@ -2826,14 +2810,12 @@ dbus_message_iter_abandon_container (DBusMessageIter *iter,
                                      DBusMessageIter *sub)
 {
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
-#ifndef DBUS_DISABLE_CHECKS
   DBusMessageRealIter *real_sub = (DBusMessageRealIter *)sub;
 
   _dbus_return_if_fail (_dbus_message_iter_append_check (real));
   _dbus_return_if_fail (real->iter_type == DBUS_MESSAGE_ITER_TYPE_WRITER);
   _dbus_return_if_fail (_dbus_message_iter_append_check (real_sub));
   _dbus_return_if_fail (real_sub->iter_type == DBUS_MESSAGE_ITER_TYPE_WRITER);
-#endif
 
   _dbus_message_iter_abandon_signature (real);
 }
@@ -4021,6 +4003,8 @@ load_message (DBusMessageLoader *loader,
 
   _dbus_assert (validity == DBUS_VALID);
 
+  message->byte_order = byte_order;
+
   /* 2. VALIDATE BODY */
   if (mode != DBUS_VALIDATION_MODE_WE_TRUST_THIS_DATA_ABSOLUTELY)
     {
@@ -4705,7 +4689,6 @@ dbus_message_demarshal_bytes_needed(const char *buf,
   if (validity == DBUS_VALID)
     {
       _dbus_assert (have_message || (header_len + body_len) > len);
-      (void) have_message; /* unused unless asserting */
       return header_len + body_len;
     }
   else

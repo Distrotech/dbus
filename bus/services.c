@@ -385,6 +385,7 @@ bus_registry_acquire_service (BusRegistry      *registry,
 {
   dbus_bool_t retval;
   DBusConnection *old_owner_conn;
+  DBusConnection *current_owner_conn;
   BusClientPolicy *policy;
   BusService *service;
   BusActivation  *activation;
@@ -509,10 +510,12 @@ bus_registry_acquire_service (BusRegistry      *registry,
   primary_owner = bus_service_get_primary_owner (service);
   if (primary_owner == NULL)
     goto out;
-
+    
+  current_owner_conn = primary_owner->conn;
+     
   if (old_owner_conn == NULL)
     {
-      _dbus_assert (primary_owner->conn == connection);
+      _dbus_assert (current_owner_conn == connection);
 
       *result = DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;      
     }

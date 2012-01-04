@@ -390,48 +390,6 @@ _dbus_mem_pool_dealloc (DBusMemPool *pool,
     }
 }
 
-#ifdef DBUS_ENABLE_STATS
-void
-_dbus_mem_pool_get_stats (DBusMemPool   *pool,
-                          dbus_uint32_t *in_use_p,
-                          dbus_uint32_t *in_free_list_p,
-                          dbus_uint32_t *allocated_p)
-{
-  DBusMemBlock *block;
-  DBusFreedElement *freed;
-  dbus_uint32_t in_use = 0;
-  dbus_uint32_t in_free_list = 0;
-  dbus_uint32_t allocated = 0;
-
-  if (pool != NULL)
-    {
-      in_use = pool->element_size * pool->allocated_elements;
-
-      for (freed = pool->free_elements; freed != NULL; freed = freed->next)
-        {
-          in_free_list += pool->element_size;
-        }
-
-      for (block = pool->blocks; block != NULL; block = block->next)
-        {
-          if (block == pool->blocks)
-            allocated += pool->block_size;
-          else
-            allocated += block->used_so_far;
-        }
-    }
-
-  if (in_use_p != NULL)
-    *in_use_p = in_use;
-
-  if (in_free_list_p != NULL)
-    *in_free_list_p = in_free_list;
-
-  if (allocated_p != NULL)
-    *allocated_p = allocated;
-}
-#endif /* DBUS_ENABLE_STATS */
-
 /** @} */
 
 #ifdef DBUS_BUILD_TESTS

@@ -32,11 +32,11 @@
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>     /* for write() and STDERR_FILENO */
 #endif
 #include "selinux.h"
 
@@ -48,7 +48,7 @@ static int reload_pipe[2];
 #define RELOAD_READ_END 0
 #define RELOAD_WRITE_END 1
 
-static void close_reload_pipe (DBusWatch **);
+static void close_reload_pipe (void);
 
 typedef enum
  {
@@ -231,7 +231,7 @@ handle_reload_watch (DBusWatch    *watch,
       _dbus_read_socket (reload_pipe[RELOAD_READ_END], &str, 1) != 1)
     {
       _dbus_warn ("Couldn't read from reload pipe.\n");
-      close_reload_pipe (&watch);
+      close_reload_pipe ();
       return TRUE;
     }
 
@@ -286,6 +286,14 @@ handle_reload_watch (DBusWatch    *watch,
   return TRUE;
 }
 
+static dbus_bool_t
+reload_watch_callback (DBusWatch    *watch,
+		       unsigned int  condition,
+		       void         *data)
+{
+  return dbus_watch_handle (watch, condition);
+}
+
 static void
 setup_reload_pipe (DBusLoop *loop)
 {
@@ -315,7 +323,8 @@ setup_reload_pipe (DBusLoop *loop)
       exit (1);
     }
 
-  if (!_dbus_loop_add_watch (loop, watch))
+  if (!_dbus_loop_add_watch (loop, watch, reload_watch_callback,
+			     NULL, NULL))
     {
       _dbus_warn ("Unable to add reload watch to main loop: %s\n",
 		  error.message);
@@ -326,13 +335,8 @@ setup_reload_pipe (DBusLoop *loop)
 }
 
 static void
-close_reload_pipe (DBusWatch **watch)
+close_reload_pipe (void)
 {
-    _dbus_loop_remove_watch (bus_context_get_loop (context), *watch);
-    _dbus_watch_invalidate (*watch);
-    _dbus_watch_unref (*watch);
-    *watch = NULL;
-
     _dbus_close_socket (reload_pipe[RELOAD_READ_END], NULL);
     reload_pipe[RELOAD_READ_END] = -1;
 
@@ -355,6 +359,7 @@ main (int argc, char **argv)
   int i;
   dbus_bool_t print_address;
   dbus_bool_t print_pid;
+  dbus_bool_t is_session_bus;
   int force_fork;
   dbus_bool_t systemd_activation;
 
@@ -372,6 +377,7 @@ main (int argc, char **argv)
 
   print_address = FALSE;
   print_pid = FALSE;
+  is_session_bus = FALSE;
   force_fork = FORK_FOLLOW_CONFIG_FILE;
   systemd_activation = FALSE;
 

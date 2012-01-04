@@ -42,7 +42,6 @@
 #include "dbus-protocol.h"
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 //#define STRICT
 //#include <windows.h>
 //#undef STRICT
@@ -82,8 +81,6 @@ struct DBusBabysitter
 
     DBusWatchList *watches;
     DBusWatch *sitter_watch;
-    DBusBabysitterFinishedFunc finished_cb;
-    void *finished_data;
 
     dbus_bool_t have_spawn_errno;
     int spawn_errno;
@@ -157,27 +154,6 @@ _dbus_babysitter_ref (DBusBabysitter *sitter)
   return sitter;
 }
 
-static void
-close_socket_to_babysitter (DBusBabysitter *sitter)
-{
-  _dbus_verbose ("Closing babysitter\n");
-
-  if (sitter->sitter_watch != NULL)
-    {
-      _dbus_assert (sitter->watches != NULL);
-      _dbus_watch_list_remove_watch (sitter->watches,  sitter->sitter_watch);
-      _dbus_watch_invalidate (sitter->sitter_watch);
-      _dbus_watch_unref (sitter->sitter_watch);
-      sitter->sitter_watch = NULL;
-    }
-
-  if (sitter->socket_to_babysitter != -1)
-    {
-      _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-      sitter->socket_to_babysitter = -1;
-    }
-}
-
 /**
  * Decrement the reference count on the babysitter object.
  *
@@ -196,7 +172,11 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
 
   if (sitter->refcount == 0)
     {
-      close_socket_to_babysitter (sitter);
+      if (sitter->socket_to_babysitter != -1)
+        {
+          _dbus_close_socket (sitter->socket_to_babysitter, NULL);
+          sitter->socket_to_babysitter = -1;
+        }
 
       if (sitter->socket_to_main != -1)
         {
@@ -392,15 +372,9 @@ handle_watch (DBusWatch       *watch,
    */
 
   PING();
-  close_socket_to_babysitter (sitter);
+  _dbus_close_socket (sitter->socket_to_babysitter, NULL);
   PING();
-
-  if (_dbus_babysitter_get_child_exited (sitter) &&
-      sitter->finished_cb != NULL)
-    {
-      sitter->finished_cb (sitter, sitter->finished_data);
-      sitter->finished_cb = NULL;
-    }
+  sitter->socket_to_babysitter = -1;
 
   return TRUE;
 }
@@ -503,7 +477,8 @@ compose_string (char **strings, char separator)
   int n = 0;
   char *buf;
   char *p;
-
+  const char *ptr;
+  
   if (!strings || !strings[0])
     return 0;
   for (i = 0; strings[i]; i++)
@@ -545,7 +520,6 @@ spawn_program (char* name, char** argv, char** envp)
   STARTUPINFOA si;
   char *arg_string, *env_string;
   BOOL result;
-  char exe_path[MAX_PATH];
 
 #ifdef DBUS_WINCE
   if (argv && argv[0])
@@ -560,45 +534,14 @@ spawn_program (char* name, char** argv, char** envp)
 
   env_string = build_env_string(envp);
 
-#ifndef DBUS_WINCE
-  // handle relative pathes
-  if (strlen(name) > 2 && name[0] != '\\' && name[0] != '/' && name[1] != ':')
-    {
-      char install_root[2*MAX_PATH];
-      LPSTR lpFile;
-      char *p;
-      _dbus_verbose ("babysitter: spawning %s", name);
-      if (!_dbus_get_install_root (install_root, sizeof(install_root)))
-        return INVALID_HANDLE_VALUE;
-
-      strcat(install_root,name);
-
-      // add exe extension, if not present
-      p = strrchr(name,'.');
-      if (!p)
-        strcat(install_root,".exe");
-
-      // convert '/' into '\\'
-      while((p = strchr(install_root,'/')) != 0)
-        *p = '\\';
-
-      // separate path from filename
-      p = strrchr(install_root,'\\');
-      // no complete path: error condition
-      if (!p)
-        return INVALID_HANDLE_VALUE;
-      *p = 0;
-      if (!SearchPathA(install_root, p+1, NULL, sizeof(exe_path), exe_path, &lpFile))
-        return INVALID_HANDLE_VALUE;
-    }
-  else
-#endif
-    strncpy(exe_path,name,MAX_PATH);
-
   memset (&si, 0, sizeof (si));
   si.cb = sizeof (si);
-  result = CreateProcessA (exe_path, arg_string, NULL, NULL, FALSE, 0,
-               (LPVOID)env_string, NULL, &si, &pi);
+#ifdef DBUS_WINCE
+  result = CreateProcessA (name, arg_string, NULL, NULL, FALSE, 0,
+#else
+  result = CreateProcessA (NULL, arg_string, NULL, NULL, FALSE, 0,
+#endif
+			   (LPVOID)env_string, NULL, &si, &pi);
   free (arg_string);
   if (env_string)
     free (env_string);
@@ -615,7 +558,7 @@ static DWORD __stdcall
 babysitter (void *parameter)
 {
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
-
+  int fd;
   PING();
   _dbus_babysitter_ref (sitter);
 
@@ -725,12 +668,6 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
   PING();
   if (!_dbus_watch_list_add_watch (sitter->watches,  sitter->sitter_watch))
     {
-      /* we need to free it early so the destructor won't try to remove it
-       * without it having been added, which DBusLoop doesn't allow */
-      _dbus_watch_invalidate (sitter->sitter_watch);
-      _dbus_watch_unref (sitter->sitter_watch);
-      sitter->sitter_watch = NULL;
-
       _DBUS_SET_OOM (error);
       goto out0;
     }
@@ -776,40 +713,7 @@ out0:
   return FALSE;
 }
 
-void
-_dbus_babysitter_set_result_function  (DBusBabysitter             *sitter,
-                                       DBusBabysitterFinishedFunc  finished,
-                                       void                       *user_data)
-{
-  sitter->finished_cb = finished;
-  sitter->finished_data = user_data;
-}
-
 #ifdef DBUS_BUILD_TESTS
-
-static char *
-get_test_exec (const char *exe,
-               DBusString *scratch_space)
-{
-  const char *dbus_test_exec;
-
-  dbus_test_exec = _dbus_getenv ("DBUS_TEST_EXEC");
-
-  if (dbus_test_exec == NULL)
-    dbus_test_exec = DBUS_TEST_EXEC;
-
-  if (!_dbus_string_init (scratch_space))
-    return NULL;
-
-  if (!_dbus_string_append_printf (scratch_space, "%s/%s%s",
-                                   dbus_test_exec, exe, DBUS_EXEEXT))
-    {
-      _dbus_string_free (scratch_space);
-      return NULL;
-    }
-
-  return _dbus_string_get_data (scratch_space);
-}
 
 #define LIVE_CHILDREN(sitter) ((sitter)->child_handle != NULL)
 
@@ -873,7 +777,6 @@ check_spawn_segfault (void *data)
   char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter;
   DBusError error;
-  DBusString argv0;
 
   sitter = NULL;
 
@@ -881,14 +784,7 @@ check_spawn_segfault (void *data)
 
   /*** Test launching segfault binary */
 
-  argv[0] = get_test_exec ("test-segfault", &argv0);
-
-  if (argv[0] == NULL)
-    {
-      /* OOM was simulated, never mind */
-      return TRUE;
-    }
-
+  argv[0] = TEST_SEGFAULT_BINARY;
   if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
                                          NULL, NULL,
                                          &error))
@@ -896,8 +792,6 @@ check_spawn_segfault (void *data)
       _dbus_babysitter_block_for_child_exit (sitter);
       _dbus_babysitter_set_child_exit_error (sitter, &error);
     }
-
-  _dbus_string_free (&argv0);
 
   if (sitter)
     _dbus_babysitter_unref (sitter);
@@ -928,7 +822,6 @@ check_spawn_exit (void *data)
   char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter;
   DBusError error;
-  DBusString argv0;
 
   sitter = NULL;
 
@@ -936,14 +829,7 @@ check_spawn_exit (void *data)
 
   /*** Test launching exit failure binary */
 
-  argv[0] = get_test_exec ("test-exit", &argv0);
-
-  if (argv[0] == NULL)
-    {
-      /* OOM was simulated, never mind */
-      return TRUE;
-    }
-
+  argv[0] = TEST_EXIT_BINARY;
   if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
                                          NULL, NULL,
                                          &error))
@@ -951,8 +837,6 @@ check_spawn_exit (void *data)
       _dbus_babysitter_block_for_child_exit (sitter);
       _dbus_babysitter_set_child_exit_error (sitter, &error);
     }
-
-  _dbus_string_free (&argv0);
 
   if (sitter)
     _dbus_babysitter_unref (sitter);
@@ -983,7 +867,6 @@ check_spawn_and_kill (void *data)
   char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter;
   DBusError error;
-  DBusString argv0;
 
   sitter = NULL;
 
@@ -991,14 +874,7 @@ check_spawn_and_kill (void *data)
 
   /*** Test launching sleeping binary then killing it */
 
-  argv[0] = get_test_exec ("test-sleep-forever", &argv0);
-
-  if (argv[0] == NULL)
-    {
-      /* OOM was simulated, never mind */
-      return TRUE;
-    }
-
+  argv[0] = TEST_SLEEP_FOREVER_BINARY;
   if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
                                          NULL, NULL,
                                          &error))
@@ -1009,8 +885,6 @@ check_spawn_and_kill (void *data)
 
       _dbus_babysitter_set_child_exit_error (sitter, &error);
     }
-
-  _dbus_string_free (&argv0);
 
   if (sitter)
     _dbus_babysitter_unref (sitter);

@@ -63,6 +63,8 @@ _dbus_write_two (int               fd,
                  int               start2,
                  int               len2);
 
+dbus_bool_t _dbus_open_unix_socket (int              *fd,
+                                    DBusError        *error);
 int _dbus_connect_unix_socket (const char     *path,
                                dbus_bool_t     abstract,
                                DBusError      *error);

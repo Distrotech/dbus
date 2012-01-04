@@ -144,10 +144,10 @@ out_all:
 static dbus_bool_t
 clear_environment (DBusError *error)
 {
-  const char *starter_env = NULL;
-#ifdef DBUS_ENABLE_VERBOSE_MODE
   const char *debug_env = NULL;
+  const char *starter_env = NULL;
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   /* are we debugging */
   debug_env = _dbus_getenv ("DBUS_VERBOSE");
 #endif
@@ -184,7 +184,6 @@ clear_environment (DBusError *error)
 static dbus_bool_t
 check_permissions (const char *dbus_user, DBusError *error)
 {
-#ifndef ACTIVATION_LAUNCHER_TEST
   uid_t uid, euid;
   struct passwd *pw;
 
@@ -192,6 +191,7 @@ check_permissions (const char *dbus_user, DBusError *error)
   uid = 0;
   euid = 0;
 
+#ifndef ACTIVATION_LAUNCHER_TEST
   /* bail out unless the dbus user is invoking the helper */
   pw = getpwnam(dbus_user);
   if (!pw)
@@ -403,15 +403,12 @@ get_correct_parser (BusConfigParser **parser, DBusError *error)
 {
   DBusString config_file;
   dbus_bool_t retval;
-#ifdef ACTIVATION_LAUNCHER_TEST
   const char *test_config_file;
-#endif
 
   retval = FALSE;
-
-#ifdef ACTIVATION_LAUNCHER_TEST
   test_config_file = NULL;
 
+#ifdef ACTIVATION_LAUNCHER_TEST
   /* there is no _way_ we should be setuid if this define is set.
    * but we should be doubly paranoid and check... */
   if (getuid() != geteuid())

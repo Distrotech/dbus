@@ -347,6 +347,7 @@ _dbus_verbose_init (void)
 static char *_dbus_file_path_extract_elements_from_tail(const char *file,int level)
 {
   static int prefix = -1;
+  char *p;
 
   if (prefix == -1) 
     {

@@ -130,6 +130,15 @@ main (int argc, char **argv)
       test_post_hook ();
     }
 
+  if (only == NULL || strcmp (only, "policy") == 0)
+    {
+      test_pre_hook ();
+      printf ("%s: Running policy test\n", argv[0]);
+      if (!bus_policy_test (&test_data_dir))
+        die ("policy");
+      test_post_hook ();
+    }
+
   if (only == NULL || strcmp (only, "signals") == 0)
     {
       test_pre_hook ();

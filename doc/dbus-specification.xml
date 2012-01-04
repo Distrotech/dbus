@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.19</releaseinfo>
-    <date>UNRELEASED</date>
+    <releaseinfo>Version 0.15</releaseinfo>
+    <date>3 November 2010</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -49,26 +49,6 @@
           </address>
 	</affiliation>
       </author>
-      <author>
-        <firstname>Simon</firstname>
-        <surname>McVittie</surname>
-        <affiliation>
-          <orgname>Collabora Ltd.</orgname>
-          <address>
-            <email>simon.mcvittie@collabora.co.uk</email>
-          </address>
-        </affiliation>
-      </author>
-      <author>
-        <firstname>David</firstname>
-        <surname>Zeuthen</surname>
-        <affiliation>
-          <orgname>Red Hat, Inc.</orgname>
-          <address>
-            <email>davidz@redhat.com</email>
-          </address>
-        </affiliation>
-      </author>
     </authorgroup>
    <revhistory>
      <revision>
@@ -76,27 +56,6 @@
        <date><ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink></date>
        <authorinitials></authorinitials>
        <revremark></revremark>
-     </revision>
-     <revision>
-       <revnumber>0.18</revnumber>
-       <date>29 July 2011</date>
-       <authorinitials>smcv</authorinitials>
-       <revremark>define eavesdropping, unicast, broadcast; add eavesdrop
-         match keyword; promote type system to a top-level section</revremark>
-     </revision>
-     <revision>
-       <revnumber>0.17</revnumber>
-       <date>1 June 2011</date>
-       <authorinitials>smcv/davidz</authorinitials>
-       <revremark>define ObjectManager; reserve extra pseudo-type-codes used
-         by GVariant</revremark>
-     </revision>
-     <revision>
-       <revnumber>0.16</revnumber>
-       <date>11 April 2011</date>
-       <authorinitials></authorinitials>
-       <revremark>add path_namespace, arg0namespace; argNpath matches object
-        paths</revremark>
      </revision>
      <revision>
        <revnumber>0.15</revnumber>
@@ -271,13 +230,27 @@
     
   </sect1>
 
-  <sect1 id="type-system">
-    <title>Type System</title>
+  <sect1 id="message-protocol">
+    <title>Message Protocol</title>
 
     <para>
-      D-Bus has a type system, in which values of various types can be
-      serialized into a sequence of bytes referred to as the
-      <firstterm>wire format</firstterm> in a standard way.
+      A <firstterm>message</firstterm> consists of a
+      <firstterm>header</firstterm> and a <firstterm>body</firstterm>. If you
+      think of a message as a package, the header is the address, and the body
+      contains the package contents. The message delivery system uses the header
+      information to figure out where to send the message and how to interpret
+      it; the recipient interprets the body of the message.
+    </para>
+    
+    <para>
+      The body of the message is made up of zero or more
+      <firstterm>arguments</firstterm>, which are typed values, such as an
+      integer or a byte array.
+    </para>
+
+    <para>
+      Both header and body use the same type system and format for 
+      serializing data. Each type of value has a wire format. 
       Converting a value from some other representation into the wire
       format is called <firstterm>marshaling</firstterm> and converting
       it back from the wire format is <firstterm>unmarshaling</firstterm>.
@@ -498,10 +471,7 @@
               </row><row>
                 <entry><literal>STRUCT</literal></entry>
                 <entry>114 (ASCII 'r'), 40 (ASCII '('), 41 (ASCII ')')</entry>
-                <entry>Struct; type code 114 'r' is reserved for use in
-                  bindings and implementations to represent the general
-                  concept of a struct, and must not appear in signatures
-                  used on D-Bus.</entry>
+                <entry>Struct</entry>
               </row><row>
                 <entry><literal>VARIANT</literal></entry>
                 <entry>118 (ASCII 'v') </entry>
@@ -509,47 +479,11 @@
               </row><row>
                 <entry><literal>DICT_ENTRY</literal></entry>
                 <entry>101 (ASCII 'e'), 123 (ASCII '{'), 125 (ASCII '}') </entry>
-                <entry>Entry in a dict or map (array of key-value pairs).
-                  Type code 101 'e' is reserved for use in bindings and
-                  implementations to represent the general concept of a
-                  dict or dict-entry, and must not appear in signatures
-                  used on D-Bus.</entry>
+                <entry>Entry in a dict or map (array of key-value pairs)</entry>
               </row><row>
                 <entry><literal>UNIX_FD</literal></entry>
                 <entry>104 (ASCII 'h')</entry>
                 <entry>Unix file descriptor</entry>
-              </row>
-              <row>
-                <entry>(reserved)</entry>
-                <entry>109 (ASCII 'm')</entry>
-                <entry>Reserved for <ulink
-                    url="https://bugs.freedesktop.org/show_bug.cgi?id=27857">a
-                  'maybe' type compatible with the one in GVariant</ulink>,
-                  and must not appear in signatures used on D-Bus until
-                  specified here</entry>
-              </row>
-              <row>
-                <entry>(reserved)</entry>
-                <entry>42 (ASCII '*')</entry>
-                <entry>Reserved for use in bindings/implementations to
-                  represent any <firstterm>single complete type</firstterm>,
-                  and must not appear in signatures used on D-Bus.</entry>
-              </row>
-              <row>
-                <entry>(reserved)</entry>
-                <entry>63 (ASCII '?')</entry>
-                <entry>Reserved for use in bindings/implementations to
-                  represent any <firstterm>basic type</firstterm>, and must
-                  not appear in signatures used on D-Bus.</entry>
-              </row>
-              <row>
-                <entry>(reserved)</entry>
-                <entry>64 (ASCII '@'), 38 (ASCII '&amp;'),
-                  94 (ASCII '^')</entry>
-                <entry>Reserved for internal use by bindings/implementations,
-                  and must not appear in signatures used on D-Bus.
-                  GVariant uses these type-codes to encode calling
-                  conventions.</entry>
               </row>
             </tbody>
           </tgroup>
@@ -835,31 +769,6 @@
       </sect3>
       
     </sect2>
-
-  </sect1>
-
-  <sect1 id="message-protocol">
-    <title>Message Protocol</title>
-
-    <para>
-      A <firstterm>message</firstterm> consists of a
-      <firstterm>header</firstterm> and a <firstterm>body</firstterm>. If you
-      think of a message as a package, the header is the address, and the body
-      contains the package contents. The message delivery system uses the header
-      information to figure out where to send the message and how to interpret
-      it; the recipient interprets the body of the message.
-    </para>
-    
-    <para>
-      The body of the message is made up of zero or more
-      <firstterm>arguments</firstterm>, which are typed values, such as an
-      integer or a byte array.
-    </para>
-
-    <para>
-      Both header and body use the D-Bus <link linkend="type-system">type
-        system</link> and format for serializing data.
-    </para>
 
     <sect2 id="message-protocol-messages">
       <title>Message Format</title>
@@ -3082,114 +2991,6 @@
         annotation.
       </para>
     </sect2>
-
-    <sect2 id="standard-interfaces-objectmanager">
-      <title><literal>org.freedesktop.DBus.ObjectManager</literal></title>
-      <para>
-        An API can optionally make use of this interface for one or
-        more sub-trees of objects. The root of each sub-tree implements
-        this interface so other applications can get all objects,
-        interfaces and properties in a single method call.  It is
-        appropriate to use this interface if users of the tree of
-        objects are expected to be interested in all interfaces of all
-        objects in the tree; a more granular API should be used if
-        users of the objects are expected to be interested in a small
-        subset of the objects, a small subset of their interfaces, or
-        both.
-      </para>
-      <para>
-        The method that applications can use to get all objects and
-        properties is <literal>GetManagedObjects</literal>:
-      </para>
-      <para>
-        <programlisting>
-          org.freedesktop.DBus.ObjectManager.GetManagedObjects (out DICT&lt;OBJPATH,DICT&lt;STRING,DICT&lt;STRING,VARIANT&gt;&gt;&gt; objpath_interfaces_and_properties);
-        </programlisting>
-      </para>
-      <para>
-        The return value of this method is a dict whose keys are
-        object paths. All returned object paths are children of the
-        object path implementing this interface, i.e. their object
-        paths start with the ObjectManager's object path plus '/'.
-      </para>
-      <para>
-        Each value is a dict whose keys are interfaces names.  Each
-        value in this inner dict is the same dict that would be
-        returned by the <link
-        linkend="standard-interfaces-properties">org.freedesktop.DBus.Properties.GetAll()</link>
-        method for that combination of object path and interface. If
-        an interface has no properties, the empty dict is returned.
-      </para>
-      <para>
-        Changes are emitted using the following two signals:
-      </para>
-      <para>
-        <programlisting>
-          org.freedesktop.DBus.ObjectManager.InterfacesAdded (OBJPATH object_path,
-                                                              DICT&lt;STRING,DICT&lt;STRING,VARIANT&gt;&gt; interfaces_and_properties);
-          org.freedesktop.DBus.ObjectManager.InterfacesRemoved (OBJPATH object_path,
-                                                                ARRAY&lt;STRING&gt; interfaces);
-        </programlisting>
-      </para>
-      <para>
-        The <literal>InterfacesAdded</literal> signal is emitted when
-        either a new object is added or when an existing object gains
-        one or more interfaces. The
-        <literal>InterfacesRemoved</literal> signal is emitted
-        whenever an object is removed or it loses one or more
-        interfaces. The second parameter of the
-        <literal>InterfacesAdded</literal> signal contains a dict with
-        the interfaces and properties (if any) that have been added to
-        the given object path. Similarly, the second parameter of the
-        <literal>InterfacesRemoved</literal> signal contains an array
-        of the interfaces that were removed. Note that changes on
-        properties on existing interfaces are not reported using this
-        interface - an application should also monitor the existing <link
-        linkend="standard-interfaces-properties">PropertiesChanged</link>
-        signal on each object.
-      </para>
-      <para>
-        Applications SHOULD NOT export objects that are children of an
-        object (directly or otherwise) implementing this interface but
-        which are not returned in the reply from the
-        <literal>GetManagedObjects()</literal> method of this
-        interface on the given object.
-      </para>
-      <para>
-        The intent of the <literal>ObjectManager</literal> interface
-        is to make it easy to write a robust client
-        implementation. The trivial client implementation only needs
-        to make two method calls:
-      </para>
-      <para>
-        <programlisting>
-          org.freedesktop.DBus.AddMatch (bus_proxy,
-                                         "type='signal',name='org.example.App',path_namespace='/org/example/App'");
-          objects = org.freedesktop.DBus.ObjectManager.GetManagedObjects (app_proxy);
-        </programlisting>
-      </para>
-      <para>
-        on the message bus and the remote application's
-        <literal>ObjectManager</literal>, respectively. Whenever a new
-        remote object is created (or an existing object gains a new
-        interface), the <literal>InterfacesAdded</literal> signal is
-        emitted, and since this signal contains all properties for the
-        interfaces, no calls to the
-        <literal>org.freedesktop.Properties</literal> interface on the
-        remote object are needed. Additionally, since the initial
-        <literal>AddMatch()</literal> rule already includes signal
-        messages from the newly created child object, no new
-        <literal>AddMatch()</literal> call is needed.
-      </para>
-
-      <para>
-        <emphasis>
-          The <literal>org.freedesktop.DBus.ObjectManager</literal>
-          interface was added in version 0.17 of the D-Bus
-          specification.
-        </emphasis>
-      </para>
-    </sect2>
   </sect1>
 
   <sect1 id="introspection-format">
@@ -3392,10 +3193,39 @@
       </para>
 
       <para>
-        Applications may send <firstterm>unicast messages</firstterm> to
-        a specific recipient or to the message bus itself, or
-        <firstterm>broadcast messages</firstterm> to all interested recipients.
-        See <xref linkend="message-bus-routing"/> for details.
+        Messages may have a <literal>DESTINATION</literal> field (see <xref
+        linkend="message-protocol-header-fields"/>).  If the
+        <literal>DESTINATION</literal> field is present, it specifies a message
+        recipient by name. Method calls and replies normally specify this field.
+        The message bus must send messages (of any type) with the
+        <literal>DESTINATION</literal> field set to the specified recipient,
+        regardless of whether the recipient has set up a match rule matching
+        the message.
+      </para>
+
+      <para>
+        Signals normally do not specify a destination; they are sent to all
+        applications with <firstterm>message matching rules</firstterm> that
+        match the message.
+      </para>
+
+      <para>
+        When the message bus receives a method call, if the
+        <literal>DESTINATION</literal> field is absent, the call is taken to be
+        a standard one-to-one message and interpreted by the message bus
+        itself. For example, sending an
+        <literal>org.freedesktop.DBus.Peer.Ping</literal> message with no
+        <literal>DESTINATION</literal> will cause the message bus itself to
+        reply to the ping immediately; the message bus will not make this
+        message visible to other applications.
+      </para>
+
+      <para>
+        Continuing the <literal>org.freedesktop.DBus.Peer.Ping</literal> example, if
+        the ping message were sent with a <literal>DESTINATION</literal> name of
+        <literal>com.yoyodyne.Screensaver</literal>, then the ping would be
+        forwarded, and the Yoyodyne Corporation screensaver application would be
+        expected to reply to the ping.
       </para>
     </sect2>
 
@@ -3829,122 +3659,20 @@
 
     <sect2 id="message-bus-routing">
       <title>Message Bus Message Routing</title>
-
       <para>
-        Messages may have a <literal>DESTINATION</literal> field (see <xref
-          linkend="message-protocol-header-fields"/>), resulting in a
-        <firstterm>unicast message</firstterm>.  If the
-        <literal>DESTINATION</literal> field is present, it specifies a message
-        recipient by name. Method calls and replies normally specify this field.
-        The message bus must send messages (of any type) with the
-        <literal>DESTINATION</literal> field set to the specified recipient,
-        regardless of whether the recipient has set up a match rule matching
-        the message.
+        FIXME 
       </para>
-
-      <para>
-        When the message bus receives a signal, if the
-        <literal>DESTINATION</literal> field is absent, it is considered to
-        be a <firstterm>broadcast signal</firstterm>, and is sent to all
-        applications with <firstterm>message matching rules</firstterm> that
-        match the message. Most signal messages are broadcasts.
-      </para>
-
-      <para>
-        Unicast signal messages (those with a <literal>DESTINATION</literal>
-        field) are not commonly used, but they are treated like any unicast
-        message: they are delivered to the specified receipient,
-        regardless of its match rules.  One use for unicast signals is to
-        avoid a race condition in which a signal is emitted before the intended
-        recipient can call <xref linkend="bus-messages-add-match"/> to
-        receive that signal: if the signal is sent directly to that recipient
-        using a unicast message, it does not need to add a match rule at all,
-        and there is no race condition.  Another use for unicast signals,
-        on message buses whose security policy prevents eavesdropping, is to
-        send sensitive information which should only be visible to one
-        recipient.
-      </para>
-
-      <para>
-        When the message bus receives a method call, if the
-        <literal>DESTINATION</literal> field is absent, the call is taken to be
-        a standard one-to-one message and interpreted by the message bus
-        itself. For example, sending an
-        <literal>org.freedesktop.DBus.Peer.Ping</literal> message with no
-        <literal>DESTINATION</literal> will cause the message bus itself to
-        reply to the ping immediately; the message bus will not make this
-        message visible to other applications.
-      </para>
-
-      <para>
-        Continuing the <literal>org.freedesktop.DBus.Peer.Ping</literal> example, if
-        the ping message were sent with a <literal>DESTINATION</literal> name of
-        <literal>com.yoyodyne.Screensaver</literal>, then the ping would be
-        forwarded, and the Yoyodyne Corporation screensaver application would be
-        expected to reply to the ping.
-      </para>
-
-      <para>
-        Message bus implementations may impose a security policy which
-        prevents certain messages from being sent or received.
-        When a message cannot be sent or received due to a security
-        policy, the message bus should send an error reply, unless the
-        original message had the <literal>NO_REPLY</literal> flag.
-      </para>
-
-      <sect3 id="message-bus-routing-eavesdropping">
-        <title>Eavesdropping</title>
-        <para>
-          Receiving a unicast message whose <literal>DESTINATION</literal>
-          indicates a different recipient is called
-          <firstterm>eavesdropping</firstterm>. On a message bus which acts as
-          a security boundary (like the standard system bus), the security
-          policy should usually prevent eavesdropping, since unicast messages
-          are normally kept private and may contain security-sensitive
-          information.
-        </para>
-
-        <para>
-          Eavesdropping is mainly useful for debugging tools, such as
-          the <literal>dbus-monitor</literal> tool in the reference
-          implementation of D-Bus. Tools which eavesdrop on the message bus
-          should be careful to avoid sending a reply or error in response to
-          messages intended for a different client.
-        </para>
-
-        <para>
-          Clients may attempt to eavesdrop by adding match rules
-          (see <xref linkend="message-bus-routing-match-rules"/>) containing
-          the <literal>eavesdrop='true'</literal> match. If the message bus'
-          security policy does not allow eavesdropping, the match rule can
-          still be added, but will not have any practical effect. For
-          compatibility with older message bus implementations, if adding such
-          a match rule results in an error reply, the client may fall back to
-          adding the same rule with the <literal>eavesdrop</literal> match
-          omitted.
-        </para>
-      </sect3>
-
       <sect3 id="message-bus-routing-match-rules">
         <title>Match Rules</title>
         <para>
-	  An important part of the message bus routing protocol is match
-          rules. Match rules describe the messages that should be sent to a
-          client, based on the contents of the message.  Broadcast signals
-          are only sent to clients which have a suitable match rule: this
-          avoids waking up client processes to deal with signals that are
-          not relevant to that client.
-        </para>
-        <para>
-          Messages that list a client as their <literal>DESTINATION</literal>
-          do not need to match the client's match rules, and are sent to that
-          client regardless. As a result, match rules are mainly used to
-          receive a subset of broadcast signals.
-        </para>
-        <para>
-          Match rules can also be used for eavesdropping
-          (see <xref linkend="message-bus-routing-eavesdropping"/>),
-          if the security policy of the message bus allows it.
+	  An important part of the message bus routing protocol is match  
+	  rules. Match rules describe what messages can be sent to a client
+          based on the contents of the message.  When a message is routed
+          through the bus it is compared to clients' match rules.  If any
+          of the rules match, the message is dispatched to the client.
+          If none of the rules match the message never leaves the bus.  This
+          is an effective way to control traffic over the bus and to make sure
+          only relevant message need to be processed by the client.
         </para>
         <para>
           Match rules are added using the AddMatch bus method 
@@ -4004,43 +3732,6 @@
                   path match is path='/org/freedesktop/Hal/Manager'</entry>
                 </row>
                 <row>
-                  <entry><literal>path_namespace</literal></entry>
-                  <entry>An object path</entry>
-                  <entry>
-                    <para>
-                      Matches messages which are sent from or to an
-                      object for which the object path is either the
-                      given value, or that value followed by one or
-                      more path components.
-                    </para>
-
-                    <para>
-                      For example,
-                      <literal>path_namespace='/com/example/foo'</literal>
-                      would match signals sent by
-                      <literal>/com/example/foo</literal>
-                      or by
-                      <literal>/com/example/foo/bar</literal>,
-                      but not by
-                      <literal>/com/example/foobar</literal>.
-                    </para>
-
-                    <para>
-                      Using both <literal>path</literal> and
-                      <literal>path_namespace</literal> in the same match
-                      rule is not allowed.
-                    </para>
-
-                    <para>
-                      <emphasis>
-                        This match key was added in version 0.16 of the
-                        D-Bus specification and implemented by the bus
-                        daemon in dbus 1.5.0 and later.
-                      </emphasis>
-                    </para>
-                </entry>
-                </row>
-                <row>
                   <entry><literal>destination</literal></entry>
                   <entry>A unique name (see <xref linkend="term-unique-name"/>)</entry>
                   <entry>Matches messages which are being sent to the given unique name. An
@@ -4050,99 +3741,24 @@
                   <entry><literal>arg[0, 1, 2, 3, ...]</literal></entry>
                   <entry>Any string</entry>
                   <entry>Arg matches are special and are used for further restricting the 
-                  match based on the arguments in the body of a message. Only arguments of type
-                  STRING can be matched in this way. An example of an argument match 
+                  match based on the arguments in the body of a message.  As of this time
+                  only string arguments can be matched.  An example of an argument match 
                   would be arg3='Foo'. Only argument indexes from 0 to 63 should be 
                   accepted.</entry>
                 </row>
                 <row>
                   <entry><literal>arg[0, 1, 2, 3, ...]path</literal></entry>
                   <entry>Any string</entry>
-                  <entry>
-                    <para>Argument path matches provide a specialised form of wildcard matching for
-                      path-like namespaces. They can match arguments whose type is either STRING or
-                      OBJECT_PATH. As with normal argument matches,
-                      if the argument is exactly equal to the string given in the match
-                      rule then the rule is satisfied. Additionally, there is also a
-                      match when either the string given in the match rule or the
-                      appropriate message argument ends with '/' and is a prefix of the
-                      other. An example argument path match is arg0path='/aa/bb/'. This
-                      would match messages with first arguments of '/', '/aa/',
-                      '/aa/bb/', '/aa/bb/cc/' and '/aa/bb/cc'. It would not match
-                      messages with first arguments of '/aa/b', '/aa' or even '/aa/bb'.</para>
-
-                    <para>This is intended for monitoring “directories” in file system-like
-                      hierarchies, as used in the <citetitle>dconf</citetitle> configuration
-                      system. An application interested in all nodes in a particular hierarchy would
-                      monitor <literal>arg0path='/ca/example/foo/'</literal>. Then the service could
-                      emit a signal with zeroth argument <literal>"/ca/example/foo/bar"</literal> to
-                      represent a modification to the “bar” property, or a signal with zeroth
-                      argument <literal>"/ca/example/"</literal> to represent atomic modification of
-                      many properties within that directory, and the interested application would be
-                      notified in both cases.</para>
-                    <para>
-                      <emphasis>
-                        This match key was added in version 0.12 of the
-                        D-Bus specification, implemented for STRING
-                        arguments by the bus daemon in dbus 1.2.0 and later,
-                        and implemented for OBJECT_PATH arguments in dbus 1.5.0
-                        and later.
-                      </emphasis>
-                    </para>
-                  </entry>
-                </row>
-                <row>
-                  <entry><literal>arg0namespace</literal></entry>
-                  <entry>Like a bus name, except that the string is not
-                    required to contain a '.' (period)</entry>
-                  <entry>
-                    <para>Match messages whose first argument is of type STRING, and is a bus name
-                      or interface name within the specified namespace. This is primarily intended
-                      for watching name owner changes for a group of related bus names, rather than
-                      for a single name or all name changes.</para>
-
-                    <para>Because every valid interface name is also a valid
-                      bus name, this can also be used for messages whose
-                      first argument is an interface name.</para>
-
-                    <para>For example, the match rule
-                      <literal>member='NameOwnerChanged',arg0namespace='com.example.backend'</literal>
-                      matches name owner changes for bus names such as
-                      <literal>com.example.backend.foo</literal>,
-                      <literal>com.example.backend.foo.bar</literal>, and
-                      <literal>com.example.backend</literal> itself.</para>
-
-                    <para>See also <xref linkend='bus-messages-name-owner-changed'/>.</para>
-                    <para>
-                      <emphasis>
-                        This match key was added in version 0.16 of the
-                        D-Bus specification and implemented by the bus
-                        daemon in dbus 1.5.0 and later.
-                      </emphasis>
-                    </para>
-                  </entry>
-                </row>
-                <row>
-                  <entry><literal>eavesdrop</literal></entry>
-                  <entry><literal>'true'</literal>, <literal>'false'</literal></entry>
-                  <entry>Since D-Bus 1.5.6, match rules do not
-                    match messages which have a <literal>DESTINATION</literal>
-                    field unless the match rule specifically
-                    requests this
-                    (see <xref linkend="message-bus-routing-eavesdropping"/>)
-                    by specifying <literal>eavesdrop='true'</literal>
-                    in the match rule.  <literal>eavesdrop='false'</literal>
-                    restores the default behaviour. Messages are
-                    delivered to their <literal>DESTINATION</literal>
-                    regardless of match rules, so this match does not
-                    affect normal delivery of unicast messages.
-                    If the message bus has a security policy which forbids
-                    eavesdropping, this match may still be used without error,
-                    but will not have any practical effect.
-                    In older versions of D-Bus, this match was not allowed
-                    in match rules, and all match rules behaved as if
-                    <literal>eavesdrop='true'</literal> had been used.
-                  </entry>
+                  <entry>Argument path matches provide a specialised form of wildcard
+                  matching for path-like namespaces. As with normal argument matches,
+                  if the argument is exactly equal to the string given in the match
+                  rule then the rule is satisfied. Additionally, there is also a
+                  match when either the string given in the match rule or the
+                  appropriate message argument ends with '/' and is a prefix of the
+                  other. An example argument path match is arg0path='/aa/bb/'. This
+                  would match messages with first arguments of '/', '/aa/',
+                  '/aa/bb/', '/aa/bb/cc/' and '/aa/bb/cc'. It would not match
+                  messages with first arguments of '/aa/b', '/aa' or even '/aa/bb'.</entry>
                 </row>
               </tbody>
             </tgroup>

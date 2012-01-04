@@ -42,8 +42,7 @@ dbus_bool_t       _dbus_object_tree_register               (DBusObjectTree      
 void              _dbus_object_tree_unregister_and_unlock  (DBusObjectTree              *tree,
                                                             const char                 **path);
 DBusHandlerResult _dbus_object_tree_dispatch_and_unlock    (DBusObjectTree              *tree,
-                                                            DBusMessage                 *message,
-                                                            dbus_bool_t                 *found_object);
+                                                            DBusMessage                 *message);
 void*             _dbus_object_tree_get_user_data_unlocked (DBusObjectTree              *tree,
                                                             const char                 **path);
 void              _dbus_object_tree_free_all_unlocked      (DBusObjectTree              *tree);

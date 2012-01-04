@@ -661,8 +661,6 @@ dbus_bus_register (DBusConnection *connection,
   _dbus_return_val_if_error_is_set (error, FALSE);
 
   retval = FALSE;
-  message = NULL;
-  reply = NULL;
 
   _DBUS_LOCK (bus_datas);
 
@@ -670,16 +668,18 @@ dbus_bus_register (DBusConnection *connection,
   if (bd == NULL)
     {
       _DBUS_SET_OOM (error);
-      goto out;
+      _DBUS_UNLOCK (bus_datas);
+      return FALSE;
     }
 
   if (bd->unique_name != NULL)
     {
       _dbus_verbose ("Ignoring attempt to register the same DBusConnection %s with the message bus a second time.\n",
                      bd->unique_name);
+      _DBUS_UNLOCK (bus_datas);
+
       /* Success! */
-      retval = TRUE;
-      goto out;
+      return TRUE;
     }
   
   message = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
@@ -690,11 +690,15 @@ dbus_bus_register (DBusConnection *connection,
   if (!message)
     {
       _DBUS_SET_OOM (error);
-      goto out;
+
+      _DBUS_UNLOCK (bus_datas);
+      return FALSE;
     }
   
   reply = dbus_connection_send_with_reply_and_block (connection, message, -1, error);
 
+  dbus_message_unref (message);
+  
   if (reply == NULL)
     goto out;
   else if (dbus_set_error_from_message (error, reply))
@@ -714,17 +718,14 @@ dbus_bus_register (DBusConnection *connection,
   retval = TRUE;
   
  out:
-  _DBUS_UNLOCK (bus_datas);
-
-  if (message)
-    dbus_message_unref (message);
-
   if (reply)
     dbus_message_unref (reply);
 
   if (!retval)
     _DBUS_ASSERT_ERROR_IS_SET (error);
 
+  _DBUS_UNLOCK (bus_datas);
+  
   return retval;
 }
 
@@ -1433,17 +1434,11 @@ send_no_return_values (DBusConnection *connection,
  * If you pass #NULL for the error, this function will not
  * block; the match thus won't be added until you flush the
  * connection, and if there's an error adding the match
- * you won't find out about it. This is generally acceptable, since the
- * possible errors (including a lack of resources in the bus, the connection
- * having exceeded its quota of active match rules, or the match rule being
- * unparseable) are generally unrecoverable.
+ * (only possible error is lack of resources in the bus),
+ * you won't find out about it.
  *
  * If you pass non-#NULL for the error this function will
- * block until it gets a reply. This may be useful when using match rule keys
- * introduced in recent versions of D-Bus, like 'arg0namespace', to allow the
- * application to fall back to less efficient match rules supported by older
- * versions of the daemon if the running version is not new enough; or when
- * using user-supplied rules rather than rules hard-coded at compile time.
+ * block until it gets a reply.
  *
  * Normal API conventions would have the function return
  * a boolean value indicating whether the error was set,

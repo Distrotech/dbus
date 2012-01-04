@@ -4,29 +4,9 @@
 SUBDIRS= . name-test 
 DIST_SUBDIRS=name-test
 
-AM_CPPFLAGS = \
-	-I$(top_srcdir) \
-	$(GLIB_CFLAGS) \
-	$(DBUS_GLIB_CFLAGS) \
-	$(NULL)
+INCLUDES=-I$(top_srcdir) $(DBUS_TEST_CFLAGS) 
 
-# improve backtraces from test stuff
-AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
-
-static_cppflags = \
-	$(AM_CPPFLAGS) \
-	-DDBUS_STATIC_BUILD \
-	$(NULL)
-
-libdbus_testutils_la_CPPFLAGS = \
-	$(static_cppflags)
-libdbus_testutils_la_SOURCES = \
-	test-utils.c \
-	test-utils.h \
-	$(NULL)
-libdbus_testutils_la_LIBADD = \
-	$(top_builddir)/dbus/libdbus-internal.la \
-	$(NULL)
+libdbus_testutils_la_SOURCES = test-utils.h test-utils.c
 
 noinst_LTLIBRARIES = libdbus-testutils.la
 
@@ -72,26 +52,58 @@ endif !DBUS_BUILD_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
 
-test_service_CPPFLAGS = $(static_cppflags)
-test_service_LDADD = libdbus-testutils.la
-test_names_CPPFLAGS = $(static_cppflags)
-test_names_LDADD = libdbus-testutils.la
-## break_loader_CPPFLAGS = $(static_cppflags)
-## break_loader_LDADD = $(top_builddir)/dbus/libdbus-internal.la
-test_shell_service_CPPFLAGS = $(static_cppflags)
-test_shell_service_LDADD = libdbus-testutils.la
-shell_test_CPPFLAGS = $(static_cppflags)
-shell_test_LDADD = libdbus-testutils.la
-spawn_test_CPPFLAGS = $(static_cppflags)
-spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+test_service_SOURCES=				\
+	test-service.c
+
+test_names_SOURCES=				\
+	test-names.c
+
+##break_loader_SOURCES=				\
+##	break-loader.c
+
+test_shell_service_SOURCES =			\
+	test-shell-service.c
+
+shell_test_SOURCES=                             \
+        shell-test.c
+
+spawn_test_SOURCES=				\
+	spawn-test.c
+
+test_exit_SOURCES =				\
+	test-exit.c
+
+test_segfault_SOURCES =				\
+	test-segfault.c
+
+test_sleep_forever_SOURCES =			\
+	test-sleep-forever.c
+
+# This assumes that most tests will be linked to libdbus-internal;
+# tests linked to only the public libdbus have their own CPPFLAGS.
+AM_CPPFLAGS=-DDBUS_STATIC_BUILD
+TEST_LIBS=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_TEST_LIBS)
+
+test_service_LDADD=libdbus-testutils.la $(TEST_LIBS)
+test_service_LDFLAGS=@R_DYNAMIC_LDFLAG@
+test_names_LDADD=libdbus-testutils.la $(TEST_LIBS)
+test_names_LDFLAGS=@R_DYNAMIC_LDFLAG@
+## break_loader_LDADD= $(TEST_LIBS)
+## break_loader_LDFLAGS=@R_DYNAMIC_LDFLAG@
+test_shell_service_LDADD=libdbus-testutils.la $(TEST_LIBS)
+test_shell_service_LDFLAGS=@R_DYNAMIC_LDFLAG@
+shell_test_LDADD=libdbus-testutils.la $(TEST_LIBS)
+shell_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
+spawn_test_LDADD=$(TEST_LIBS)
+spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 test_refs_SOURCES = internals/refs.c
-test_refs_CPPFLAGS = $(static_cppflags)
-test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS)
+test_refs_CPPFLAGS = -DDBUS_STATIC_BUILD $(GLIB_CFLAGS)
+test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS) $(TEST_LIBS)
 
 test_syslog_SOURCES = internals/syslog.c
-test_syslog_CPPFLAGS = $(static_cppflags)
-test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS)
+test_syslog_CPPFLAGS = -DDBUS_STATIC_BUILD $(GLIB_CFLAGS)
+test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS) $(TEST_LIBS)
 
 EXTRA_DIST = dbus-test-runner
 
@@ -102,7 +114,6 @@ testexec_PROGRAMS =
 installable_tests = \
 	test-corrupt \
 	test-dbus-daemon \
-	test-dbus-daemon-eavesdrop \
 	test-loopback \
 	test-marshal \
 	test-refs \
@@ -125,33 +136,36 @@ TESTS_ENVIRONMENT = \
 	$(NULL)
 
 test_corrupt_SOURCES = corrupt.c
+test_corrupt_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_corrupt_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_corrupt_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_loopback_SOURCES = loopback.c
+test_loopback_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_loopback_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_loopback_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_relay_SOURCES = relay.c
+test_relay_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_relay_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_relay_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
 test_dbus_daemon_SOURCES = dbus-daemon.c
+test_dbus_daemon_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_dbus_daemon_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_dbus_daemon_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
 
-test_dbus_daemon_eavesdrop_SOURCES = dbus-daemon-eavesdrop.c
-test_dbus_daemon_eavesdrop_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
-test_dbus_daemon_eavesdrop_LDFLAGS = @R_DYNAMIC_LDFLAG@
-test_dbus_daemon_eavesdrop_LDADD = $(top_builddir)/dbus/libdbus-1.la \
-    $(GLIB_LIBS) \
-    $(DBUS_GLIB_LIBS)
-
 test_marshal_SOURCES = marshal.c
+test_marshal_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_GLIB_CFLAGS)
+test_marshal_LDFLAGS = @R_DYNAMIC_LDFLAG@
 test_marshal_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)

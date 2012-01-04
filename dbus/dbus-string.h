@@ -48,10 +48,11 @@ struct DBusString
 #endif
   int   dummy2;       /**< placeholder */
   int   dummy3;       /**< placeholder */
-  unsigned int dummy_bit1 : 1; /**< placeholder */
-  unsigned int dummy_bit2 : 1; /**< placeholder */
-  unsigned int dummy_bit3 : 1; /**< placeholder */
-  unsigned int dummy_bits : 3; /**< placeholder */
+  int   dummy4;       /**< placeholder */
+  unsigned int dummy5 : 1; /**< placeholder */
+  unsigned int dummy6 : 1; /**< placeholder */
+  unsigned int dummy7 : 1; /**< placeholder */
+  unsigned int dummy8 : 3; /**< placeholder */
 };
 
 #ifdef DBUS_DISABLE_ASSERT
@@ -323,6 +324,7 @@ void          _dbus_string_zero                  (DBusString        *str);
                                    sizeof(_dbus_static_string_##name),  \
                                    sizeof(_dbus_static_string_##name) + \
                                    _DBUS_STRING_ALLOCATION_PADDING,     \
+                                   sizeof(_dbus_static_string_##name),  \
                                    TRUE, TRUE, FALSE, 0 }
 
 DBUS_END_DECLS

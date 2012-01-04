@@ -102,6 +102,8 @@ struct DBusMessage
 
   DBusString body;   /**< Body network data. */
 
+  char byte_order; /**< Message byte order. */
+
   unsigned int locked : 1; /**< Message being sent, no modifications allowed. */
 
 #ifndef DBUS_DISABLE_CHECKS

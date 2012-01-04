@@ -50,6 +50,12 @@ static DBusWatch *watch = NULL;
 static DBusLoop *loop = NULL;
 
 static dbus_bool_t
+_kqueue_watch_callback (DBusWatch *watch, unsigned int condition, void *data)
+{
+  return dbus_watch_handle (watch, condition);
+}
+
+static dbus_bool_t
 _handle_kqueue_watch (DBusWatch *watch, unsigned int flags, void *data)
 {
   struct kevent ev;
@@ -74,8 +80,7 @@ _handle_kqueue_watch (DBusWatch *watch, unsigned int flags, void *data)
       kq = -1;
       if (watch != NULL)
 	{
-	  _dbus_loop_remove_watch (loop, watch);
-          _dbus_watch_invalidate (watch);
+	  _dbus_loop_remove_watch (loop, watch, _kqueue_watch_callback, NULL);
           _dbus_watch_unref (watch);
 	  watch = NULL;
 	}
@@ -115,14 +120,14 @@ _init_kqueue (BusContext *context)
 	    goto out;
 	  }
 
-	if (!_dbus_loop_add_watch (loop, watch))
+	if (!_dbus_loop_add_watch (loop, watch, _kqueue_watch_callback,
+                                   NULL, NULL))
           {
             _dbus_warn ("Unable to add reload watch to main loop");
-	    _dbus_watch_invalidate (watch);
-	    _dbus_watch_unref (watch);
-	    watch = NULL;
 	    close (kq);
 	    kq = -1;
+	    _dbus_watch_unref (watch);
+	    watch = NULL;
             goto out;
 	  }
     }

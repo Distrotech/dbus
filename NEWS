@@ -1,18 +1,12 @@
-D-Bus 1.5.10 (UNRELEASED)
+D-Bus 1.4.18 (UNRELEASED)
 ==
 
 …
 
-D-Bus 1.5.8 (2011-09-21)
+D-Bus 1.4.16 (2011-09-21)
 ==
 
-The "cross-metering" release.
-
-In addition to dead code removal and refactoring, this release contains all
-of the bugfixes from 1.4.16.
-
-• Clean up dead code, and make more warnings fatal in development builds
-  (fd.o #39231, fd.o #41012; Simon McVittie)
+The "this answerphone fails to answer the phone" release.
 
 • If full test coverage is requested via --enable-tests, strictly require
   Python, pygobject and dbus-python, which are required by some tests; if not,
@@ -57,37 +51,17 @@ of the bugfixes from 1.4.16.
   · Fix compilation on MSVC, which doesn't understand "inline" with its
     C99 meaning (fd.o #40000; Ralf Habacker, Simon McVittie)
   · Fix misuse of GPid in test/dbus-daemon.c (fd.o #40003, Simon McVittie)
-  · Fix cross-compilation to Windows with Automake (fd.o #40003, Simon McVittie)
 
-D-Bus 1.5.6 (2011-07-29)
+D-Bus 1.4.14 (2011-07-29)
 ==
 
-The "weird, gravy-like aftertaste" release.
+The "Puny receptacle!" release.
 
-In addition to new features and refactoring, this release contains all of the
-bugfixes from 1.4.14.
-
-Potentially incompatible (Bustle and similar debugging tools will need
-changes to work as intended):
-
-• Do not allow match rules to "eavesdrop" (receive messages intended for a
-  different recipient) by mistake: eavesdroppers must now opt-in to this
-  behaviour by putting "eavesdrop='true'" in the match rule, which will
-  not have any practical effect on buses where eavesdropping is not allowed
-  (fd.o #37890, Cosimo Alfarano)
-
-Other changes:
-
-• D-Bus Specification version 0.18 (fd.o #37890, fd.o #39450, fd.o #38252;
-  Cosimo Alfarano, Simon McVittie)
-  · add the "eavesdrop" keyword to match rules
-  · define eavesdropping, unicast messages and broadcast messages
-  · stop claiming that match rules are needed to match unicast messages to you
-  · promote the type system to be a top-level section
+Changes:
 
 • Use DBUS_ERROR_OBJECT_PATH_IN_USE if dbus_connection_try_register_object_path
-  or dbus_connection_try_register_fallback fails, not ...ADDRESS_IN_USE,
-  and simplify object-path registration (fd.o #38874, Jiří Klimeš)
+  or dbus_connection_try_register_fallback fails, not ...ADDRESS_IN_USE
+  (fd.o #38874, Jiří Klimeš)
 
 • Consistently use atomic operations on everything that is ever manipulated
   via atomic ops, as was done for changes to DBusConnection's refcount in
@@ -98,26 +72,6 @@ Other changes:
 
 • Make "make check" in a clean tree work, by not running tests until
   test data has been set up (fd.o #34405, Simon McVittie)
-
-• The dbus-daemon no longer busy-loops if it has a very large number of file
-  descriptors (fd.o #23194, Simon McVittie)
-
-• Refactor message flow through dispatching to avoid locking violations if
-  the bus daemon's message limit is hit; remove the per-connection link cache,
-  which was meant to improve performance, but now reduces it (fd.o #34393,
-  Simon McVittie)
-
-• Some cmake fixes (Ralf Habacker)
-
-• Remove dead code, mainly from DBusString (fd.o #38570, fd.o #39610;
-  Simon McVittie, Lennart Poettering)
-
-• Stop storing two extra byte order indicators in each D-Bus message
-  (fd.o #38287, Simon McVittie)
-
-• Add an optional Stats interface which can be used to get statistics from
-  a running dbus-daemon if enabled at configure time with --enable-stats
-  (fd.o #34040, Simon McVittie)
 
 • Fix various typos (fd.o #27227, fd.o #38284; Sascha Silbe, Simon McVittie)
 
@@ -137,7 +91,7 @@ Other changes:
   · fix use of a mutex for autolaunch server detection
   · don't crash on malloc failure in _dbus_printf_string_upper_bound
 
-D-Bus 1.5.4 (2011-06-10)
+D-Bus 1.4.12 (2011-06-10)
 ==
 
 Security (local denial of service):
@@ -178,10 +132,10 @@ Changes:
 • Windows-specific changes:
   · don't try to build dbus-daemon-launch-helper (fd.o #37838, Mark Brand)
 
-D-Bus 1.5.2 (2011-06-01)
+D-Bus 1.4.10 (2011-06-01)
 ==
 
-The "Boar Hunter" release.
+The "Ape Ale" release.
 
 Notes for distributors:
 
@@ -195,10 +149,6 @@ Notes for distributors:
 
 Changes:
 
-  • D-Bus Specification v0.17
-    · Reserve the extra characters used in signatures by GVariant
-      (fd.o #34529, Simon McVittie)
-    · Define the ObjectManager interface (fd.o #34869, David Zeuthen)
   • Don't force -fPIE: distributions and libtool know better than we do whether
     it's desirable (fd.o #16621, fd.o #27215; Simon McVittie)
   • Allow --disable-gc-sections, in case your toolchain offers the
@@ -208,8 +158,6 @@ Changes:
     (fd.o #14512; Simon McVittie, loosely based on a patch from Luca Barbato)
   • Ensure that maintainers upload documentation with the right permissions
     (fd.o #36130, Simon McVittie)
-  • Don't force users of libdbus to be linked against -lpthread, -lrt
-    (fd.o #32827, Simon McVittie)
   • Log system-bus activation information to syslog (fd.o #35705,
     Colin Walters)
   • Log messages dropped due to quotas to syslog (fd.o #35358,
@@ -228,28 +176,6 @@ Changes:
     Simon McVittie)
   • Windows:
     • Remove obsolete workaround for winioctl.h (fd.o #35083, Ralf Habacker)
-
-D-Bus 1.5.0 (2011-04-11)
-==
-
-The "you never know when you need to tow something from your giant
-flying shark" release.
-
-  • D-Bus Specification v0.16
-    · Add support for path_namespace and arg0namespace in match rules
-      (fd.o #24317, #34870; Will Thompson, David Zeuthen, Simon McVittie)
-    · Make argNpath support object paths, not just object-path-like strings,
-      and document it better (fd.o #31818, Will Thompson)
-  • Let the bus daemon implement more than one interface (fd.o #33757,
-    Simon McVittie)
-  • Optimize _dbus_string_replace_len to reduce waste (fd.o #21261,
-    Roberto Guido)
-  • Require user intervention to compile with missing 64-bit support
-    (fd.o #35114, Simon McVittie)
-  • Add dbus_type_is_valid as public API (fd.o #20496, Simon McVittie)
-  • Raise UnknownObject instead of UnknownMethod for calls to methods on
-    paths that are not part of the object tree, and UnknownInterface for calls
-    to unknown interfaces in the bus daemon (fd.o #34527, Lennart Poettering)
 
 D-Bus 1.4.8 (2011-04-08)
 ==

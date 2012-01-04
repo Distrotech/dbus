@@ -1,5 +1,5 @@
 [D-BUS Service]
 Name=org.freedesktop.DBus.TestSuiteEchoService
-Exec=@DBUS_TEST_EXEC@/test-service@EXEEXT@
+Exec=@TEST_SERVICE_BINARY@
 User=anyrandomuser
 

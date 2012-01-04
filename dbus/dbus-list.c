@@ -146,18 +146,6 @@ link_after (DBusList **list,
     }
 }
 
-#ifdef DBUS_ENABLE_STATS
-void
-_dbus_list_get_stats     (dbus_uint32_t *in_use_p,
-                          dbus_uint32_t *in_free_list_p,
-                          dbus_uint32_t *allocated_p)
-{
-  _DBUS_LOCK (list);
-  _dbus_mem_pool_get_stats (list_pool, in_use_p, in_free_list_p, allocated_p);
-  _DBUS_UNLOCK (list);
-}
-#endif
-
 /** @} */
 
 /**

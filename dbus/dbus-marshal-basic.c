@@ -1267,6 +1267,44 @@ _dbus_type_get_alignment (int typecode)
     }
 }
 
+
+/**
+ * Return #TRUE if the typecode is a valid typecode.
+ * #DBUS_TYPE_INVALID surprisingly enough is not considered valid, and
+ * random unknown bytes aren't either. This function is safe with
+ * untrusted data.
+ *
+ * @returns #TRUE if valid
+ */
+dbus_bool_t
+_dbus_type_is_valid (int typecode)
+{
+  switch (typecode)
+    {
+    case DBUS_TYPE_BYTE:
+    case DBUS_TYPE_BOOLEAN:
+    case DBUS_TYPE_INT16:
+    case DBUS_TYPE_UINT16:
+    case DBUS_TYPE_INT32:
+    case DBUS_TYPE_UINT32:
+    case DBUS_TYPE_INT64:
+    case DBUS_TYPE_UINT64:
+    case DBUS_TYPE_DOUBLE:
+    case DBUS_TYPE_STRING:
+    case DBUS_TYPE_OBJECT_PATH:
+    case DBUS_TYPE_SIGNATURE:
+    case DBUS_TYPE_ARRAY:
+    case DBUS_TYPE_STRUCT:
+    case DBUS_TYPE_DICT_ENTRY:
+    case DBUS_TYPE_VARIANT:
+    case DBUS_TYPE_UNIX_FD:
+      return TRUE;
+
+    default:
+      return FALSE;
+    }
+}
+
 /**
  * Returns a string describing the given type.
  *

@@ -37,31 +37,69 @@ static DBusList *clients = NULL;
 static DBusLoop *client_loop = NULL;
 
 static dbus_bool_t
+client_watch_callback (DBusWatch     *watch,
+                       unsigned int   condition,
+                       void          *data)
+{
+  /* FIXME this can be done in dbus-mainloop.c
+   * if the code in activation.c for the babysitter
+   * watch handler is fixed.
+   */
+
+  return dbus_watch_handle (watch, condition);
+}
+
+static dbus_bool_t
 add_client_watch (DBusWatch      *watch,
                   void           *data)
 {
-  return _dbus_loop_add_watch (client_loop, watch);
+  DBusConnection *connection = data;
+
+  return _dbus_loop_add_watch (client_loop,
+                               watch, client_watch_callback, connection,
+                               NULL);
 }
 
 static void
 remove_client_watch (DBusWatch      *watch,
                      void           *data)
 {
-  _dbus_loop_remove_watch (client_loop, watch);
+  DBusConnection *connection = data;
+
+  _dbus_loop_remove_watch (client_loop,
+                           watch, client_watch_callback, connection);
+}
+
+static void
+client_timeout_callback (DBusTimeout   *timeout,
+                         void          *data)
+{
+  DBusConnection *connection = data;
+
+  dbus_connection_ref (connection);
+
+  /* can return FALSE on OOM but we just let it fire again later */
+  dbus_timeout_handle (timeout);
+
+  dbus_connection_unref (connection);
 }
 
 static dbus_bool_t
 add_client_timeout (DBusTimeout    *timeout,
                     void           *data)
 {
-  return _dbus_loop_add_timeout (client_loop, timeout);
+  DBusConnection *connection = data;
+
+  return _dbus_loop_add_timeout (client_loop, timeout, client_timeout_callback, connection, NULL);
 }
 
 static void
 remove_client_timeout (DBusTimeout    *timeout,
                        void           *data)
 {
-  _dbus_loop_remove_timeout (client_loop, timeout);
+  DBusConnection *connection = data;
+
+  _dbus_loop_remove_timeout (client_loop, timeout, client_timeout_callback, connection);
 }
 
 static DBusHandlerResult

@@ -108,20 +108,20 @@ dbus_bool_t _dbus_is_verbose_real (void);
 #  define _dbus_is_verbose _dbus_is_verbose_real
 #else
 #  ifdef HAVE_ISO_VARARGS
-#    define _dbus_verbose(...) do { } while (0)
+#    define _dbus_verbose(...)
 #  elif defined (HAVE_GNUC_VARARGS)
-#    define _dbus_verbose(format...) do { } while (0)
+#    define _dbus_verbose(format...)
 #  else
 static void _dbus_verbose(const char * x,...) {;}
 #  endif
-#  define _dbus_verbose_reset() do { } while (0)
+#  define _dbus_verbose_reset()
 #  define _dbus_is_verbose() FALSE 
 #endif /* !DBUS_ENABLE_VERBOSE_MODE */
 
 const char* _dbus_strerror (int error_number);
 
 #ifdef DBUS_DISABLE_ASSERT
-#define _dbus_assert(condition) do { } while (0)
+#define _dbus_assert(condition)
 #else
 void _dbus_real_assert (dbus_bool_t  condition,
                         const char  *condition_text,
@@ -133,7 +133,7 @@ void _dbus_real_assert (dbus_bool_t  condition,
 #endif /* !DBUS_DISABLE_ASSERT */
 
 #ifdef DBUS_DISABLE_ASSERT
-#define _dbus_assert_not_reached(explanation) do { } while (0)
+#define _dbus_assert_not_reached(explanation)
 #else
 void _dbus_real_assert_not_reached (const char *explanation,
                                     const char *file,
@@ -181,8 +181,8 @@ extern const char *_dbus_return_if_fail_warning_format;
 /* this is an assert and not an error, but in the typical --disable-checks case (you're trying
  * to really minimize code size), disabling these assertions makes sense.
  */
-#define _DBUS_ASSERT_ERROR_IS_SET(error) do { } while (0)
-#define _DBUS_ASSERT_ERROR_IS_CLEAR(error) do { } while (0)
+#define _DBUS_ASSERT_ERROR_IS_SET(error)
+#define _DBUS_ASSERT_ERROR_IS_CLEAR(error)
 #else
 #define _DBUS_ASSERT_ERROR_IS_SET(error)   _dbus_assert ((error) == NULL || dbus_error_is_set ((error)))
 #define _DBUS_ASSERT_ERROR_IS_CLEAR(error) _dbus_assert ((error) == NULL || !dbus_error_is_set ((error)))

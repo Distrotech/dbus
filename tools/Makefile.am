@@ -1,27 +1,13 @@
 configdir=$(sysconfdir)/dbus-1
 
-AM_CPPFLAGS = \
-	-I$(top_srcdir) \
-	$(DBUS_X_CFLAGS) \
-	-DDBUS_COMPILATION \
-	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
-	$(NULL)
+INCLUDES=-I$(top_srcdir) $(DBUS_CLIENT_CFLAGS) $(DBUS_X_CFLAGS) -DDBUS_LOCALEDIR=\"@EXPANDED_DATADIR@/locale\" -DDBUS_COMPILATION -DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\"
 
-# if assertions are enabled, improve backtraces
-AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
-
-bin_PROGRAMS = \
-	dbus-launch \
-	dbus-monitor \
-	dbus-send \
-	$(NULL)
-
+extra_bin_programs=
 if DBUS_UNIX
-bin_PROGRAMS += \
-	dbus-cleanup-sockets \
-	dbus-uuidgen \
-	$(NULL)
+extra_bin_programs += dbus-cleanup-sockets dbus-uuidgen
 endif
+
+bin_PROGRAMS=dbus-launch dbus-send dbus-monitor $(extra_bin_programs)
 
 dbus_send_SOURCES=				\
 	dbus-print-message.c			\
@@ -50,22 +36,17 @@ dbus_cleanup_sockets_SOURCES=			\
 dbus_uuidgen_SOURCES=				\
 	dbus-uuidgen.c
 
-dbus_send_LDADD = \
-	$(top_builddir)/dbus/libdbus-1.la \
-	$(NULL)
+dbus_send_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
+dbus_send_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
-dbus_monitor_LDADD = \
-	$(top_builddir)/dbus/libdbus-1.la \
-	$(NETWORK_libs) \
-	$(NULL)
+dbus_monitor_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
+dbus_monitor_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
-dbus_uuidgen_LDADD = \
-	$(top_builddir)/dbus/libdbus-1.la \
-	$(NULL)
+dbus_uuidgen_LDADD= $(top_builddir)/dbus/libdbus-1.la $(DBUS_CLIENT_LIBS)
+dbus_uuidgen_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
-dbus_launch_LDADD = \
-	$(DBUS_X_LIBS) \
-	$(NULL)
+dbus_launch_LDADD= $(DBUS_X_LIBS) $(DBUS_CLIENT_LIBS)
+dbus_launch_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
 EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\

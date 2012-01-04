@@ -196,6 +196,7 @@ _dbus_send_nonce (int fd, const DBusString *noncefile, DBusError *error)
 {
   dbus_bool_t read_result;
   int send_result;
+  size_t sendLen;
   DBusString nonce;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -239,6 +240,7 @@ do_noncefile_create (DBusNonceFile *noncefile,
                      DBusError *error,
                      dbus_bool_t use_subdir)
 {
+    dbus_bool_t ret;
     DBusString randomStr;
 
     _DBUS_ASSERT_ERROR_IS_CLEAR (error);

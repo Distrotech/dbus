@@ -103,6 +103,19 @@ server_get_context (DBusServer *server)
 }
 
 static dbus_bool_t
+server_watch_callback (DBusWatch     *watch,
+                       unsigned int   condition,
+                       void          *data)
+{
+  /* FIXME this can be done in dbus-mainloop.c
+   * if the code in activation.c for the babysitter
+   * watch handler is fixed.
+   */
+
+  return dbus_watch_handle (watch, condition);
+}
+
+static dbus_bool_t
 add_server_watch (DBusWatch  *watch,
                   void       *data)
 {
@@ -111,7 +124,9 @@ add_server_watch (DBusWatch  *watch,
 
   context = server_get_context (server);
 
-  return _dbus_loop_add_watch (context->loop, watch);
+  return _dbus_loop_add_watch (context->loop,
+                               watch, server_watch_callback, server,
+                               NULL);
 }
 
 static void
@@ -123,7 +138,17 @@ remove_server_watch (DBusWatch  *watch,
 
   context = server_get_context (server);
 
-  _dbus_loop_remove_watch (context->loop, watch);
+  _dbus_loop_remove_watch (context->loop,
+                           watch, server_watch_callback, server);
+}
+
+
+static void
+server_timeout_callback (DBusTimeout   *timeout,
+                         void          *data)
+{
+  /* can return FALSE on OOM but we just let it fire again later */
+  dbus_timeout_handle (timeout);
 }
 
 static dbus_bool_t
@@ -135,7 +160,8 @@ add_server_timeout (DBusTimeout *timeout,
 
   context = server_get_context (server);
 
-  return _dbus_loop_add_timeout (context->loop, timeout);
+  return _dbus_loop_add_timeout (context->loop,
+                                 timeout, server_timeout_callback, server, NULL);
 }
 
 static void
@@ -147,7 +173,8 @@ remove_server_timeout (DBusTimeout *timeout,
 
   context = server_get_context (server);
 
-  _dbus_loop_remove_timeout (context->loop, timeout);
+  _dbus_loop_remove_timeout (context->loop,
+                             timeout, server_timeout_callback, server);
 }
 
 static void
@@ -481,6 +508,7 @@ process_config_every_time (BusContext      *context,
   DBusString full_address;
   DBusList *link;
   DBusList **dirs;
+  BusActivation *new_activation;
   char *addr;
   const char *servicehelper;
   char *s;
@@ -687,6 +715,7 @@ bus_context_new (const DBusString *config_file,
                  dbus_bool_t      systemd_activation,
                  DBusError        *error)
 {
+  DBusString log_prefix;
   BusContext *context;
   BusConfigParser *parser;
 
@@ -1391,6 +1420,9 @@ bus_context_check_security_policy (BusContext     *context,
   dbus_bool_t log;
   int type;
   dbus_bool_t requested_reply;
+  const char *sender_name;
+  const char *sender_loginfo;
+  const char *proposed_recipient_loginfo;
 
   type = dbus_message_get_type (message);
   dest = dbus_message_get_destination (message);
@@ -1556,6 +1588,9 @@ bus_context_check_security_policy (BusContext     *context,
                                          proposed_recipient,
                                          message, &toggles, &log))
     {
+      const char *msg = "Rejected send message, %d matched rules; "
+                        "type=\"%s\", sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" error name=\"%s\" requested_reply=%d destination=\"%s\" (%s))";
+
       complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
           "Rejected send message", toggles,
           message, sender, proposed_recipient, requested_reply,

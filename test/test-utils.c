@@ -9,12 +9,23 @@ typedef struct
 } CData;
 
 static dbus_bool_t
+connection_watch_callback (DBusWatch     *watch,
+                           unsigned int   condition,
+                           void          *data)
+{
+  return dbus_watch_handle (watch, condition);
+}
+
+static dbus_bool_t
 add_watch (DBusWatch *watch,
 	   void      *data)
 {
   CData *cd = data;
 
-  return _dbus_loop_add_watch (cd->loop, watch);
+  return _dbus_loop_add_watch (cd->loop,
+                               watch,
+                               connection_watch_callback,
+                               cd, NULL);
 }
 
 static void
@@ -23,7 +34,16 @@ remove_watch (DBusWatch *watch,
 {
   CData *cd = data;
   
-  _dbus_loop_remove_watch (cd->loop, watch);
+  _dbus_loop_remove_watch (cd->loop,
+                           watch, connection_watch_callback, cd);  
+}
+
+static void
+connection_timeout_callback (DBusTimeout   *timeout,
+                             void          *data)
+{
+  /* Can return FALSE on OOM but we just let it fire again later */
+  dbus_timeout_handle (timeout);
 }
 
 static dbus_bool_t
@@ -32,7 +52,8 @@ add_timeout (DBusTimeout *timeout,
 {
   CData *cd = data;
 
-  return _dbus_loop_add_timeout (cd->loop, timeout);
+  return _dbus_loop_add_timeout (cd->loop,
+                                 timeout, connection_timeout_callback, cd, NULL);
 }
 
 static void
@@ -41,7 +62,8 @@ remove_timeout (DBusTimeout *timeout,
 {
   CData *cd = data;
 
-  _dbus_loop_remove_timeout (cd->loop, timeout);
+  _dbus_loop_remove_timeout (cd->loop,
+                             timeout, connection_timeout_callback, cd);
 }
 
 static void
@@ -204,12 +226,27 @@ serverdata_new (DBusLoop       *loop,
 }
 
 static dbus_bool_t
+server_watch_callback (DBusWatch     *watch,
+                       unsigned int   condition,
+                       void          *data)
+{
+  /* FIXME this can be done in dbus-mainloop.c
+   * if the code in activation.c for the babysitter
+   * watch handler is fixed.
+   */
+
+  return dbus_watch_handle (watch, condition);
+}
+
+static dbus_bool_t
 add_server_watch (DBusWatch  *watch,
                   void       *data)
 {
   ServerData *context = data;
 
-  return _dbus_loop_add_watch (context->loop, watch);
+  return _dbus_loop_add_watch (context->loop,
+                               watch, server_watch_callback, context,
+                               NULL);
 }
 
 static void
@@ -218,7 +255,16 @@ remove_server_watch (DBusWatch  *watch,
 {
   ServerData *context = data;
   
-  _dbus_loop_remove_watch (context->loop, watch);
+  _dbus_loop_remove_watch (context->loop,
+                           watch, server_watch_callback, context);
+}
+
+static void
+server_timeout_callback (DBusTimeout   *timeout,
+                         void          *data)
+{
+  /* can return FALSE on OOM but we just let it fire again later */
+  dbus_timeout_handle (timeout);
 }
 
 static dbus_bool_t
@@ -227,7 +273,8 @@ add_server_timeout (DBusTimeout *timeout,
 {
   ServerData *context = data;
 
-  return _dbus_loop_add_timeout (context->loop, timeout);
+  return _dbus_loop_add_timeout (context->loop,
+                                 timeout, server_timeout_callback, context, NULL);
 }
 
 static void
@@ -236,7 +283,8 @@ remove_server_timeout (DBusTimeout *timeout,
 {
   ServerData *context = data;
   
-  _dbus_loop_remove_timeout (context->loop, timeout);
+  _dbus_loop_remove_timeout (context->loop,
+                             timeout, server_timeout_callback, context);
 }
 
 dbus_bool_t

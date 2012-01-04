@@ -27,7 +27,6 @@
 #ifdef DBUS_BUILD_TESTS
 #include "dbus-message-factory.h"
 #include "dbus-message-private.h"
-#include "dbus-signature.h"
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -170,7 +169,6 @@ generate_many_bodies_inner (DBusMessageDataIter *iter,
   DBusMessage *message;
   DBusString signature;
   DBusString body;
-  char byte_order;
 
   /* Keeping this small makes things go faster */
   message = dbus_message_new_method_call ("o.z.F",
@@ -180,15 +178,13 @@ generate_many_bodies_inner (DBusMessageDataIter *iter,
   if (message == NULL)
     _dbus_assert_not_reached ("oom");
 
-  byte_order = _dbus_header_get_byte_order (&message->header);
-
   set_reply_serial (message);
 
   if (!_dbus_string_init (&signature) || !_dbus_string_init (&body))
     _dbus_assert_not_reached ("oom");
   
   if (dbus_internal_do_not_use_generate_bodies (iter_get_sequence (iter),
-                                                byte_order,
+                                                message->byte_order,
                                                 &signature, &body))
     {
       const char *v_SIGNATURE;
@@ -205,7 +201,7 @@ generate_many_bodies_inner (DBusMessageDataIter *iter,
 
       _dbus_marshal_set_uint32 (&message->header.data, BODY_LENGTH_OFFSET,
                                 _dbus_string_get_length (&message->body),
-                                byte_order);
+                                message->byte_order);
       
       *message_p = message;
     }
@@ -581,18 +577,15 @@ generate_special (DBusMessageDataIter   *iter,
     }
   else if (item_seq == 8)
     {
-      char byte_order;
-
       message = simple_method_call ();
-      byte_order = _dbus_header_get_byte_order (&message->header);
       generate_from_message (data, expected_validity, message);
       
       _dbus_marshal_set_uint32 (data, BODY_LENGTH_OFFSET,
                                 DBUS_MAXIMUM_MESSAGE_LENGTH / 2 + 4,
-                                byte_order);
+                                message->byte_order);
       _dbus_marshal_set_uint32 (data, FIELDS_ARRAY_LENGTH_OFFSET,
                                 DBUS_MAXIMUM_MESSAGE_LENGTH / 2 + 4,
-                                byte_order);
+                                message->byte_order);
       *expected_validity = DBUS_INVALID_MESSAGE_TOO_LONG;
     }
   else if (item_seq == 9)
@@ -942,9 +935,6 @@ generate_byte_changed (DBusMessageDataIter *iter,
   return TRUE;
 }
 
-#if 0
-/* This is really expensive and doesn't add too much coverage */
-
 static dbus_bool_t
 find_next_typecode (DBusMessageDataIter *iter,
                     DBusString          *data,
@@ -988,7 +978,7 @@ find_next_typecode (DBusMessageDataIter *iter,
 
       _dbus_assert (byte_seq < _dbus_string_get_length (data));
 
-      if (dbus_type_is_valid (_dbus_string_get_byte (data, byte_seq)))
+      if (_dbus_type_is_valid (_dbus_string_get_byte (data, byte_seq)))
         break;
       else
         iter_next (iter);
@@ -1027,7 +1017,7 @@ static const int typecodes[] = {
   DBUS_TYPE_UNIX_FD,
   255 /* random invalid typecode */
 };
-
+  
 static dbus_bool_t
 generate_typecode_changed (DBusMessageDataIter *iter,
                            DBusString          *data,
@@ -1084,7 +1074,6 @@ generate_typecode_changed (DBusMessageDataIter *iter,
   *expected_validity = DBUS_VALIDITY_UNKNOWN;
   return TRUE;
 }
-#endif
 
 typedef struct
 {

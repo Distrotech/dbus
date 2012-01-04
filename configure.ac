@@ -2,8 +2,8 @@ dnl -*- mode: m4 -*-
 AC_PREREQ([2.63])
 
 m4_define([dbus_major_version], [1])
-m4_define([dbus_minor_version], [5])
-m4_define([dbus_micro_version], [9])
+m4_define([dbus_minor_version], [4])
+m4_define([dbus_micro_version], [17])
 m4_define([dbus_version],
           [dbus_major_version.dbus_minor_version.dbus_micro_version])
 AC_INIT([dbus],[dbus_version],[https://bugs.freedesktop.org/enter_bug.cgi?product=dbus],[dbus])
@@ -32,16 +32,16 @@ AC_DEFINE_UNQUOTED(DBUS_DAEMON_NAME,"dbus-daemon",[Name of executable])
 #
 
 ## increment if the interface has additions, changes, removals.
-LT_CURRENT=9
+LT_CURRENT=8
 
 ## increment any time the source changes; set to
 ##  0 if you increment CURRENT
-LT_REVISION=4
+LT_REVISION=8
 
 ## increment if any interfaces have been added; set to 0
 ## if any interfaces have been changed or removed. removal has
 ## precedence over adding, so set to 0 if both happened.
-LT_AGE=6
+LT_AGE=5
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -149,7 +149,6 @@ AC_ARG_WITH(console-owner-file, AS_HELP_STRING([--with-console-owner-file=[filen
 AC_ARG_WITH(launchd-agent-dir, AS_HELP_STRING([--with-launchd-agent-dir=[dirname]],[directory to put the launchd agent (default: /Library/LaunchAgents)]))
 AC_ARG_WITH(dbus_user, AS_HELP_STRING([--with-dbus-user=<user>],[User for running the DBUS daemon (messagebus)]))
 AC_ARG_WITH(dbus_daemondir, AS_HELP_STRING([--with-dbus-daemondir=[dirname]],[Directory for installing the DBUS daemon]))
-AC_ARG_WITH(dbus_session_bus_default_address, AS_HELP_STRING([--with-dbus-session-bus-default-address=[nonce-tcp:/autolaunch:/tcp:host:port]],[Transport Type to be used (default: nonce-tcp:)]),with_dbus_session_bus_default_address=$withval,with_dbus_session_bus_default_address=nonce-tcp:)
 
 AC_ARG_ENABLE([embedded-tests],
   AS_HELP_STRING([--enable-embedded-tests],
@@ -250,7 +249,6 @@ fi
 
 if test x$enable_asserts = xno; then
     AC_DEFINE(DBUS_DISABLE_ASSERT,1,[Disable assertion checking])
-    DISABLE_UNUSED_WARNINGS="unused-label"
     R_DYNAMIC_LDFLAG=""
 else
     # -rdynamic is needed for glibc's backtrace_symbols to work.
@@ -268,7 +266,6 @@ AC_SUBST(R_DYNAMIC_LDFLAG)
 if test x$enable_checks = xno; then
     AC_DEFINE(DBUS_DISABLE_CHECKS,1,[Disable public API sanity checking])
     AC_DEFINE(G_DISABLE_CHECKS,1,[Disable GLib public API sanity checking])
-    DISABLE_UNUSED_WARNINGS="unused-label"
 fi
 
 if test x$enable_userdb_cache = xyes; then
@@ -315,12 +312,6 @@ AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long long)
 AC_CHECK_SIZEOF(__int64)
 
-AC_ARG_WITH([64-bit],
-  [AS_HELP_STRING([--without-64-bit],
-    [If you have to use this option, please report it as a bug])],
-  [],
-  [with_64_bit=yes])
-
 ### See what our 64 bit type is called
 AC_MSG_CHECKING([64-bit integer type])
 
@@ -358,32 +349,13 @@ $ac_cv_sizeof___int64)
   ;;
 esac
 
-AS_IF(
-  [test "x$with_64_bit" = xno],
-  [
+if test -z "$dbusint64" ; then
         DBUS_INT64_TYPE="no_int64_type_detected"
         DBUS_HAVE_INT64=0
         DBUS_INT64_CONSTANT=
         DBUS_UINT64_CONSTANT=
-        AC_MSG_RESULT([disabled via --without-64-bit])
-  ],
-  dnl else if
-  [test -z "$dbusint64"],
-  [AC_MSG_RESULT([not found])
-  AC_MSG_ERROR([Could not find a 64-bit integer type.
-
-Please report a bug here with details of your platform and compiler:
-
-    http://bugs.freedesktop.org/enter_bug.cgi?product=DBus&component=core
-
-To compile D-Bus with all 64-bit integer types removed (not recommended), use
-the option "--without-64-bit".
-
-This option is likely to be removed in future, unless you report that your
-platform needs it.])
-  ],
-  dnl else
-  [
+        AC_MSG_RESULT([none found])
+else
         DBUS_INT64_TYPE="$dbusint64"
         DBUS_HAVE_INT64=1
         DBUS_INT64_CONSTANT="$dbusint64_constant"
@@ -392,7 +364,7 @@ platform needs it.])
 		AC_DEFINE_UNQUOTED(DBUS_INT64_PRINTF_MODIFIER, [$dbusint64_printf_modifier], [Define to printf modifier for 64 bit integer type])
 	fi
         AC_MSG_RESULT($DBUS_INT64_TYPE)
-  ])
+fi
 
 AC_SUBST(DBUS_INT64_TYPE)
 AC_SUBST(DBUS_INT64_CONSTANT)
@@ -923,8 +895,6 @@ if $dbus_use_libxml; then
    XML_LIBS=$LIBXML_LIBS
    XML_CFLAGS=$LIBXML_CFLAGS
 fi
-AC_SUBST([XML_CFLAGS])
-AC_SUBST([XML_LIBS])
 
 # Thread lib detection
 AC_CHECK_FUNC(pthread_cond_timedwait,[AC_CHECK_LIB(pthread,pthread_cond_timedwait,
@@ -954,8 +924,6 @@ else
 fi
 fi
 LIBS="$save_libs"
-
-AC_SUBST([THREAD_LIBS])
 
 # SELinux detection
 if test x$enable_selinux = xno ; then
@@ -1124,9 +1092,7 @@ if test x$have_libaudit = xyes ; then
     AC_DEFINE(HAVE_LIBAUDIT,1,[audit daemon SELinux support])
 fi
 
-AC_SUBST([SELINUX_LIBS])
-
-# Check for ADT API (Solaris Basic Security Mode auditing)
+# Check for ADT API
 AC_MSG_CHECKING(for ADT API)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <bsm/adt.h>
@@ -1142,7 +1108,6 @@ then
 else
    AC_MSG_RESULT(no)
 fi
-AC_SUBST([ADT_LIBS])
 
 # Check for SCM_RIGHTS
 AC_MSG_CHECKING([for SCM_RIGHTS])
@@ -1164,11 +1129,26 @@ if test x$dbus_win = xyes ; then
   fi
 fi
 
-AC_SUBST([NETWORK_libs])
-
 #### Set up final flags
-LIBDBUS_LIBS="$THREAD_LIBS $NETWORK_libs"
-AC_SUBST([LIBDBUS_LIBS])
+DBUS_CLIENT_CFLAGS=
+DBUS_CLIENT_LIBS="$THREAD_LIBS $NETWORK_libs"
+AC_SUBST(DBUS_CLIENT_CFLAGS)
+AC_SUBST(DBUS_CLIENT_LIBS)
+
+DBUS_BUS_CFLAGS="$XML_CFLAGS"
+DBUS_BUS_LIBS="$XML_LIBS $SELINUX_LIBS $THREAD_LIBS $ADT_LIBS $NETWORK_libs"
+AC_SUBST(DBUS_BUS_CFLAGS)
+AC_SUBST(DBUS_BUS_LIBS)
+
+DBUS_LAUNCHER_CFLAGS="$XML_CFLAGS"
+DBUS_LAUNCHER_LIBS="$XML_LIBS $THREAD_LIBS $NETWORK_libs"
+AC_SUBST(DBUS_LAUNCHER_CFLAGS)
+AC_SUBST(DBUS_LAUNCHER_LIBS)
+
+DBUS_TEST_CFLAGS=
+DBUS_TEST_LIBS="$THREAD_LIBS $NETWORK_libs"
+AC_SUBST(DBUS_TEST_CFLAGS)
+AC_SUBST(DBUS_TEST_LIBS)
 
 ### X11 detection
 DBUS_X_LIBS=
@@ -1236,9 +1216,8 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl Override with --enable-Werror or --disable-Werror
   [test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = xyes],
 
-  dnl Enable these warnings if possible:
+  dnl enable these warnings if possible:
   [all \
-   extra \
    char-subscripts \
    missing-declarations \
    missing-prototypes \
@@ -1250,25 +1229,12 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
    declaration-after-statement \
   ],
 
-  dnl Disable these warnings if possible, make them non-fatal if possible,
-  dnl and don't enable -Werror unless we succeeded.
-  dnl
-  dnl Intentional:
-  dnl - $DISABLE_UNUSED_WARNINGS disables unused-label warnings if not
-  dnl   checking or not asserting
-  dnl - missing field initializers being 0 is a C feature, not a bug
-  dnl - unused-parameter is to make writing callbacks less annoying
-  dnl
-  dnl To be fixed one day:
-  dnl - sign-compare and pointer-sign are workarounds for fd.o #17433
-  dnl - type-limits is probably a bug too, but having the rest of -Wextra
-  dnl   is better than nothing
-  [$DISABLE_UNUSED_WARNINGS \
-   missing-field-initializers \
-   unused-parameter \
+  dnl disable these warnings if possible, make them non-fatal if possible,
+  dnl and don't enable -Werror unless we succeeded:
+  dnl (unused is by design, sign-compare and pointer-sign are fd.o #17433)
+  [unused \
    sign-compare \
    pointer-sign \
-   type-limits \
   ])
 
 if test "x$GCC" = "xyes"; then
@@ -1520,19 +1486,31 @@ DBUS_PWD=`pwd`
 # Useful in a cross-compilation environment, where the tests are run on the host system.
 AC_ARG_WITH(dbus-test-dir, AS_HELP_STRING([--with-dbus-test-dir=[dirname]],[path where the tests tools are available]),
 			   DBUS_PWD=$withval)
+AC_DEFUN([TEST_PATH], [
+TEST_$1=${DBUS_PWD}/test/$2
+AC_DEFINE_UNQUOTED(TEST_$1, "$TEST_$1",
+                   [Full path to test file test/$2 in builddir])
+AC_SUBST(TEST_$1)
+])
+AC_DEFUN([TEST_PROG], [
+TEST_$1=${DBUS_PWD}/test/$2
+AC_DEFINE_UNQUOTED(TEST_$1, "$TEST_$1$EXEEXT",
+                   [Full path to test file test/$2 in builddir])
+AC_SUBST(TEST_$1)
+])
 
-DBUS_TEST_EXEC="$DBUS_PWD/test"
-DBUS_TEST_DATA="$DBUS_PWD/test/data"
+TEST_PATH(VALID_SERVICE_DIR, data/valid-service-files)
+TEST_PATH(INVALID_SERVICE_DIR, data/invalid-service-files)
+TEST_PATH(VALID_SERVICE_SYSTEM_DIR, data/valid-service-files-system)
+TEST_PATH(INVALID_SERVICE_SYSTEM_DIR, data/invalid-service-files-system)
+TEST_PROG(SERVICE_BINARY, test-service)
+TEST_PROG(SHELL_SERVICE_BINARY, test-shell-service)
+TEST_PROG(EXIT_BINARY, test-exit)
+TEST_PROG(SEGFAULT_BINARY, test-segfault)
+TEST_PROG(SLEEP_FOREVER_BINARY, test-sleep-forever)
+TEST_PROG(PRIVSERVER_BINARY, name-test/test-privserver)
 
-AC_SUBST([DBUS_TEST_DATA])
-AC_SUBST([DBUS_TEST_EXEC])
-
-AC_DEFINE_UNQUOTED([DBUS_TEST_EXEC], ["$DBUS_TEST_EXEC"],
-                   [Full path to the daemon in the builddir])
-AC_DEFINE_UNQUOTED([DBUS_EXEEXT], ["$EXEEXT"],
-                   [Extension for executables, typically empty or .exe])
-
-AC_DEFINE_UNQUOTED(TEST_BUS_BINARY, ["$DBUS_PWD/bus/dbus-daemon$EXEEXT"],
+AC_DEFINE_UNQUOTED(TEST_BUS_BINARY, "$DBUS_PWD/bus/dbus-daemon$EXEEXT",
                    [Full path to the daemon in the builddir])
 AC_SUBST(TEST_BUS_BINARY)
 
@@ -1572,7 +1550,7 @@ AC_DEFINE_UNQUOTED(DBUS_SESSION_SOCKET_DIR, "$DBUS_SESSION_SOCKET_DIR", [Where p
 AC_SUBST(DBUS_SESSION_SOCKET_DIR)
 
 if test x$dbus_win = xyes; then
-        DBUS_SESSION_BUS_DEFAULT_ADDRESS="$with_dbus_session_bus_default_address"
+        DBUS_SESSION_BUS_DEFAULT_ADDRESS="nonce-tcp:"
 elif test x$have_launchd = xyes; then
         DBUS_SESSION_BUS_DEFAULT_ADDRESS="launchd:env=DBUS_LAUNCHD_SESSION_BUS_SOCKET"
 else
@@ -1591,15 +1569,6 @@ AH_VERBATIM(_DARWIN_ENVIRON,
 # define environ (*_NSGetEnviron())
 #endif
 ])
-
-AC_ARG_ENABLE([stats],
-  [AS_HELP_STRING([--enable-stats],
-    [enable bus daemon usage statistics])],
-  [], [enable_stats=no])
-if test "x$enable_stats" = xyes; then
-  AC_DEFINE([DBUS_ENABLE_STATS], [1],
-    [Define to enable bus daemon usage statistics])
-fi
 
 AC_CONFIG_FILES([
 Doxyfile
@@ -1676,7 +1645,6 @@ echo "
         Building verbose mode:    ${enable_verbose_mode}
         Building assertions:      ${enable_asserts}
         Building checks:          ${enable_checks}
-        Building bus stats API:   ${enable_stats}
         Building SELinux support: ${have_selinux}
         Building inotify support: ${have_inotify}
         Building dnotify support: ${have_dnotify}
@@ -1726,17 +1694,4 @@ fi
 if test x$dbus_use_libxml = xtrue; then
         echo
 	echo "WARNING: You have chosen to use libxml as your xml parser however this code path is not maintained by the D-Bus developers and if it breaks you get to keep the pieces.  If you have selected this option in err please reconfigure with expat (e.g. --with-xml=expat)."
-fi
-
-if test "x$DBUS_HAVE_INT64" = x0; then
-  AC_MSG_WARN([You have disabled 64-bit integers via --without-64-bit.
-
-  This removes parts of the standard D-Bus API and ABI (the 't' and 'x'
-  typecodes, the dbus_int64_t and dbus_uint64_t types, etc.) and should only be
-  used if your compiler lacks support for 64-bit integers. Please report a bug
-  with details of your platform and compiler.
-
-  This option is likely to be removed in future, unless the D-Bus developers
-  receive reports that it is still needed.
-  ])
 fi

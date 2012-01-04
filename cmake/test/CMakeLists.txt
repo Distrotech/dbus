@@ -2,20 +2,24 @@ project(test)
 
 add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
-add_library(dbus-testutils STATIC
+add_library(dbus_testutils STATIC
     ${CMAKE_SOURCE_DIR}/../test/test-utils.h
     ${CMAKE_SOURCE_DIR}/../test/test-utils.c
 )
-target_link_libraries(dbus-testutils ${DBUS_INTERNAL_LIBRARIES})
+target_link_libraries(dbus_testutils ${DBUS_INTERNAL_LIBRARIES})
 
 add_subdirectory( name-test )
 
 set (test-service_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-service.c
+    ${CMAKE_SOURCE_DIR}/../test/test-utils.c
+    ${CMAKE_SOURCE_DIR}/../test/test-utils.h
 )
 
 set (test-names_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-names.c
+    ${CMAKE_SOURCE_DIR}/../test/test-utils.c
+    ${CMAKE_SOURCE_DIR}/../test/test-utils.h
 )
 
 set (break_loader_SOURCES
@@ -24,6 +28,8 @@ set (break_loader_SOURCES
 
 set (test-shell-service_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-shell-service.c
+    ${CMAKE_SOURCE_DIR}/../test/test-utils.c
+    ${CMAKE_SOURCE_DIR}/../test/test-utils.h
 )
 
 set (shell-test_SOURCES
@@ -47,17 +53,17 @@ set (test-sleep-forever_SOURCES
 )
 
 add_executable(test-service ${test-service_SOURCES})
-target_link_libraries(test-service dbus-testutils)
+target_link_libraries(test-service ${DBUS_INTERNAL_LIBRARIES})
 
 add_executable(test-names ${test-names_SOURCES})
-target_link_libraries(test-names dbus-testutils)
+target_link_libraries(test-names ${DBUS_INTERNAL_LIBRARIES})
 
 add_executable(shell-test ${shell-test_SOURCES})
 target_link_libraries(shell-test ${DBUS_INTERNAL_LIBRARIES})
 ADD_TEST(shell-test ${EXECUTABLE_OUTPUT_PATH}/shell-test${EXT})
 
 add_executable(test-shell-service ${test-shell-service_SOURCES})
-target_link_libraries(test-shell-service dbus-testutils)
+target_link_libraries(test-shell-service ${DBUS_INTERNAL_LIBRARIES})
 
 add_executable(spawn-test ${spawn-test_SOURCES})
 target_link_libraries(spawn-test ${DBUS_INTERNAL_LIBRARIES})
