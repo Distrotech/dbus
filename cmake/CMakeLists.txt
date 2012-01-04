@@ -431,9 +431,17 @@ endif (WIN32)
 
 set (DBUS_USER )
 
+# This won't work on Windows. It's not meant to - the system bus is
+# meaningless on Windows anyway.
+#
+# This has to be suitable for hard-coding in client libraries as well as
+# in the dbus-daemon's configuration, so it has to be valid to listen on
+# and also to connect to. If this ever changes, it'll need to be split into
+# two variables, one for the listening address and one for the connecting
+# address.
+set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "unix:path=${EXPANDED_LOCALSTATEDIR}/run/dbus/system_bus_socket" CACHE STRING "system bus default address")
 
 if (WIN32)
-  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "system bus default address")
   set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "nonce-tcp:" CACHE STRING "session bus default address")
 
   set (DBUS_SYSTEM_CONFIG_FILE "etc/dbus-1/system.conf")
@@ -441,7 +449,6 @@ if (WIN32)
   # bus-test expects a non empty string
   set (DBUS_USER "Administrator")
 else (WIN32)
-  set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "unix:tmpdir=" CACHE STRING "system bus default address")
   set (DBUS_SESSION_BUS_DEFAULT_ADDRESS "unix:path=${DBUS_SESSION_SOCKET_DIR}" CACHE STRING "session bus default address")
   set (sysconfdir "")
   set (configdir ${sysconfdir}/dbus-1 )

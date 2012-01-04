@@ -1521,8 +1521,17 @@ fi
 AC_SUBST(DBUS_SYSTEM_SOCKET)
 AC_DEFINE_UNQUOTED(DBUS_SYSTEM_SOCKET,"$DBUS_SYSTEM_SOCKET",[The name of the socket the system bus listens on by default])
 
-## system bus only listens on local domain sockets, and never
-## on an abstract socket (so only root can create the socket)
+## System bus only listens on local domain sockets, and never
+## on an abstract socket (so only root can create the socket).
+##
+## This won't work on Windows. It's not meant to - the system bus is
+## meaningless on Windows anyway.
+##
+## This has to be suitable for hard-coding in client libraries as well as
+## in the dbus-daemon's configuration, so it has to be valid to listen on
+## and also to connect to. If this ever changes, it'll need to be split into
+## two variables, one for the listening address and one for the connecting
+## address.
 DBUS_SYSTEM_BUS_DEFAULT_ADDRESS="unix:path=$DBUS_SYSTEM_SOCKET"
 AC_SUBST(DBUS_SYSTEM_BUS_DEFAULT_ADDRESS)
 AC_DEFINE_UNQUOTED(DBUS_SYSTEM_BUS_DEFAULT_ADDRESS, "$DBUS_SYSTEM_BUS_DEFAULT_ADDRESS",[The default D-Bus address of the system bus])
