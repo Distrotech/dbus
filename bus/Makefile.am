@@ -28,8 +28,6 @@ AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
 EFENCE=
 
-DBUS_SESSION_SERVICE_DIRS = <standard_session_servicedirs />
-
 CONFIG_IN_FILES=				\
 	session.conf.in				\
 	system.conf.in				\
