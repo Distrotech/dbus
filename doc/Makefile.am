@@ -59,9 +59,6 @@ STATIC_HTML = \
 
 dist_html_DATA += $(STATIC_HTML)
 
-# we distribute these in the tarball so users don't necessarily need xmlto
-dist_html_DATA += $(XMLTO_OUTPUT)
-
 XMLTO_OUTPUT=					\
 	dbus-faq.html				\
 	dbus-specification.html			\
@@ -69,6 +66,10 @@ XMLTO_OUTPUT=					\
 	dbus-tutorial.html
 
 if DBUS_XML_DOCS_ENABLED
+
+# we distribute these in the tarball so users don't necessarily need xmlto
+dist_html_DATA += $(XMLTO_OUTPUT)
+
 dbus-specification.html: dbus-specification.xml
 	$(XMLTO) html-nochunks $<
 
