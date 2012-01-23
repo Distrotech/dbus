@@ -16,6 +16,8 @@ D-Bus 1.5.10 (UNRELEASED)
 • Build tests successfully with older GLib, as found in e.g. Debian 6
   (fd.o #41219, Simon McVittie)
 
+• Avoid use of deprecated GThread API (fd.o #44413, Martin Pitt)
+
 • Unix-specific:
   · Avoid a highly unlikely fd leak (fd.o #29881, Simon McVittie)
   · Don't close invalid fd -1 if getaddrinfo fails (fd.o #37258, eXeC001er)
