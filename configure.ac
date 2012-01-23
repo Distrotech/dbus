@@ -191,7 +191,7 @@ fi
 # default (unless you don't have GLib), because they don't bloat the library
 # or binaries.
 if test "x$enable_modular_tests" != xno; then
-  PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.22, gio-2.0 >= 2.22],
+  PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.24, gio-2.0 >= 2.24],
     [],
     [if test "x$enable_modular_tests" = xyes; then
       AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires GLib])
