@@ -1232,9 +1232,13 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl disable these warnings if possible, make them non-fatal if possible,
   dnl and don't enable -Werror unless we succeeded:
   dnl (unused is by design, sign-compare and pointer-sign are fd.o #17433)
+  dnl
+  dnl Because this is a stable branch, we're also not going to fix any
+  dnl uses of deprecated functions.
   [unused \
    sign-compare \
    pointer-sign \
+   deprecated-declarations \
   ])
 
 if test "x$GCC" = "xyes"; then
