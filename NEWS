@@ -1,6 +1,9 @@
 D-Bus 1.4.18 (UNRELEASED)
 ==
 
+• Allow all configured auth mechanisms, not just one (fd.o #45106,
+  Pavel Strashkin)
+
 • Improve cmake build system (Ralf Habacker):
   · simplify XML parser dependencies (fd.o #41027)
   · generate build timestamp (fd.o #41029)
