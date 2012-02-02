@@ -270,6 +270,7 @@ process_config_first_time_only (BusContext       *context,
 				BusConfigParser  *parser,
                                 const DBusString *address,
                                 dbus_bool_t      systemd_activation,
+                                dbus_bool_t      write_pidfile,
 				DBusError        *error)
 {
   DBusString log_prefix;
@@ -285,6 +286,7 @@ process_config_first_time_only (BusContext       *context,
 
   retval = FALSE;
   auth_mechanisms = NULL;
+  pidfile = NULL;
 
   _dbus_init_system_log ();
 
@@ -295,7 +297,10 @@ process_config_first_time_only (BusContext       *context,
    * avoid that. But we want to check for the pid file
    * before overwriting any existing sockets, etc.
    */
-  pidfile = bus_config_parser_get_pidfile (parser);
+
+  if (write_pidfile)
+    pidfile = bus_config_parser_get_pidfile (parser);
+
   if (pidfile != NULL)
     {
       DBusString u;
@@ -698,6 +703,7 @@ bus_context_new (const DBusString *config_file,
                  DBusPipe         *print_pid_pipe,
                  const DBusString *address,
                  dbus_bool_t      systemd_activation,
+                 dbus_bool_t      write_pidfile,
                  DBusError        *error)
 {
   BusContext *context;
@@ -751,7 +757,7 @@ bus_context_new (const DBusString *config_file,
       goto failed;
     }
 
-  if (!process_config_first_time_only (context, parser, address, systemd_activation, error))
+  if (!process_config_first_time_only (context, parser, address, systemd_activation, write_pidfile, error))
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       goto failed;

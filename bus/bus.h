@@ -77,6 +77,7 @@ BusContext*       bus_context_new                                (const DBusStri
                                                                   DBusPipe         *print_pid_pipe,
                                                                   const DBusString *address,
                                                                   dbus_bool_t      systemd_activation,
+                                                                  dbus_bool_t      write_pidfile,
                                                                   DBusError        *error);
 dbus_bool_t       bus_context_reload_config                      (BusContext       *context,
 								  DBusError        *error);

@@ -94,6 +94,10 @@ configured in the configuration file.
 .I "\-\-systemd\-activation"
 Enable systemd\-style service activation. Only useful in conjunction
 with the systemd system and session manager on Linux.
+.TP
+.I "\-\-nopidfile"
+Don't write a PID file even if one is configured in the configuration
+files.
 
 .SH CONFIGURATION FILE
 
