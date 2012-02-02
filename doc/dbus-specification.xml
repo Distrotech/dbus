@@ -2658,7 +2658,7 @@
       [FIXME we need to specify in detail each transport and its possible arguments]
     
       Current transports include: unix domain sockets (including 
-      abstract namespace on linux), launchd, TCP/IP, and a debug/testing transport
+      abstract namespace on linux), launchd, systemd, TCP/IP, and a debug/testing transport
       using in-process pipes. Future possible transports include one that
       tunnels over X11 protocol.
     </para>
@@ -2721,7 +2721,7 @@
     <sect2 id="transports-launchd">
       <title>launchd</title>
       <para>
-        launchd is a open-source server management system that replaces init, inetd
+        launchd is an open-source server management system that replaces init, inetd
         and cron on Apple Mac OS X versions 10.4 and above. It provides a common session
         bus address for each user and deprecates the X11-enabled D-Bus launcher on OSX.
       </para>
@@ -2764,6 +2764,27 @@
         </tgroup>
        </informaltable>
       </sect3>
+    </sect2>
+    <sect2 id="transports-systemd">
+      <title>systemd</title>
+      <para>
+        systemd is an open-source server management system that
+        replaces init and inetd on newer Linux systems. It supports
+        socket activation. The D-Bus systemd transport is used to acquire
+        socket activation file descriptors from systemd and use them
+        as D-Bus transport when the current process is spawned by
+        socket activation from it.
+      </para>
+      <para>
+        The systemd transport accepts only one or more Unix domain or
+        TCP streams sockets passed in via socket activation.
+      </para>
+      <para>
+        The systemd transport is not available on non-Linux operating systems.
+      </para>
+      <para>
+        The systemd transport defines no parameter keys.
+      </para>
     </sect2>
     <sect2 id="transports-tcp-sockets">
       <title>TCP Sockets</title>
