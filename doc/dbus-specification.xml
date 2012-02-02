@@ -2667,7 +2667,7 @@
       [FIXME we need to specify in detail each transport and its possible arguments]
     
       Current transports include: unix domain sockets (including 
-      abstract namespace on linux), launchd, systemd, TCP/IP, and a debug/testing transport
+      abstract namespace on linux), launchd, systemd, TCP/IP, an executed subprocess and a debug/testing transport
       using in-process pipes. Future possible transports include one that
       tunnels over X11 protocol.
     </para>
@@ -2689,7 +2689,7 @@
 	would be padded by Nul bytes.
       </para>
       <para>
-        Unix domain sockets are not available on windows. 
+        Unix domain sockets are not available on Windows.
       </para>
       <sect3 id="transports-unix-domain-sockets-addresses">
         <title>Server Address Format</title>
@@ -2806,7 +2806,7 @@
         over a network is unsecure. 
       </para>
       <para>  
-        Windows notes: Because of the tcp stack on windows does not provide sending 
+        Windows notes: Because of the tcp stack on Windows does not provide sending
         credentials over a tcp connection, the EXTERNAL authentification 
         mechanismus does not work. 
       </para>
@@ -2920,6 +2920,67 @@
            <entry>file location containing the secret</entry>
           </row>
          </tbody>
+        </tgroup>
+       </informaltable>
+      </sect3>
+    </sect2>
+    <sect2 id="transports-exec">
+      <title>Executed Subprocesses on Unix</title>
+      <para>
+        This transport forks off a process and connects its standard
+        input and standard output with an anonymous Unix domain
+        socket. This socket is then used for communication by the
+        transport. This transport may be used to use out-of-process
+        forwarder programs as basis for the D-Bus protocol.
+      </para>
+      <para>
+        The forked process will inherit the standard error output and
+        process group from the parent process.
+      </para>
+      <para>
+        Executed subprocesses are not available on Windows.
+      </para>
+      <sect3 id="transports-exec-addresses">
+        <title>Server Address Format</title>
+        <para>
+          Executed subprocess addresses are identified by the "unixexec:" prefix
+          and support the following key/value pairs:
+        </para>
+        <informaltable>
+         <tgroup cols="3">
+          <thead>
+           <row>
+            <entry>Name</entry>
+            <entry>Values</entry>
+            <entry>Description</entry>
+           </row>
+          </thead>
+          <tbody>
+           <row>
+            <entry>path</entry>
+            <entry>(path)</entry>
+            <entry>Path of the binary to execute, either an absolute
+            path or a binary name that is searched for in the default
+            search path of the OS. This corresponds to the first
+            argument of execlp(). This key is mandatory.</entry>
+          </row>
+          <row>
+            <entry>argv0</entry>
+            <entry>(string)</entry>
+            <entry>The program name to use when executing the
+            binary. If omitted the same value as specified for path=
+            will be used. This corresponds to the second argument of
+            execlp().</entry>
+          </row>
+          <row>
+            <entry>argv1, argv2, ...</entry>
+            <entry>(string)</entry>
+            <entry>Arguments to pass to the binary. This corresponds
+            to the third and later arguments of execlp(). If a
+            specific argvX is not specified no further argvY for Y > X
+            are taken into account.</entry>
+          </row>
+        </tbody>
         </tgroup>
        </informaltable>
       </sect3>
