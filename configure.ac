@@ -137,6 +137,7 @@ AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue suppor
 AC_ARG_ENABLE(console-owner-file, AS_HELP_STRING([--enable-console-owner-file],[enable console owner file]),enable_console_owner_file=$enableval,enable_console_owner_file=auto)
 AC_ARG_ENABLE(userdb-cache, AS_HELP_STRING([--enable-userdb-cache],[build with userdb-cache support]),enable_userdb_cache=$enableval,enable_userdb_cache=yes)
 AC_ARG_ENABLE(launchd, AS_HELP_STRING([--enable-launchd],[build with launchd auto-launch support]),enable_launchd=$enableval,enable_launchd=auto)
+AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[build with systemd at_console support]),enable_systemd=$enableval,enable_systemd=auto)
 
 AC_ARG_WITH(xml, AS_HELP_STRING([--with-xml=[libxml/expat]],[XML library to use (libxml may be named libxml2 on some systems)]))
 AC_ARG_WITH(init-scripts, AS_HELP_STRING([--with-init-scripts=[redhat]],[Style of init scripts to install]))
@@ -1134,6 +1135,26 @@ fi
 
 AM_CONDITIONAL(HAVE_CONSOLE_OWNER_FILE, test x$have_console_owner_file = xyes)
 
+dnl systemd detection
+if test x$enable_systemd = xno ; then
+    have_systemd=no;
+else
+    PKG_CHECK_MODULES(SYSTEMD,
+        [ libsystemd-login libsystemd-daemon ],
+        have_systemd=yes,
+        have_systemd=no)
+    AC_SUBST(SYSTEMD_CFLAGS)
+    AC_SUBST(SYSTEMD_LIBS)
+fi
+
+if test x$have_systemd = xyes; then
+    AC_DEFINE(HAVE_SYSTEMD,1,[Have systemd])
+fi
+
+if test x$enable_systemd = xyes -a x$have_systemd != xyes ; then
+    AC_MSG_ERROR([Explicitly requested systemd support, but systemd not found])
+fi
+
 # libaudit detection
 if test x$enable_libaudit = xno ; then
     have_libaudit=no;
@@ -1720,6 +1741,7 @@ echo "
         Building inotify support: ${have_inotify}
         Building dnotify support: ${have_dnotify}
         Building kqueue support:  ${have_kqueue}
+        Building systemd support: ${have_systemd}
         Building X11 code:        ${enable_x11}
         Building Doxygen docs:    ${enable_doxygen_docs}
         Building XML docs:        ${enable_xml_docs}

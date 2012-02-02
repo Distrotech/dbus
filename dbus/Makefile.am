@@ -4,6 +4,7 @@ configdir=$(sysconfdir)/dbus-1
 AM_CPPFLAGS = \
 	-I$(top_builddir) \
 	-I$(top_srcdir) \
+	$(SYSTEMD_CFLAGS) \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
@@ -284,7 +285,7 @@ libdbus_internal_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	-DDBUS_STATIC_BUILD \
 	$(NULL)
-libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS)
+libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS) $(SYSTEMD_LIBS)
 
 noinst_PROGRAMS =
 
