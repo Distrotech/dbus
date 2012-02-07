@@ -1427,6 +1427,16 @@ remove_babysitter_watch (DBusWatch      *watch,
                            watch);
 }
 
+static void
+toggle_babysitter_watch (DBusWatch      *watch,
+                         void           *data)
+{
+  BusPendingActivation *pending_activation = data;
+
+  _dbus_loop_toggle_watch (bus_context_get_loop (pending_activation->activation->context),
+                           watch);
+}
+
 static dbus_bool_t
 pending_activation_timed_out (void *data)
 {
@@ -2110,7 +2120,7 @@ bus_activation_activate_service (BusActivation  *activation,
   if (!_dbus_babysitter_set_watch_functions (pending_activation->babysitter,
                                              add_babysitter_watch,
                                              remove_babysitter_watch,
-                                             NULL,
+                                             toggle_babysitter_watch,
                                              pending_activation,
                                              NULL))
     {

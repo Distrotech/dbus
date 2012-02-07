@@ -111,6 +111,10 @@ DBUS_UTIL_arch_sources = 			\
 	dbus-spawn.c
 endif
 
+if HAVE_LINUX_EPOLL
+DBUS_UTIL_arch_sources += dbus-socket-set-epoll.c
+endif
+
 dbusinclude_HEADERS=				\
 	dbus.h					\
 	dbus-address.h				\
@@ -239,6 +243,9 @@ DBUS_UTIL_SOURCES=				\
 	dbus-shell.c				\
 	dbus-shell.h				\
 	$(DBUS_UTIL_arch_sources)		\
+	dbus-socket-set.h			\
+	dbus-socket-set.c			\
+	dbus-socket-set-poll.c			\
 	dbus-spawn.h				\
 	dbus-string-util.c			\
 	dbus-sysdeps-util.c			\

@@ -126,6 +126,18 @@ remove_server_watch (DBusWatch  *watch,
   _dbus_loop_remove_watch (context->loop, watch);
 }
 
+static void
+toggle_server_watch (DBusWatch  *watch,
+                     void       *data)
+{
+  DBusServer *server = data;
+  BusContext *context;
+
+  context = server_get_context (server);
+
+  _dbus_loop_toggle_watch (context->loop, watch);
+}
+
 static dbus_bool_t
 add_server_timeout (DBusTimeout *timeout,
                     void        *data)
@@ -228,7 +240,7 @@ setup_server (BusContext *context,
   if (!dbus_server_set_watch_functions (server,
                                         add_server_watch,
                                         remove_server_watch,
-                                        NULL,
+                                        toggle_server_watch,
                                         server,
                                         NULL))
     {

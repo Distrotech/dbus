@@ -50,6 +50,13 @@ remove_client_watch (DBusWatch      *watch,
   _dbus_loop_remove_watch (client_loop, watch);
 }
 
+static void
+toggle_client_watch (DBusWatch      *watch,
+                     void           *data)
+{
+  _dbus_loop_toggle_watch (client_loop, watch);
+}
+
 static dbus_bool_t
 add_client_timeout (DBusTimeout    *timeout,
                     void           *data)
@@ -112,7 +119,7 @@ bus_setup_debug_client (DBusConnection *connection)
   if (!dbus_connection_set_watch_functions (connection,
                                             add_client_watch,
                                             remove_client_watch,
-                                            NULL,
+                                            toggle_client_watch,
                                             connection,
                                             NULL))
     goto out;

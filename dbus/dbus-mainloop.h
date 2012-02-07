@@ -41,6 +41,8 @@ dbus_bool_t _dbus_loop_add_watch      (DBusLoop            *loop,
                                        DBusWatch           *watch);
 void        _dbus_loop_remove_watch   (DBusLoop            *loop,
                                        DBusWatch           *watch);
+void        _dbus_loop_toggle_watch   (DBusLoop            *loop,
+                                       DBusWatch           *watch);
 dbus_bool_t _dbus_loop_add_timeout    (DBusLoop            *loop,
                                        DBusTimeout         *timeout);
 void        _dbus_loop_remove_timeout (DBusLoop            *loop,

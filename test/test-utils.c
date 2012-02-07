@@ -26,6 +26,15 @@ remove_watch (DBusWatch *watch,
   _dbus_loop_remove_watch (cd->loop, watch);
 }
 
+static void
+toggle_watch (DBusWatch  *watch,
+              void       *data)
+{
+  CData *cd = data;
+
+  _dbus_loop_toggle_watch (cd->loop, watch);
+}
+
 static dbus_bool_t
 add_timeout (DBusTimeout *timeout,
 	     void        *data)
@@ -103,15 +112,10 @@ test_connection_setup (DBusLoop       *loop,
   if (cd == NULL)
     goto nomem;
 
-  /* Because dbus-mainloop.c checks dbus_timeout_get_enabled(),
-   * dbus_watch_get_enabled() directly, we don't have to provide
-   * "toggled" callbacks.
-   */
-  
   if (!dbus_connection_set_watch_functions (connection,
                                             add_watch,
                                             remove_watch,
-                                            NULL,
+                                            toggle_watch,
                                             cd, cdata_free))
     goto nomem;
 
@@ -213,6 +217,15 @@ add_server_watch (DBusWatch  *watch,
 }
 
 static void
+toggle_server_watch (DBusWatch  *watch,
+                     void       *data)
+{
+  ServerData *context = data;
+
+  _dbus_loop_toggle_watch (context->loop, watch);
+}
+
+static void
 remove_server_watch (DBusWatch  *watch,
                      void       *data)
 {
@@ -252,7 +265,7 @@ test_server_setup (DBusLoop      *loop,
   if (!dbus_server_set_watch_functions (server,
                                         add_server_watch,
                                         remove_server_watch,
-                                        NULL,
+                                        toggle_server_watch,
                                         sd,
                                         serverdata_free))
     {
