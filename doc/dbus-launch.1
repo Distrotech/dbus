@@ -204,6 +204,19 @@ Emit Bourne\-shell compatible code to set up environment variables.
 .I "\-\-version"
 Print the version of dbus\-launch
 
+.SH NOTES
+
+If you run
+.B "dbus\-launch myapp"
+(with any other options), dbus\-daemon will
+.I not
+exit when
+.B myapp
+terminates: this is because
+.B myapp
+is assumed to be part of a larger session, rather than a session in its
+own right.
+
 .SH AUTHOR
 See http://www.freedesktop.org/software/dbus/doc/AUTHORS
 
