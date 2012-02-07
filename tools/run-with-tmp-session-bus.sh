@@ -1,25 +1,18 @@
 #! /bin/sh
 
-SCRIPTNAME=$0
-WRAPPED_SCRIPT=$1
+SCRIPTNAME="$0"
+WRAPPED_SCRIPT="$1"
 shift
 
-die() 
+die ()
 {
-    if ! test -z "$DBUS_SESSION_BUS_PID" ; then
-        echo "killing message bus "$DBUS_SESSION_BUS_PID >&2
-        kill -9 $DBUS_SESSION_BUS_PID
-    fi
-    echo $SCRIPTNAME: $* >&2
+    echo "$SCRIPTNAME: $*" >&2
     exit 1
 }
 
 if test -z "$DBUS_TOP_BUILDDIR" ; then
     die "Must set DBUS_TOP_BUILDDIR"
 fi
-
-## convenient to be able to ctrl+C without leaking the message bus process
-trap 'die "Received SIGINT"' INT
 
 CONFIG_FILE=./run-with-tmp-session-bus.conf
 SERVICE_DIR="$DBUS_TOP_BUILDDIR/test/data/valid-service-files"
@@ -50,27 +43,13 @@ export LD_LIBRARY_PATH
 unset DBUS_SESSION_BUS_ADDRESS
 unset DBUS_SESSION_BUS_PID
 
-echo "Running $DBUS_TOP_BUILDDIR/tools/dbus-launch --sh-syntax --config-file=$CONFIG_FILE" >&2
-
-DBUS_USE_TEST_BINARY=1 
+# this does not actually affect dbus-run-session any more, but could be
+# significant for dbus-launch as used by the autolaunch test
+DBUS_USE_TEST_BINARY=1
 export DBUS_USE_TEST_BINARY
-eval `$DBUS_TOP_BUILDDIR/tools/dbus-launch --sh-syntax --config-file=$CONFIG_FILE`
 
-if test -z "$DBUS_SESSION_BUS_PID" ; then
-    die "Failed to launch message bus for test script to run"
-fi
-
-echo "Started bus pid $DBUS_SESSION_BUS_PID at $DBUS_SESSION_BUS_ADDRESS" >&2
-
-# Execute wrapped script
-echo "Running $WRAPPED_SCRIPT $@" >&2
-$WRAPPED_SCRIPT "$@" || die "script \"$WRAPPED_SCRIPT\" failed"
-
-kill -TERM $DBUS_SESSION_BUS_PID || die "Message bus vanished! should not have happened" && echo "Killed daemon $DBUS_SESSION_BUS_PID" >&2
-
-sleep 2
-
-## be sure it really died 
-kill -9 $DBUS_SESSION_BUS_PID > /dev/null 2>&1 || true
-
-exit 0
+exec $DBUS_TOP_BUILDDIR/tools/dbus-run-session \
+    --config-file="$CONFIG_FILE" \
+    --dbus-daemon="$DBUS_TOP_BUILDDIR/bus/dbus-daemon" \
+    -- \
+    "$WRAPPED_SCRIPT" "$@"
