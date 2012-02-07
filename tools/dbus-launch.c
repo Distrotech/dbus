@@ -492,11 +492,20 @@ kill_bus_when_session_ends (void)
   else
     tty_fd = -1;
 
-  if (tty_fd >= 0)
-    verbose ("stdin isatty(), monitoring it\n");
+  if (x_fd >= 0)
+    {
+      verbose ("session lifetime is defined by X, not monitoring stdin\n");
+      tty_fd = -1;
+    }
+  else if (tty_fd >= 0)
+    {
+      verbose ("stdin isatty(), monitoring it\n");
+    }
   else
-    verbose ("stdin was not a TTY, not monitoring it\n");  
-  
+    {
+      verbose ("stdin was not a TTY, not monitoring it\n");
+    }
+
   if (tty_fd < 0 && x_fd < 0)
     {
       fprintf (stderr, "No terminal on standard input and no X display; cannot attach message bus to session lifetime\n");
