@@ -51,30 +51,45 @@ know which shell your script is written in.
 See http://www.freedesktop.org/software/dbus/ for more information
 about D\-Bus. See also the man page for \fIdbus\-daemon\fP.
 
-.PP
-Here is an example of how to use \fIdbus\-launch\fP with an 
-sh\-compatible shell to start the per\-session bus daemon:
-.nf
+.SH EXAMPLES
 
+Distributions running
+.B dbus\-launch
+as part of a standard X session should run
+.B "dbus\-launch \-\-exit\-with\-x11"
+after the X server has started and become available, as a wrapper around
+the "main" X client (typically a session manager or window manager), as in
+these examples:
+
+.RS
+.B "dbus\-launch \-\-exit\-with\-x11 gnome\-session"
+
+.B "dbus\-launch \-\-exit\-with\-x11 openbox"
+
+.B "dbus\-launch \-\-exit\-with\-x11 ~/.xsession"
+.RE
+
+If your distribution does not do this, you can achieve similar results
+by running your session or window manager in the same way in a script
+run by your X session, such as
+.BR ~/.xsession ,
+.B ~/.xinitrc
+or
+.BR ~/.Xclients .
+
+To start a D-Bus session within a text-mode session, you can run
+dbus-launch in the background. For instance, in a sh-compatible shell:
+
+.nf
   ## test for an existing bus daemon, just to be safe
   if test \-z "$DBUS_SESSION_BUS_ADDRESS" ; then
       ## if not found, launch a new one
-      eval `dbus\-launch \-\-sh\-syntax \-\-exit\-with\-session`
+      eval `dbus\-launch \-\-sh\-syntax`
       echo "D\-Bus per\-session daemon address is: $DBUS_SESSION_BUS_ADDRESS"
   fi
-
 .fi
-You might run something like that in your login scripts.
-
-.PP
-Another way to use \fIdbus\-launch\fP is to run your main session
-program, like so:
-.nf
-
-dbus\-launch gnome\-session
-
-.fi
-The above would likely be appropriate for ~/.xsession or ~/.Xclients.
+Note that in this case, dbus-launch will exit, and dbus-daemon will not be
+terminated automatically on logout.
 
 .SH AUTOMATIC LAUNCHING
 
