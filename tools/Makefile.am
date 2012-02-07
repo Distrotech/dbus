@@ -20,6 +20,7 @@ bin_PROGRAMS = \
 if DBUS_UNIX
 bin_PROGRAMS += \
 	dbus-cleanup-sockets \
+	dbus-run-session \
 	dbus-uuidgen \
 	$(NULL)
 endif
@@ -43,6 +44,9 @@ dbus_launch_SOURCES=				\
 	dbus-launch.c				\
 	dbus-launch-x11.c			\
 	dbus-launch.h
+
+dbus_run_session_SOURCES =			\
+	dbus-run-session.c
 endif
 
 dbus_cleanup_sockets_SOURCES=			\

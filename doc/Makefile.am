@@ -15,6 +15,7 @@ man1_MANS = \
 	dbus-daemon.1 \
 	dbus-launch.1 \
 	dbus-monitor.1 \
+	dbus-run-session.1 \
 	dbus-send.1 \
 	dbus-uuidgen.1
 endif
@@ -24,6 +25,7 @@ MAN_HTML_FILES = \
 	dbus-daemon.1.html \
 	dbus-launch.1.html \
 	dbus-monitor.1.html \
+	dbus-run-session.1.html \
 	dbus-send.1.html \
 	dbus-uuidgen.1.html
 
