@@ -8,8 +8,11 @@ dbus\-send \- Send a message to a message bus
 .SH SYNOPSIS
 .PP
 .B dbus\-send
-[\-\-system | \-\-session] [\-\-dest=NAME] [\-\-print\-reply]
-[\-\-type=TYPE] <destination object path> <message name> [contents ...]
+[\fB\-\-system\fP | \fB\-\-session\fP]
+[\fB\-\-dest=\fINAME\fP]
+[\fB\-\-print\-reply\fP]
+[\fB\-\-type=\fITYPE\fP]
+\fIOBJECT_PATH\fP \fIINTERFACE\fB.\fIMEMBER\fP [\fICONTENTS\fP ...]
 
 .SH DESCRIPTION
 
@@ -21,14 +24,14 @@ information about the big picture.
 There are two well\-known message buses: the systemwide message bus 
 (installed on many systems as the "messagebus" service) and the 
 per\-user\-login\-session message bus (started each time a user logs in).
-The \-\-system and \-\-session options direct \fIdbus\-send\fP to send
-messages to the system or session buses respectively.  If neither is
-specified, \fIdbus\-send\fP sends to the session bus.
+The \fB\-\-system\fP and \fB\-\-session\fP options direct
+\fBdbus\-send\fP to send messages to the system or session buses respectively.
+If neither is specified, \fBdbus\-send\fP sends to the session bus.
 
 .PP 
-Nearly all uses of \fIdbus\-send\fP must provide the \-\-dest argument
+Nearly all uses of \fBdbus\-send\fP must provide the \fB\-\-dest\fP argument
 which is the name of a connection on the bus to send the message to. If
-\-\-dest is omitted, no destination is set.
+\fB\-\-dest\fP is omitted, no destination is set.
 
 .PP
 The object path and the name of the message to send must always be
@@ -46,8 +49,8 @@ may include containers (arrays, dicts, and variants) as described below.
 <type>       ::= string | int16 | uint 16 | int32 | uint32 | int64 | uint64 | double | byte | boolean | objpath
 .fi
 
-D\-Bus supports more types than these, but \fIdbus\-send\fP currently
-does not.  Also, \fIdbus\-send\fP does not permit empty containers
+D\-Bus supports more types than these, but \fBdbus\-send\fP currently
+does not.  Also, \fBdbus\-send\fP does not permit empty containers
 or nested containers (e.g. arrays of variants).
 
 .PP
@@ -72,20 +75,20 @@ and the interface member are separate fields.
 .SH OPTIONS
 The following options are supported:
 .TP
-.I "\-\-dest=NAME"
+.BI \-\-dest= NAME
 Specify the name of the connection to receive the message.
 .TP
-.I "\-\-print\-reply"
+.B "\-\-print\-reply"
 Block for a reply to the message sent, and print any reply received.
 .TP
-.I "\-\-system"
+.B "\-\-system"
 Send to the system message bus.
 .TP
-.I "\-\-session"
+.B "\-\-session"
 Send to the session message bus.  (This is the default.)
 .TP
-.I "\-\-type=TYPE"
-Specify "method_call" or "signal" (defaults to "signal").
+.BI \-\-type= TYPE
+Specify \fBmethod_call\fP or \fBsignal\fP (defaults to "\fBsignal\fP").
 
 .SH AUTHOR
 dbus\-send was written by Philip Blundell.
