@@ -3393,8 +3393,8 @@ test_default_session_servicedirs (void)
 static const char *test_system_service_dir_matches[] = 
         {
 #ifdef DBUS_UNIX
-         "/testusr/testlocal/testshare/dbus-1/system-services",
-         "/testusr/testshare/dbus-1/system-services",
+         "/usr/local/share/dbus-1/system-services",
+         "/usr/share/dbus-1/system-services",
 #endif
          DBUS_DATADIR"/dbus-1/system-services",
 #ifdef DBUS_UNIX

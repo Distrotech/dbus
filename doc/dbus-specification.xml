@@ -4545,7 +4545,32 @@
           </footnote>
         </para>
         <para>
-          [FIXME specify location of system bus .service files]
+          On Unix systems, the system bus should default to searching
+          for .service files in
+          <literal>/usr/local/share/dbus-1/system-services</literal>,
+          <literal>/usr/share/dbus-1/system-services</literal> and
+          <literal>/lib/dbus-1/system-services</literal>, with that order
+          of precedence. It may also search other implementation-specific
+          locations, but should not vary these locations based on environment
+          variables.
+          <footnote>
+            <para>
+              The system bus is security-sensitive and is typically executed
+              by an init system with a clean environment. Its launch helper
+              process is particularly security-sensitive, and specifically
+              clears its own environment.
+            </para>
+          </footnote>
+        </para>
+        <para>
+          Software packages should install their system .service
+          files to their configured
+          <literal>${datadir}/dbus-1/system-services</literal>,
+          where <literal>${datadir}</literal> is as defined by the GNU
+          coding standards. System administrators can arrange
+          for these service files to be read by editing the system bus'
+          configuration file or by symlinking them into the default
+          locations.
         </para>
       </sect3>
     </sect2>
