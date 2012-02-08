@@ -4511,6 +4511,15 @@
             looks in <literal>${datadir}/dbus-1/services</literal> as
             set at compile time.
           </para>
+          <para>
+            As described in the XDG Base Directory Specification, software
+            packages should install their session .service files to their
+            configured <literal>${datadir}/dbus-1/services</literal>,
+            where <literal>${datadir}</literal> is as defined by the GNU
+            coding standards. System administrators or users can arrange
+            for these service files to be read by setting XDG_DATA_DIRS or by
+            symlinking them into the default locations.
+          </para>
         </sect4>
       </sect3>
       <sect3 id="message-bus-types-system">
