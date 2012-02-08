@@ -24,6 +24,10 @@ D-Bus 1.5.10 (UNRELEASED)
 • Improve test coverage. To get even more coverage, run the tests with
   DBUS_TEST_SLOW=1 (fd.o #38285, Simon McVittie)
 
+• Reduce the size of the shared library by moving functionality only used
+  by dbus-daemon, tests etc. into their internal library
+  (fd.o #34976, Simon McVittie)
+
 • Unix-specific:
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
