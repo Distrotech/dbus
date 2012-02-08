@@ -11,6 +11,7 @@ dbus\-send \- Send a message to a message bus
 [\fB\-\-system\fP | \fB\-\-session\fP]
 [\fB\-\-dest=\fINAME\fP]
 [\fB\-\-print\-reply\fP[\fB=literal\fP]]
+[\fB\-\-reply\-timeout=\fIMSEC\fP]
 [\fB\-\-type=\fITYPE\fP]
 \fIOBJECT_PATH\fP \fIINTERFACE\fB.\fIMEMBER\fP [\fICONTENTS\fP ...]
 
@@ -86,6 +87,10 @@ in a human-readable form.
 Block for a reply to the message sent, and print the body of the
 reply. If the reply is an object path or a string, it is printed
 literally, with no punctuation, escape characters etc.
+.TP
+.BI \-\-reply\-timeout= MSEC
+Wait for a reply for up to \fIMSEC\fP milliseconds.
+The default is implementation\(hydefined, typically 25 seconds.
 .TP
 .B "\-\-system"
 Send to the system message bus.
