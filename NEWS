@@ -16,6 +16,9 @@ D-Bus 1.4.18 (UNRELEASED)
 • Build tests successfully with older GLib, as found in e.g. Debian 6
   (fd.o #41219, Simon McVittie)
 
+• Build documentation correctly if man2html doesn't support filenames on
+  its command-line (fd.o #43875, Jack Nagel)
+
 • Unix-specific:
   · Avoid a highly unlikely fd leak (fd.o #29881, Simon McVittie)
   · Don't close invalid fd -1 if getaddrinfo fails (fd.o #37258, eXeC001er)
