@@ -10,7 +10,7 @@ dbus\-send \- Send a message to a message bus
 .B dbus\-send
 [\fB\-\-system\fP | \fB\-\-session\fP]
 [\fB\-\-dest=\fINAME\fP]
-[\fB\-\-print\-reply\fP]
+[\fB\-\-print\-reply\fP[\fB=literal\fP]]
 [\fB\-\-type=\fITYPE\fP]
 \fIOBJECT_PATH\fP \fIINTERFACE\fB.\fIMEMBER\fP [\fICONTENTS\fP ...]
 
@@ -79,7 +79,13 @@ The following options are supported:
 Specify the name of the connection to receive the message.
 .TP
 .B "\-\-print\-reply"
-Block for a reply to the message sent, and print any reply received.
+Block for a reply to the message sent, and print any reply received
+in a human-readable form.
+.TP
+.B "\-\-print\-reply=literal"
+Block for a reply to the message sent, and print the body of the
+reply. If the reply is an object path or a string, it is printed
+literally, with no punctuation, escape characters etc.
 .TP
 .B "\-\-system"
 Send to the system message bus.
