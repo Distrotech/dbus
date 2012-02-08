@@ -18,6 +18,9 @@ D-Bus 1.5.10 (UNRELEASED)
 
 • Avoid use of deprecated GThread API (fd.o #44413, Martin Pitt)
 
+• Build documentation correctly if man2html doesn't support filenames on
+  its command-line (fd.o #43875, Jack Nagel)
+
 • Unix-specific:
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
