@@ -157,6 +157,8 @@ set (DBUS_UTIL_SOURCES
 	${DBUS_DIR}/dbus-message-factory.c
 	${DBUS_DIR}/dbus-message-util.c
 	${DBUS_DIR}/dbus-shell.c
+	${DBUS_DIR}/dbus-socket-set.c
+	${DBUS_DIR}/dbus-socket-set-poll.c
 	${DBUS_DIR}/dbus-string-util.c
 	${DBUS_DIR}/dbus-sysdeps-util.c
 )
@@ -173,6 +175,7 @@ set (DBUS_UTIL_HEADERS
 	${DBUS_DIR}/dbus-mainloop.h
 	${DBUS_DIR}/dbus-message-factory.h
 	${DBUS_DIR}/dbus-shell.h
+	${DBUS_DIR}/dbus-socket-set.h
 	${DBUS_DIR}/dbus-spawn.h
 	${DBUS_DIR}/dbus-test.h
 )
