@@ -1164,79 +1164,6 @@ _dbus_string_append_byte (DBusString    *str,
   return TRUE;
 }
 
-#ifdef DBUS_BUILD_TESTS
-/**
- * Appends a single Unicode character, encoding the character
- * in UTF-8 format.
- *
- * @param str the string
- * @param ch the Unicode character
- */
-dbus_bool_t
-_dbus_string_append_unichar (DBusString    *str,
-                             dbus_unichar_t ch)
-{
-  int len;
-  int first;
-  int i;
-  unsigned char *out;
-  
-  DBUS_STRING_PREAMBLE (str);
-
-  /* this code is from GLib but is pretty standard I think */
-  
-  len = 0;
-  
-  if (ch < 0x80)
-    {
-      first = 0;
-      len = 1;
-    }
-  else if (ch < 0x800)
-    {
-      first = 0xc0;
-      len = 2;
-    }
-  else if (ch < 0x10000)
-    {
-      first = 0xe0;
-      len = 3;
-    }
-   else if (ch < 0x200000)
-    {
-      first = 0xf0;
-      len = 4;
-    }
-  else if (ch < 0x4000000)
-    {
-      first = 0xf8;
-      len = 5;
-    }
-  else
-    {
-      first = 0xfc;
-      len = 6;
-    }
-
-  if (len > (_DBUS_STRING_MAX_LENGTH - real->len))
-    return FALSE; /* real->len + len would overflow */
-  
-  if (!set_length (real, real->len + len))
-    return FALSE;
-
-  out = real->str + (real->len - len);
-  
-  for (i = len - 1; i > 0; --i)
-    {
-      out[i] = (ch & 0x3f) | 0x80;
-      ch >>= 6;
-    }
-  out[0] = ch | first;
-
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */
-
 static void
 delete (DBusRealString *real,
         int             start,
@@ -1663,55 +1590,6 @@ _dbus_string_split_on_byte (DBusString        *source,
      (((Char) & 0xFFFFF800) != 0xD800) &&     \
      ((Char) < 0xFDD0 || (Char) > 0xFDEF) &&  \
      ((Char) & 0xFFFE) != 0xFFFE)
-
-#ifdef DBUS_BUILD_TESTS
-/**
- * Gets a unicode character from a UTF-8 string. Does no validation;
- * you must verify that the string is valid UTF-8 in advance and must
- * pass in the start of a character.
- *
- * @param str the string
- * @param start the start of the UTF-8 character.
- * @param ch_return location to return the character
- * @param end_return location to return the byte index of next character
- */
-void
-_dbus_string_get_unichar (const DBusString *str,
-                          int               start,
-                          dbus_unichar_t   *ch_return,
-                          int              *end_return)
-{
-  int i, mask, len;
-  dbus_unichar_t result;
-  unsigned char c;
-  unsigned char *p;
-  DBUS_CONST_STRING_PREAMBLE (str);
-  _dbus_assert (start >= 0);
-  _dbus_assert (start <= real->len);
-  
-  if (ch_return)
-    *ch_return = 0;
-  if (end_return)
-    *end_return = real->len;
-  
-  mask = 0;
-  p = real->str + start;
-  c = *p;
-  
-  UTF8_COMPUTE (c, mask, len);
-  if (len == 0)
-    return;
-  UTF8_GET (result, p, i, mask, len);
-
-  if (result == (dbus_unichar_t)-1)
-    return;
-
-  if (ch_return)
-    *ch_return = result;
-  if (end_return)
-    *end_return = start + len;
-}
-#endif /* DBUS_BUILD_TESTS */
 
 /**
  * Finds the given substring in the string,

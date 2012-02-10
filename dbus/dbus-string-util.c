@@ -232,7 +232,6 @@ _dbus_string_test (void)
   double d;
   int lens[] = { 0, 1, 2, 3, 4, 5, 10, 16, 17, 18, 25, 31, 32, 33, 34, 35, 63, 64, 65, 66, 67, 68, 69, 70, 71, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136 };
   char *s;
-  dbus_unichar_t ch;
 
   /* Test shortening and setting length */
   i = 0;
@@ -545,22 +544,6 @@ _dbus_string_test (void)
 
   _dbus_string_free (&str);
   _dbus_string_free (&other);
-
-  /* Check append/get unichar */
-  
-  if (!_dbus_string_init (&str))
-    _dbus_assert_not_reached ("failed to init string");
-
-  ch = 0;
-  if (!_dbus_string_append_unichar (&str, 0xfffc))
-    _dbus_assert_not_reached ("failed to append unichar");
-
-  _dbus_string_get_unichar (&str, 0, &ch, &i);
-
-  _dbus_assert (ch == 0xfffc);
-  _dbus_assert (i == _dbus_string_get_length (&str));
-
-  _dbus_string_free (&str);
 
   /* Check insert/set/get byte */
   
