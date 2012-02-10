@@ -957,54 +957,6 @@ do {                                            \
 } while (0)
 #endif /* DBUS_HAVE_INT64 */
 
-#ifdef DBUS_BUILD_TESTS
-/**
- * Appends 4 bytes aligned on a 4 byte boundary
- * with any alignment padding initialized to 0.
- *
- * @param str the DBusString
- * @param octets 4 bytes to append
- * @returns #FALSE if not enough memory.
- */
-dbus_bool_t
-_dbus_string_append_4_aligned (DBusString         *str,
-                               const unsigned char octets[4])
-{
-  DBUS_STRING_PREAMBLE (str);
-  
-  if (!align_length_then_lengthen (str, 4, 4))
-    return FALSE;
-
-  ASSIGN_4_OCTETS (real->str + (real->len - 4), octets);
-
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */
-
-#ifdef DBUS_BUILD_TESTS
-/**
- * Appends 8 bytes aligned on an 8 byte boundary
- * with any alignment padding initialized to 0.
- *
- * @param str the DBusString
- * @param octets 8 bytes to append
- * @returns #FALSE if not enough memory.
- */
-dbus_bool_t
-_dbus_string_append_8_aligned (DBusString         *str,
-                               const unsigned char octets[8])
-{
-  DBUS_STRING_PREAMBLE (str);
-  
-  if (!align_length_then_lengthen (str, 8, 8))
-    return FALSE;
-
-  ASSIGN_8_OCTETS (real->str + (real->len - 8), octets);
-
-  return TRUE;
-}
-#endif /* DBUS_BUILD_TESTS */
-
 /**
  * Inserts 2 bytes aligned on a 2 byte boundary
  * with any alignment padding initialized to 0.
