@@ -8,6 +8,7 @@ D-Bus 1.5.10 (UNRELEASED)
   · Document the search path for session and system services on Unix, and
     where they should be installed by build systems (fd.o #21620, fd.o #35306;
     Simon McVittie)
+  · Document the systemd transport (fd.o #35232, Lennart Poettering)
 
 • Allow all configured auth mechanisms, not just one (fd.o #45106,
   Pavel Strashkin)
