@@ -1,6 +1,14 @@
 D-Bus 1.5.10 (UNRELEASED)
 ==
 
+• D-Bus Specification 0.19:
+  · Formally define unique connection names and well-known bus names,
+    and document best practices for interface, bus, member and error names,
+    and object paths (fd.o #37095, Simon McVittie)
+  · Document the search path for session and system services on Unix, and
+    where they should be installed by build systems (fd.o #21620, fd.o #35306;
+    Simon McVittie)
+
 • Allow all configured auth mechanisms, not just one (fd.o #45106,
   Pavel Strashkin)
 
@@ -28,6 +36,12 @@ D-Bus 1.5.10 (UNRELEASED)
   by dbus-daemon, tests etc. into their internal library
   (fd.o #34976, Simon McVittie)
 
+• Add dbus-daemon --nopidfile option, overriding the configuration, for
+  setups where the default configuration must include <pidfile/> to avoid
+  breaking traditional init, but the pid file is in fact unnecessary; use
+  it under systemd to improve startup time a bit (fd.o #45520,
+  Lennart Poettering)
+
 • Unix-specific:
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
@@ -38,6 +52,10 @@ D-Bus 1.5.10 (UNRELEASED)
   · Don't close invalid fd -1 if getaddrinfo fails (fd.o #37258, eXeC001er)
   · Don't touch ~/.dbus and ~/.dbus-keyrings when running 'make installcheck'
     (fd.o #41218, Simon McVittie)
+  · Stop pretending we respect XDG_DATA_DIRS for system services: the launch
+    helper doesn't obey environment variables to avoid privilege escalation
+    attacks, so make the system bus follow the same rules
+    (fd.o #21620, Simon McVittie)
 
 • Windows-specific:
   · Find the dbus-daemon executable next to the shared library (fd.o #41558;
