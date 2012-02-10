@@ -3691,54 +3691,27 @@ _dbus_get_standard_session_servicedirs (DBusList **dirs)
 dbus_bool_t
 _dbus_get_standard_system_servicedirs (DBusList **dirs)
 {
-  const char *xdg_data_dirs;
-  DBusString servicedir_path;
-
-  if (!_dbus_string_init (&servicedir_path))
-    return FALSE;
-
-  xdg_data_dirs = _dbus_getenv ("XDG_DATA_DIRS");
-
-  if (xdg_data_dirs != NULL)
-    {
-      if (!_dbus_string_append (&servicedir_path, xdg_data_dirs))
-        goto oom;
-
-      if (!_dbus_string_append (&servicedir_path, ":"))
-        goto oom;
-    }
-  else
-    {
-      if (!_dbus_string_append (&servicedir_path, "/usr/local/share:/usr/share:"))
-        goto oom;
-    }
-
   /*
-   * Add configured datadir to defaults. This may be the same as one
-   * of the XDG directories. However, the config parser should take
-   * care of the duplicates.
+   * DBUS_DATADIR may be the same as one of the standard directories. However,
+   * the config parser should take care of the duplicates.
    *
    * Also, append /lib as counterpart of /usr/share on the root
    * directory (the root directory does not know /share), in order to
    * facilitate early boot system bus activation where /usr might not
    * be available.
    */
-  if (!_dbus_string_append (&servicedir_path,
-                            DBUS_DATADIR":"
-                            "/lib:"))
-        goto oom;
+  static const char standard_search_path[] =
+    "/usr/local/share:"
+    "/usr/share:"
+    DBUS_DATADIR ":"
+    "/lib";
+  DBusString servicedir_path;
 
-  if (!_dbus_split_paths_and_append (&servicedir_path,
-                                     DBUS_UNIX_STANDARD_SYSTEM_SERVICEDIR,
-                                     dirs))
-    goto oom;
+  _dbus_string_init_const (&servicedir_path, standard_search_path);
 
-  _dbus_string_free (&servicedir_path);
-  return TRUE;
-
- oom:
-  _dbus_string_free (&servicedir_path);
-  return FALSE;
+  return _dbus_split_paths_and_append (&servicedir_path,
+                                       DBUS_UNIX_STANDARD_SYSTEM_SERVICEDIR,
+                                       dirs);
 }
 
 /**
