@@ -57,33 +57,7 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
 
   method = dbus_address_entry_get_method (entry);
 
-  if (strcmp (method, "nonce-tcp") == 0)
-    {
-      const char *host;
-      const char *port;
-      const char *bind;
-      const char *family;
-
-      host = dbus_address_entry_get_value (entry, "host");
-      bind = dbus_address_entry_get_value (entry, "bind");
-      port = dbus_address_entry_get_value (entry, "port");
-      family = dbus_address_entry_get_value (entry, "family");
-
-      *server_p = _dbus_server_new_for_tcp_socket (host, bind, port,
-                                                   family, error, TRUE);
-
-      if (*server_p)
-        {
-          _DBUS_ASSERT_ERROR_IS_CLEAR(error);
-          return DBUS_SERVER_LISTEN_OK;
-        }
-      else
-        {
-          _DBUS_ASSERT_ERROR_IS_SET(error);
-          return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
-        }
-    }
-  else if (strcmp (method, "autolaunch") == 0)
+  if (strcmp (method, "autolaunch") == 0)
     {
       const char *host = "localhost";
       const char *bind = "localhost";
