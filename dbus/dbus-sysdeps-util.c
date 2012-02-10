@@ -131,10 +131,6 @@ check_path_absolute (const char *path,
 dbus_bool_t
 _dbus_sysdeps_test (void)
 {
-  DBusString str;
-  double val;
-  int pos;
-
 #ifdef DBUS_WIN
   check_dirname ("foo\\bar", "foo");
   check_dirname ("foo\\\\bar", "foo");
@@ -175,32 +171,6 @@ _dbus_sysdeps_test (void)
   check_dirname ("///", "/");
   check_dirname ("", ".");  
 #endif
-
-  _dbus_string_init_const (&str, "3.5");
-  if (!_dbus_string_parse_double (&str,
-				  0, &val, &pos))
-    {
-      _dbus_warn ("Failed to parse double");
-      exit (1);
-    }
-  if (ABS(3.5 - val) > 1e-6)
-    {
-      _dbus_warn ("Failed to parse 3.5 correctly, got: %f", val);
-      exit (1);
-    }
-  if (pos != 3)
-    {
-      _dbus_warn ("_dbus_string_parse_double of \"3.5\" returned wrong position %d", pos);
-      exit (1);
-    }
-
-  _dbus_string_init_const (&str, "0xff");
-  if (_dbus_string_parse_double (&str,
-                                 0, &val, &pos))
-    {
-      _dbus_warn ("Should not have parsed hex as double\n");
-      exit (1);
-    }
 
 #ifdef DBUS_WIN
   check_path_absolute ("c:/", TRUE);

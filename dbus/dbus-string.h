@@ -150,8 +150,6 @@ dbus_bool_t   _dbus_string_append_int            (DBusString        *str,
                                                   long               value);
 dbus_bool_t   _dbus_string_append_uint           (DBusString        *str,
                                                   unsigned long      value);
-dbus_bool_t   _dbus_string_append_double         (DBusString        *str,
-                                                  double             value);
 dbus_bool_t   _dbus_string_append_byte           (DBusString        *str,
                                                   unsigned char      byte);
 dbus_bool_t   _dbus_string_append_printf         (DBusString        *str,
@@ -209,10 +207,6 @@ dbus_bool_t   _dbus_string_parse_int             (const DBusString  *str,
 dbus_bool_t   _dbus_string_parse_uint            (const DBusString  *str,
                                                   int                start,
                                                   unsigned long     *value_return,
-                                                  int               *end_return);
-dbus_bool_t   _dbus_string_parse_double          (const DBusString  *str,
-                                                  int                start,
-                                                  double            *value,
                                                   int               *end_return);
 dbus_bool_t   _dbus_string_find                  (const DBusString  *str,
                                                   int                start,
