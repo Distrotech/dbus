@@ -782,9 +782,29 @@
           </itemizedlist>
         </para>
 
+        <para>
+          Object paths are often namespaced by starting with a reversed
+          domain name and containing an interface version number, in the
+          same way as
+          <link linkend="message-protocol-names-interface">interface
+            names</link> and
+          <link linkend="message-protocol-names-bus">well-known
+            bus names</link>.
+          This makes it possible to implement more than one service, or
+          more than one version of a service, in the same process,
+          even if the services share a connection but cannot otherwise
+          co-operate (for instance, if they are implemented by different
+          plugins).
+        </para>
+
+        <para>
+          For instance, if the owner of <literal>example.com</literal> is
+          developing a D-Bus API for a music player, they might use the
+          hierarchy of object paths that start with
+          <literal>/com/example/MusicPlayer1</literal> for its objects.
+        </para>
       </sect3>
 
-      
       <sect3 id="message-protocol-marshaling-signature">
         <title>Valid Signatures</title>
         <para>
@@ -1228,21 +1248,48 @@
 	    <listitem><para>Interface names must not exceed the maximum name length.</para></listitem>
           </itemizedlist>
         </para>
+
+        <para>
+          Interface names should start with the reversed DNS domain name of
+          the author of the interface (in lower-case), like interface names
+          in Java. It is conventional for the rest of the interface name
+          to consist of words run together, with initial capital letters
+          on all words ("CamelCase"). Several levels of hierarchy can be used.
+          It is also a good idea to include the major version of the interface
+          in the name, and increment it if incompatible changes are made;
+          this way, a single object can implement several versions of an
+          interface in parallel, if necessary.
+        </para>
+
+        <para>
+          For instance, if the owner of <literal>example.com</literal> is
+          developing a D-Bus API for a music player, they might define
+          interfaces called <literal>com.example.MusicPlayer1</literal>,
+          <literal>com.example.MusicPlayer1.Track</literal> and
+          <literal>com.example.MusicPlayer1.Seekable</literal>.
+        </para>
+
+        <para>
+          D-Bus does not distinguish between the concepts that would be
+          called classes and interfaces in Java: either can be identified on
+          D-Bus by an interface name.
+        </para>
       </sect3>
       <sect3 id="message-protocol-names-bus">
         <title>Bus names</title>
         <para>
           Connections have one or more bus names associated with them.
-          A connection has exactly one bus name that is a unique connection
-          name. The unique connection name remains with the connection for
-          its entire lifetime.
+          A connection has exactly one bus name that is a <firstterm>unique
+            connection name</firstterm>. The unique connection name remains
+          with the connection for its entire lifetime.
           A bus name is of type <literal>STRING</literal>,
           meaning that it must be valid UTF-8. However, there are also
           some additional restrictions that apply to bus names 
           specifically:
           <itemizedlist>
             <listitem><para>Bus names that start with a colon (':')
-                character are unique connection names.
+                character are unique connection names. Other bus names
+                are called <firstterm>well-known bus names</firstterm>.
                 </para>
             </listitem>
             <listitem><para>Bus names are composed of 1 or more elements separated by
@@ -1269,6 +1316,31 @@
           Note that the hyphen ('-') character is allowed in bus names but
           not in interface names.
         </para>
+
+        <para>
+          Like <link linkend="message-protocol-names-interface">interface
+            names</link>, well-known bus names should start with the
+          reversed DNS domain name of the author of the interface (in
+          lower-case), and it is conventional for the rest of the well-known
+          bus name to consist of words run together, with initial
+          capital letters. As with interface names, including a version
+          number in well-known bus names is a good idea; it's possible to
+          have the well-known bus name for more than one version
+          simultaneously if backwards compatibility is required.
+        </para>
+
+        <para>
+          If a well-known bus name implies the presence of a "main" interface,
+          that "main" interface is often given the same name as
+          the well-known bus name, and situated at the corresponding object
+          path. For instance, if the owner of <literal>example.com</literal>
+          is developing a D-Bus API for a music player, they might define
+          that any application that takes the well-known name
+          <literal>com.example.MusicPlayer1</literal> should have an object
+          at the object path <literal>/com/example/MusicPlayer1</literal>
+          which implements the interface
+          <literal>com.example.MusicPlayer1</literal>.
+        </para>
       </sect3>
       <sect3 id="message-protocol-names-member">
         <title>Member names</title>
@@ -1283,11 +1355,30 @@
 	    <listitem><para>Must be at least 1 byte in length.</para></listitem>
           </itemizedlist>
         </para>
+
+        <para>
+          It is conventional for member names on D-Bus to consist of
+          capitalized words with no punctuation ("camel-case").
+          Method names should usually be verbs, such as
+          <literal>GetItems</literal>, and signal names should usually be
+          a description of an event, such as <literal>ItemsChanged</literal>.
+        </para>
       </sect3>
       <sect3 id="message-protocol-names-error">
         <title>Error names</title>
         <para>
           Error names have the same restrictions as interface names.
+        </para>
+
+        <para>
+          Error names have the same naming conventions as interface
+          names, and often contain <literal>.Error.</literal>; for instance,
+          the owner of <literal>example.com</literal> might define the
+          errors <literal>com.example.MusicPlayer.Error.FileNotFound</literal>
+          and <literal>com.example.MusicPlayer.Error.OutOfMemory</literal>.
+          The errors defined by D-Bus itself, such as
+          <literal>org.freedesktop.DBus.Error.Failed</literal>, follow a
+          similar pattern.
         </para>
       </sect3>
     </sect2>
@@ -2892,22 +2983,6 @@
      </sect3>
     </sect2>
    </sect1>
-   <sect1 id="naming-conventions">
-    <title>Naming Conventions</title>
-    
-    <para>
-      D-Bus namespaces are all lowercase and correspond to reversed domain
-      names, as with Java. e.g. "org.freedesktop"
-    </para>
-    <para>
-      Interface, signal, method, and property names are "WindowsStyleCaps", note
-      that the first letter is capitalized, unlike Java.
-    </para>
-    <para>
-      Object paths are normally all lowercase with underscores used rather than
-      hyphens.
-    </para>
-  </sect1>
 
   <sect1 id="uuids">
     <title>UUIDs</title>
@@ -3035,6 +3110,22 @@
               org.freedesktop.DBus.Properties.GetAll (in STRING interface_name,
                                                       out DICT&lt;STRING,VARIANT&gt; props);
         </programlisting>
+      </para>
+      <para>
+        It is conventional to give D-Bus properties names consisting of
+        capitalized words without punctuation ("CamelCase"), like
+        <link linkend="message-protocol-names-member">member names</link>.
+        For instance, the GObject property
+        <literal>connection-status</literal> or the Qt property
+        <literal>connectionStatus</literal> could be represented on D-Bus
+        as <literal>ConnectionStatus</literal>.
+      </para>
+      <para>
+        Strictly speaking, D-Bus property names are not required to follow
+        the same naming restrictions as member names, but D-Bus property
+        names that would not be valid member names (in particular,
+        GObject-style dash-separated property names) can cause interoperability
+        problems and should be avoided.
       </para>
       <para>
         The available properties and whether they are writable can be determined
@@ -5216,6 +5307,11 @@
               can be thought of as "well-known names" and are 
               used to find applications that offer specific functionality.
         </para>
+
+        <para>
+          See <xref linkend="message-protocol-names-bus"/> for details of
+          the syntax and naming conventions for bus names.
+        </para>
       </glossdef>
     </glossentry>
       
@@ -5254,10 +5350,14 @@
 
     <glossentry id="namespace"><glossterm>Namespace</glossterm>
       <glossdef>
-	<para>
-          Used to prevent collisions when defining new interfaces or bus
-	  names. The convention used is the same one Java uses for defining
-	  classes: a reversed domain name.
+        <para>
+          Used to prevent collisions when defining new interfaces, bus names
+          etc. The convention used is the same one Java uses for defining
+          classes: a reversed domain name.
+          See <xref linkend="message-protocol-names-bus"/>,
+          <xref linkend="message-protocol-names-interface"/>,
+          <xref linkend="message-protocol-names-error"/>,
+          <xref linkend="message-protocol-marshaling-object-path"/>.
         </para>
       </glossdef>
     </glossentry>
