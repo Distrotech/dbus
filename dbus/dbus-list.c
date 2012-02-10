@@ -673,29 +673,6 @@ _dbus_list_pop_last (DBusList **list)
   return data;
 }
 
-#ifdef DBUS_BUILD_TESTS
-/**
- * Removes the last link in the list and returns it.  This is a
- * constant-time operation.
- *
- * @param list address of the list head.
- * @returns the last link in the list, or #NULL for an empty list.
- */
-DBusList*
-_dbus_list_pop_last_link (DBusList **list)
-{
-  DBusList *link;
-  
-  link = _dbus_list_get_last_link (list);
-  if (link == NULL)
-    return NULL;
-
-  _dbus_list_unlink (list, link);
-
-  return link;
-}
-#endif /* DBUS_BUILD_TESTS */
-
 /**
  * Copies a list. This is a linear-time operation.  If there isn't
  * enough memory to copy the entire list, the destination list will be
@@ -1057,25 +1034,25 @@ _dbus_list_test (void)
       DBusList *got_link1;
       DBusList *got_link2;
 
-      DBusList *link1;
       DBusList *link2;
       
+      void *data1_indirect;
       void *data1;
       void *data2;
       
       got_link1 = _dbus_list_get_last_link (&list1);
       got_link2 = _dbus_list_get_first_link (&list2);
-      
-      link1 = _dbus_list_pop_last_link (&list1);
+
       link2 = _dbus_list_pop_first_link (&list2);
 
-      _dbus_assert (got_link1 == link1);
       _dbus_assert (got_link2 == link2);
 
-      data1 = link1->data;
+      data1_indirect = got_link1->data;
+      /* this call makes got_link1 invalid */
+      data1 = _dbus_list_pop_last (&list1);
+      _dbus_assert (data1 == data1_indirect);
       data2 = link2->data;
 
-      _dbus_list_free_link (link1);
       _dbus_list_free_link (link2);
       
       _dbus_assert (_DBUS_POINTER_TO_INT (data1) == i);
