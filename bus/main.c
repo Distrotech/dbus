@@ -355,9 +355,7 @@ main (int argc, char **argv)
   int i;
   dbus_bool_t print_address;
   dbus_bool_t print_pid;
-  int force_fork;
-  dbus_bool_t systemd_activation;
-  dbus_bool_t write_pidfile;
+  BusContextFlags flags;
 
   if (!_dbus_string_init (&config_file))
     return 1;
@@ -373,9 +371,8 @@ main (int argc, char **argv)
 
   print_address = FALSE;
   print_pid = FALSE;
-  force_fork = FORK_FOLLOW_CONFIG_FILE;
-  systemd_activation = FALSE;
-  write_pidfile = TRUE;
+
+  flags = BUS_CONTEXT_FLAG_WRITE_PID_FILE;
 
   prev_arg = NULL;
   i = 1;
@@ -386,19 +383,35 @@ main (int argc, char **argv)
       if (strcmp (arg, "--help") == 0 ||
           strcmp (arg, "-h") == 0 ||
           strcmp (arg, "-?") == 0)
-        usage ();
+        {
+          usage ();
+        }
       else if (strcmp (arg, "--version") == 0)
-        version ();
+        {
+          version ();
+        }
       else if (strcmp (arg, "--introspect") == 0)
-        introspect ();
+        {
+          introspect ();
+        }
       else if (strcmp (arg, "--nofork") == 0)
-        force_fork = FORK_NEVER;
+        {
+          flags &= ~BUS_CONTEXT_FLAG_FORK_ALWAYS;
+          flags |= BUS_CONTEXT_FLAG_FORK_NEVER;
+        }
       else if (strcmp (arg, "--fork") == 0)
-        force_fork = FORK_ALWAYS;
+        {
+          flags &= ~BUS_CONTEXT_FLAG_FORK_NEVER;
+          flags |= BUS_CONTEXT_FLAG_FORK_ALWAYS;
+        }
       else if (strcmp (arg, "--nopidfile") == 0)
-        write_pidfile = FALSE;
+        {
+          flags &= ~BUS_CONTEXT_FLAG_WRITE_PID_FILE;
+        }
       else if (strcmp (arg, "--systemd-activation") == 0)
-        systemd_activation = TRUE;
+        {
+          flags |= BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION;
+        }
       else if (strcmp (arg, "--system") == 0)
         {
           check_two_config_files (&config_file, "system");
@@ -434,7 +447,9 @@ main (int argc, char **argv)
             exit (1);
         }
       else if (strcmp (arg, "--config-file") == 0)
-        ; /* wait for next arg */
+        {
+          /* wait for next arg */
+        }
       else if (strstr (arg, "--address=") == arg)
         {
           const char *file;
@@ -456,7 +471,9 @@ main (int argc, char **argv)
             exit (1);
         }
       else if (strcmp (arg, "--address") == 0)
-        ; /* wait for next arg */
+        {
+          /* wait for next arg */
+        }
       else if (strstr (arg, "--print-address=") == arg)
         {
           const char *desc;
@@ -482,7 +499,9 @@ main (int argc, char **argv)
           print_address = TRUE;
         }
       else if (strcmp (arg, "--print-address") == 0)
-        print_address = TRUE; /* and we'll get the next arg if appropriate */
+        {
+          print_address = TRUE; /* and we'll get the next arg if appropriate */
+        }
       else if (strstr (arg, "--print-pid=") == arg)
         {
           const char *desc;
@@ -508,9 +527,13 @@ main (int argc, char **argv)
           print_pid = TRUE;
         }
       else if (strcmp (arg, "--print-pid") == 0)
-        print_pid = TRUE; /* and we'll get the next arg if appropriate */
+        {
+          print_pid = TRUE; /* and we'll get the next arg if appropriate */
+        }
       else
-        usage ();
+        {
+          usage ();
+        }
 
       prev_arg = arg;
 
@@ -574,11 +597,9 @@ main (int argc, char **argv)
     }
 
   dbus_error_init (&error);
-  context = bus_context_new (&config_file, force_fork,
+  context = bus_context_new (&config_file, flags,
                              &print_addr_pipe, &print_pid_pipe,
                              _dbus_string_get_length(&address) > 0 ? &address : NULL,
-                             systemd_activation,
-                             write_pidfile,
                              &error);
   _dbus_string_free (&config_file);
   if (context == NULL)
