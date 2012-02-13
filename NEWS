@@ -1,5 +1,7 @@
-D-Bus 1.4.18 (UNRELEASED)
+D-Bus 1.4.18 (2012-02-13)
 ==
+
+The "snow in Brussels" release
 
 • Allow all configured auth mechanisms, not just one (fd.o #45106,
   Pavel Strashkin)
