@@ -34,8 +34,8 @@ D-Bus 1.5.10 (UNRELEASED)
   DBUS_TEST_SLOW=1 (fd.o #38285, Simon McVittie)
 
 • Reduce the size of the shared library by moving functionality only used
-  by dbus-daemon, tests etc. into their internal library
-  (fd.o #34976, Simon McVittie)
+  by dbus-daemon, tests etc. into their internal library and deleting
+  unused code (fd.o #34976, #39759; Simon McVittie)
 
 • Add dbus-daemon --nopidfile option, overriding the configuration, for
   setups where the default configuration must include <pidfile/> to avoid
