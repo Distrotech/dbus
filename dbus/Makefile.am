@@ -5,6 +5,7 @@ AM_CPPFLAGS = \
 	-I$(top_builddir) \
 	-I$(top_srcdir) \
 	$(SYSTEMD_CFLAGS) \
+	$(VALGRIND_CFLAGS) \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
@@ -221,7 +222,8 @@ DBUS_SHARED_SOURCES=				\
 	dbus-string-private.h			\
 	$(DBUS_SHARED_arch_sources)		\
 	dbus-sysdeps.c				\
-	dbus-sysdeps.h
+	dbus-sysdeps.h				\
+	dbus-valgrind-internal.h
 
 ### source code that is generic utility functionality used
 ### by the bus daemon or test apps, but is NOT included

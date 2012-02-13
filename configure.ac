@@ -1217,6 +1217,17 @@ fi
 
 AC_SUBST([NETWORK_libs])
 
+AC_ARG_WITH([valgrind],
+  [AS_HELP_STRING([--with-valgrind],
+     [Add instrumentation to help valgrind to understand our allocator])],
+  [],
+  [with_valgrind=no])
+
+if test x$with_valgrind != xno; then
+  PKG_CHECK_MODULES([VALGRIND], [valgrind >= 3.6])
+  AC_DEFINE([WITH_VALGRIND], [1], [Define to add Valgrind instrumentation])
+fi
+
 #### Set up final flags
 LIBDBUS_LIBS="$THREAD_LIBS $NETWORK_libs"
 AC_SUBST([LIBDBUS_LIBS])
