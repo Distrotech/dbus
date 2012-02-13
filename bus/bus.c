@@ -419,7 +419,6 @@ process_config_first_time_only (BusContext       *context,
           if (auth_mechanisms[i] == NULL)
             goto oom;
           link = _dbus_list_get_next_link (auth_mechanisms_list, link);
-          i += 1;
         }
     }
   else
