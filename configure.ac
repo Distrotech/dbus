@@ -1144,8 +1144,6 @@ else
         [libsystemd-login >= 32, libsystemd-daemon >= 32],
         have_systemd=yes,
         have_systemd=no)
-    AC_SUBST(SYSTEMD_CFLAGS)
-    AC_SUBST(SYSTEMD_LIBS)
 fi
 
 if test x$have_systemd = xyes; then
