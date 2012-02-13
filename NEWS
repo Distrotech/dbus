@@ -43,6 +43,10 @@ D-Bus 1.5.10 (UNRELEASED)
   it under systemd to improve startup time a bit (fd.o #45520,
   Lennart Poettering)
 
+• Optionally (if configured --with-valgrind) add instrumentation to debug
+  libdbus and associated tools more meaningfully under Valgrind
+  (fd.o #37286, Simon McVittie)
+
 • Unix-specific:
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
