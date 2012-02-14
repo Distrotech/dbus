@@ -38,7 +38,8 @@ static DBusThreadFunctions thread_functions =
 
 static int thread_init_generation = 0;
  
-static DBusList *uninitialized_mutex_list = NULL;
+static DBusList *uninitialized_rmutex_list = NULL;
+static DBusList *uninitialized_cmutex_list = NULL;
 static DBusList *uninitialized_condvar_list = NULL;
 
 /** This is used for the no-op default mutex pointer, just to be distinct from #NULL */
@@ -47,12 +48,19 @@ static DBusList *uninitialized_condvar_list = NULL;
 /** This is used for the no-op default mutex pointer, just to be distinct from #NULL */
 #define _DBUS_DUMMY_CONDVAR ((DBusCondVar*)0xABCDEF2)
 
-static void _dbus_mutex_free (DBusMutex *mutex);
+static void _dbus_mutex_free (DBusMutex *mutex, DBusMutexFreeFunction dtor);
+static void _dbus_mutex_new_at_location (DBusMutex            **location_p,
+                                         DBusMutexNewFunction   ctor,
+                                         DBusMutexFreeFunction  dtor,
+                                         DBusList             **uninitialized);
+static void _dbus_mutex_free_at_location (DBusMutex            **location_p,
+                                          DBusMutexFreeFunction  dtor,
+                                          DBusList             **uninitialized);
 
 /**
  * @defgroup DBusThreadsInternals Thread functions
  * @ingroup  DBusInternals
- * @brief _dbus_mutex_lock(), etc.
+ * @brief _dbus_rmutex_lock(), etc.
  *
  * Functions and macros related to threads and thread locks.
  *
@@ -60,9 +68,11 @@ static void _dbus_mutex_free (DBusMutex *mutex);
  */
 
 static DBusMutex *
-_dbus_mutex_new (void)
+_dbus_mutex_new (DBusMutexNewFunction ctor)
 {
-  if (thread_functions.recursive_mutex_new)
+  if (ctor)
+    return ctor ();
+  else if (thread_functions.recursive_mutex_new)
     return (* thread_functions.recursive_mutex_new) ();
   else if (thread_functions.mutex_new)
     return (* thread_functions.mutex_new) ();
@@ -76,6 +86,9 @@ _dbus_mutex_new (void)
  * May return #NULL even if threads are initialized, indicating
  * out-of-memory.
  *
+ * If possible, the mutex returned by this function is recursive, to
+ * avoid deadlocks. However, that cannot be relied on.
+ *
  * The extra level of indirection given by allocating a pointer
  * to point to the mutex location allows the threading
  * module to swap out dummy mutexes for real a real mutex so libraries
@@ -84,48 +97,127 @@ _dbus_mutex_new (void)
  * @param location_p the location of the new mutex, can return #NULL on OOM
  */
 void
-_dbus_mutex_new_at_location (DBusMutex **location_p)
+_dbus_rmutex_new_at_location (DBusRMutex **location_p)
+{
+  _dbus_mutex_new_at_location ((DBusMutex **) location_p,
+                               thread_functions.recursive_mutex_new,
+                               thread_functions.recursive_mutex_free,
+                               &uninitialized_rmutex_list);
+}
+
+/**
+ * Creates a new mutex using the function supplied to dbus_threads_init(),
+ * or creates a no-op mutex if threads are not initialized.
+ * May return #NULL even if threads are initialized, indicating
+ * out-of-memory.
+ *
+ * The returned mutex is suitable for use with condition variables.
+ *
+ * The extra level of indirection given by allocating a pointer
+ * to point to the mutex location allows the threading
+ * module to swap out dummy mutexes for real a real mutex so libraries
+ * can initialize threads even after the D-Bus API has been used.
+ *
+ * @param location_p the location of the new mutex, can return #NULL on OOM
+ */
+void
+_dbus_cmutex_new_at_location (DBusCMutex **location_p)
+{
+  _dbus_mutex_new_at_location ((DBusMutex **) location_p,
+                               thread_functions.mutex_new,
+                               thread_functions.mutex_free,
+                               &uninitialized_cmutex_list);
+}
+
+static void
+_dbus_mutex_new_at_location (DBusMutex            **location_p,
+                             DBusMutexNewFunction   ctor,
+                             DBusMutexFreeFunction  dtor,
+                             DBusList             **uninitialized)
 {
   _dbus_assert (location_p != NULL);
 
-  *location_p = _dbus_mutex_new();
+  *location_p = _dbus_mutex_new (ctor);
 
   if (thread_init_generation != _dbus_current_generation && *location_p)
     {
-      if (!_dbus_list_append (&uninitialized_mutex_list, location_p))
+      if (!_dbus_list_append (uninitialized, location_p))
         {
-	  _dbus_mutex_free (*location_p);
+	  _dbus_mutex_free (*location_p, dtor);
 	  *location_p = NULL;
 	}
     }
 }
 
 static void
-_dbus_mutex_free (DBusMutex *mutex)
+_dbus_mutex_free (DBusMutex             *mutex,
+                  DBusMutexFreeFunction  dtor)
 {
   if (mutex)
     {
-      if (mutex && thread_functions.recursive_mutex_free)
+      if (dtor)
+        dtor (mutex);
+      else if (mutex && thread_functions.recursive_mutex_free)
         (* thread_functions.recursive_mutex_free) (mutex);
       else if (mutex && thread_functions.mutex_free)
         (* thread_functions.mutex_free) (mutex);
     }
 }
 
-/**
- * Frees a mutex and removes it from the 
- * uninitialized_mutex_list;
- * does nothing if passed a #NULL pointer.
- */
-void
-_dbus_mutex_free_at_location (DBusMutex **location_p)
+static void
+_dbus_mutex_free_at_location (DBusMutex            **location_p,
+                              DBusMutexFreeFunction  dtor,
+                              DBusList             **uninitialized)
 {
   if (location_p)
     {
       if (thread_init_generation != _dbus_current_generation)
-        _dbus_list_remove (&uninitialized_mutex_list, location_p);
+        _dbus_list_remove (uninitialized, location_p);
 
-      _dbus_mutex_free (*location_p);
+      _dbus_mutex_free (*location_p, dtor);
+    }
+}
+
+/**
+ * Frees a DBusRMutex and removes it from the
+ * uninitialized mutex list;
+ * does nothing if passed a #NULL pointer.
+ */
+void
+_dbus_rmutex_free_at_location (DBusRMutex **location_p)
+{
+  _dbus_mutex_free_at_location ((DBusMutex **) location_p,
+                                thread_functions.recursive_mutex_free,
+                                &uninitialized_rmutex_list);
+}
+
+/**
+ * Frees a DBusCMutex and removes it from the
+ * uninitialized mutex list;
+ * does nothing if passed a #NULL pointer.
+ */
+void
+_dbus_cmutex_free_at_location (DBusCMutex **location_p)
+{
+  _dbus_mutex_free_at_location ((DBusMutex **) location_p,
+                                thread_functions.mutex_free,
+                                &uninitialized_cmutex_list);
+}
+
+/**
+ * Locks a mutex. Does nothing if passed a #NULL pointer.
+ * Locks may be recursive if threading implementation initialized
+ * recursive locks.
+ */
+void
+_dbus_rmutex_lock (DBusRMutex *mutex)
+{
+  if (mutex)
+    {
+      if (thread_functions.recursive_mutex_lock)
+        (* thread_functions.recursive_mutex_lock) ((DBusMutex *) mutex);
+      else if (thread_functions.mutex_lock)
+        (* thread_functions.mutex_lock) ((DBusMutex *) mutex);
     }
 }
 
@@ -135,14 +227,14 @@ _dbus_mutex_free_at_location (DBusMutex **location_p)
  * recursive locks.
  */
 void
-_dbus_mutex_lock (DBusMutex *mutex)
+_dbus_cmutex_lock (DBusCMutex *mutex)
 {
-  if (mutex) 
+  if (mutex)
     {
-      if (thread_functions.recursive_mutex_lock)
-        (* thread_functions.recursive_mutex_lock) (mutex);
-      else if (thread_functions.mutex_lock)
-        (* thread_functions.mutex_lock) (mutex);
+      if (thread_functions.mutex_lock)
+        (* thread_functions.mutex_lock) ((DBusMutex *) mutex);
+      else if (thread_functions.recursive_mutex_lock)
+        (* thread_functions.recursive_mutex_lock) ((DBusMutex *) mutex);
     }
 }
 
@@ -152,14 +244,31 @@ _dbus_mutex_lock (DBusMutex *mutex)
  * @returns #TRUE on success
  */
 void
-_dbus_mutex_unlock (DBusMutex *mutex)
+_dbus_rmutex_unlock (DBusRMutex *mutex)
 {
   if (mutex)
     {
       if (thread_functions.recursive_mutex_unlock)
-        (* thread_functions.recursive_mutex_unlock) (mutex);
+        (* thread_functions.recursive_mutex_unlock) ((DBusMutex *) mutex);
       else if (thread_functions.mutex_unlock)
-        (* thread_functions.mutex_unlock) (mutex);
+        (* thread_functions.mutex_unlock) ((DBusMutex *) mutex);
+    }
+}
+
+/**
+ * Unlocks a mutex. Does nothing if passed a #NULL pointer.
+ *
+ * @returns #TRUE on success
+ */
+void
+_dbus_cmutex_unlock (DBusCMutex *mutex)
+{
+  if (mutex)
+    {
+      if (thread_functions.mutex_unlock)
+        (* thread_functions.mutex_unlock) ((DBusMutex *) mutex);
+      else if (thread_functions.recursive_mutex_unlock)
+        (* thread_functions.recursive_mutex_unlock) ((DBusMutex *) mutex);
     }
 }
 
@@ -243,10 +352,10 @@ _dbus_condvar_free_at_location (DBusCondVar **location_p)
  */
 void
 _dbus_condvar_wait (DBusCondVar *cond,
-                    DBusMutex   *mutex)
+                    DBusCMutex  *mutex)
 {
   if (cond && mutex && thread_functions.condvar_wait)
-    (* thread_functions.condvar_wait) (cond, mutex);
+    (* thread_functions.condvar_wait) (cond, (DBusMutex *) mutex);
 }
 
 /**
@@ -262,11 +371,13 @@ _dbus_condvar_wait (DBusCondVar *cond,
  */
 dbus_bool_t
 _dbus_condvar_wait_timeout (DBusCondVar               *cond,
-                            DBusMutex                 *mutex,
+                            DBusCMutex                *mutex,
                             int                        timeout_milliseconds)
 {
   if (cond && mutex && thread_functions.condvar_wait)
-    return (* thread_functions.condvar_wait_timeout) (cond, mutex, timeout_milliseconds);
+    return (* thread_functions.condvar_wait_timeout) (cond,
+                                                      (DBusMutex *) mutex,
+                                                      timeout_milliseconds);
   else
     return TRUE;
 }
@@ -304,7 +415,7 @@ shutdown_global_locks (void *data)
   i = 0;
   while (i < _DBUS_N_GLOBAL_LOCKS)
     {
-      _dbus_mutex_free (*(locks[i]));
+      _dbus_mutex_free (*(locks[i]), thread_functions.recursive_mutex_free);
       *(locks[i]) = NULL;
       ++i;
     }
@@ -315,7 +426,8 @@ shutdown_global_locks (void *data)
 static void
 shutdown_uninitialized_locks (void *data)
 {
-  _dbus_list_clear (&uninitialized_mutex_list);
+  _dbus_list_clear (&uninitialized_rmutex_list);
+  _dbus_list_clear (&uninitialized_cmutex_list);
   _dbus_list_clear (&uninitialized_condvar_list);
 }
 
@@ -326,19 +438,34 @@ init_uninitialized_locks (void)
 
   _dbus_assert (thread_init_generation != _dbus_current_generation);
 
-  link = uninitialized_mutex_list;
+  link = uninitialized_rmutex_list;
   while (link != NULL)
     {
       DBusMutex **mp;
 
-      mp = (DBusMutex **)link->data;
+      mp = link->data;
       _dbus_assert (*mp == _DBUS_DUMMY_MUTEX);
 
-      *mp = _dbus_mutex_new ();
+      *mp = _dbus_mutex_new (thread_functions.recursive_mutex_new);
       if (*mp == NULL)
         goto fail_mutex;
 
-      link = _dbus_list_get_next_link (&uninitialized_mutex_list, link);
+      link = _dbus_list_get_next_link (&uninitialized_rmutex_list, link);
+    }
+
+  link = uninitialized_cmutex_list;
+  while (link != NULL)
+    {
+      DBusMutex **mp;
+
+      mp = link->data;
+      _dbus_assert (*mp == _DBUS_DUMMY_MUTEX);
+
+      *mp = _dbus_mutex_new (thread_functions.mutex_new);
+      if (*mp == NULL)
+        goto fail_mutex;
+
+      link = _dbus_list_get_next_link (&uninitialized_cmutex_list, link);
     }
 
   link = uninitialized_condvar_list;
@@ -356,7 +483,8 @@ init_uninitialized_locks (void)
       link = _dbus_list_get_next_link (&uninitialized_condvar_list, link);
     }
 
-  _dbus_list_clear (&uninitialized_mutex_list);
+  _dbus_list_clear (&uninitialized_rmutex_list);
+  _dbus_list_clear (&uninitialized_cmutex_list);
   _dbus_list_clear (&uninitialized_condvar_list);
 
   if (!_dbus_register_shutdown_func (shutdown_uninitialized_locks,
@@ -384,21 +512,38 @@ init_uninitialized_locks (void)
     }
 
  fail_mutex:
-  link = uninitialized_mutex_list;
+  link = uninitialized_rmutex_list;
   while (link != NULL)
     {
       DBusMutex **mp;
 
-      mp = (DBusMutex **)link->data;
+      mp = link->data;
 
       if (*mp != _DBUS_DUMMY_MUTEX)
-        _dbus_mutex_free (*mp);
+        _dbus_mutex_free (*mp, thread_functions.recursive_mutex_free);
       else
         break;
 
       *mp = _DBUS_DUMMY_MUTEX;
 
-      link = _dbus_list_get_next_link (&uninitialized_mutex_list, link);
+      link = _dbus_list_get_next_link (&uninitialized_rmutex_list, link);
+    }
+
+  link = uninitialized_cmutex_list;
+  while (link != NULL)
+    {
+      DBusMutex **mp;
+
+      mp = link->data;
+
+      if (*mp != _DBUS_DUMMY_MUTEX)
+        _dbus_mutex_free (*mp, thread_functions.mutex_free);
+      else
+        break;
+
+      *mp = _DBUS_DUMMY_MUTEX;
+
+      link = _dbus_list_get_next_link (&uninitialized_cmutex_list, link);
     }
 
   return FALSE;
@@ -408,9 +553,8 @@ static dbus_bool_t
 init_locks (void)
 {
   int i;
-  DBusMutex ***dynamic_global_locks;
-  
-  DBusMutex **global_locks[] = {
+  DBusRMutex ***dynamic_global_locks;
+  DBusRMutex **global_locks[] = {
 #define LOCK_ADDR(name) (& _dbus_lock_##name)
     LOCK_ADDR (win_fds),
     LOCK_ADDR (sid_atom_cache),
@@ -437,14 +581,14 @@ init_locks (void)
 
   i = 0;
   
-  dynamic_global_locks = dbus_new (DBusMutex**, _DBUS_N_GLOBAL_LOCKS);
+  dynamic_global_locks = dbus_new (DBusRMutex**, _DBUS_N_GLOBAL_LOCKS);
   if (dynamic_global_locks == NULL)
     goto failed;
   
   while (i < _DBUS_N_ELEMENTS (global_locks))
     {
-      *global_locks[i] = _dbus_mutex_new ();
-      
+      *global_locks[i] = (DBusRMutex *) _dbus_mutex_new (thread_functions.recursive_mutex_new);
+
       if (*global_locks[i] == NULL)
         goto failed;
 
@@ -467,7 +611,8 @@ init_locks (void)
                                      
   for (i = i - 1; i >= 0; i--)
     {
-      _dbus_mutex_free (*global_locks[i]);
+      _dbus_mutex_free ((DBusMutex *) *global_locks[i],
+                        thread_functions.recursive_mutex_free);
       *global_locks[i] = NULL;
     }
   return FALSE;

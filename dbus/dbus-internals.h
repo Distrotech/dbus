@@ -304,10 +304,10 @@ extern int _dbus_current_generation;
 
 /* Thread initializers */
 #define _DBUS_LOCK_NAME(name)           _dbus_lock_##name
-#define _DBUS_DECLARE_GLOBAL_LOCK(name) extern DBusMutex  *_dbus_lock_##name
-#define _DBUS_DEFINE_GLOBAL_LOCK(name)  DBusMutex         *_dbus_lock_##name  
-#define _DBUS_LOCK(name)                _dbus_mutex_lock   (_dbus_lock_##name)
-#define _DBUS_UNLOCK(name)              _dbus_mutex_unlock (_dbus_lock_##name)
+#define _DBUS_DECLARE_GLOBAL_LOCK(name) extern DBusRMutex *_dbus_lock_##name
+#define _DBUS_DEFINE_GLOBAL_LOCK(name)  DBusRMutex        *_dbus_lock_##name
+#define _DBUS_LOCK(name)                _dbus_rmutex_lock   (_dbus_lock_##name)
+#define _DBUS_UNLOCK(name)              _dbus_rmutex_unlock (_dbus_lock_##name)
 
 /* 1-5 */
 _DBUS_DECLARE_GLOBAL_LOCK (list);
