@@ -29,8 +29,6 @@
 
 DBUS_BEGIN_DECLS
 
-DBusMutex*   _dbus_mutex_new                 (void);
-void         _dbus_mutex_free                (DBusMutex         *mutex);
 void         _dbus_mutex_lock                (DBusMutex         *mutex);
 void         _dbus_mutex_unlock              (DBusMutex         *mutex);
 void         _dbus_mutex_new_at_location     (DBusMutex        **location_p);

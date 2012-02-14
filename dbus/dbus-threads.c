@@ -47,6 +47,8 @@ static DBusList *uninitialized_condvar_list = NULL;
 /** This is used for the no-op default mutex pointer, just to be distinct from #NULL */
 #define _DBUS_DUMMY_CONDVAR ((DBusCondVar*)0xABCDEF2)
 
+static void _dbus_mutex_free (DBusMutex *mutex);
+
 /**
  * @defgroup DBusThreadsInternals Thread functions
  * @ingroup  DBusInternals
@@ -57,15 +59,7 @@ static DBusList *uninitialized_condvar_list = NULL;
  * @{
  */
 
-/**
- * Creates a new mutex using the function supplied to dbus_threads_init(),
- * or creates a no-op mutex if threads are not initialized.
- * May return #NULL even if threads are initialized, indicating
- * out-of-memory.
- *
- * @returns new mutex or #NULL
- */
-DBusMutex*
+static DBusMutex *
 _dbus_mutex_new (void)
 {
   if (thread_functions.recursive_mutex_new)
@@ -77,9 +71,13 @@ _dbus_mutex_new (void)
 }
 
 /**
- * This does the same thing as _dbus_mutex_new.  It however
- * gives another level of indirection by allocating a pointer
- * to point to the mutex location.  This allows the threading
+ * Creates a new mutex using the function supplied to dbus_threads_init(),
+ * or creates a no-op mutex if threads are not initialized.
+ * May return #NULL even if threads are initialized, indicating
+ * out-of-memory.
+ *
+ * The extra level of indirection given by allocating a pointer
+ * to point to the mutex location allows the threading
  * module to swap out dummy mutexes for real a real mutex so libraries
  * can initialize threads even after the D-Bus API has been used.
  *
@@ -102,11 +100,7 @@ _dbus_mutex_new_at_location (DBusMutex **location_p)
     }
 }
 
-/**
- * Frees a mutex created with dbus_mutex_new(); does
- * nothing if passed a #NULL pointer.
- */
-void
+static void
 _dbus_mutex_free (DBusMutex *mutex)
 {
   if (mutex)
