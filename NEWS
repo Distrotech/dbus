@@ -47,6 +47,8 @@ D-Bus 1.5.10 (UNRELEASED)
   libdbus and associated tools more meaningfully under Valgrind
   (fd.o #37286, Simon McVittie)
 
+• Improve the dbus-send(1) man page (fd.o #14005, Simon McVittie)
+
 • Unix-specific:
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
