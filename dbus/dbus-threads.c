@@ -734,13 +734,6 @@ dbus_threads_init (const DBusThreadFunctions *functions)
                               "functions sets should be passed into "
                               "dbus_threads_init. Neither sets were passed.");
 
-  if (mutex_set && recursive_mutex_set)
-    _dbus_assert_not_reached ("Either the nonrecusrive or recursive mutex " 
-                              "functions sets should be passed into "
-                              "dbus_threads_init. Both sets were passed. "
-                              "You most likely just want to set the recursive "
-                              "mutex functions to avoid deadlocks in D-Bus.");
-                          
   /* Check that all bits in the mask actually are valid mask bits.
    * ensures people won't write code that breaks when we add
    * new bits.
@@ -770,15 +763,23 @@ dbus_threads_init (const DBusThreadFunctions *functions)
  
   if (functions->mask & DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_NEW_MASK)
     thread_functions.recursive_mutex_new = functions->recursive_mutex_new;
-  
+  else
+    thread_functions.recursive_mutex_new = NULL;
+
   if (functions->mask & DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_FREE_MASK)
     thread_functions.recursive_mutex_free = functions->recursive_mutex_free;
-  
+  else
+    thread_functions.recursive_mutex_free = NULL;
+
   if (functions->mask & DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_LOCK_MASK)
     thread_functions.recursive_mutex_lock = functions->recursive_mutex_lock;
+  else
+    thread_functions.recursive_mutex_lock = NULL;
 
   if (functions->mask & DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_UNLOCK_MASK)
     thread_functions.recursive_mutex_unlock = functions->recursive_mutex_unlock;
+  else
+    thread_functions.recursive_mutex_unlock = NULL;
 
   thread_functions.mask = functions->mask;
 
