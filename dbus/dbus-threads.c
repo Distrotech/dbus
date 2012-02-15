@@ -67,6 +67,15 @@ static void _dbus_mutex_free_at_location (DBusMutex            **location_p,
  * @{
  */
 
+/*
+ * Create a new mutex.
+ *
+ * ctor should be either thread_functions.mutex_new or
+ * thread_functions.recursive_mutex_new. It will be used if possible;
+ * if #NULL, the other version will be used.
+ *
+ * @param ctor a preferred constructor for a new mutex
+ */
 static DBusMutex *
 _dbus_mutex_new (DBusMutexNewFunction ctor)
 {
@@ -91,7 +100,7 @@ _dbus_mutex_new (DBusMutexNewFunction ctor)
  *
  * The extra level of indirection given by allocating a pointer
  * to point to the mutex location allows the threading
- * module to swap out dummy mutexes for real a real mutex so libraries
+ * module to swap out dummy mutexes for a real mutex so libraries
  * can initialize threads even after the D-Bus API has been used.
  *
  * @param location_p the location of the new mutex, can return #NULL on OOM
@@ -115,7 +124,7 @@ _dbus_rmutex_new_at_location (DBusRMutex **location_p)
  *
  * The extra level of indirection given by allocating a pointer
  * to point to the mutex location allows the threading
- * module to swap out dummy mutexes for real a real mutex so libraries
+ * module to swap out dummy mutexes for a real mutex so libraries
  * can initialize threads even after the D-Bus API has been used.
  *
  * @param location_p the location of the new mutex, can return #NULL on OOM
@@ -129,6 +138,15 @@ _dbus_cmutex_new_at_location (DBusCMutex **location_p)
                                &uninitialized_cmutex_list);
 }
 
+/*
+ * Implementation of _dbus_rmutex_new_at_location() and
+ * _dbus_cmutex_new_at_location().
+ *
+ * @param location_p the location of the new mutex, can return #NULL on OOM
+ * @param ctor as for _dbus_mutex_new()
+ * @param dtor the destructor corresponding to ctor, to unwind on error
+ * @param uninitialized uninitialized_cmutex_list or uninitialized_rmutex_list
+ */
 static void
 _dbus_mutex_new_at_location (DBusMutex            **location_p,
                              DBusMutexNewFunction   ctor,
@@ -149,6 +167,15 @@ _dbus_mutex_new_at_location (DBusMutex            **location_p,
     }
 }
 
+/*
+ * Free a mutex.
+ *
+ * dtor should be either thread_functions.mutex_free or
+ * thread_functions.recursive_mutex_free. It will be used if possible;
+ * if NULL, the other version will be used.
+ *
+ * @param dtor a preferred destructor for the mutex
+ */
 static void
 _dbus_mutex_free (DBusMutex             *mutex,
                   DBusMutexFreeFunction  dtor)
@@ -164,6 +191,14 @@ _dbus_mutex_free (DBusMutex             *mutex,
     }
 }
 
+/*
+ * Implementation of _dbus_rmutex_free_at_location() and
+ * _dbus_cmutex_free_at_location().
+ *
+ * @param location_p the location of the mutex or #NULL
+ * @param dtor as for _dbus_mutex_free()
+ * @param uninitialized uninitialized_cmutex_list or uninitialized_rmutex_list
+ */
 static void
 _dbus_mutex_free_at_location (DBusMutex            **location_p,
                               DBusMutexFreeFunction  dtor,
@@ -294,7 +329,7 @@ _dbus_condvar_new (void)
  * This does the same thing as _dbus_condvar_new.  It however
  * gives another level of indirection by allocating a pointer
  * to point to the condvar location.  This allows the threading
- * module to swap out dummy condvars for real a real condvar so libraries
+ * module to swap out dummy condvars for a real condvar so libraries
  * can initialize threads even after the D-Bus API has been used.
  *
  * @returns the location of a new condvar or #NULL on OOM
