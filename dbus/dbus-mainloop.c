@@ -258,7 +258,7 @@ refresh_watches_for_fd (DBusLoop  *loop,
 {
   DBusList *link;
   unsigned int flags = 0;
-  dbus_bool_t interested;
+  dbus_bool_t interested = FALSE;
 
   _dbus_assert (fd != -1);
 
