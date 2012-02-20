@@ -49,6 +49,8 @@ D-Bus 1.5.10 (UNRELEASED)
 
 • Improve the dbus-send(1) man page (fd.o #14005, Simon McVittie)
 
+• Make dbus-protocol.h compatible with C++11 (fd.o #46147, Marc Mutz)
+
 • Unix-specific:
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
