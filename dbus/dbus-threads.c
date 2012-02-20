@@ -343,18 +343,6 @@ _dbus_condvar_wake_one (DBusCondVar *cond)
     _dbus_platform_condvar_wake_one (cond);
 }
 
-/**
- * If there are threads waiting on the condition variable, wake
- * up all of them. 
- * Does nothing if passed a #NULL pointer.
- */
-void
-_dbus_condvar_wake_all (DBusCondVar *cond)
-{
-  if (cond && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_condvar_wake_all (cond);
-}
-
 static void
 shutdown_global_locks (void *data)
 {

@@ -256,26 +256,6 @@ _dbus_platform_condvar_wake_one (DBusCondVar *cond)
   LeaveCriticalSection (&cond->lock);
 }
 
-void
-_dbus_platform_condvar_wake_all (DBusCondVar *cond)
-{
-  EnterCriticalSection (&cond->lock);
-
-  while (cond->list != NULL)
-    SetEvent (_dbus_list_pop_first (&cond->list));
-
-  if (cond->list != NULL)
-    {
-      /* Avoid live lock by pushing the waiter to the mutex lock
-         instruction, which is fair.  If we don't do this, we could
-         acquire the condition variable again before the waiter has a
-         chance itself, leading to starvation.  */
-      Sleep (0);
-    }
-
-  LeaveCriticalSection (&cond->lock);
-}
-
 dbus_bool_t
 _dbus_threads_init_platform_specific (void)
 {

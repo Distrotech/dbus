@@ -262,12 +262,6 @@ _dbus_platform_condvar_wake_one (DBusCondVar *cond)
   PTHREAD_CHECK ("pthread_cond_signal", pthread_cond_signal (&cond->cond));
 }
 
-void
-_dbus_platform_condvar_wake_all (DBusCondVar *cond)
-{
-  PTHREAD_CHECK ("pthread_cond_broadcast", pthread_cond_broadcast (&cond->cond));
-}
-
 static void
 check_monotonic_clock (void)
 {
