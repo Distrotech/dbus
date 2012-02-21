@@ -36,10 +36,30 @@
 #   define VALGRIND_DESTROY_MEMPOOL(_1) /* nothing */
 #   define VALGRIND_MEMPOOL_ALLOC(_1, _2, _3) /* nothing */
 #   define VALGRIND_MEMPOOL_FREE(_1, _2) /* nothing */
-#   define VALGRIND_MAKE_MEM_UNDEFINED(_1, _2) (0)
 
-#   define VALGRIND_PRINTF(...) (0)
-#   define VALGRIND_PRINTF_BACKTRACE(...) (0)
+/* Recent gcc will warn if you have a statement that's just a macro
+ * expanding to (0), but not if you have an inline stub function that
+ * always returns 0, so let's do the latter. */
+static inline int
+VALGRIND_MAKE_MEM_UNDEFINED (void   *addr,
+                             size_t  len)
+{
+  return 0;
+}
+
+static inline int
+VALGRIND_PRINTF (const char *format,
+                 ...)
+{
+  return 0;
+}
+
+static inline int
+VALGRIND_PRINTF_BACKTRACE (const char *format,
+                           ...)
+{
+  return 0;
+}
 
 #   define RUNNING_ON_VALGRIND 0
 #endif /* WITH_VALGRIND */
