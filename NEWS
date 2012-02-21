@@ -1,5 +1,10 @@
-D-Bus 1.5.10 (UNRELEASED)
+D-Bus 1.5.10 (2012-02-21)
 ==
+
+The "fire in Delerium" release.
+
+On Unix platforms, PTHREAD_MUTEX_RECURSIVE (as specified in POSIX 2008 Base
+and SUSv2) is now required.
 
 • D-Bus Specification 0.19:
   · Formally define unique connection names and well-known bus names,
@@ -9,6 +14,10 @@ D-Bus 1.5.10 (UNRELEASED)
     where they should be installed by build systems (fd.o #21620, fd.o #35306;
     Simon McVittie)
   · Document the systemd transport (fd.o #35232, Lennart Poettering)
+
+• Make dbus_threads_init() use the same built-in threading implementation
+  as dbus_threads_init_default(); the user-specified primitives that it
+  takes as a parameter are now ignored (fd.o #43744, Simon McVittie)
 
 • Allow all configured auth mechanisms, not just one (fd.o #45106,
   Pavel Strashkin)
@@ -31,7 +40,7 @@ D-Bus 1.5.10 (UNRELEASED)
   its command-line (fd.o #43875, Jack Nagel)
 
 • Improve test coverage. To get even more coverage, run the tests with
-  DBUS_TEST_SLOW=1 (fd.o #38285, Simon McVittie)
+  DBUS_TEST_SLOW=1 (fd.o #38285, #42811; Simon McVittie)
 
 • Reduce the size of the shared library by moving functionality only used
   by dbus-daemon, tests etc. into their internal library and deleting
@@ -51,10 +60,21 @@ D-Bus 1.5.10 (UNRELEASED)
 
 • Make dbus-protocol.h compatible with C++11 (fd.o #46147, Marc Mutz)
 
+• If tests are enabled and DBUS_MALLOC_CANNOT_FAIL is set in the environment,
+  abort on failure to malloc() (like GLib does), to turn runaway memory leaks
+  into a debuggable core-dump if a resource limit is applied (fd.o #41048,
+  Simon McVittie)
+
+• Don't crash if realloc() returns NULL in a debug build (fd.o #41048,
+  Simon McVittie)
+
 • Unix-specific:
+  · Replace our broken reimplementation of recursive mutexes, which has
+    been broken since 2006, with an ordinary pthreads recursive mutex
+    (fd.o #43744; Sigmund Augdal, Simon McVittie)
   · Use epoll(7) for a more efficient main loop in Linux; equivalent patches
     welcomed for other OSs' equivalents like kqueue, /dev/poll, or Solaris
-    event ports (fd.o #33337, Simon McVittie)
+    event ports (fd.o #33337; Simon McVittie, Ralf Habacker)
   · When running under systemd, use it instead of ConsoleKit to check
     whether to apply at_console policies (fd.o #39609, Lennart Poettering)
   · Avoid a highly unlikely fd leak (fd.o #29881, Simon McVittie)
@@ -69,6 +89,8 @@ D-Bus 1.5.10 (UNRELEASED)
 • Windows-specific:
   · Find the dbus-daemon executable next to the shared library (fd.o #41558;
     Jesper Dam, Ralf Habacker)
+  · Remove the faulty implementation of _dbus_condvar_wake_all (fd.o #44609,
+    Simon McVittie)
 
 D-Bus 1.5.8 (2011-09-21)
 ==

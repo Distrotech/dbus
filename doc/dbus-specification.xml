@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.19</releaseinfo>
-    <date>UNRELEASED</date>
+    <date>2012-02-21</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -76,6 +76,15 @@
        <date><ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink></date>
        <authorinitials></authorinitials>
        <revremark></revremark>
+     </revision>
+     <revision>
+       <revnumber>0.19</revnumber>
+       <date>20 February 2012</date>
+       <authorinitials>smcv/lp</authorinitials>
+       <revremark>formally define unique connection names and well-known
+        bus names; document best practices for interface, bus, member and
+        error names, and object paths; document the search path for session
+        and system services on Unix; document the systemd transport</revremark>
      </revision>
      <revision>
        <revnumber>0.18</revnumber>
