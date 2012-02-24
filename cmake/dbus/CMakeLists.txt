@@ -21,6 +21,7 @@ set (dbusinclude_HEADERS
 	${DBUS_DIR}/dbus-server.h
 	${DBUS_DIR}/dbus-shared.h
 	${DBUS_DIR}/dbus-signature.h
+	${DBUS_DIR}/dbus-syntax.h
 	${DBUS_DIR}/dbus-threads.h
 	${DBUS_DIR}/dbus-types.h
 	dbus-arch-deps.h
@@ -51,6 +52,7 @@ set (DBUS_LIB_SOURCES
 	${DBUS_DIR}/dbus-server-debug-pipe.c
 	${DBUS_DIR}/dbus-sha.c
 	${DBUS_DIR}/dbus-signature.c
+	${DBUS_DIR}/dbus-syntax.c
 	${DBUS_DIR}/dbus-timeout.c
 	${DBUS_DIR}/dbus-threads.c
 	${DBUS_DIR}/dbus-transport.c

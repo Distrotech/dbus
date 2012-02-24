@@ -132,6 +132,7 @@ dbusinclude_HEADERS=				\
 	dbus-server.h				\
 	dbus-shared.h				\
 	dbus-signature.h			\
+	dbus-syntax.h				\
 	dbus-threads.h				\
 	dbus-types.h
 
@@ -183,6 +184,7 @@ DBUS_LIB_SOURCES=				\
 	dbus-sha.c				\
 	dbus-sha.h				\
 	dbus-signature.c			\
+	dbus-syntax.c				\
 	dbus-timeout.c				\
 	dbus-timeout.h				\
 	dbus-threads-internal.h			\
