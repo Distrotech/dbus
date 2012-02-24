@@ -105,6 +105,7 @@ installable_tests += \
 	test-marshal \
 	test-refs \
 	test-relay \
+	test-syntax \
 	test-syslog \
 	$(NULL)
 endif DBUS_WITH_GLIB
@@ -154,6 +155,10 @@ test_marshal_SOURCES = marshal.c
 test_marshal_LDADD = $(top_builddir)/dbus/libdbus-1.la \
     $(GLIB_LIBS) \
     $(DBUS_GLIB_LIBS)
+
+test_syntax_SOURCES = syntax.c
+test_syntax_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS)
 
 if DBUS_ENABLE_MODULAR_TESTS
 TESTS += $(installable_tests)
