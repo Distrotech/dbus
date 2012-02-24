@@ -1337,12 +1337,12 @@ _dbus_transport_new_for_tcp_socket (const char     *host,
     goto error;
 
   if (family != NULL &&
-      (!_dbus_string_append (&address, "family=") ||
+      (!_dbus_string_append (&address, ",family=") ||
        !_dbus_string_append (&address, family)))
     goto error;
 
   if (noncefile != NULL &&
-      (!_dbus_string_append (&address, "noncefile=") ||
+      (!_dbus_string_append (&address, ",noncefile=") ||
        !_dbus_string_append (&address, noncefile)))
     goto error;
 
