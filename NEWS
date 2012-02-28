@@ -1,7 +1,17 @@
 D-Bus 1.5.11 (UNRELEASED)
 ==
 
-...
+• Add public API to validate various string types:
+  dbus_validate_path(), dbus_validate_interface(), dbus_validate_member(),
+  dbus_validate_error_name(), dbus_validate_bus_name(), dbus_validate_utf8()
+  (fd.o #39549, Simon McVittie)
+
+• Turn DBusBasicValue into public API so bindings don't need to invent their
+  own "union of everything" type (fd.o #11191, Simon McVittie)
+
+• Windows-specific:
+  · make dbus-daemon.exe --print-address (and --print-pid) work again
+    on Win32, but not on WinCE (fd.o #46049, Simon McVittie)
 
 D-Bus 1.5.10 (2012-02-21)
 ==
