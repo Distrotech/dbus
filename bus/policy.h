@@ -86,6 +86,8 @@ struct BusPolicyRule
     {
       /* can be NULL meaning "any" */
       char *service_name;
+      /* if prefix is set, any name starting with service_name can be owned */
+      unsigned int prefix : 1;
     } own;
 
     struct

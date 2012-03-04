@@ -1154,6 +1154,7 @@ append_rule_from_element (BusConfigParser   *parser,
   const char *send_requested_reply;
   const char *receive_requested_reply;
   const char *own;
+  const char *own_prefix;
   const char *user;
   const char *group;
 
@@ -1179,6 +1180,7 @@ append_rule_from_element (BusConfigParser   *parser,
                           "send_requested_reply", &send_requested_reply,
                           "receive_requested_reply", &receive_requested_reply,
                           "own", &own,
+                          "own_prefix", &own_prefix,
                           "user", &user,
                           "group", &group,
                           "log", &log,
@@ -1190,7 +1192,7 @@ append_rule_from_element (BusConfigParser   *parser,
         receive_interface || receive_member || receive_error || receive_sender ||
         receive_type || receive_path || eavesdrop ||
         send_requested_reply || receive_requested_reply ||
-        own || user || group))
+        own || own_prefix || user || group))
     {
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Element <%s> must have one or more attributes",
@@ -1218,7 +1220,7 @@ append_rule_from_element (BusConfigParser   *parser,
    *   base send_ can combine with send_destination, send_path, send_type, send_requested_reply
    *   base receive_ with receive_sender, receive_path, receive_type, receive_requested_reply, eavesdrop
    *
-   *   user, group, own must occur alone
+   *   user, group, own, own_prefix must occur alone
    *
    * Pretty sure the below stuff is broken, FIXME think about it more.
    */
@@ -1229,7 +1231,7 @@ append_rule_from_element (BusConfigParser   *parser,
                           receive_error ||
                           receive_sender ||
                           receive_requested_reply ||
-                          own ||
+                          own || own_prefix ||
                           user ||
                           group)) ||
 
@@ -1239,7 +1241,7 @@ append_rule_from_element (BusConfigParser   *parser,
                        receive_error ||
                        receive_sender ||
                        receive_requested_reply ||
-                       own ||
+                       own || own_prefix ||
                        user ||
                        group)) ||
 
@@ -1248,7 +1250,7 @@ append_rule_from_element (BusConfigParser   *parser,
                       receive_error ||
                       receive_sender ||
                       receive_requested_reply ||
-                      own ||
+                      own || own_prefix ||
                       user ||
                       group)) ||
 
@@ -1257,7 +1259,7 @@ append_rule_from_element (BusConfigParser   *parser,
                             receive_error ||
                             receive_sender ||
                             receive_requested_reply ||
-                            own ||
+                            own || own_prefix ||
                             user ||
                             group)) ||
 
@@ -1266,7 +1268,7 @@ append_rule_from_element (BusConfigParser   *parser,
                      receive_error ||
                      receive_sender ||
                      receive_requested_reply ||
-                     own ||
+                     own || own_prefix ||
                      user ||
                      group)) ||
 
@@ -1275,7 +1277,7 @@ append_rule_from_element (BusConfigParser   *parser,
                      receive_error ||
                      receive_sender ||
                      receive_requested_reply ||
-                     own ||
+                     own || own_prefix ||
                      user ||
                      group)) ||
 
@@ -1284,33 +1286,35 @@ append_rule_from_element (BusConfigParser   *parser,
                                 receive_error ||
                                 receive_sender ||
                                 receive_requested_reply ||
-                                own ||
+                                own || own_prefix ||
                                 user ||
                                 group)) ||
 
       (receive_interface && (receive_error ||
-                             own ||
+                             own || own_prefix ||
                              user ||
                              group)) ||
 
       (receive_member && (receive_error ||
-                          own ||
+                          own || own_prefix ||
                           user ||
                           group)) ||
 
-      (receive_error && (own ||
+      (receive_error && (own || own_prefix ||
                          user ||
                          group)) ||
 
-      (eavesdrop && (own ||
+      (eavesdrop && (own || own_prefix ||
                      user ||
                      group)) ||
 
-      (receive_requested_reply && (own ||
+      (receive_requested_reply && (own || own_prefix ||
                                    user ||
                                    group)) ||
 
-      (own && (user || group)) ||
+      (own && (own_prefix || user || group)) ||
+
+      (own_prefix && (own || user || group)) ||
 
       (user && group))
     {
@@ -1488,18 +1492,29 @@ append_rule_from_element (BusConfigParser   *parser,
       if (receive_sender && rule->d.receive.origin == NULL)
         goto nomem;
     }
-  else if (own)
+  else if (own || own_prefix)
     {
       rule = bus_policy_rule_new (BUS_POLICY_RULE_OWN, allow); 
       if (rule == NULL)
         goto nomem;
 
-      if (IS_WILDCARD (own))
-        own = NULL;
+      if (own)
+        {
+          if (IS_WILDCARD (own))
+            own = NULL;
       
-      rule->d.own.service_name = _dbus_strdup (own);
-      if (own && rule->d.own.service_name == NULL)
-        goto nomem;
+          rule->d.own.prefix = 0;
+          rule->d.own.service_name = _dbus_strdup (own);
+          if (own && rule->d.own.service_name == NULL)
+            goto nomem;
+        }
+      else
+        {
+          rule->d.own.prefix = 1;
+          rule->d.own.service_name = _dbus_strdup (own_prefix);
+          if (rule->d.own.service_name == NULL)
+            goto nomem;
+        }
     }
   else if (user)
     {      
