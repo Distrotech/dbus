@@ -501,6 +501,7 @@ The possible attributes of these elements are:
    eavesdrop="true" | "false"
 
    own="name"
+   own_prefix="name"
    user="username"
    group="groupname"
 .fi
@@ -571,6 +572,15 @@ For "name", "username", "groupname", etc.
 the character "*" can be substituted, meaning "any." Complex globs
 like "foo.bar.*" aren't allowed for now because they'd be work to
 implement and maybe encourage sloppy security anyway.
+
+.PP
+<allow own_prefix="a.b"/> allows you to own the name "a.b" or any
+name whose first dot-separated elements are "a.b": in particular,
+you can own "a.b.c" or "a.b.c.d", but not "a.bc" or "a.c".
+This is useful when services like Telepathy and ReserveDevice
+define a meaning for subtrees of well-known names, such as
+org.freedesktop.Telepathy.ConnectionManager.(anything)
+and org.freedesktop.ReserveDevice1.(anything).
 
 .PP
 It does not make sense to deny a user or group inside a <policy>
