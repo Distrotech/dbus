@@ -1267,10 +1267,23 @@ bus_client_policy_check_can_own (BusClientPolicy  *policy,
       if (rule->type != BUS_POLICY_RULE_OWN)
         continue;
 
-      if (rule->d.own.service_name != NULL)
+      if (!rule->d.own.prefix && rule->d.own.service_name != NULL)
         {
           if (!_dbus_string_equal_c_str (service_name,
                                          rule->d.own.service_name))
+            continue;
+        }
+      else if (rule->d.own.prefix)
+        {
+          const char *data;
+          char next_char;
+          if (!_dbus_string_starts_with_c_str (service_name,
+                                               rule->d.own.service_name))
+            continue;
+
+          data = _dbus_string_get_const_data (service_name);
+          next_char = data[strlen (rule->d.own.service_name)];
+          if (next_char != '\0' && next_char != '.')
             continue;
         }
 
