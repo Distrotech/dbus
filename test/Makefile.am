@@ -186,90 +186,138 @@ if DBUS_ENABLE_INSTALLED_TESTS
 		$(testexec_PROGRAMS)
 endif DBUS_ENABLE_INSTALLED_TESTS
 
-## keep these in creation order, i.e. uppermost dirs first 
-TESTDIRS=					\
-	data					\
-	data/valid-messages			\
-	data/invalid-messages			\
-	data/incomplete-messages		\
-	data/auth				\
-	data/sha-1				\
-	data/valid-config-files			\
-	data/valid-config-files-system		\
-	data/valid-config-files/basic.d		\
-	data/valid-config-files/session.d	\
-	data/valid-config-files/system.d	\
-	data/valid-service-files		\
-	data/valid-service-files-system		\
-	data/invalid-service-files-system	\
-	data/invalid-config-files		\
-	data/invalid-config-files-system	\
-	data/equiv-config-files			\
-	data/equiv-config-files/basic		\
-	data/equiv-config-files/basic/basic.d	\
-	data/equiv-config-files/entities	\
-	data/equiv-config-files/entities/basic.d
+in_data = \
+	data/valid-config-files-system/debug-allow-all-fail.conf.in \
+	data/valid-config-files-system/debug-allow-all-pass.conf.in \
+	data/valid-config-files/debug-allow-all-sha1.conf.in \
+	data/valid-config-files/debug-allow-all.conf.in \
+	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
+	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service.in \
+	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service.in \
+	data/valid-service-files-system/org.freedesktop.DBus.TestSuiteEchoService.service.in \
+	data/valid-service-files-system/org.freedesktop.DBus.TestSuiteSegfaultService.service.in \
+	data/valid-service-files-system/org.freedesktop.DBus.TestSuiteShellEchoServiceFail.service.in \
+	data/valid-service-files-system/org.freedesktop.DBus.TestSuiteShellEchoServiceSuccess.service.in \
+	data/valid-service-files/org.freedesktop.DBus.TestSuite.PrivServer.service.in \
+	data/valid-service-files/org.freedesktop.DBus.TestSuiteEchoService.service.in \
+	data/valid-service-files/org.freedesktop.DBus.TestSuiteForkingEchoService.service.in \
+	data/valid-service-files/org.freedesktop.DBus.TestSuiteSegfaultService.service.in \
+	data/valid-service-files/org.freedesktop.DBus.TestSuiteShellEchoServiceFail.service.in \
+	data/valid-service-files/org.freedesktop.DBus.TestSuiteShellEchoServiceSuccess.service.in \
+	$(NULL)
 
+EXTRA_DIST += $(in_data)
 
-FIND_TESTS=find . -type f -a \( -name "*.message" -o -name "*.message-raw" -o -name "*.auth-script" -o -name "*.sha1" -o -name "*.txt" -o -name "*.conf" -o -name "*.service" \)
+static_data = \
+	name-test/tmp-session-like-system.conf \
+	data/auth/anonymous-client-successful.auth-script \
+	data/auth/anonymous-server-successful.auth-script \
+	data/auth/cancel.auth-script \
+	data/auth/client-out-of-mechanisms.auth-script \
+	data/auth/external-failed.auth-script \
+	data/auth/external-root.auth-script \
+	data/auth/external-silly.auth-script \
+	data/auth/external-successful.auth-script \
+	data/auth/extra-bytes.auth-script \
+	data/auth/fail-after-n-attempts.auth-script \
+	data/auth/fallback.auth-script \
+	data/auth/invalid-command-client.auth-script \
+	data/auth/invalid-command.auth-script \
+	data/auth/invalid-hex-encoding.auth-script \
+	data/auth/mechanisms.auth-script \
+	data/equiv-config-files/basic/basic-1.conf \
+	data/equiv-config-files/basic/basic-2.conf \
+	data/equiv-config-files/basic/basic.d/basic.conf \
+	data/equiv-config-files/entities/basic.d/basic.conf \
+	data/equiv-config-files/entities/entities-1.conf \
+	data/equiv-config-files/entities/entities-2.conf \
+	data/incomplete-messages/missing-body.message \
+	data/invalid-config-files/badselinux-1.conf \
+	data/invalid-config-files/badselinux-2.conf \
+	data/invalid-config-files/circular-1.conf \
+	data/invalid-config-files/circular-2.conf \
+	data/invalid-config-files/circular-3.conf \
+	data/invalid-config-files/not-well-formed.conf \
+	data/invalid-config-files/truncated-file.conf \
+	data/invalid-messages/array-of-nil.message \
+	data/invalid-messages/array-with-mixed-types.message \
+	data/invalid-messages/bad-boolean-array.message \
+	data/invalid-messages/bad-boolean.message \
+	data/invalid-messages/bad-endian.message \
+	data/invalid-messages/bad-header-field-alignment.message \
+	data/invalid-messages/boolean-has-no-value.message-raw \
+	data/invalid-messages/local-namespace.message \
+	data/invalid-messages/no-dot-in-name.message \
+	data/invalid-messages/not-nul-header-padding.message \
+	data/invalid-messages/overlong-name.message \
+	data/invalid-messages/too-little-header-padding.message \
+	data/invalid-messages/too-much-header-padding-by-far.message \
+	data/invalid-messages/too-much-header-padding.message \
+	data/invalid-messages/too-short-dict.message \
+	data/sha-1/Readme.txt \
+	data/sha-1/bit-hashes.sha1 \
+	data/sha-1/bit-messages.sha1 \
+	data/sha-1/byte-hashes.sha1 \
+	data/sha-1/byte-messages.sha1 \
+	data/valid-config-files/basic.conf \
+	data/valid-config-files/basic.d/basic.conf \
+	data/valid-config-files/entities.conf \
+	data/valid-config-files/incoming-limit.conf \
+	data/valid-config-files/many-rules.conf \
+	data/valid-config-files/system.d/test.conf \
+	data/valid-messages/array-of-array-of-uint32.message \
+	data/valid-messages/dict-simple.message \
+	data/valid-messages/dict.message \
+	data/valid-messages/emptiness.message \
+	data/valid-messages/lots-of-arguments.message \
+	data/valid-messages/no-padding.message \
+	data/valid-messages/opposite-endian.message \
+	data/valid-messages/recursive-types.message \
+	data/valid-messages/simplest-manual.message \
+	data/valid-messages/simplest.message \
+	data/valid-messages/standard-acquire-service.message \
+	data/valid-messages/standard-hello.message \
+	data/valid-messages/standard-list-services.message \
+	data/valid-messages/standard-service-exists.message \
+	data/valid-messages/unknown-header-field.message \
+	$(NULL)
 
-dist-hook:
-	for D in $(TESTDIRS); do						\
-		test -d $(distdir)/$$D || mkdir $(distdir)/$$D || exit 1 ;	\
-	done ;									\
-	FILES=`(cd $(srcdir) && $(FIND_TESTS) -o -name "*.in" -a -not -name Makefile.in | grep -Ev "(.svn|CVS)" )` ;					\
-        for F in $$FILES; do							\
-		B=`basename $$F`; \
-		if test -e $$F.in; then \
-			echo "-- Skipping file $$F (.in version exists)"; \
-		elif test "x$$B" = xrun-with-tmp-session-bus.conf; then \
-			echo "-- Skipping file $$F (generated)"; \
-		elif test -e "$(top_srcdir)/bus/$$B"; then \
-			echo "-- Skipping file $$F (from /bus/)"; \
-		else \
-			echo '-- Disting file '$$F ; \
-			cp -f $(srcdir)/$$F $(distdir)/$$F || exit 1; \
-		fi; \
-	done
+EXTRA_DIST += $(static_data)
 
-## copy tests to builddir so that generated tests and static tests 
+## copy tests to builddir so that generated tests and static tests
 ## are all in one place.
 all-local:
-	$(AM_V_at)for D in $(TESTDIRS); do								\
-		test -d $(top_builddir)/test/$$D || mkdir $(top_builddir)/test/$$D || exit 1 ;	\
-	done ;											\
-	if ! (test $(srcdir) = . || test $(srcdir) -ef .) ; then								\
-		FILES=`(cd $(srcdir) && $(FIND_TESTS) | grep -Ev "(.svn|CVS)" )` ;					\
-	        for F in $$FILES; do								\
-			SRC=$(srcdir)/$$F ;							\
-			DEST=$(top_builddir)/test/$$F ;						\
-	                echo '-- Copying test file '$$F ;					\
-			cp $$SRC $$DEST || exit 1 ;						\
-			chmod u+w $$DEST || exit 1 ;						\
-		done ;										\
-	else											\
-		echo '-- No need to copy test data as srcdir = builddir' ;			\
-	fi ;											\
-	echo '-- Copying' $(top_builddir)/bus/*.conf 'to test directory' ;			\
-	cp $(top_builddir)/bus/*.conf $(top_builddir)/test/data/valid-config-files || exit 1 ;  \
-	chmod u+w $(top_builddir)/test/data/valid-config-files/*.conf || exit 1
-
-## this doesn't clean generated test data files when srcdir=builddir
-clean-local:
-	if test $(srcdir) != . ; then					\
-		FILES=`(cd $(top_builddir)/test && $(FIND_TESTS) | grep -Ev "(.svn|CVS)" )` ;	\
-	        for F in $$FILES; do					\
-			DEST=$(top_builddir)/test/$$F ;			\
-	                echo '-- Deleting test file '$$F ;		\
-			rm $$DEST || exit 1 ;				\
-		done ;							\
-		REVERSEDIRS= ;						\
-		for D in $(TESTDIRS); do				\
-			REVERSEDIRS="$$D $$REVERSEDIRS" ;		\
-		done ;							\
-		for D in $$REVERSEDIRS; do				\
-			rmdir $(top_builddir)/test/$$D || 		\
-				test ! -d $(top_builddir)/test/$$D ||	\
-				exit 1 ;	\
-		done ;							\
+	$(AM_V_at)$(INSTALL) -d data/valid-config-files/session.d
+	$(AM_V_at)set -e && \
+	if test $(srcdir) = . || test $(srcdir) -ef .; then \
+		echo '-- No need to copy test data as srcdir = builddir'; \
+	else \
+		for F in $(static_data); do \
+			$(INSTALL) -d $${F%/*}; \
+			$(INSTALL_DATA) $(srcdir)/$$F $$F; \
+		done; \
 	fi
+
+## this doesn't clean most copied test data files when srcdir=builddir
+clean-local:
+	$(AM_V_at)if test $(srcdir) = . || test $(srcdir) -ef .; then \
+		echo '-- No need to clean test data as srcdir = builddir'; \
+	else \
+		rm -f $(static_data); \
+	fi
+
+imported_data = \
+	data/valid-config-files/session.conf \
+	data/valid-config-files/system.conf \
+	$(NULL)
+
+noinst_DATA = $(imported_data)
+CLEANFILES = $(noinst_DATA)
+
+data/valid-config-files/session.conf: $(top_builddir)/bus/session.conf
+	$(AM_V_at)$(INSTALL) -d data/valid-config-files
+	$(AM_V_GEN)$(INSTALL_DATA) $< $@
+
+data/valid-config-files/system.conf: $(top_builddir)/bus/system.conf
+	$(AM_V_at)$(INSTALL) -d data/valid-config-files
+	$(AM_V_GEN)$(INSTALL_DATA) $< $@
