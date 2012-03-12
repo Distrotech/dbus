@@ -123,6 +123,16 @@ AM_CONDITIONAL(DBUS_WINCE, test "$dbus_wince" = yes)
 AM_CONDITIONAL(DBUS_UNIX, test "$dbus_unix" = yes)
 AM_CONDITIONAL(DBUS_CYGWIN, test "$dbus_cygwin" = yes)
 
+DBUS_STATIC_BUILD_CPPFLAGS=
+if test "x$enable_shared" = xno; then
+    # On Windows, linking against the static library requires special effort
+    # to turn off DLL import/export processing. We normally link some things
+    # against the dynamic library, but if we're not building that, we'll
+    # have to link everything statically.
+    DBUS_STATIC_BUILD_CPPFLAGS=-DDBUS_STATIC_BUILD
+fi
+AC_SUBST([DBUS_STATIC_BUILD_CPPFLAGS])
+
 AC_ARG_ENABLE(ansi, AS_HELP_STRING([--enable-ansi],[enable -ansi -pedantic gcc flags]),enable_ansi=$enableval,enable_ansi=no)
 AC_ARG_ENABLE(verbose-mode, AS_HELP_STRING([--enable-verbose-mode],[support verbose debug mode]),enable_verbose_mode=$enableval,enable_verbose_mode=$USE_MAINTAINER_MODE)
 AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)

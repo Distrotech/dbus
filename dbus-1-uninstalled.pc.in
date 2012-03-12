@@ -14,4 +14,4 @@ Description: Free desktop message bus (uninstalled copy)
 Version: @VERSION@
 Libs: ${abs_top_builddir}/dbus/libdbus-1.la
 Libs.private: @LIBDBUS_LIBS@
-Cflags: -I${abs_top_srcdir}
+Cflags: -I${abs_top_srcdir} @DBUS_STATIC_BUILD_CPPFLAGS@

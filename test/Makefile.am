@@ -4,8 +4,10 @@
 SUBDIRS= . name-test 
 DIST_SUBDIRS=name-test
 
+# CPPFLAGS for binaries that are normally dynamic
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	$(GLIB_CFLAGS) \
 	$(DBUS_GLIB_CFLAGS) \
 	$(NULL)
@@ -13,6 +15,7 @@ AM_CPPFLAGS = \
 # improve backtraces from test stuff
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
+# CPPFLAGS for binaries that are always static
 static_cppflags = \
 	$(AM_CPPFLAGS) \
 	-DDBUS_STATIC_BUILD \
