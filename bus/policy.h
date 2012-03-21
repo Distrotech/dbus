@@ -161,5 +161,9 @@ dbus_bool_t      bus_client_policy_append_rule       (BusClientPolicy  *policy,
                                                       BusPolicyRule    *rule);
 void             bus_client_policy_optimize          (BusClientPolicy  *policy);
 
+#ifdef DBUS_BUILD_TESTS
+dbus_bool_t      bus_policy_check_can_own     (BusPolicy  *policy,
+                                               const DBusString *service_name);
+#endif
 
 #endif /* BUS_POLICY_H */

@@ -2746,9 +2746,60 @@ typedef enum
 } Validity;
 
 static dbus_bool_t
+do_check_own_rules (BusPolicy  *policy)
+{
+  const struct {
+    char *name;
+    dbus_bool_t allowed;
+  } checks[] = {
+    {"org.freedesktop", FALSE},
+    {"org.freedesktop.ManySystem", FALSE},
+    {"org.freedesktop.ManySystems", TRUE},
+    {"org.freedesktop.ManySystems.foo", TRUE},
+    {"org.freedesktop.ManySystems.foo.bar", TRUE},
+    {"org.freedesktop.ManySystems2", FALSE},
+    {"org.freedesktop.ManySystems2.foo", FALSE},
+    {"org.freedesktop.ManySystems2.foo.bar", FALSE},
+    {NULL, FALSE}
+  };
+  int i = 0;
+
+  while (checks[i].name)
+    {
+      DBusString service_name;
+      dbus_bool_t ret;
+
+      if (!_dbus_string_init (&service_name))
+        _dbus_assert_not_reached ("couldn't init string");
+      if (!_dbus_string_append (&service_name, checks[i].name))
+        _dbus_assert_not_reached ("couldn't append string");
+
+      ret = bus_policy_check_can_own (policy, &service_name);
+      printf ("        Check name %s: %s\n", checks[i].name,
+              ret ? "allowed" : "not allowed");
+      if (checks[i].allowed && !ret)
+        {
+          _dbus_warn ("Cannot own %s\n", checks[i].name);
+          return FALSE;
+        }
+      if (!checks[i].allowed && ret)
+        {
+          _dbus_warn ("Can own %s\n", checks[i].name);
+          return FALSE;
+        }
+      _dbus_string_free (&service_name);
+
+      i++;
+    }
+
+  return TRUE;
+}
+
+static dbus_bool_t
 do_load (const DBusString *full_path,
          Validity          validity,
-         dbus_bool_t       oom_possible)
+         dbus_bool_t       oom_possible,
+         dbus_bool_t       check_own_rules)
 {
   BusConfigParser *parser;
   DBusError error;
@@ -2785,6 +2836,11 @@ do_load (const DBusString *full_path,
     {
       _DBUS_ASSERT_ERROR_IS_CLEAR (&error);
 
+      if (check_own_rules && do_check_own_rules (parser->policy) == FALSE)
+        {
+          return FALSE;
+        }
+
       bus_config_parser_unref (parser);
 
       if (validity == INVALID)
@@ -2801,6 +2857,7 @@ typedef struct
 {
   const DBusString *full_path;
   Validity          validity;
+  dbus_bool_t       check_own_rules;
 } LoaderOomData;
 
 static dbus_bool_t
@@ -2808,7 +2865,7 @@ check_loader_oom_func (void *data)
 {
   LoaderOomData *d = data;
 
-  return do_load (d->full_path, d->validity, TRUE);
+  return do_load (d->full_path, d->validity, TRUE, d->check_own_rules);
 }
 
 static dbus_bool_t
@@ -2891,6 +2948,8 @@ process_test_valid_subdir (const DBusString *test_base_dir,
 
       d.full_path = &full_path;
       d.validity = validity;
+      d.check_own_rules = _dbus_string_ends_with_c_str (&full_path,
+          "check-own-rules.conf");
 
       /* FIXME hackaround for an expat problem, see
        * https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=124747

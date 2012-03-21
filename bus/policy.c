@@ -1240,24 +1240,26 @@ bus_client_policy_check_can_receive (BusClientPolicy *policy,
   return allowed;
 }
 
-dbus_bool_t
-bus_client_policy_check_can_own (BusClientPolicy  *policy,
-                                 const DBusString *service_name)
+
+
+static dbus_bool_t
+bus_rules_check_can_own (DBusList *rules,
+                         const DBusString *service_name)
 {
   DBusList *link;
   dbus_bool_t allowed;
   
-  /* policy->rules is in the order the rules appeared
+  /* rules is in the order the rules appeared
    * in the config file, i.e. last rule that applies wins
    */
 
   allowed = FALSE;
-  link = _dbus_list_get_first_link (&policy->rules);
+  link = _dbus_list_get_first_link (&rules);
   while (link != NULL)
     {
       BusPolicyRule *rule = link->data;
 
-      link = _dbus_list_get_next_link (&policy->rules, link);
+      link = _dbus_list_get_next_link (&rules, link);
       
       /* Rule is skipped if it specifies a different service name from
        * the desired one.
@@ -1292,3 +1294,20 @@ bus_client_policy_check_can_own (BusClientPolicy  *policy,
 
   return allowed;
 }
+
+dbus_bool_t
+bus_client_policy_check_can_own (BusClientPolicy  *policy,
+                                 const DBusString *service_name)
+{
+  return bus_rules_check_can_own (policy->rules, service_name);
+}
+
+#ifdef DBUS_BUILD_TESTS
+dbus_bool_t
+bus_policy_check_can_own (BusPolicy  *policy,
+                          const DBusString *service_name)
+{
+  return bus_rules_check_can_own (policy->default_rules, service_name);
+}
+#endif /* DBUS_BUILD_TESTS */
+
