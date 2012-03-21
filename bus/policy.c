@@ -1242,7 +1242,6 @@ bus_client_policy_check_can_receive (BusClientPolicy *policy,
 
 dbus_bool_t
 bus_client_policy_check_can_own (BusClientPolicy  *policy,
-                                 DBusConnection   *connection,
                                  const DBusString *service_name)
 {
   DBusList *link;

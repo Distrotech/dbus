@@ -156,7 +156,6 @@ dbus_bool_t      bus_client_policy_check_can_receive (BusClientPolicy  *policy,
                                                       DBusMessage      *message,
                                                       dbus_int32_t     *toggles);
 dbus_bool_t      bus_client_policy_check_can_own     (BusClientPolicy  *policy,
-                                                      DBusConnection   *connection,
                                                       const DBusString *service_name);
 dbus_bool_t      bus_client_policy_append_rule       (BusClientPolicy  *policy,
                                                       BusPolicyRule    *rule);
