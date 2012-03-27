@@ -9,9 +9,14 @@ D-Bus 1.5.11 (UNRELEASED)
 • Turn DBusBasicValue into public API so bindings don't need to invent their
   own "union of everything" type (fd.o #11191, Simon McVittie)
 
+• Enumerate data files included in the build rather than using find(1)
+  (fd.o #33840, Simon McVittie)
+
 • Windows-specific:
   · make dbus-daemon.exe --print-address (and --print-pid) work again
     on Win32, but not on WinCE (fd.o #46049, Simon McVittie)
+  · fix duplicate case value when compiling against mingw-w64
+    (fd.o #47321, Andoni Morales Alastruey)
 
 D-Bus 1.5.10 (2012-02-21)
 ==

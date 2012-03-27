@@ -614,16 +614,14 @@ _dbus_error_from_errno (int error_number)
 #ifdef EPROTONOSUPPORT
     case EPROTONOSUPPORT:
       return DBUS_ERROR_NOT_SUPPORTED;
-#endif
-#ifdef WSAEPROTONOSUPPORT
+#elif defined(WSAEPROTONOSUPPORT)
     case WSAEPROTONOSUPPORT:
       return DBUS_ERROR_NOT_SUPPORTED;
 #endif
 #ifdef EAFNOSUPPORT
     case EAFNOSUPPORT:
       return DBUS_ERROR_NOT_SUPPORTED;
-#endif
-#ifdef WSAEAFNOSUPPORT
+#elif defined(WSAEAFNOSUPPORT)
     case WSAEAFNOSUPPORT:
       return DBUS_ERROR_NOT_SUPPORTED;
 #endif
@@ -654,32 +652,28 @@ _dbus_error_from_errno (int error_number)
 #ifdef ECONNREFUSED
     case ECONNREFUSED:
       return DBUS_ERROR_NO_SERVER;
-#endif
-#ifdef WSAECONNREFUSED
+#elif defined(WSAECONNREFUSED)
     case WSAECONNREFUSED:
       return DBUS_ERROR_NO_SERVER;
 #endif
 #ifdef ETIMEDOUT
     case ETIMEDOUT:
       return DBUS_ERROR_TIMEOUT;
-#endif
-#ifdef WSAETIMEDOUT
+#elif defined(WSAETIMEDOUT)
     case WSAETIMEDOUT:
       return DBUS_ERROR_TIMEOUT;
 #endif
 #ifdef ENETUNREACH
     case ENETUNREACH:
       return DBUS_ERROR_NO_NETWORK;
-#endif
-#ifdef WSAENETUNREACH
+#elif defined(WSAENETUNREACH)
     case WSAENETUNREACH:
       return DBUS_ERROR_NO_NETWORK;
 #endif
 #ifdef EADDRINUSE
     case EADDRINUSE:
       return DBUS_ERROR_ADDRESS_IN_USE;
-#endif
-#ifdef WSAEADDRINUSE
+#elif defined(WSAEADDRINUSE)
     case WSAEADDRINUSE:
       return DBUS_ERROR_ADDRESS_IN_USE;
 #endif
