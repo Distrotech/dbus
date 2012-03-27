@@ -2182,7 +2182,6 @@ _dbus_string_equal_c_str (const DBusString *a,
   return TRUE;
 }
 
-#ifdef DBUS_BUILD_TESTS
 /**
  * Checks whether a string starts with the given C string.
  *
@@ -2218,7 +2217,6 @@ _dbus_string_starts_with_c_str (const DBusString *a,
   else
     return FALSE;
 }
-#endif /* DBUS_BUILD_TESTS */
 
 /**
  * Appends a two-character hex digit to a string, where the hex digit
