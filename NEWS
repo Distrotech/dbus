@@ -1,5 +1,7 @@
-D-Bus 1.5.11 (UNRELEASED)
+D-Bus 1.5.12 (2012-03-27)
 ==
+
+The “Big Book of Science” release.
 
 • Add public API to validate various string types:
   dbus_validate_path(), dbus_validate_interface(), dbus_validate_member(),
@@ -11,6 +13,9 @@ D-Bus 1.5.11 (UNRELEASED)
 
 • Enumerate data files included in the build rather than using find(1)
   (fd.o #33840, Simon McVittie)
+
+• Add support for policy rules like <allow own_prefix="com.example.Service"/>
+  in dbus-daemon (fd.o #46273, Alban Crequy)
 
 • Windows-specific:
   · make dbus-daemon.exe --print-address (and --print-pid) work again
