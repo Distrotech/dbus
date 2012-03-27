@@ -459,8 +459,7 @@ bus_registry_acquire_service (BusRegistry      *registry,
       goto out;
     }
   
-  if (!bus_client_policy_check_can_own (policy, connection,
-                                        service_name))
+  if (!bus_client_policy_check_can_own (policy, service_name))
     {
       dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
                       "Connection \"%s\" is not allowed to own the service \"%s\" due "
