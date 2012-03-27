@@ -1,7 +1,27 @@
-D-Bus 1.4.19 (UNRELEASED)
+D-Bus 1.4.20 (2012-03-27)
 ==
 
+The “Nikolai Tesla and You” release.
+
+Dependencies:
+
+• The version of GLib required for some of the regression tests has
+  increased to 2.24.
+
+Changes:
+
 • Make dbus-protocol.h compatible with C++11 (fd.o #46147, Marc Mutz)
+
+• Use GLib 2.31.x thread API, with backwards compatibility to 2.24,
+  fixing compiler warnings and link failure when using 2.32
+  (fd.o #44413, Debian #665665; Martin Pitt)
+
+• Enumerate data files included in the build rather than using find(1)
+  (fd.o #33840, Simon McVittie)
+
+• Windows-specific:
+  · fix duplicate case value when compiling against mingw-w64
+    (fd.o #47321, Andoni Morales Alastruey)
 
 D-Bus 1.4.18 (2012-02-13)
 ==
