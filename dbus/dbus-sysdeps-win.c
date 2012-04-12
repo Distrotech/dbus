@@ -1888,8 +1888,8 @@ _dbus_sleep_milliseconds (int milliseconds)
  * @param tv_usec return location for number of microseconds
  */
 void
-_dbus_get_current_time (long *tv_sec,
-                        long *tv_usec)
+_dbus_get_real_time (long *tv_sec,
+                     long *tv_usec)
 {
   FILETIME ft;
   dbus_uint64_t time64;
@@ -1911,6 +1911,20 @@ _dbus_get_current_time (long *tv_sec,
     *tv_usec = time64 % 1000000;
 }
 
+/**
+ * Get current time, as in gettimeofday(). Use the monotonic clock if
++ * available, to avoid problems when the system time changes.
+ *
+ * @param tv_sec return location for number of seconds
+ * @param tv_usec return location for number of microseconds
+ */
+void
+_dbus_get_monotonic_time (long *tv_sec,
+                          long *tv_usec)
+{
+  /* no implementation yet, fall back to wall-clock time */
+  _dbus_get_real_time (tv_sec, tv_usec);
+}
 
 /**
  * signal (SIGPIPE, SIG_IGN);

@@ -205,7 +205,7 @@ bus_expirelist_expire (BusExpireList *list)
     {
       long tv_sec, tv_usec;
 
-      _dbus_get_current_time (&tv_sec, &tv_usec);
+      _dbus_get_monotonic_time (&tv_sec, &tv_usec);
 
       next_interval = do_expiration_with_current_time (list, tv_sec, tv_usec);
     }
@@ -351,7 +351,7 @@ bus_expire_list_test (const DBusString *test_data_dir)
                               test_expire_func, NULL);
   _dbus_assert (list != NULL);
 
-  _dbus_get_current_time (&tv_sec, &tv_usec);
+  _dbus_get_monotonic_time (&tv_sec, &tv_usec);
 
   tv_sec_not_expired = tv_sec;
   tv_usec_not_expired = tv_usec;

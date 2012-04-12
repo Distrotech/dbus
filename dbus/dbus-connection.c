@@ -2377,7 +2377,7 @@ _dbus_connection_block_pending_call (DBusPendingCall *pending)
    * below
    */
   timeout = _dbus_pending_call_get_timeout_unlocked (pending);
-  _dbus_get_current_time (&start_tv_sec, &start_tv_usec);
+  _dbus_get_monotonic_time (&start_tv_sec, &start_tv_usec);
   if (timeout)
     {
       timeout_milliseconds = dbus_timeout_get_interval (timeout);
@@ -2434,7 +2434,7 @@ _dbus_connection_block_pending_call (DBusPendingCall *pending)
         return;
     }
   
-  _dbus_get_current_time (&tv_sec, &tv_usec);
+  _dbus_get_monotonic_time (&tv_sec, &tv_usec);
   elapsed_milliseconds = (tv_sec - start_tv_sec) * 1000 +
 	  (tv_usec - start_tv_usec) / 1000;
   

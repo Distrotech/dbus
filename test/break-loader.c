@@ -667,7 +667,7 @@ get_random_seed (void)
 
     fprintf (stderr, "could not open/read /dev/urandom, using current time for seed\n");
 
-    _dbus_get_current_time (NULL, &tv_usec);
+    _dbus_get_monotonic_time (NULL, &tv_usec);
 
     seed = tv_usec;
   }

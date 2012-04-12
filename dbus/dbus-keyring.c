@@ -353,7 +353,7 @@ add_new_key (DBusKey  **keys_p,
       goto out;
     }
 
-  _dbus_get_current_time (&timestamp, NULL);
+  _dbus_get_real_time (&timestamp, NULL);
       
   keys[n_keys-1].id = id;
   keys[n_keys-1].creation_time = timestamp;
@@ -428,7 +428,7 @@ _dbus_keyring_reload (DBusKeyring *keyring,
   retval = FALSE;
   have_lock = FALSE;
 
-  _dbus_get_current_time (&now, NULL);
+  _dbus_get_real_time (&now, NULL);
   
   if (add_new)
     {
@@ -908,7 +908,7 @@ find_recent_key (DBusKeyring *keyring)
   int i;
   long tv_sec, tv_usec;
 
-  _dbus_get_current_time (&tv_sec, &tv_usec);
+  _dbus_get_real_time (&tv_sec, &tv_usec);
   
   i = 0;
   while (i < keyring->n_keys)

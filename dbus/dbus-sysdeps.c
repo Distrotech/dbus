@@ -805,7 +805,7 @@ _dbus_generate_pseudorandom_bytes_buffer (char *buffer,
   _dbus_verbose ("Falling back to pseudorandom for %d bytes\n",
                  n_bytes);
   
-  _dbus_get_current_time (NULL, &tv_usec);
+  _dbus_get_monotonic_time (NULL, &tv_usec);
   srand (tv_usec);
   
   i = 0;
