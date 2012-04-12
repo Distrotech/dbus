@@ -606,8 +606,8 @@ bus_connections_setup_connection (BusConnections *connections,
   d->connections = connections;
   d->connection = connection;
   
-  _dbus_get_current_time (&d->connection_tv_sec,
-                          &d->connection_tv_usec);
+  _dbus_get_monotonic_time (&d->connection_tv_sec,
+                            &d->connection_tv_usec);
   
   _dbus_assert (connection_data_slot >= 0);
   
@@ -776,7 +776,7 @@ bus_connections_expire_incomplete (BusConnections *connections)
       DBusList *link;
       int auth_timeout;
       
-      _dbus_get_current_time (&tv_sec, &tv_usec);
+      _dbus_get_monotonic_time (&tv_sec, &tv_usec);
       auth_timeout = bus_context_get_auth_timeout (connections->context);
   
       link = _dbus_list_get_first_link (&connections->incomplete);
@@ -1772,8 +1772,8 @@ bus_connections_expect_reply (BusConnections  *connections,
   cprd->pending = pending;
   cprd->connections = connections;
   
-  _dbus_get_current_time (&pending->expire_item.added_tv_sec,
-                          &pending->expire_item.added_tv_usec);
+  _dbus_get_monotonic_time (&pending->expire_item.added_tv_sec,
+                            &pending->expire_item.added_tv_usec);
 
   _dbus_verbose ("Added pending reply %p, replier %p receiver %p serial %u\n",
                  pending,

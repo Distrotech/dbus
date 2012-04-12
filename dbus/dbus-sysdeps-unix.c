@@ -2598,11 +2598,11 @@ _dbus_poll (DBusPollFD *fds,
  * available, to avoid problems when the system time changes.
  *
  * @param tv_sec return location for number of seconds
- * @param tv_usec return location for number of microseconds (thousandths)
+ * @param tv_usec return location for number of microseconds
  */
 void
-_dbus_get_current_time (long *tv_sec,
-                        long *tv_usec)
+_dbus_get_monotonic_time (long *tv_sec,
+                          long *tv_usec)
 {
 #ifdef HAVE_MONOTONIC_CLOCK
   struct timespec ts;
@@ -2622,6 +2622,27 @@ _dbus_get_current_time (long *tv_sec,
   if (tv_usec)
     *tv_usec = t.tv_usec;
 #endif
+}
+
+/**
+ * Get current time, as in gettimeofday(). Never uses the monotonic
+ * clock.
+ *
+ * @param tv_sec return location for number of seconds
+ * @param tv_usec return location for number of microseconds
+ */
+void
+_dbus_get_real_time (long *tv_sec,
+                     long *tv_usec)
+{
+  struct timeval t;
+
+  gettimeofday (&t, NULL);
+
+  if (tv_sec)
+    *tv_sec = t.tv_sec;
+  if (tv_usec)
+    *tv_usec = t.tv_usec;
 }
 
 /**

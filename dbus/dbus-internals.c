@@ -660,7 +660,10 @@ _dbus_generate_uuid (DBusGUID *uuid)
 {
   long now;
 
-  _dbus_get_current_time (&now, NULL);
+  /* don't use monotonic time because the UUID may be saved to disk, e.g.
+   * it may persist across reboots
+   */
+  _dbus_get_real_time (&now, NULL);
 
   uuid->as_uint32s[DBUS_UUID_LENGTH_WORDS - 1] = DBUS_UINT32_TO_BE (now);
   

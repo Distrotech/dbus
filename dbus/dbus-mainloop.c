@@ -91,8 +91,8 @@ timeout_callback_new (DBusTimeout         *timeout)
     return NULL;
 
   cb->timeout = timeout;
-  _dbus_get_current_time (&cb->last_tv_sec,
-                          &cb->last_tv_usec);
+  _dbus_get_monotonic_time (&cb->last_tv_sec,
+                            &cb->last_tv_usec);
   return cb;
 }
 
@@ -619,7 +619,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
       unsigned long tv_sec;
       unsigned long tv_usec;
       
-      _dbus_get_current_time (&tv_sec, &tv_usec);
+      _dbus_get_monotonic_time (&tv_sec, &tv_usec);
 
       link = _dbus_list_get_first_link (&loop->timeouts);
       while (link != NULL)
@@ -728,7 +728,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
       unsigned long tv_sec;
       unsigned long tv_usec;
 
-      _dbus_get_current_time (&tv_sec, &tv_usec);
+      _dbus_get_monotonic_time (&tv_sec, &tv_usec);
 
       /* It'd be nice to avoid this O(n) thingy here */
       link = _dbus_list_get_first_link (&loop->timeouts);
