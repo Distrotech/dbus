@@ -1045,8 +1045,9 @@ _dbus_change_to_daemon_user  (const char    *user,
       int rc;
 
       capng_clear (CAPNG_SELECT_BOTH);
-      capng_update (CAPNG_ADD, CAPNG_EFFECTIVE | CAPNG_PERMITTED,
-                    CAP_AUDIT_WRITE);
+      if (capng_have_capability (CAPNG_PERMITTED, CAP_AUDIT_WRITE))
+        capng_update (CAPNG_ADD, CAPNG_EFFECTIVE | CAPNG_PERMITTED,
+                      CAP_AUDIT_WRITE);
       rc = capng_change_id (uid, gid, CAPNG_DROP_SUPP_GRP);
       if (rc)
         {
