@@ -1,3 +1,14 @@
+D-Bus 1.4.22 (UNRELEASED)
+==
+
+Changes:
+
+• Be more careful about monotonic time vs. real time, fixing DBUS_COOKIE_SHA1
+  spec-compliance (fd.o #48580, David Zeuthen)
+
+• Don't use install(1) within the source/build trees, fixing the build as
+  non-root when using OpenBSD install(1) (fd.o #48217, Antoine Jacoutot)
+
 D-Bus 1.4.20 (2012-03-27)
 ==
 
