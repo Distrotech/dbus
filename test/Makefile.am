@@ -296,14 +296,14 @@ EXTRA_DIST += $(static_data)
 ## copy tests to builddir so that generated tests and static tests
 ## are all in one place.
 all-local:
-	$(AM_V_at)$(INSTALL) -d data/valid-config-files/session.d
+	$(AM_V_at)$(MKDIR_P) data/valid-config-files/session.d
 	$(AM_V_at)set -e && \
 	if test $(srcdir) = . || test $(srcdir) -ef .; then \
 		echo '-- No need to copy test data as srcdir = builddir'; \
 	else \
 		for F in $(static_data); do \
-			$(INSTALL) -d $${F%/*}; \
-			$(INSTALL_DATA) $(srcdir)/$$F $$F; \
+			$(MKDIR_P) $${F%/*}; \
+			cp $(srcdir)/$$F $$F; \
 		done; \
 	fi
 
@@ -324,9 +324,9 @@ noinst_DATA = $(imported_data)
 CLEANFILES = $(noinst_DATA)
 
 data/valid-config-files/session.conf: $(top_builddir)/bus/session.conf
-	$(AM_V_at)$(INSTALL) -d data/valid-config-files
-	$(AM_V_GEN)$(INSTALL_DATA) $< $@
+	$(AM_V_at)$(MKDIR_P) data/valid-config-files
+	$(AM_V_GEN)cp $< $@
 
 data/valid-config-files/system.conf: $(top_builddir)/bus/system.conf
-	$(AM_V_at)$(INSTALL) -d data/valid-config-files
-	$(AM_V_GEN)$(INSTALL_DATA) $< $@
+	$(AM_V_at)$(MKDIR_P) data/valid-config-files
+	$(AM_V_GEN)cp $< $@
