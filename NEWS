@@ -1,13 +1,61 @@
-D-Bus 1.5.14 (UNRELEASED)
+D-Bus 1.6.0 (2012-06-05)
 ==
 
-Changes:
+The “soul of this machine has improved” release.
+
+This version starts a new stable branch of D-Bus: only bug fixes will
+be accepted into 1.6.x. Other changes will now go to the 1.7.x branch.
+
+Summary of changes since 1.4.x:
+
+• New requirements
+  · PTHREAD_MUTEX_RECURSIVE on Unix
+  · compiler support for 64-bit integers (int64_t or equivalent)
+
+• D-Bus Specification v0.19
+
+• New dbus-daemon features
+  · <allow own_prefix="com.example.Service"/> rules allow the service to
+    own names like com.example.Service.Instance3
+  · optional systemd integration when checking at_console policies
+  · --nopidfile option, mainly for use by systemd
+  · path_namespace and arg0namespace may appear in match rules
+  · eavesdropping is disabled unless the match rule contains eavesdrop=true
+
+• New public API
+  · functions to validate various string types (dbus_validate_path() etc.)
+  · dbus_type_is_valid()
+  · DBusBasicValue, a union of every basic type
+
+• Bug fixes
+  · removed an unsafe reimplementation of recursive mutexes
+  · dbus-daemon no longer busy-loops if it has far too many file descriptors
+  · dbus-daemon.exe --print-address works on Windows
+  · all the other bug fixes from 1.4.20
+
+• Other major implementation changes
+  · on Linux, dbus-daemon uses epoll if supported, for better scalability
+  · dbus_threads_init() ignores its argument and behaves like
+    dbus_threads_init_default() instead
+  · removed the per-connection link cache, improving dbus-daemon performance
+
+• Developer features
+  · optional Valgrind instrumentation (--with-valgrind)
+  · optional Stats interface on the dbus-daemon (--enable-stats)
+  · optionally abort whenever malloc() fails (--enable-embedded-tests
+    and export DBUS_MALLOC_CANNOT_FAIL=1)
+
+Changes since 1.5.12:
 
 • Be more careful about monotonic time vs. real time, fixing DBUS_COOKIE_SHA1
   spec-compliance (fd.o #48580, David Zeuthen)
 
 • Don't use install(1) within the source/build trees, fixing the build as
   non-root when using OpenBSD install(1) (fd.o #48217, Antoine Jacoutot)
+
+• Add missing commas in some tcp and nonce-tcp addresses, and remove
+  an unused duplicate copy of the nonce-tcp transport in Windows builds
+  (fd.o #45896, Simon McVittie)
 
 D-Bus 1.5.12 (2012-03-27)
 ==
