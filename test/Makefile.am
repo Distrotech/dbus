@@ -294,6 +294,7 @@ all-local:
 	else \
 		for F in $(static_data); do \
 			$(MKDIR_P) $${F%/*}; \
+			rm -f $$F; \
 			cp $(srcdir)/$$F $$F; \
 		done; \
 	fi
