@@ -1,6 +1,12 @@
 D-Bus 1.7.0 (UNRELEASED)
 ==
 
+Fixes:
+
+• Add dbus-launch --exit-with-x11 option. Distributions should use this
+  in their X11 session startup infrastructure, in preference to
+  the --exit-with-session option. (fd.o #39197, Simon McVittie)
+
 D-Bus 1.6.0 (2012-06-05)
 ==
 

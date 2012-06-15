@@ -43,6 +43,47 @@
 extern Display *xdisplay;
 #endif
 
+/* PROCESSES
+ *
+ * If you are in a shell and run "dbus-launch myapp", here is what happens:
+ *
+ * shell [*]
+ *   \- main()               --exec--> myapp[*]
+ *      \- "intermediate parent"
+ *         \- bus-runner     --exec--> dbus-daemon --fork
+ *         \- babysitter[*]            \- final dbus-daemon[*]
+ *
+ * Processes marked [*] survive the initial flurry of activity.
+ *
+ * If you run "dbus-launch --sh-syntax" then the diagram is the same, except
+ * that main() prints variables and exits 0 instead of exec'ing myapp.
+ *
+ * PIPES
+ *
+ * dbus-daemon --print-pid     -> bus_pid_to_launcher_pipe     -> main
+ * dbus-daemon --print-address -> bus_address_to_launcher_pipe -> main
+ * main                        -> bus_pid_to_babysitter_pipe   -> babysitter
+ *
+ * The intermediate parent looks pretty useless at first glance. Its purpose
+ * is to avoid the bus-runner becoming a zombie: when the intermediate parent
+ * terminates, the bus-runner and babysitter are reparented to init, which
+ * reaps them if they have finished. We can't rely on main() to reap arbitrary
+ * children because it might exec myapp, after which it can't be relied on to
+ * reap its children. We *can* rely on main() to reap the intermediate parent,
+ * because that happens before it execs myapp.
+ *
+ * It's unclear why dbus-daemon needs to fork, but we explicitly tell it to
+ * for some reason, then wait for it. If we left it undefined, a forking
+ * dbus-daemon would get the parent process reparented to init and reaped
+ * when the intermediate parent terminated, and a non-forking dbus-daemon
+ * would get reparented to init and carry on there.
+ *
+ * myapp is exec'd by the process that initially ran main() so that it's
+ * the shell's child, so the shell knows how to do job control and stuff.
+ * This is desirable for the "dbus-launch an application" use-case, less so
+ * for the "dbus-launch a test suite in an isolated session" use-case.
+ */
+
 static char* machine_uuid = NULL;
 
 const char*
@@ -140,7 +181,7 @@ verbose (const char *format,
 static void
 usage (int ecode)
 {
-  fprintf (stderr, "dbus-launch [--version] [--help] [--sh-syntax] [--csh-syntax] [--auto-syntax] [--exit-with-session]\n");
+  fprintf (stderr, "dbus-launch [--version] [--help] [--sh-syntax] [--csh-syntax] [--auto-syntax] [--exit-with-session] [--exit-with-x11]\n");
   exit (ecode);
 }
 
@@ -451,11 +492,20 @@ kill_bus_when_session_ends (void)
   else
     tty_fd = -1;
 
-  if (tty_fd >= 0)
-    verbose ("stdin isatty(), monitoring it\n");
+  if (x_fd >= 0)
+    {
+      verbose ("session lifetime is defined by X, not monitoring stdin\n");
+      tty_fd = -1;
+    }
+  else if (tty_fd >= 0)
+    {
+      verbose ("stdin isatty(), monitoring it\n");
+    }
   else
-    verbose ("stdin was not a TTY, not monitoring it\n");  
-  
+    {
+      verbose ("stdin was not a TTY, not monitoring it\n");
+    }
+
   if (tty_fd < 0 && x_fd < 0)
     {
       fprintf (stderr, "No terminal on standard input and no X display; cannot attach message bus to session lifetime\n");
@@ -759,6 +809,7 @@ main (int argc, char **argv)
   const char *runprog = NULL;
   int remaining_args = 0;
   int exit_with_session;
+  int exit_with_x11 = FALSE;
   int binary_syntax = FALSE;
   int c_shell_syntax = FALSE;
   int bourne_shell_syntax = FALSE;
@@ -800,6 +851,8 @@ main (int argc, char **argv)
         version ();
       else if (strcmp (arg, "--exit-with-session") == 0)
         exit_with_session = TRUE;
+      else if (strcmp (arg, "--exit-with-x11") == 0)
+        exit_with_x11 = TRUE;
       else if (strcmp (arg, "--close-stderr") == 0)
         close_stderr = TRUE;
       else if (strstr (arg, "--autolaunch=") == arg)
@@ -911,6 +964,9 @@ main (int argc, char **argv)
   if (exit_with_session)
     verbose ("--exit-with-session enabled\n");
 
+  if (exit_with_x11)
+    verbose ("--exit-with-x11 enabled\n");
+
   if (autolaunch)
     {      
 #ifndef DBUS_BUILD_X11
@@ -933,10 +989,10 @@ main (int argc, char **argv)
         }
 
       verbose ("Autolaunch enabled (using X11).\n");
-      if (!exit_with_session)
+      if (!exit_with_x11)
 	{
-	  verbose ("--exit-with-session automatically enabled\n");
-	  exit_with_session = TRUE;
+          verbose ("--exit-with-x11 automatically enabled\n");
+          exit_with_x11 = TRUE;
 	}
 
       if (!x11_init ())
@@ -959,12 +1015,27 @@ main (int argc, char **argv)
 	  exit (0);
 	}
 #endif /* DBUS_ENABLE_X11_AUTOLAUNCH */
+#endif /* DBUS_BUILD_X11 */
     }
+  else if (exit_with_x11)
+    {
+#ifndef DBUS_BUILD_X11
+      fprintf (stderr, "Session lifetime based on X11 requested, but X11 support not compiled in.\n");
+      exit (1);
+#else /* DBUS_BUILD_X11 */
+      if (!x11_init ())
+        {
+          fprintf (stderr, "Session lifetime based on X11 requested, but X11 initialization failed.\n");
+          exit (1);
+        }
+#endif /* DBUS_BUILD_X11 */
+    }
+#ifdef DBUS_BUILD_X11
   else if (read_machine_uuid_if_needed())
     {
       x11_init();
-#endif /* DBUS_BUILD_X11 */
     }
+#endif /* DBUS_BUILD_X11 */
 
 
   if (pipe (bus_pid_to_launcher_pipe) < 0 ||
@@ -1026,7 +1097,7 @@ main (int argc, char **argv)
            * and will also reap the pre-forked bus
            * daemon
            */
-          babysit (exit_with_session, ret,
+          babysit (exit_with_session || exit_with_x11, ret,
                    bus_pid_to_babysitter_pipe[READ_END]);
           exit (0);
         }
