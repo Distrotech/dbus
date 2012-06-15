@@ -494,6 +494,130 @@
         </informaltable>
       </para>
 
+      <sect3 id="message-protocol-marshaling-object-path">
+        <title>Valid Object Paths</title>
+
+        <para>
+          An object path is a name used to refer to an object instance.
+          Conceptually, each participant in a D-Bus message exchange may have
+          any number of object instances (think of C++ or Java objects) and each
+          such instance will have a path. Like a filesystem, the object
+          instances in an application form a hierarchical tree.
+        </para>
+
+        <para>
+          Object paths are often namespaced by starting with a reversed
+          domain name and containing an interface version number, in the
+          same way as
+          <link linkend="message-protocol-names-interface">interface
+            names</link> and
+          <link linkend="message-protocol-names-bus">well-known
+            bus names</link>.
+          This makes it possible to implement more than one service, or
+          more than one version of a service, in the same process,
+          even if the services share a connection but cannot otherwise
+          co-operate (for instance, if they are implemented by different
+          plugins).
+        </para>
+
+        <para>
+          For instance, if the owner of <literal>example.com</literal> is
+          developing a D-Bus API for a music player, they might use the
+          hierarchy of object paths that start with
+          <literal>/com/example/MusicPlayer1</literal> for its objects.
+        </para>
+
+        <para>
+          The following rules define a valid object path. Implementations must
+          not send or accept messages with invalid object paths.
+          <itemizedlist>
+            <listitem>
+              <para>
+                The path may be of any length.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                The path must begin with an ASCII '/' (integer 47) character,
+                and must consist of elements separated by slash characters.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                Each element must only contain the ASCII characters
+                "[A-Z][a-z][0-9]_"
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                No element may be the empty string.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                Multiple '/' characters cannot occur in sequence.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                A trailing '/' character is not allowed unless the
+                path is the root path (a single '/' character).
+              </para>
+            </listitem>
+          </itemizedlist>
+        </para>
+
+      </sect3>
+
+      <sect3 id="message-protocol-marshaling-signature">
+        <title>Valid Signatures</title>
+        <para>
+          An implementation must not send or accept invalid signatures.
+          Valid signatures will conform to the following rules:
+          <itemizedlist>
+            <listitem>
+              <para>
+                The signature is a list of single complete types.
+                Arrays must have element types, and structs must
+                have both open and close parentheses.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                Only type codes, open and close parentheses, and open and
+                close curly brackets are allowed in the signature. The
+                <literal>STRUCT</literal> type code
+                is not allowed in signatures, because parentheses
+                are used instead. Similarly, the
+                <literal>DICT_ENTRY</literal> type code is not allowed in
+                signatures, because curly brackets are used instead.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                The maximum depth of container type nesting is 32 array type
+                codes and 32 open parentheses. This implies that the maximum
+                total depth of recursion is 64, for an "array of array of array
+                of ... struct of struct of struct of ..."  where there are 32
+                array and 32 struct.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                The maximum length of a signature is 255.
+              </para>
+            </listitem>
+          </itemizedlist>
+        </para>
+
+        <para>
+          When signatures appear in messages, the marshalling format
+          guarantees that they will be followed by a nul byte (which can
+          be interpreted as either C-style string termination or the INVALID
+          type-code), but this is not conceptually part of the signature.
+        </para>
+      </sect3>
+
     </sect2>
 
     <sect2 id="container-types">
@@ -841,7 +965,7 @@
               </row><row>
                 <entry><literal>OBJECT_PATH</literal></entry>
                 <entry>Exactly the same as <literal>STRING</literal> except the 
-                  content must be a valid object path (see below).
+                  content must be a valid object path (see above).
                 </entry>
                 <entry>
                   4 (for the length)
@@ -850,7 +974,7 @@
                 <entry><literal>SIGNATURE</literal></entry>
                 <entry>The same as <literal>STRING</literal> except the length is a single 
                   byte (thus signatures have a maximum length of 255)
-                  and the content must be a valid signature (see below).
+                  and the content must be a valid signature (see above).
                 </entry>
                 <entry>
                   1
@@ -919,130 +1043,7 @@
           </tgroup>
         </informaltable>
       </para>
-      
-      <sect3 id="message-protocol-marshaling-object-path">
-        <title>Valid Object Paths</title>
-        
-        <para>
-          An object path is a name used to refer to an object instance.
-          Conceptually, each participant in a D-Bus message exchange may have
-          any number of object instances (think of C++ or Java objects) and each
-          such instance will have a path. Like a filesystem, the object
-          instances in an application form a hierarchical tree.
-        </para>
-        
-        <para>
-          The following rules define a valid object path. Implementations must 
-          not send or accept messages with invalid object paths.
-          <itemizedlist>
-            <listitem>
-              <para>
-                The path may be of any length.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                The path must begin with an ASCII '/' (integer 47) character, 
-                and must consist of elements separated by slash characters.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                Each element must only contain the ASCII characters 
-                "[A-Z][a-z][0-9]_"
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                No element may be the empty string.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                Multiple '/' characters cannot occur in sequence.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                A trailing '/' character is not allowed unless the 
-                path is the root path (a single '/' character).
-              </para>
-            </listitem>
-          </itemizedlist>
-        </para>
 
-        <para>
-          Object paths are often namespaced by starting with a reversed
-          domain name and containing an interface version number, in the
-          same way as
-          <link linkend="message-protocol-names-interface">interface
-            names</link> and
-          <link linkend="message-protocol-names-bus">well-known
-            bus names</link>.
-          This makes it possible to implement more than one service, or
-          more than one version of a service, in the same process,
-          even if the services share a connection but cannot otherwise
-          co-operate (for instance, if they are implemented by different
-          plugins).
-        </para>
-
-        <para>
-          For instance, if the owner of <literal>example.com</literal> is
-          developing a D-Bus API for a music player, they might use the
-          hierarchy of object paths that start with
-          <literal>/com/example/MusicPlayer1</literal> for its objects.
-        </para>
-      </sect3>
-
-      <sect3 id="message-protocol-marshaling-signature">
-        <title>Valid Signatures</title>
-        <para>
-          An implementation must not send or accept invalid signatures.
-          Valid signatures will conform to the following rules:
-          <itemizedlist>
-            <listitem>
-              <para>
-                The signature ends with a nul byte.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                The signature is a list of single complete types. 
-                Arrays must have element types, and structs must 
-                have both open and close parentheses.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                Only type codes and open and close parentheses are 
-                allowed in the signature. The <literal>STRUCT</literal> type code
-                is not allowed in signatures, because parentheses
-                are used instead.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                The maximum depth of container type nesting is 32 array type
-                codes and 32 open parentheses. This implies that the maximum
-                total depth of recursion is 64, for an "array of array of array
-                of ... struct of struct of struct of ..."  where there are 32
-                array and 32 struct.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                The maximum length of a signature is 255.
-              </para>
-            </listitem>
-            <listitem>
-              <para>
-                Signatures must be nul-terminated.
-              </para>
-            </listitem>
-          </itemizedlist>
-        </para>
-      </sect3>
-      
     </sect2>
 
   </sect1>
