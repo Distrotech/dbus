@@ -2,6 +2,7 @@ configdir=$(sysconfdir)/dbus-1
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	$(DBUS_X_CFLAGS) \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \

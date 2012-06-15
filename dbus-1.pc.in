@@ -14,4 +14,4 @@ Description: Free desktop message bus
 Version: @VERSION@
 Libs: -L${libdir} -ldbus-1
 Libs.private: @LIBDBUS_LIBS@
-Cflags: -I${includedir}/dbus-1.0 -I${libdir}/dbus-1.0/include
+Cflags: -I${includedir}/dbus-1.0 -I${libdir}/dbus-1.0/include @DBUS_STATIC_BUILD_CPPFLAGS@

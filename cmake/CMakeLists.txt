@@ -83,6 +83,8 @@ option (DBUS_USE_EXPAT "Use expat (== ON) or libxml2 (==OFF)" ON)
 
 if(NOT WIN32)
 	option (DBUS_ENABLE_ABSTRACT_SOCKETS "enable support for abstract sockets" ON)
+	set (CMAKE_THREAD_PREFER_PTHREAD ON)
+	include (FindThreads)
 endif(NOT WIN32)
 
 #AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
