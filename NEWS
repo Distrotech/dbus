@@ -1,5 +1,13 @@
-D-Bus 1.6.2 (UNRELEASED)
+D-Bus 1.6.2 (2012-06-25)
 ==
+
+The "Ice Cabbage" release.
+
+• Change how we create /var/lib/dbus so it works under Automake >= 1.11.4
+  (fd.o #51406, Simon McVittie)
+
+• Don't return from dbus_pending_call_set_notify with a lock held on OOM
+  (fd.o #51032, Simon McVittie)
 
 • Disconnect "developer mode" (assertions, verbose mode etc.) from
   Automake maintainer mode. D-Bus developers should now configure with
