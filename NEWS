@@ -1,7 +1,11 @@
 D-Bus 1.6.2 (UNRELEASED)
 ==
 
-Fixes:
+• Disconnect "developer mode" (assertions, verbose mode etc.) from
+  Automake maintainer mode. D-Bus developers should now configure with
+  --enable-developer. Automake maintainer mode is now on by default;
+  distributions can disable it with --disable-maintainer-mode.
+  (fd.o #34671, Simon McVittie)
 
 • Automatically define DBUS_STATIC_BUILD in static-only Autotools builds,
   fixing linking when targeting Windows (fd.o #33973; william, Simon McVittie)
