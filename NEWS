@@ -19,9 +19,6 @@ The "Ice Cabbage" release.
   fixing linking when targeting Windows (fd.o #33973; william, Simon McVittie)
 
 • Unix-specific:
-  · Add dbus-launch --exit-with-x11 option. Distributions should use this
-    in their X11 session startup infrastructure, in preference to
-    the --exit-with-session option. (fd.o #39197, Simon McVittie)
   · Check for libpthread under CMake on Unix (fd.o #47237, Simon McVittie)
 
 D-Bus 1.6.0 (2012-06-05)
