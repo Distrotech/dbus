@@ -56,17 +56,17 @@ about D\-Bus. See also the man page for \fIdbus\-daemon\fP.
 Distributions running
 .B dbus\-launch
 as part of a standard X session should run
-.B "dbus\-launch \-\-exit\-with\-x11"
+.B "dbus\-launch \-\-exit\-with\-session"
 after the X server has started and become available, as a wrapper around
 the "main" X client (typically a session manager or window manager), as in
 these examples:
 
 .RS
-.B "dbus\-launch \-\-exit\-with\-x11 gnome\-session"
+.B "dbus\-launch \-\-exit\-with\-session gnome\-session"
 
-.B "dbus\-launch \-\-exit\-with\-x11 openbox"
+.B "dbus\-launch \-\-exit\-with\-session openbox"
 
-.B "dbus\-launch \-\-exit\-with\-x11 ~/.xsession"
+.B "dbus\-launch \-\-exit\-with\-session ~/.xsession"
 .RE
 
 If your distribution does not do this, you can achieve similar results
