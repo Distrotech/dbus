@@ -181,7 +181,7 @@ verbose (const char *format,
 static void
 usage (int ecode)
 {
-  fprintf (stderr, "dbus-launch [--version] [--help] [--sh-syntax] [--csh-syntax] [--auto-syntax] [--exit-with-session] [--exit-with-x11]\n");
+  fprintf (stderr, "dbus-launch [--version] [--help] [--sh-syntax] [--csh-syntax] [--auto-syntax] [--exit-with-session]\n");
   exit (ecode);
 }
 
@@ -809,7 +809,6 @@ main (int argc, char **argv)
   const char *runprog = NULL;
   int remaining_args = 0;
   int exit_with_session;
-  int exit_with_x11 = FALSE;
   int binary_syntax = FALSE;
   int c_shell_syntax = FALSE;
   int bourne_shell_syntax = FALSE;
@@ -851,8 +850,6 @@ main (int argc, char **argv)
         version ();
       else if (strcmp (arg, "--exit-with-session") == 0)
         exit_with_session = TRUE;
-      else if (strcmp (arg, "--exit-with-x11") == 0)
-        exit_with_x11 = TRUE;
       else if (strcmp (arg, "--close-stderr") == 0)
         close_stderr = TRUE;
       else if (strstr (arg, "--autolaunch=") == arg)
@@ -964,9 +961,6 @@ main (int argc, char **argv)
   if (exit_with_session)
     verbose ("--exit-with-session enabled\n");
 
-  if (exit_with_x11)
-    verbose ("--exit-with-x11 enabled\n");
-
   if (autolaunch)
     {      
 #ifndef DBUS_BUILD_X11
@@ -989,10 +983,10 @@ main (int argc, char **argv)
         }
 
       verbose ("Autolaunch enabled (using X11).\n");
-      if (!exit_with_x11)
+      if (!exit_with_session)
 	{
-          verbose ("--exit-with-x11 automatically enabled\n");
-          exit_with_x11 = TRUE;
+	  verbose ("--exit-with-session automatically enabled\n");
+	  exit_with_session = TRUE;
 	}
 
       if (!x11_init ())
@@ -1015,27 +1009,12 @@ main (int argc, char **argv)
 	  exit (0);
 	}
 #endif /* DBUS_ENABLE_X11_AUTOLAUNCH */
-#endif /* DBUS_BUILD_X11 */
     }
-  else if (exit_with_x11)
-    {
-#ifndef DBUS_BUILD_X11
-      fprintf (stderr, "Session lifetime based on X11 requested, but X11 support not compiled in.\n");
-      exit (1);
-#else /* DBUS_BUILD_X11 */
-      if (!x11_init ())
-        {
-          fprintf (stderr, "Session lifetime based on X11 requested, but X11 initialization failed.\n");
-          exit (1);
-        }
-#endif /* DBUS_BUILD_X11 */
-    }
-#ifdef DBUS_BUILD_X11
   else if (read_machine_uuid_if_needed())
     {
       x11_init();
-    }
 #endif /* DBUS_BUILD_X11 */
+    }
 
 
   if (pipe (bus_pid_to_launcher_pipe) < 0 ||
@@ -1097,7 +1076,7 @@ main (int argc, char **argv)
            * and will also reap the pre-forked bus
            * daemon
            */
-          babysit (exit_with_session || exit_with_x11, ret,
+          babysit (exit_with_session, ret,
                    bus_pid_to_babysitter_pipe[READ_END]);
           exit (0);
         }
