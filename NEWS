@@ -1,7 +1,9 @@
 D-Bus 1.6.4 (UNRELEASED)
 ==
 
-...
+• Detect that users are "at the console" correctly when configured with
+  a non-default path such as --enable-console-auth-dir=/run/console
+  (fd.o #51521, Dave Reisner)
 
 D-Bus 1.6.2 (2012-06-27)
 ==
