@@ -72,6 +72,9 @@ EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\
 	run-with-tmp-session-bus.conf
 
-#create the /var/lib/data directory for dbus-uuidgen
-localstatelibdir = $(localstatedir)/lib/dbus
-localstatelib_DATA =
+# create the /var/lib/dbus directory for dbus-uuidgen
+install-data-local:
+	$(MKDIR_P) $(DESTDIR)$(localstatedir)/lib/dbus
+
+installcheck-local:
+	test -d $(DESTDIR)$(localstatedir)/lib/dbus

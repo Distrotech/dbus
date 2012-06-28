@@ -631,6 +631,8 @@ dbus_pending_call_set_notify (DBusPendingCall              *pending,
                               void                         *user_data,
                               DBusFreeFunction              free_user_data)
 {
+  dbus_bool_t ret = FALSE;
+
   _dbus_return_val_if_fail (pending != NULL, FALSE);
 
   CONNECTION_LOCK (pending->connection);
@@ -638,13 +640,15 @@ dbus_pending_call_set_notify (DBusPendingCall              *pending,
   /* could invoke application code! */
   if (!_dbus_pending_call_set_data_unlocked (pending, notify_user_data_slot,
                                              user_data, free_user_data))
-    return FALSE;
+    goto out;
   
   pending->function = function;
+  ret = TRUE;
 
+out:
   CONNECTION_UNLOCK (pending->connection);
   
-  return TRUE;
+  return ret;
 }
 
 /**

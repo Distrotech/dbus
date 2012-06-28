@@ -7,7 +7,7 @@
 dbus\-launch \- Utility to start a message bus from a shell script
 .SH SYNOPSIS
 .PP
-.B dbus\-launch [\-\-version] [\-\-sh\-syntax] [\-\-csh\-syntax] [\-\-auto\-syntax] [\-\-exit\-with\-session] [\-\-exit\-with\-x11] [\-\-autolaunch=MACHINEID] [\-\-config\-file=FILENAME] [PROGRAM] [ARGS...]
+.B dbus\-launch [\-\-version] [\-\-sh\-syntax] [\-\-csh\-syntax] [\-\-auto\-syntax] [\-\-exit\-with\-session] [\-\-autolaunch=MACHINEID] [\-\-config\-file=FILENAME] [PROGRAM] [ARGS...]
 
 .SH DESCRIPTION
 
@@ -56,17 +56,17 @@ about D\-Bus. See also the man page for \fIdbus\-daemon\fP.
 Distributions running
 .B dbus\-launch
 as part of a standard X session should run
-.B "dbus\-launch \-\-exit\-with\-x11"
+.B "dbus\-launch \-\-exit\-with\-session"
 after the X server has started and become available, as a wrapper around
 the "main" X client (typically a session manager or window manager), as in
 these examples:
 
 .RS
-.B "dbus\-launch \-\-exit\-with\-x11 gnome\-session"
+.B "dbus\-launch \-\-exit\-with\-session gnome\-session"
 
-.B "dbus\-launch \-\-exit\-with\-x11 openbox"
+.B "dbus\-launch \-\-exit\-with\-session openbox"
 
-.B "dbus\-launch \-\-exit\-with\-x11 ~/.xsession"
+.B "dbus\-launch \-\-exit\-with\-session ~/.xsession"
 .RE
 
 If your distribution does not do this, you can achieve similar results
@@ -167,25 +167,11 @@ the \-\-session argument. See the man page for dbus\-daemon
 Emit csh compatible code to set up environment variables.
 
 .TP
-.I \-\-exit\-with\-x11
-If this option is provided, a persistent "babysitter" process will be
-created, and will connect to the X server. If it cannot do so, launching
-fails. If the "babysitter" process loses its X connection,
-it kills the message bus daemon, disconnecting all of its clients (which
-should exit in response). This avoids having leftover daemon
-processes from a user X session, after the X session has ended.
-
-.TP
-.I \-\-exit\-with\-session
-If this option is provided, a persistent "babysitter" process will be
-created, as if for
-.BR \-\-exit\-with\-x11 .
-If it cannot connect to the X server, it will monitor the terminal from which
-.B dbus-launch
-was started instead, and if it gets a HUP on stdin, the message bus daemon
-will be killed. This option is not recommended, since it will consume input
-from the terminal where it was started; it is mainly provided for
-backwards compatibility.
+.I "\-\-exit\-with\-session"
+If this option is provided, a persistent "babysitter" process will be 
+created that watches stdin for HUP and tries to connect to the X
+server. If this process gets a HUP on stdin or loses its X connection,
+it kills the message bus daemon.
 
 .TP
 .I "\-\-autolaunch=MACHINEID"

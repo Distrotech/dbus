@@ -19,8 +19,9 @@ GETTEXT_PACKAGE=dbus-1
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[The name of the gettext domain])
 
- ## must come before we use the $USE_MAINTAINER_MODE variable later
-AM_MAINTAINER_MODE
+# By default, rebuild autotools files on demand; only use ./missing if the
+# user says --disable-maintainer-mode (some distributions like to do this)
+AM_MAINTAINER_MODE([enable])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
@@ -36,7 +37,7 @@ LT_CURRENT=10
 
 ## increment any time the source changes; set to
 ##  0 if you increment CURRENT
-LT_REVISION=1
+LT_REVISION=2
 
 ## increment if any interfaces have been added; set to 0
 ## if any interfaces have been changed or removed. removal has
@@ -123,6 +124,12 @@ AM_CONDITIONAL(DBUS_WINCE, test "$dbus_wince" = yes)
 AM_CONDITIONAL(DBUS_UNIX, test "$dbus_unix" = yes)
 AM_CONDITIONAL(DBUS_CYGWIN, test "$dbus_cygwin" = yes)
 
+# this must come first: other options use this to set their defaults
+AC_ARG_ENABLE([developer],
+  [AS_HELP_STRING([--enable-developer],
+    [set defaults to be appropriate for a D-Bus developer instead of a distribution/end-user]),
+    [], enable_developer=no])
+
 DBUS_STATIC_BUILD_CPPFLAGS=
 if test "x$enable_shared" = xno; then
     # On Windows, linking against the static library requires special effort
@@ -134,8 +141,8 @@ fi
 AC_SUBST([DBUS_STATIC_BUILD_CPPFLAGS])
 
 AC_ARG_ENABLE(ansi, AS_HELP_STRING([--enable-ansi],[enable -ansi -pedantic gcc flags]),enable_ansi=$enableval,enable_ansi=no)
-AC_ARG_ENABLE(verbose-mode, AS_HELP_STRING([--enable-verbose-mode],[support verbose debug mode]),enable_verbose_mode=$enableval,enable_verbose_mode=$USE_MAINTAINER_MODE)
-AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
+AC_ARG_ENABLE(verbose-mode, AS_HELP_STRING([--enable-verbose-mode],[support verbose debug mode]),enable_verbose_mode=$enableval,enable_verbose_mode=$enable_developer)
+AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$enable_developer)
 AC_ARG_ENABLE(checks, AS_HELP_STRING([--enable-checks],[include sanity checks on public API]),enable_checks=$enableval,enable_checks=yes)
 AC_ARG_ENABLE(xml-docs, AS_HELP_STRING([--enable-xml-docs],[build XML documentation (requires xmlto)]),enable_xml_docs=$enableval,enable_xml_docs=auto)
 AC_ARG_ENABLE(doxygen-docs, AS_HELP_STRING([--enable-doxygen-docs],[build DOXYGEN documentation (requires Doxygen)]),enable_doxygen_docs=$enableval,enable_doxygen_docs=auto)
@@ -166,7 +173,7 @@ AC_ARG_WITH(dbus_session_bus_default_address, AS_HELP_STRING([--with-dbus-sessio
 AC_ARG_ENABLE([embedded-tests],
   AS_HELP_STRING([--enable-embedded-tests],
     [enable unit test code in the library and binaries]),
-  [], [enable_embedded_tests=$USE_MAINTAINER_MODE])
+  [], [enable_embedded_tests=$enable_developer])
 AC_ARG_ENABLE([modular-tests],
   AS_HELP_STRING([--enable-modular-tests],
     [enable modular regression tests (requires GLib)]),
@@ -1308,9 +1315,9 @@ cc_supports_flag() {
 TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl Use -Werror by default if:
   dnl - we're not on Windows (too many warnings), and
-  dnl - we're in maintainer mode (a D-Bus developer, not a distro or end-user)
+  dnl - we're in developer mode (a D-Bus developer, not a distro or end-user)
   dnl Override with --enable-Werror or --disable-Werror
-  [test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$USE_MAINTAINER_MODE = xyes],
+  [test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$enable_developer = xyes],
 
   dnl Enable these warnings if possible:
   [all \
@@ -1754,7 +1761,7 @@ echo "
         man2html:                 ${MAN2HTML:-not found}"
 
 echo "
-        Maintainer mode:          ${USE_MAINTAINER_MODE}
+        Rebuilding generated files: ${USE_MAINTAINER_MODE}
         gcc coverage profiling:   ${enable_compiler_coverage}
         Building embedded tests:  ${enable_embedded_tests}
         Building modular tests:   ${enable_modular_tests}

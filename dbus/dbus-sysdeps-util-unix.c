@@ -540,7 +540,7 @@ _dbus_user_at_console (const char *username,
                        DBusError  *error)
 {
 
-  DBusString f;
+  DBusString u, f;
   dbus_bool_t result;
 
   result = FALSE;
@@ -556,8 +556,9 @@ _dbus_user_at_console (const char *username,
       goto out;
     }
 
+  _dbus_string_init_const (&u, username);
 
-  if (!_dbus_string_append (&f, username))
+  if (!_dbus_concat_dir_and_file (&f, &u))
     {
       _DBUS_SET_OOM (error);
       goto out;

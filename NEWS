@@ -9,13 +9,31 @@ Enhancements:
 
 Fixes:
 
+• Detect that users are "at the console" correctly when configured with
+  a non-default path such as --enable-console-auth-dir=/run/console
+  (fd.o #51521, Dave Reisner)
+
+D-Bus 1.6.2 (2012-06-27)
+==
+
+The "Ice Cabbage" release.
+
+• Change how we create /var/lib/dbus so it works under Automake >= 1.11.4
+  (fd.o #51406, Simon McVittie)
+
+• Don't return from dbus_pending_call_set_notify with a lock held on OOM
+  (fd.o #51032, Simon McVittie)
+
+• Disconnect "developer mode" (assertions, verbose mode etc.) from
+  Automake maintainer mode. D-Bus developers should now configure with
+  --enable-developer. Automake maintainer mode is now on by default;
+  distributions can disable it with --disable-maintainer-mode.
+  (fd.o #34671, Simon McVittie)
+
 • Automatically define DBUS_STATIC_BUILD in static-only Autotools builds,
   fixing linking when targeting Windows (fd.o #33973; william, Simon McVittie)
 
 • Unix-specific:
-  · Add dbus-launch --exit-with-x11 option. Distributions should use this
-    in their X11 session startup infrastructure, in preference to
-    the --exit-with-session option. (fd.o #39197, Simon McVittie)
   · Check for libpthread under CMake on Unix (fd.o #47237, Simon McVittie)
 
 D-Bus 1.6.0 (2012-06-05)
