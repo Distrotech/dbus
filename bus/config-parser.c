@@ -323,7 +323,14 @@ merge_included (BusConfigParser *parser,
       parser->pidfile = included->pidfile;
       included->pidfile = NULL;
     }
-  
+
+  if (included->servicehelper != NULL)
+    {
+      dbus_free (parser->servicehelper);
+      parser->servicehelper = included->servicehelper;
+      included->servicehelper = NULL;
+    }
+
   while ((link = _dbus_list_pop_first_link (&included->listen_on)))
     _dbus_list_append_link (&parser->listen_on, link);
 
