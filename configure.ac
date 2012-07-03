@@ -127,8 +127,9 @@ AM_CONDITIONAL(DBUS_CYGWIN, test "$dbus_cygwin" = yes)
 # this must come first: other options use this to set their defaults
 AC_ARG_ENABLE([developer],
   [AS_HELP_STRING([--enable-developer],
-    [set defaults to be appropriate for a D-Bus developer instead of a distribution/end-user]),
-    [], enable_developer=no])
+    [set defaults to be appropriate for a D-Bus developer instead of a distribution/end-user])],
+  [],
+  [enable_developer=no])
 
 DBUS_STATIC_BUILD_CPPFLAGS=
 if test "x$enable_shared" = xno; then
