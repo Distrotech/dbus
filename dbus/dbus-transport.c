@@ -253,7 +253,6 @@ check_address (const char *address, DBusError *error)
   int len, i;
 
   _dbus_assert (address != NULL);
-  _dbus_assert (*address != '\0');
 
   if (!dbus_parse_address (address, &entries, &len, error))
     return NULL;              /* not a valid address */
