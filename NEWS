@@ -13,6 +13,12 @@ Fixes:
   a non-default path such as --enable-console-auth-dir=/run/console
   (fd.o #51521, Dave Reisner)
 
+• Remove an incorrect assertion from DBusTransport (fd.o #51657,
+  Simon McVittie)
+
+• Make --enable-developer default to "no" (regression in 1.6.2;
+  fd.o #51657, Simon McVittie)
+
 D-Bus 1.6.2 (2012-06-27)
 ==
 
