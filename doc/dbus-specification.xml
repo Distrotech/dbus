@@ -3805,10 +3805,13 @@
         that connection is said to <firstterm>own</firstterm> the name.
       </para>
       <para>
-        The bus itself owns a special name, <literal>org.freedesktop.DBus</literal>. 
-        This name routes messages to the bus, allowing applications to make 
-        administrative requests. For example, applications can ask the bus 
-        to assign a name to a connection.
+        The bus itself owns a special name,
+        <literal>org.freedesktop.DBus</literal>, with an object
+        located at <literal>/org/freedesktop/DBus</literal> that
+        implements the <literal>org.freedesktop.DBus</literal>
+        interface. This service allows applications to make
+        administrative requests of the bus itself. For example,
+        applications can ask the bus to assign a name to a connection.
       </para>
       <para>
         Each name may have <firstterm>queued owners</firstterm>.  When an
