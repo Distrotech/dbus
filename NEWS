@@ -1,4 +1,4 @@
-D-Bus 1.6.4 (UNRELEASED)
+D-Bus 1.6.4 (2012-07-18)
 ==
 
 • Detect that users are "at the console" correctly when configured with
@@ -10,6 +10,10 @@ D-Bus 1.6.4 (UNRELEASED)
 
 • Make --enable-developer default to "no" (regression in 1.6.2;
   fd.o #51657, Simon McVittie)
+
+• Windows-specific:
+  · Launch dbus-daemon correctly if its path contains a space
+    (fd.o #49450, Wolfgang Baron)
 
 D-Bus 1.6.2 (2012-06-27)
 ==
