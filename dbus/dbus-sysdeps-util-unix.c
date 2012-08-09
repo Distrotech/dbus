@@ -424,7 +424,7 @@ _dbus_request_file_descriptor_limit (unsigned int limit)
 void
 _dbus_init_system_log (void)
 {
-#ifdef HAVE_DECL_LOG_PERROR
+#if HAVE_DECL_LOG_PERROR
   openlog ("dbus", LOG_PID | LOG_PERROR, LOG_DAEMON);
 #else
   openlog ("dbus", LOG_PID, LOG_DAEMON);
