@@ -1,7 +1,8 @@
 D-Bus 1.6.6 (UNRELEASED)
 ==
 
-...
+• Unix-specific:
+  · Fix compilation on Solaris (fd.o #53286, Jonathan Perkin)
 
 D-Bus 1.6.4 (2012-07-18)
 ==
