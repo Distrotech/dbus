@@ -1,17 +1,21 @@
 D-Bus 1.7.0 (UNRELEASED)
 ==
 
+Enhancements:
+
+• D-Bus Specification 0.21
+  · actually say that /org/freedesktop/DBus is the object that
+    implements o.fd.DBus (fd.o #51865, Colin Walters)
+  · various reorganisation for better clarity (fd.o #38252, Simon McVittie)
+  · stop claiming that all basic types work just like INT32 (strings don't!)
+
+Fixes:
+
 • Unix-specific:
   · Fix compilation on Solaris (fd.o #53286, Jonathan Perkin)
 
 D-Bus 1.6.4 (2012-07-18)
 ==
-
-Enhancements:
-
-• D-Bus Specification 0.20
-  · various reorganisation for better clarity (fd.o #38252, Simon McVittie)
-  · stop claiming that all basic types work just like INT32 (strings don't!)
 
 Fixes:
 

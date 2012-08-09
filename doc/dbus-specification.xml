@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.19</releaseinfo>
-    <date>2012-02-21</date>
+    <releaseinfo>Version 0.20</releaseinfo>
+    <date>unreleased</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -74,8 +74,9 @@
      <revision>
        <revnumber>current</revnumber>
        <date><ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink></date>
-       <authorinitials></authorinitials>
-       <revremark></revremark>
+       <authorinitials>smcv, walters</authorinitials>
+       <revremark>reorganise for clarity, remove false claims about
+         basic types, mention /o/fd/DBus</revremark>
      </revision>
      <revision>
        <revnumber>0.19</revnumber>
