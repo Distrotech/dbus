@@ -1379,6 +1379,8 @@ case $host_os in
     solaris*)
         # Solaris' C library apparently needs these runes to be threadsafe...
         CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
+        # ... this opt-in to get sockaddr_in6 and sockaddr_storage...
+        CFLAGS="$CFLAGS -D__EXTENSIONS__"
         # ... and this opt-in to get file descriptor passing support
         CFLAGS="$CFLAGS -D_XOPEN_SOURCE=500"
         ;;
