@@ -1,6 +1,12 @@
 D-Bus 1.7.0 (UNRELEASED)
 ==
 
+• Unix-specific:
+  · Fix compilation on Solaris (fd.o #53286, Jonathan Perkin)
+
+D-Bus 1.6.4 (2012-07-18)
+==
+
 Enhancements:
 
 • D-Bus Specification 0.20
@@ -18,6 +24,10 @@ Fixes:
 
 • Make --enable-developer default to "no" (regression in 1.6.2;
   fd.o #51657, Simon McVittie)
+
+• Windows-specific:
+  · Launch dbus-daemon correctly if its path contains a space
+    (fd.o #49450, Wolfgang Baron)
 
 D-Bus 1.6.2 (2012-06-27)
 ==
