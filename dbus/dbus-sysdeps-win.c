@@ -3121,8 +3121,18 @@ _dbus_atomic_dec (DBusAtomic *atomic)
 dbus_int32_t
 _dbus_atomic_get (DBusAtomic *atomic)
 {
-  /* this is what GLib does, hopefully it's right... */
-  MemoryBarrier ();
+  /* In this situation, GLib issues a MemoryBarrier() and then returns
+   * atomic->value. However, mingw from mingw.org (not to be confused with
+   * mingw-w64 from mingw-w64.sf.net) does not have MemoryBarrier in its
+   * headers, so we have to get a memory barrier some other way.
+   *
+   * InterlockedIncrement is older, and is documented on MSDN to be a full
+   * memory barrier, so let's use that.
+   */
+  long dummy = 0;
+
+  InterlockedExchange (&dummy, 1);
+
   return atomic->value;
 }
 
