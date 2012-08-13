@@ -36,12 +36,14 @@
 
 #include <config.h>
 
+#ifdef HAVE_MONOTONIC_CLOCK
 /* Whether we have a "monotonic" clock; i.e. a clock not affected by
  * changes in system time.
  * This is initialized once in check_monotonic_clock below.
  * https://bugs.freedesktop.org/show_bug.cgi?id=18121
  */
 static dbus_bool_t have_monotonic_clock = 0;
+#endif
 
 struct DBusRMutex {
   pthread_mutex_t lock; /**< the lock */
