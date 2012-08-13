@@ -80,7 +80,7 @@ Configuration flags
 
 When using the cmake build system the dbus-specific configuration flags that can be given 
 to the cmake program are these (use -D<key>=<value> on command line). The listed values 
-are the defaults.
+are the defaults (in a typical build - some are platform-specific).
 
 // Choose the type of build, options are: None(CMAKE_CXX_FLAGS or
 // CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
@@ -129,11 +129,14 @@ DBUS_HAVE_ATOMIC_INT:BOOL=OFF
 // install required system libraries
 DBUS_INSTALL_SYSTEM_LIBS:BOOL=OFF
 
-// session bus default address
-DBUS_SESSION_BUS_DEFAULT_ADDRESS:STRING=nonce-tcp:
+// session bus default listening address
+DBUS_SESSION_BUS_LISTEN_ADDRESS:STRING=autolaunch:
 
-// system bus default address
-DBUS_SYSTEM_BUS_DEFAULT_ADDRESS:STRING=nonce-tcp:
+// session bus fallback address for clients
+DBUS_SESSION_BUS_CONNECT_ADDRESS:STRING=autolaunch:
+
+// system bus default address (only useful on Unix)
+DBUS_SYSTEM_BUS_DEFAULT_ADDRESS:STRING=unix:path=/var/run/dbus/system_bus_socket
 
 // Use atomic integer implementation for 486
 DBUS_USE_ATOMIC_INT_486:BOOL=OFF
