@@ -169,7 +169,6 @@ AC_ARG_WITH(console-owner-file, AS_HELP_STRING([--with-console-owner-file=[filen
 AC_ARG_WITH(launchd-agent-dir, AS_HELP_STRING([--with-launchd-agent-dir=[dirname]],[directory to put the launchd agent (default: /Library/LaunchAgents)]))
 AC_ARG_WITH(dbus_user, AS_HELP_STRING([--with-dbus-user=<user>],[User for running the DBUS daemon (messagebus)]))
 AC_ARG_WITH(dbus_daemondir, AS_HELP_STRING([--with-dbus-daemondir=[dirname]],[Directory for installing the DBUS daemon]))
-AC_ARG_WITH(dbus_session_bus_default_address, AS_HELP_STRING([--with-dbus-session-bus-default-address=[nonce-tcp:/autolaunch:/tcp:host:port]],[Transport Type to be used (default: nonce-tcp:)]),with_dbus_session_bus_default_address=$withval,with_dbus_session_bus_default_address=nonce-tcp:)
 
 AC_ARG_ENABLE([embedded-tests],
   AS_HELP_STRING([--enable-embedded-tests],
@@ -1675,14 +1674,64 @@ fi
 AC_DEFINE_UNQUOTED(DBUS_SESSION_SOCKET_DIR, "$DBUS_SESSION_SOCKET_DIR", [Where per-session bus puts its sockets])
 AC_SUBST(DBUS_SESSION_SOCKET_DIR)
 
-if test x$dbus_win = xyes; then
-        DBUS_SESSION_BUS_DEFAULT_ADDRESS="$with_dbus_session_bus_default_address"
+# This must be a listening address. It doesn't necessarily need to be an
+# address you can connect to - it can be something vague like
+# "nonce-tcp:".
+#
+# The default varies by platform.
+AC_ARG_WITH([dbus_session_bus_listen_address],
+            AS_HELP_STRING([--with-dbus-session-bus-listen-address=[ADDRESS]],
+                           [default address for a session bus to listen on (see configure.ac)]),
+            [with_dbus_session_bus_listen_address=$withval],
+            [with_dbus_session_bus_listen_address=])
+
+if test "x$with_dbus_session_bus_listen_address" != "x"; then
+        # the user specified something, trust them
+        DBUS_SESSION_BUS_LISTEN_ADDRESS="$with_dbus_session_bus_listen_address"
+elif test x$dbus_win = xyes; then
+        # On Windows, you can (and should) listen on autolaunch addresses,
+        # because autolaunching is different.
+        # See https://bugs.freedesktop.org/show_bug.cgi?id=38201
+        DBUS_SESSION_BUS_LISTEN_ADDRESS="autolaunch:"
 elif test x$have_launchd = xyes; then
-        DBUS_SESSION_BUS_DEFAULT_ADDRESS="launchd:env=DBUS_LAUNCHD_SESSION_BUS_SOCKET"
+        # Mac OS X default is to use launchd
+        DBUS_SESSION_BUS_LISTEN_ADDRESS="launchd:env=DBUS_LAUNCHD_SESSION_BUS_SOCKET"
 else
-        DBUS_SESSION_BUS_DEFAULT_ADDRESS="unix:tmpdir=$DBUS_SESSION_SOCKET_DIR"
+        # The default on all other Unix platforms (notably Linux)
+        # is to create a randomly named socket in /tmp or similar
+        DBUS_SESSION_BUS_LISTEN_ADDRESS="unix:tmpdir=$DBUS_SESSION_SOCKET_DIR"
 fi
-AC_SUBST(DBUS_SESSION_BUS_DEFAULT_ADDRESS)
+AC_SUBST([DBUS_SESSION_BUS_LISTEN_ADDRESS])
+
+# This must be an address you can connect to. It doesn't necessarily
+# need to be an address you can listen on - it can be "autolaunch:",
+# even on Unix.
+#
+# The default varies by platform.
+AC_ARG_WITH([dbus_session_bus_connect_address],
+            AS_HELP_STRING([--with-dbus-session-bus-connect-address=[ADDRESS]],
+                           [fallback address for a session bus client to connect to (see configure.ac)]),
+            [with_dbus_session_bus_connect_address=$withval],
+            [with_dbus_session_bus_connect_address=])
+
+if test "x$with_dbus_session_bus_connect_address" != "x"; then
+        # the user specified something, trust them
+        DBUS_SESSION_BUS_CONNECT_ADDRESS="$with_dbus_session_bus_connect_address"
+elif test x$dbus_win = xyes; then
+        # Windows autolaunching is a bit different; leaving it in its own
+        # branch of the conditional because the default might conceivably
+        # change (see #38201)
+        DBUS_SESSION_BUS_CONNECT_ADDRESS="autolaunch:"
+else
+        # The default on all other Unix platforms (notably Linux)
+        # is to use auto-launching - this works a bit differently on Mac OS X
+        # but comes out basically the same in the end
+        DBUS_SESSION_BUS_CONNECT_ADDRESS="autolaunch:"
+fi
+AC_SUBST([DBUS_SESSION_BUS_CONNECT_ADDRESS])
+AC_DEFINE_UNQUOTED([DBUS_SESSION_BUS_CONNECT_ADDRESS],
+  ["$DBUS_SESSION_BUS_CONNECT_ADDRESS"],
+  [Fallback address for session bus clients])
 
 # darwin needs this to initialize the environment
 AC_CHECK_HEADERS(crt_externs.h)
@@ -1798,7 +1847,8 @@ echo "
         System bus socket:        ${DBUS_SYSTEM_SOCKET}
         System bus address:       ${DBUS_SYSTEM_BUS_DEFAULT_ADDRESS}
         System bus PID file:      ${DBUS_SYSTEM_PID_FILE}
-        Session bus address:      ${DBUS_SESSION_BUS_DEFAULT_ADDRESS}
+        Session bus listens on:   ${DBUS_SESSION_BUS_LISTEN_ADDRESS}
+        Session clients connect to: ${DBUS_SESSION_BUS_CONNECT_ADDRESS}
         Console auth dir:         ${DBUS_CONSOLE_AUTH_DIR}
         Console owner file:       ${have_console_owner_file}
         Console owner file path:  ${DBUS_CONSOLE_OWNER_FILE}
