@@ -1,6 +1,18 @@
 D-Bus 1.7.0 (UNRELEASED)
 ==
 
+Build-time configuration changes:
+
+• The --with-dbus-session-bus-default-address configure option is no longer
+  supported. Use the new --with-dbus-session-bus-connect-address and
+  --with-dbus-session-bus-listen-address options instead. On Windows, you
+  usually want them to have the same argument; on Unix, the defaults are
+  usually correct.
+
+• Similarly, the DBUS_SESSION_BUS_DEFAULT_ADDRESS cmake variable is no longer
+  supported; use the new DBUS_SESSION_BUS_LISTEN_ADDRESS and
+  DBUS_SESSION_BUS_CONNECT_ADDRESS variables instead.
+
 Enhancements:
 
 • D-Bus Specification 0.21
@@ -13,6 +25,13 @@ Fixes:
 
 • Unix-specific:
   · Fix compilation on Solaris (fd.o #53286, Jonathan Perkin)
+
+• Windows-specific:
+  · The default session bus listening and connecting address is now
+    "autolaunch:", which makes D-Bus on Windows interoperate with itself
+    and GDBus "out of the box". Use the configure options and cmake variables
+    described above if you require a different autolaunch scope.
+    (fd.o #38201, Simon McVittie)
 
 D-Bus 1.6.4 (2012-07-18)
 ==
