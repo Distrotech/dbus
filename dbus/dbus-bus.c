@@ -192,12 +192,12 @@ init_session_address (void)
   if (!retval)
     return FALSE;
 
-  /* We have a hard-coded (but compile-time-configurable) fallback address for
-   * the session bus. */
+  /* The DBUS_SESSION_BUS_DEFAULT_ADDRESS should have really been named
+   * DBUS_SESSION_BUS_FALLBACK_ADDRESS. 
+   */
   if (bus_connection_addresses[DBUS_BUS_SESSION] == NULL)
     bus_connection_addresses[DBUS_BUS_SESSION] =
-      _dbus_strdup (DBUS_SESSION_BUS_CONNECT_ADDRESS);
-
+      _dbus_strdup (DBUS_SESSION_BUS_DEFAULT_ADDRESS);
   if (bus_connection_addresses[DBUS_BUS_SESSION] == NULL)
     return FALSE;
 
