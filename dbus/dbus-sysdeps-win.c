@@ -3632,6 +3632,12 @@ _dbus_path_is_absolute (const DBusString *filename)
     return FALSE;
 }
 
+dbus_bool_t
+_dbus_check_setuid (void)
+{
+  return FALSE;
+}
+
 /** @} end of sysdeps-win */
 /* tests in dbus-sysdeps-util.c */
 
