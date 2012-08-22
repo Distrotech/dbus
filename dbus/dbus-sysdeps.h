@@ -87,6 +87,7 @@ typedef struct DBusPipe DBusPipe;
 
 void _dbus_abort (void) _DBUS_GNUC_NORETURN;
 
+dbus_bool_t _dbus_check_setuid (void);
 const char* _dbus_getenv (const char *varname);
 dbus_bool_t _dbus_setenv (const char *varname,
 			  const char *value);
