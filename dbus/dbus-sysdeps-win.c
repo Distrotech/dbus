@@ -3370,6 +3370,12 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
   return FALSE;
 }
 
+dbus_bool_t
+_dbus_check_setuid (void)
+{
+  return FALSE;
+}
+
 /** @} end of sysdeps-win */
 /* tests in dbus-sysdeps-util.c */
 

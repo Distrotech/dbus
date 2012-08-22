@@ -176,6 +176,11 @@ _dbus_setenv (const char *varname,
 const char*
 _dbus_getenv (const char *varname)
 {  
+  /* Don't respect any environment variables if the current process is
+   * setuid.  This is the equivalent of glibc's __secure_getenv().
+   */
+  if (_dbus_check_setuid ())
+    return NULL;
   return getenv (varname);
 }
 
