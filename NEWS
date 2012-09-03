@@ -25,6 +25,8 @@ Fixes:
 
 • Unix-specific:
   · Fix compilation on Solaris (fd.o #53286, Jonathan Perkin)
+  · Work around interdependent headers on OpenBSD by including sys/types.h
+    before each use of sys/socket.h (fd.o #54418, Brad Smith)
 
 • Windows-specific:
   · The default session bus listening and connecting address is now

@@ -765,7 +765,8 @@ dnl needed on darwin for NAME_MAX
 AC_CHECK_HEADERS(sys/syslimits.h)
 
 dnl Make it easy to check if we have MSG_NOSIGNAL without actually having to include sys/socket.h
-AC_CHECK_DECLS([MSG_NOSIGNAL], [], [], [[ #include <sys/socket.h> ]])
+AC_CHECK_DECLS([MSG_NOSIGNAL], [], [], [[ #include <sys/types.h>
+#include <sys/socket.h> ]])
 
 dnl check for flavours of varargs macros (test from GLib)
 AC_MSG_CHECKING(for ISO C99 varargs macros in C)
@@ -1219,6 +1220,7 @@ AC_SUBST([ADT_LIBS])
 # Check for SCM_RIGHTS
 AC_MSG_CHECKING([for SCM_RIGHTS])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 static int x = SCM_RIGHTS;
