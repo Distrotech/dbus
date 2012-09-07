@@ -38,6 +38,7 @@
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-message.h>
 #include <dbus/dbus-marshal-recursive.h>
+#include <dbus/dbus-marshal-validate.h>
 #include <string.h>
 
 static DBusConnection *
@@ -1646,6 +1647,7 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
   DBusMessageIter reply_iter;
   DBusMessageIter array_iter;
   unsigned long ulong_val;
+  char *windows_sid;
   const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -1678,6 +1680,24 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
     {
       if (!_dbus_asv_add_uint32 (&array_iter, "UnixUserID", ulong_val))
         goto oom;
+    }
+
+  if (dbus_connection_get_windows_user (conn, &windows_sid))
+    {
+      DBusString str;
+      dbus_bool_t result;
+      _dbus_string_init_const (&str, windows_sid);
+      result = _dbus_validate_utf8 (&str, 0, _dbus_string_get_length (&str));
+      _dbus_string_free (&str);
+      if (result)
+        {
+          if (!_dbus_asv_add_string (&array_iter, "WindowsSID", windows_sid))
+            {
+              dbus_free(windows_sid);
+              goto oom;
+            }
+        }
+      dbus_free(windows_sid);
     }
 
   if (!_dbus_asv_close (&reply_iter, &array_iter))
