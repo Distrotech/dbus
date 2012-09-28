@@ -3377,6 +3377,12 @@ _dbus_get_autolaunch_address (const char *scope,
   DBusString uuid;
   dbus_bool_t retval;
 
+  if (_dbus_getenv ("PATH") == NULL)
+    {
+      dbus_set_error_const (error, DBUS_ERROR_NOT_SUPPORTED,
+                            "Unable to autolaunch when PATH is unset");
+      return FALSE;
+    }
   if (_dbus_check_setuid ())
     {
       dbus_set_error_const (error, DBUS_ERROR_NOT_SUPPORTED,
