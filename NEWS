@@ -1,4 +1,4 @@
-D-Bus 1.4.22 (2012-09-28)
+D-Bus 1.4.24 (2012-09-28)
 ==
 
 • CVE-2012-3524: Don't access environment variables (fd.o #52202)
@@ -10,6 +10,9 @@ D-Bus 1.4.22 (2012-09-28)
 
 • Don't use install(1) within the source/build trees, fixing the build as
   non-root when using OpenBSD install(1) (fd.o #48217, Antoine Jacoutot)
+
+DBus 1.4.22 (never released as a tarball)
+==
 
 D-Bus 1.4.20 (2012-03-27)
 ==
