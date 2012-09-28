@@ -275,6 +275,11 @@ check_monotonic_clock (void)
 dbus_bool_t
 _dbus_threads_init_platform_specific (void)
 {
+  /* These have static variables, and we need to handle both the case
+   * where dbus_threads_init() has been called and when it hasn't;
+   * so initialize them before any threads are allowed to enter.
+   */
   check_monotonic_clock ();
+  (void) _dbus_check_setuid ();
   return dbus_threads_init (NULL);
 }
