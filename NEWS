@@ -1,3 +1,15 @@
+D-Bus 1.6.8 (2012-09-28)
+==
+
+The "Fix one thing, break another" release.
+
+• Follow up to CVE-2012-3524: The additional hardening
+  work to use __secure_getenv() as a followup to bug #52202
+  broke certain configurations of gnome-keyring.  Given
+  the difficulty of making this work without extensive
+  changes to gnome-keyring, use of __secure_getenv() is
+  deferred.
+
 D-Bus 1.6.6 (2012-09-28)
 ==
 
