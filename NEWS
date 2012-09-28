@@ -1,7 +1,9 @@
-D-Bus 1.4.22 (UNRELEASED)
+D-Bus 1.4.22 (2012-09-28)
 ==
 
-Changes:
+• CVE-2012-3524: Don't access environment variables (fd.o #52202)
+  Thanks to work and input from Colin Walters, Simon McVittie,
+  Geoffrey Thomas, and others.
 
 • Be more careful about monotonic time vs. real time, fixing DBUS_COOKIE_SHA1
   spec-compliance (fd.o #48580, David Zeuthen)
