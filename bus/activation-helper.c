@@ -140,17 +140,11 @@ out_all:
   return desktop_file;
 }
 
-/* Cleares the environment, except for DBUS_VERBOSE and DBUS_STARTER_x */
+/* Clears the environment, except for DBUS_STARTER_x */
 static dbus_bool_t
 clear_environment (DBusError *error)
 {
-  const char *debug_env = NULL;
   const char *starter_env = NULL;
-
-#ifdef DBUS_ENABLE_VERBOSE_MODE
-  /* are we debugging */
-  debug_env = _dbus_getenv ("DBUS_VERBOSE");
-#endif
 
   /* we save the starter */
   starter_env = _dbus_getenv ("DBUS_STARTER_ADDRESS");
@@ -163,12 +157,6 @@ clear_environment (DBusError *error)
                       "could not clear environment\n");
       return FALSE;
     }
-#endif
-
-#ifdef DBUS_ENABLE_VERBOSE_MODE
-  /* restore the debugging environment setting if set */
-  if (debug_env)
-    _dbus_setenv ("DBUS_VERBOSE", debug_env);
 #endif
 
   /* restore the starter */
