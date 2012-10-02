@@ -154,11 +154,11 @@ clear_environment (DBusError *error)
                       "could not clear environment\n");
       return FALSE;
     }
-#endif
 
   /* Ensure the bus is set to system */
   _dbus_setenv ("DBUS_STARTER_ADDRESS", DBUS_SYSTEM_BUS_DEFAULT_ADDRESS);
   _dbus_setenv ("DBUS_STARTER_BUS_TYPE", "system");
+#endif
 
   return TRUE;
 }
