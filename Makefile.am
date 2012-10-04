@@ -26,6 +26,7 @@ update-authors:
 	git shortlog -s -e | cut -c 8- | sort > AUTHORS
 
 DISTCHECK_CONFIGURE_FLAGS = \
+	--enable-xml-docs \
 	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
