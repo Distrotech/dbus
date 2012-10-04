@@ -1,5 +1,8 @@
-D-Bus 1.2.30 (UNRELEASED)
+D-Bus 1.2.30 (2012-10-04)
 ==
+
+• CVE-2012-3524: Don't access environment variables while setuid (fd.o #52202)
+  This change corresponds to those in D-Bus 1.6.8 and 1.4.24.
 
 D-Bus 1.2.28 (2011-06-10)
 ==
