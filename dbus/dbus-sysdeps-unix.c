@@ -55,6 +55,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <grp.h>
+#include <arpa/inet.h>
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
@@ -4158,6 +4159,73 @@ _dbus_check_setuid (void)
     }
   return is_setuid;
 #endif
+}
+
+/**
+ * Read the address from the socket and append it to the string
+ *
+ * @param fd the socket
+ * @param address
+ * @param error return location for error code
+ */
+dbus_bool_t
+_dbus_append_address_from_socket (int         fd,
+                                  DBusString *address,
+                                  DBusError  *error)
+{
+  union {
+      struct sockaddr sa;
+      struct sockaddr_storage storage;
+      struct sockaddr_un un;
+      struct sockaddr_in ipv4;
+      struct sockaddr_in6 ipv6;
+  } socket;
+  char hostip[INET6_ADDRSTRLEN];
+  int size = sizeof (socket);
+
+  if (getsockname (fd, &socket.sa, &size))
+    goto err;
+
+  switch (socket.sa.sa_family)
+    {
+    case AF_UNIX:
+      if (socket.un.sun_path[0]=='\0')
+        {
+          if (_dbus_string_append_printf (address, "unix:abstract=%s", &(socket.un.sun_path[1])))
+            return TRUE;
+        }
+      else
+        {
+          if (_dbus_string_append_printf (address, "unix:path=%s", socket.un.sun_path))
+            return TRUE;
+        }
+      break;
+    case AF_INET:
+      if (inet_ntop (AF_INET, &socket.ipv4.sin_addr, hostip, sizeof (hostip)))
+        if (_dbus_string_append_printf (address, "tcp:family=ipv4,host=%s,port=%u",
+                   hostip, ntohs (socket.ipv4.sin_port)))
+          return TRUE;
+      break;
+#ifdef AF_INET6
+    case AF_INET6:
+      if (inet_ntop (AF_INET6, &socket.ipv6.sin6_addr, hostip, sizeof (hostip)))
+        if (_dbus_string_append_printf (address, "tcp:family=ipv6,host=%s,port=%u",
+                   hostip, ntohs (socket.ipv6.sin6_port)))
+          return TRUE;
+      break;
+#endif
+    default:
+      dbus_set_error (error,
+                      _dbus_error_from_errno (EINVAL),
+                      "Failed to read address from socket: Unknown socket type.");
+      return FALSE;
+    }
+ err:
+  dbus_set_error (error,
+                  _dbus_error_from_errno (errno),
+                  "Failed to open socket: %s",
+                  _dbus_strerror (errno));
+  return FALSE;
 }
 
 /* tests in dbus-sysdeps-util.c */

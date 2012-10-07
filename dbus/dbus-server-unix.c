@@ -149,7 +149,7 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
     }
   else if (strcmp (method, "systemd") == 0)
     {
-      int n, *fds;
+      int i, n, *fds;
       DBusString address;
 
       n = _dbus_listen_systemd_sockets (&fds, error);
@@ -159,27 +159,39 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
           return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
         }
 
-      _dbus_string_init_const (&address, "systemd:");
+      if (!_dbus_string_init (&address))
+          goto systemd_oom;
+
+      for (i = 0; i < n; i++)
+        {
+          if (i > 0)
+            {
+              if (!_dbus_string_append (&address, ";"))
+                goto systemd_oom;
+            }
+          if (!_dbus_append_address_from_socket (fds[i], &address, error))
+            goto systemd_err;
+        }
 
       *server_p = _dbus_server_new_for_socket (fds, n, &address, NULL);
       if (*server_p == NULL)
-        {
-          int i;
-
-          for (i = 0; i < n; i++)
-            {
-              _dbus_close_socket (fds[i], NULL);
-            }
-          dbus_free (fds);
-
-          dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
-          return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
-        }
+        goto systemd_oom;
 
       dbus_free (fds);
 
       return DBUS_SERVER_LISTEN_OK;
-	}
+  systemd_oom:
+      _DBUS_SET_OOM (error);
+  systemd_err:
+      for (i = 0; i < n; i++)
+        {
+          _dbus_close_socket (fds[i], NULL);
+        }
+      dbus_free (fds);
+      _dbus_string_free (&address);
+
+      return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
+    }
 #ifdef DBUS_ENABLE_LAUNCHD
   else if (strcmp (method, "launchd") == 0)
     {

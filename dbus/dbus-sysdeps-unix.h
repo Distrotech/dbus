@@ -138,6 +138,10 @@ dbus_bool_t _dbus_parse_uid (const DBusString  *uid_str,
 
 void _dbus_close_all (void);
 
+dbus_bool_t _dbus_append_address_from_socket (int         fd,
+                                              DBusString *address,
+                                              DBusError  *error);
+
 /** @} */
 
 DBUS_END_DECLS
