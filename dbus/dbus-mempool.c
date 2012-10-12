@@ -173,7 +173,7 @@ _dbus_mem_pool_new (int element_size,
   _dbus_assert ((pool->block_size %
                  pool->element_size) == 0);
 
-  VALGRIND_CREATE_MEMPOOL (pool, 0, zero_elements)
+  VALGRIND_CREATE_MEMPOOL (pool, 0, zero_elements);
 
   return pool;
 }
@@ -188,7 +188,7 @@ _dbus_mem_pool_free (DBusMemPool *pool)
 {
   DBusMemBlock *block;
 
-  VALGRIND_DESTROY_MEMPOOL (pool)
+  VALGRIND_DESTROY_MEMPOOL (pool);
 
   block = pool->blocks;
   while (block != NULL)
@@ -241,7 +241,7 @@ _dbus_mem_pool_alloc (DBusMemPool *pool)
           pool->allocated_elements += 1;
 
           VALGRIND_MEMPOOL_ALLOC (pool, (void *) &block->elements[0],
-              pool->element_size)
+              pool->element_size);
           return (void*) &block->elements[0];
         }
       else
@@ -261,7 +261,7 @@ _dbus_mem_pool_alloc (DBusMemPool *pool)
 
           pool->free_elements = pool->free_elements->next;
 
-          VALGRIND_MEMPOOL_ALLOC (pool, element, pool->element_size)
+          VALGRIND_MEMPOOL_ALLOC (pool, element, pool->element_size);
 
           if (pool->zero_elements)
             memset (element, '\0', pool->element_size);
@@ -329,7 +329,7 @@ _dbus_mem_pool_alloc (DBusMemPool *pool)
 
           pool->allocated_elements += 1;
 
-          VALGRIND_MEMPOOL_ALLOC (pool, element, pool->element_size)
+          VALGRIND_MEMPOOL_ALLOC (pool, element, pool->element_size);
           return element;
         }
     }
@@ -347,7 +347,7 @@ dbus_bool_t
 _dbus_mem_pool_dealloc (DBusMemPool *pool,
                         void        *element)
 {
-  VALGRIND_MEMPOOL_FREE (pool, element)
+  VALGRIND_MEMPOOL_FREE (pool, element);
 
 #ifdef DBUS_BUILD_TESTS
   if (_dbus_disable_mem_pools ())
