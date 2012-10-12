@@ -1225,6 +1225,10 @@ AC_ARG_WITH([valgrind],
   [],
   [with_valgrind=no])
 
+AS_IF([test "x$with_valgrind" = xauto],
+  [PKG_CHECK_EXISTS([valgrind >= 3.6],
+    [with_valgrind=yes], [with_valgrind=no])])
+
 if test x$with_valgrind != xno; then
   PKG_CHECK_MODULES([VALGRIND], [valgrind >= 3.6])
   AC_DEFINE([WITH_VALGRIND], [1], [Define to add Valgrind instrumentation])
