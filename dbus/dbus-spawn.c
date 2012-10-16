@@ -1256,7 +1256,11 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
           _dbus_assert_not_reached ("Got to code after write_err_and_exit()");
 	}
       else if (grandchild_pid == 0)
-	{
+      {
+          /* Go back to ignoring SIGPIPE, since it's evil
+          */
+          signal (SIGPIPE, SIG_IGN);
+
 	  do_exec (child_err_report_pipe[WRITE_END],
 		   argv,
 		   env,
