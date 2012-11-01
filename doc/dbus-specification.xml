@@ -2427,7 +2427,7 @@
               </listitem>
               <listitem>
                 <para>
-                  Receive REJECT [mechs] &rarr; send AUTH [next mech],
+                  Receive REJECTED [mechs] &rarr; send AUTH [next mech],
                   goto <emphasis>WaitingForData</emphasis> or
                   <emphasis>WaitingForOK</emphasis>
                 </para>
@@ -2463,7 +2463,7 @@
             <itemizedlist>
               <listitem>
                 <para>
-                  Receive REJECT [mechs] &rarr; send AUTH [next mech],
+                  Receive REJECTED [mechs] &rarr; send AUTH [next mech],
                   goto <emphasis>WaitingForData</emphasis> or
                   <emphasis>WaitingForOK</emphasis>
                 </para>
@@ -2505,7 +2505,7 @@
 
             <listitem>
               <para>
-                REJECT means that the client failed to authenticate or
+                REJECTED means that the client failed to authenticate or
                 there was an error in RESP.
               </para>
             </listitem>
@@ -2552,7 +2552,7 @@
                     </member>
 
                     <member>
-                      MECH(RESP) returns REJECT &rarr; send REJECTED
+                      MECH(RESP) returns REJECTED &rarr; send REJECTED
                       [mechs], goto
                       <emphasis>WaitingForAuth</emphasis>
                     </member>
@@ -2606,7 +2606,7 @@
                     </member>
 
                     <member>
-                      MECH(RESP) returns REJECT &rarr; send REJECTED
+                      MECH(RESP) returns REJECTED &rarr; send REJECTED
                       [mechs], goto
                       <emphasis>WaitingForAuth</emphasis>
                     </member>
