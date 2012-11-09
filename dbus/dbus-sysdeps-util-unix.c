@@ -123,6 +123,7 @@ _dbus_become_daemon (const DBusString *pidfile,
             dup2 (dev_null_fd, 2);
           else
             _dbus_verbose ("keeping stderr open due to DBUS_DEBUG_OUTPUT\n");
+          close (dev_null_fd);
         }
 
       if (!keep_umask)

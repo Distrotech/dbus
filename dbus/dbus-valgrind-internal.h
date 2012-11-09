@@ -32,10 +32,10 @@
 #   include <memcheck.h>
 #   include <valgrind.h>
 #else
-#   define VALGRIND_CREATE_MEMPOOL(_1, _2, _3) /* nothing */
-#   define VALGRIND_DESTROY_MEMPOOL(_1) /* nothing */
-#   define VALGRIND_MEMPOOL_ALLOC(_1, _2, _3) /* nothing */
-#   define VALGRIND_MEMPOOL_FREE(_1, _2) /* nothing */
+#   define VALGRIND_CREATE_MEMPOOL(_1, _2, _3) do { } while (0)
+#   define VALGRIND_DESTROY_MEMPOOL(_1) do { } while (0)
+#   define VALGRIND_MEMPOOL_ALLOC(_1, _2, _3) do { } while (0)
+#   define VALGRIND_MEMPOOL_FREE(_1, _2) do { } while (0)
 
 /* Recent gcc will warn if you have a statement that's just a macro
  * expanding to (0), but not if you have an inline stub function that

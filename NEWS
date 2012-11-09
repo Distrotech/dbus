@@ -23,6 +23,33 @@ Enhancements:
 
 Fixes:
 
+• In the activation helper, when compiled for tests, do not reset the system
+  bus address, fixing the regression tests. (fd.o #52202, Simon)
+
+• Fix building with Valgrind 3.8, at the cost of causing harmless warnings
+  with Valgrind 3.6 on some compilers (fd.o #55932, Arun Raghavan)
+
+• Don't leak temporary fds pointing to /dev/null (fd.o #56927, Michel HERMIER)
+
+D-Bus 1.6.8 (2012-09-28)
+==
+
+The "Fix one thing, break another" release.
+
+• Follow up to CVE-2012-3524: The additional hardening
+  work to use __secure_getenv() as a followup to bug #52202
+  broke certain configurations of gnome-keyring.  Given
+  the difficulty of making this work without extensive
+  changes to gnome-keyring, use of __secure_getenv() is
+  deferred.
+
+D-Bus 1.6.6 (2012-09-28)
+==
+
+The "Clear the environment in your setuid binaries, please" release.
+
+Fixes:
+
 • CVE-2012-3524: Don't access environment variables (fd.o #52202)
   Thanks to work and input from Colin Walters, Simon McVittie,
   Geoffrey Thomas, and others.
