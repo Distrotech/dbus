@@ -583,6 +583,7 @@ babysit (int   exit_with_session,
       s = getenv ("DBUS_DEBUG_OUTPUT");
       if (s == NULL || *s == '\0')
         dup2 (dev_null_fd, 2);
+      close (dev_null_fd);
     }
   else
     {
