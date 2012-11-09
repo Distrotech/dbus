@@ -1,7 +1,13 @@
 D-Bus 1.6.10 (UNRELEASED)
 ==
 
-...
+• In the activation helper, when compiled for tests, do not reset the system
+  bus address, fixing the regression tests. (fd.o #52202, Simon)
+
+• Fix building with Valgrind 3.8, at the cost of causing harmless warnings
+  with Valgrind 3.6 on some compilers (fd.o #55932, Arun Raghavan)
+
+• Don't leak temporary fds pointing to /dev/null (fd.o #56927, Michel HERMIER)
 
 D-Bus 1.6.8 (2012-09-28)
 ==
