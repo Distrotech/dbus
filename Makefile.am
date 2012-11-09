@@ -14,6 +14,7 @@ EXTRA_DIST =			\
         NEWS.pre-1-0            \
 	ChangeLog.pre-1-2       \
         NEWS.pre-1-2		\
+	README.valgrind		\
 	README.win		\
 	README.wince		\
 	README.cygwin		\
