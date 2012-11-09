@@ -66,9 +66,7 @@ XMLTO_OUTPUT=					\
 	dbus-tutorial.html
 
 if DBUS_XML_DOCS_ENABLED
-
-# we distribute these in the tarball so users don't necessarily need xmlto
-dist_html_DATA += $(XMLTO_OUTPUT)
+html_DATA += $(XMLTO_OUTPUT)
 
 dbus-specification.html: dbus-specification.xml
 	$(XMLTO) html-nochunks $<
@@ -132,7 +130,7 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp
+dbus-docs: $(STATIC_DOCS) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp $(XMLTO_OUTPUT)
 	$(AM_V_at)rm -rf $@ $@.tmp
 	$(AM_V_GEN)$(MKDIR_P) $@.tmp/api
 	$(AM_V_at)cd $(srcdir) && cp $(STATIC_DOCS) @abs_builddir@/$@.tmp
