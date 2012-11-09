@@ -1,7 +1,10 @@
 D-Bus 1.4.26 (UNRELEASED)
 ==
 
-...
+• In the activation helper, when compiled for tests, do not reset the system
+  bus address, fixing the regression tests. (fd.o #52202, Simon)
+
+• Don't leak temporary fds pointing to /dev/null (fd.o #56927, Michel HERMIER)
 
 D-Bus 1.4.24 (2012-09-28)
 ==
