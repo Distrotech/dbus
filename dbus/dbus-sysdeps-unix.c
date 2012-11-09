@@ -3300,15 +3300,12 @@ _read_subprocess_line_argv (const char *progpath,
       /* set-up stdXXX */
       close (result_pipe[READ_END]);
       close (errors_pipe[READ_END]);
-      close (0);                /* close stdin */
-      close (1);                /* close stdout */
-      close (2);                /* close stderr */
 
-      if (dup2 (fd, 0) == -1)
+      if (dup2 (fd, 0) == -1) /* setup stdin */
         _exit (1);
-      if (dup2 (result_pipe[WRITE_END], 1) == -1)
+      if (dup2 (result_pipe[WRITE_END], 1) == -1) /* setup stdout */
         _exit (1);
-      if (dup2 (errors_pipe[WRITE_END], 2) == -1)
+      if (dup2 (errors_pipe[WRITE_END], 2) == -1) /* setup stderr */
         _exit (1);
 
       _dbus_close_all ();
