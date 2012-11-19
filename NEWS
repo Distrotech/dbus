@@ -29,7 +29,18 @@ Fixes:
 • Fix building with Valgrind 3.8, at the cost of causing harmless warnings
   with Valgrind 3.6 on some compilers (fd.o #55932, Arun Raghavan)
 
-• Don't leak temporary fds pointing to /dev/null (fd.o #56927, Michel HERMIER)
+• Unix-specific:
+  · Check for functions in libpthread correctly, fixing compilation on
+    (at least) OpenBSD (fd.o #47239, Simon)
+  · Don't leak temporary fds pointing to /dev/null (fd.o #56927,
+    Michel HERMIER)
+
+• Windows-specific:
+  · The default session bus listening and connecting address is now
+    "autolaunch:", which makes D-Bus on Windows interoperate with itself
+    and GDBus "out of the box". Use the configure options and cmake variables
+    described above if you require a different autolaunch scope.
+    (fd.o #38201, Simon McVittie)
 
 D-Bus 1.6.8 (2012-09-28)
 ==
@@ -48,28 +59,16 @@ D-Bus 1.6.6 (2012-09-28)
 
 The "Clear the environment in your setuid binaries, please" release.
 
-Fixes:
-
 • CVE-2012-3524: Don't access environment variables (fd.o #52202)
   Thanks to work and input from Colin Walters, Simon McVittie,
   Geoffrey Thomas, and others.
-
 • Unix-specific:
   · Fix compilation on Solaris (fd.o #53286, Jonathan Perkin)
   · Work around interdependent headers on OpenBSD by including sys/types.h
     before each use of sys/socket.h (fd.o #54418, Brad Smith)
 
-• Windows-specific:
-  · The default session bus listening and connecting address is now
-    "autolaunch:", which makes D-Bus on Windows interoperate with itself
-    and GDBus "out of the box". Use the configure options and cmake variables
-    described above if you require a different autolaunch scope.
-    (fd.o #38201, Simon McVittie)
-
 D-Bus 1.6.4 (2012-07-18)
 ==
-
-Fixes:
 
 • Detect that users are "at the console" correctly when configured with
   a non-default path such as --enable-console-auth-dir=/run/console
