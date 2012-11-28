@@ -32,11 +32,54 @@
 #include "signals.h"
 #include "stats.h"
 #include "utils.h"
+
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-message.h>
 #include <dbus/dbus-marshal-recursive.h>
 #include <string.h>
+
+static DBusConnection *
+bus_driver_get_conn_helper (DBusConnection  *connection,
+                            DBusMessage     *message,
+                            const char      *what_we_want,
+                            const char     **name_p,
+                            DBusError       *error)
+{
+  const char *name;
+  BusRegistry *registry;
+  BusService *serv;
+  DBusString str;
+  DBusConnection *conn;
+
+  if (!dbus_message_get_args (message, error,
+                              DBUS_TYPE_STRING, &name,
+                              DBUS_TYPE_INVALID))
+    return NULL;
+
+  _dbus_assert (name != NULL);
+  _dbus_verbose ("asked for %s of connection %s\n", what_we_want, name);
+
+  registry = bus_connection_get_registry (connection);
+  _dbus_string_init_const (&str, name);
+  serv = bus_registry_lookup (registry, &str);
+
+  if (serv == NULL)
+    {
+      dbus_set_error (error, DBUS_ERROR_NAME_HAS_NO_OWNER,
+                      "Could not get %s of name '%s': no such name",
+                      what_we_want, name);
+      return NULL;
+    }
+
+  conn = bus_service_get_primary_owners_connection (serv);
+  _dbus_assert (conn != NULL);
+
+  if (name_p != NULL)
+    *name_p = name;
+
+  return conn;
+}
 
 static dbus_bool_t bus_driver_send_welcome_message (DBusConnection *connection,
                                                     DBusMessage    *hello_message,
@@ -1262,40 +1305,21 @@ bus_driver_handle_get_connection_unix_user (DBusConnection *connection,
                                             DBusMessage    *message,
                                             DBusError      *error)
 {
-  const char *service;
-  DBusString str;
-  BusRegistry *registry;
-  BusService *serv;
   DBusConnection *conn;
   DBusMessage *reply;
   unsigned long uid;
   dbus_uint32_t uid32;
+  const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  registry = bus_connection_get_registry (connection);
-
-  service = NULL;
   reply = NULL;
 
-  if (! dbus_message_get_args (message, error,
-			       DBUS_TYPE_STRING, &service,
-			       DBUS_TYPE_INVALID))
-      goto failed;
+  conn = bus_driver_get_conn_helper (connection, message, "UID", &service,
+                                     error);
 
-  _dbus_verbose ("asked for UID of connection %s\n", service);
-
-  _dbus_string_init_const (&str, service);
-  serv = bus_registry_lookup (registry, &str);
-  if (serv == NULL)
-    {
-      dbus_set_error (error,
-		      DBUS_ERROR_NAME_HAS_NO_OWNER,
-		      "Could not get UID of name '%s': no such name", service);
-      goto failed;
-    }
-
-  conn = bus_service_get_primary_owners_connection (serv);
+  if (conn == NULL)
+    goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
@@ -1338,40 +1362,21 @@ bus_driver_handle_get_connection_unix_process_id (DBusConnection *connection,
 						  DBusMessage    *message,
 						  DBusError      *error)
 {
-  const char *service;
-  DBusString str;
-  BusRegistry *registry;
-  BusService *serv;
   DBusConnection *conn;
   DBusMessage *reply;
   unsigned long pid;
   dbus_uint32_t pid32;
+  const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  registry = bus_connection_get_registry (connection);
-
-  service = NULL;
   reply = NULL;
 
-  if (! dbus_message_get_args (message, error,
-			       DBUS_TYPE_STRING, &service,
-			       DBUS_TYPE_INVALID))
-      goto failed;
+  conn = bus_driver_get_conn_helper (connection, message, "PID", &service,
+                                     error);
 
-  _dbus_verbose ("asked for PID of connection %s\n", service);
-
-  _dbus_string_init_const (&str, service);
-  serv = bus_registry_lookup (registry, &str);
-  if (serv == NULL)
-    {
-      dbus_set_error (error,
-		      DBUS_ERROR_NAME_HAS_NO_OWNER,
-		      "Could not get PID of name '%s': no such name", service);
-      goto failed;
-    }
-
-  conn = bus_service_get_primary_owners_connection (serv);
+  if (conn == NULL)
+    goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
@@ -1414,40 +1419,21 @@ bus_driver_handle_get_adt_audit_session_data (DBusConnection *connection,
 					      DBusMessage    *message,
 					      DBusError      *error)
 {
-  const char *service;
-  DBusString str;
-  BusRegistry *registry;
-  BusService *serv;
   DBusConnection *conn;
   DBusMessage *reply;
   void *data = NULL;
   dbus_uint32_t data_size;
+  const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  registry = bus_connection_get_registry (connection);
-
-  service = NULL;
   reply = NULL;
 
-  if (! dbus_message_get_args (message, error,
-			       DBUS_TYPE_STRING, &service,
-			       DBUS_TYPE_INVALID))
-      goto failed;
+  conn = bus_driver_get_conn_helper (connection, message,
+                                     "audit session data", &service, error);
 
-  _dbus_verbose ("asked for audit session data for connection %s\n", service);
-
-  _dbus_string_init_const (&str, service);
-  serv = bus_registry_lookup (registry, &str);
-  if (serv == NULL)
-    {
-      dbus_set_error (error,
-		      DBUS_ERROR_NAME_HAS_NO_OWNER,
-		      "Could not get audit session data for name '%s': no such name", service);
-      goto failed;
-    }
-
-  conn = bus_service_get_primary_owners_connection (serv);
+  if (conn == NULL)
+    goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
@@ -1489,39 +1475,20 @@ bus_driver_handle_get_connection_selinux_security_context (DBusConnection *conne
 							   DBusMessage    *message,
 							   DBusError      *error)
 {
-  const char *service;
-  DBusString str;
-  BusRegistry *registry;
-  BusService *serv;
   DBusConnection *conn;
   DBusMessage *reply;
   BusSELinuxID *context;
+  const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  registry = bus_connection_get_registry (connection);
-
-  service = NULL;
   reply = NULL;
 
-  if (! dbus_message_get_args (message, error,
-			       DBUS_TYPE_STRING, &service,
-			       DBUS_TYPE_INVALID))
-      goto failed;
+  conn = bus_driver_get_conn_helper (connection, message, "security context",
+                                     &service, error);
 
-  _dbus_verbose ("asked for security context of connection %s\n", service);
-
-  _dbus_string_init_const (&str, service);
-  serv = bus_registry_lookup (registry, &str);
-  if (serv == NULL)
-    {
-      dbus_set_error (error,
-		      DBUS_ERROR_NAME_HAS_NO_OWNER,
-		      "Could not get security context of name '%s': no such name", service);
-      goto failed;
-    }
-
-  conn = bus_service_get_primary_owners_connection (serv);
+  if (conn == NULL)
+    goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
