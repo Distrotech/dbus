@@ -810,9 +810,14 @@ handle_watch (DBusWatch       *watch,
 #define WRITE_END 1
 
 
-/* Avoids a danger in threaded situations (calling close()
- * on a file descriptor twice, and another thread has
- * re-opened it since the first close)
+/* Avoids a danger in re-entrant situations (calling close()
+ * on a file descriptor twice, and another module has
+ * re-opened it since the first close).
+ *
+ * This previously claimed to be relevant for threaded situations, but by
+ * trivial inspection, it is not thread-safe. It doesn't actually
+ * matter, since this module is only used in the -util variant of the
+ * library, which is only used in single-threaded situations.
  */
 static int
 close_and_invalidate (int *fd)
