@@ -1130,7 +1130,7 @@ babysit (pid_t grandchild_pid,
  *
  * @param sitter_p return location for babysitter or #NULL
  * @param argv the executable and arguments
- * @param env the environment (not used on unix yet)
+ * @param env the environment, or #NULL to copy the parent's
  * @param child_setup function to call in child pre-exec()
  * @param user_data user data for setup function
  * @param error error object to be filled in if function fails
