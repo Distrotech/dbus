@@ -1,3 +1,6 @@
+# we do not need to have WIN32 defined
+set(CMAKE_LEGACY_CYGWIN_WIN32 0)
+
 project(dbus)
 
 # we need to be up to date
