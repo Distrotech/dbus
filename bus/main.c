@@ -131,7 +131,23 @@ signal_handler (int sig)
 static void
 usage (void)
 {
-  fprintf (stderr, DBUS_DAEMON_NAME " [--version] [--session] [--system] [--config-file=FILE] [--print-address[=DESCRIPTOR]] [--print-pid[=DESCRIPTOR]] [--fork] [--nofork] [--introspect] [--address=ADDRESS] [--systemd-activation] [--nopidfile]\n");
+  fprintf (stderr,
+      DBUS_DAEMON_NAME
+      " [--version]"
+      " [--session]"
+      " [--system]"
+      " [--config-file=FILE]"
+      " [--print-address[=DESCRIPTOR]]"
+      " [--print-pid[=DESCRIPTOR]]"
+      " [--introspect]"
+      " [--address=ADDRESS]"
+      " [--nopidfile]"
+#ifdef DBUS_UNIX
+      " [--fork]"
+      " [--nofork]"
+      " [--systemd-activation]"
+#endif
+      "\n");
   exit (1);
 }
 
@@ -400,6 +416,7 @@ main (int argc, char **argv)
         {
           introspect ();
         }
+#ifdef DBUS_UNIX
       else if (strcmp (arg, "--nofork") == 0)
         {
           flags &= ~BUS_CONTEXT_FLAG_FORK_ALWAYS;
@@ -410,13 +427,14 @@ main (int argc, char **argv)
           flags &= ~BUS_CONTEXT_FLAG_FORK_NEVER;
           flags |= BUS_CONTEXT_FLAG_FORK_ALWAYS;
         }
-      else if (strcmp (arg, "--nopidfile") == 0)
-        {
-          flags &= ~BUS_CONTEXT_FLAG_WRITE_PID_FILE;
-        }
       else if (strcmp (arg, "--systemd-activation") == 0)
         {
           flags |= BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION;
+        }
+#endif
+      else if (strcmp (arg, "--nopidfile") == 0)
+        {
+          flags &= ~BUS_CONTEXT_FLAG_WRITE_PID_FILE;
         }
       else if (strcmp (arg, "--system") == 0)
         {
