@@ -1,3 +1,6 @@
+# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+
 # we do not need to have WIN32 defined
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
@@ -9,8 +12,6 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 # detect version
 include(MacrosAutotools)
@@ -98,7 +99,7 @@ option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
 if (DBUS_USE_EXPAT)
-    find_package(LibExpat)
+    find_package(EXPAT)
 else ()
     find_package(LibXml2)
 endif ()
@@ -298,14 +299,14 @@ if("${sysname}" MATCHES ".*SOLARIS.*")
 endif("${sysname}" MATCHES ".*SOLARIS.*")
 
 #AC_ARG_WITH(xml, AS_HELP_STRING([--with-xml=[libxml/expat]],[XML library to use]))
-if(NOT LIBXML2_FOUND AND NOT LIBEXPAT_FOUND)
+if(NOT LIBXML2_FOUND AND NOT EXPAT_FOUND)
     message(FATAL "Neither expat nor libxml2 found!")
-endif(NOT LIBXML2_FOUND AND NOT LIBEXPAT_FOUND)
+endif(NOT LIBXML2_FOUND AND NOT EXPAT_FOUND)
 
 if(DBUS_USE_EXPAT)
     SET(XML_LIB "Expat")
-    SET(XML_LIBRARY     ${LIBEXPAT_LIBRARIES})
-    SET(XML_INCLUDE_DIR ${LIBEXPAT_INCLUDE_DIR})
+    SET(XML_LIBRARY     ${EXPAT_LIBRARIES})
+    SET(XML_INCLUDE_DIR ${EXPAT_INCLUDE_DIR})
 else(DBUS_USE_EXPAT)
     SET(XML_LIB "LibXML2")
     SET(XML_LIBRARY     ${LIBXML2_LIBRARIES})
