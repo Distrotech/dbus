@@ -44,19 +44,20 @@ if (DBUS_ENABLE_XML_DOCS)
 
 macro (DOCBOOK _sources _options)
   get_filename_component(_infile ${_sources} ABSOLUTE)
-  get_filename_component(_basename ${_infile} NAME_WE)
-  set(_outfile ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.html)
+  get_filename_component(_name ${_infile} NAME)
+  string(REPLACE ".xml" ".html" _outname ${_name})
+  set(_outfile ${CMAKE_CURRENT_BINARY_DIR}/${_outname})
 
   if (EXISTS ${_sources})
 	  if (MEINPROC4_EXECUTABLE)
-		  ADD_CUSTOM_TARGET(${_basename}.html ALL
+		  ADD_CUSTOM_TARGET(${_outname} ALL
 			${MEINPROC4_EXECUTABLE} --stylesheet ${STYLESHEET} -o ${_outfile} ${_infile} 
 			DEPENDS ${_infile} 
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		)
 	  endif ()
 	  if (XMLTO_EXECUTABLE)
-		  ADD_CUSTOM_TARGET(${_basename}.html ALL
+		  ADD_CUSTOM_TARGET(${_outname} ALL
 			${XMLTO_EXECUTABLE} -vv ${_options} ${_infile} 
 			DEPENDS ${_infile} 
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -96,10 +97,11 @@ DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-test-plan.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-tutorial.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-specification.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-faq.xml html-nochunks)
-DOCBOOK(${CMAKE_SOURCE_DIR}/bus/dbus-daemon.xml html-nochunks)
-DOCBOOK(${CMAKE_SOURCE_DIR}/tools/dbus-monitor.xml html-nochunks)
-DOCBOOK(${CMAKE_SOURCE_DIR}/tools/dbus-send.xml html-nochunks)
-DOCBOOK(${CMAKE_SOURCE_DIR}/tools/dbus-launch.xml html-nochunks)
+configure_file(${CMAKE_SOURCE_DIR}/../doc/dbus-daemon.1.xml.in ${CMAKE_BINARY_DIR}/doc/dbus-daemon.1.xml)
+DOCBOOK(${CMAKE_BINARY_DIR}/doc/dbus-daemon.1.xml html-nochunks)
+DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-monitor.1.xml html-nochunks)
+DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-send.1.xml html-nochunks)
+DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-launch.1.xml html-nochunks)
 
 #
 # handle html index file
