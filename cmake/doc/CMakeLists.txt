@@ -42,28 +42,39 @@ endif ()
 
 if (DBUS_ENABLE_XML_DOCS)
 
-macro (DOCBOOK _sources _options)
+macro (DOCBOOK _sources _format)
   get_filename_component(_infile ${_sources} ABSOLUTE)
   get_filename_component(_name ${_infile} NAME)
-  string(REPLACE ".xml" ".html" _outname ${_name})
-  set(_outfile ${CMAKE_CURRENT_BINARY_DIR}/${_outname})
 
+  if (${_format} STREQUAL "man")
+    string(REPLACE ".xml" "" _outname ${_name})
+    set(STYLESHEET "${DOCBOOKXSL_DIR}/manpages/docbook.xsl")
+  else()
+    string(REPLACE ".xml" ".html" _outname ${_name})
+    set(STYLESHEET "${DOCBOOKXSL_DIR}/html/docbook.xsl")
+  endif ()
+
+  set(_outfile ${CMAKE_CURRENT_BINARY_DIR}/${_outname})
   if (EXISTS ${_sources})
 	  if (MEINPROC4_EXECUTABLE)
 		  ADD_CUSTOM_TARGET(${_outname} ALL
-			${MEINPROC4_EXECUTABLE} --stylesheet ${STYLESHEET} -o ${_outfile} ${_infile} 
-			DEPENDS ${_infile} 
+			${MEINPROC4_EXECUTABLE} --stylesheet ${STYLESHEET} -o ${_outfile} ${_infile}
+			DEPENDS ${_infile}
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		)
 	  endif ()
 	  if (XMLTO_EXECUTABLE)
 		  ADD_CUSTOM_TARGET(${_outname} ALL
-			${XMLTO_EXECUTABLE} -vv ${_options} ${_infile} 
-			DEPENDS ${_infile} 
+			${XMLTO_EXECUTABLE} -vv ${_format} ${_infile}
+			DEPENDS ${_infile}
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		)
 	  endif ()
-	  install(FILES ${_outfile} DESTINATION share/doc/dbus)
+	  if (${_format} STREQUAL "man")
+		  install(FILES ${_outfile} DESTINATION share/man/man1)
+	  else ()
+		  install(FILES ${_outfile} DESTINATION share/doc/dbus)
+	  endif ()
   else ()
 	  MESSAGE(STATUS "skipping xml doc generating for ${_infile}, file not found")
   endif ()
@@ -104,7 +115,14 @@ DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-send.1.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-launch.1.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-uuidgen.1.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-cleanup-sockets.1.xml html-nochunks)
-
+if (UNIX)
+  DOCBOOK(${CMAKE_BINARY_DIR}/doc/dbus-daemon.1.xml man)
+  DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-monitor.1.xml man)
+  DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-send.1.xml man)
+  DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-launch.1.xml man)
+  DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-uuidgen.1.xml man)
+  DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-cleanup-sockets.1.xml man)
+endif()
 #
 # handle html index file
 #
