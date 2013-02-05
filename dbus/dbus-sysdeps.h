@@ -278,6 +278,19 @@ dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
 #define _DBUS_POLLHUP     0x0080
 /** Invalid request: fd not open */
 #define _DBUS_POLLNVAL    0x1000
+#elif defined(__QNX__)
+/** Writing now will not block */
+#define _DBUS_POLLOUT     0x0002
+/** There is data to read */
+#define _DBUS_POLLIN      0x0005
+/** There is urgent data to read */
+#define _DBUS_POLLPRI     0x0008
+/** Error condition */
+#define _DBUS_POLLERR     0x0020
+/** Hung up */
+#define _DBUS_POLLHUP     0x0040
+/** Invalid request: fd not open */
+#define _DBUS_POLLNVAL    0x1000
 #else
 /** There is data to read */
 #define _DBUS_POLLIN      0x0001
