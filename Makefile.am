@@ -7,6 +7,7 @@ DISTCLEANFILES = 		\
 	dbus-1.pc
 
 EXTRA_DIST =			\
+	autogen.sh		\
 	HACKING			\
 	dbus-1.pc.in		\
 	cleanup-man-pages.sh    \
