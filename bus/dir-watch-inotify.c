@@ -22,11 +22,15 @@
  *
  */
 
+/* Be careful, this file is not Linux-only: QNX also uses it */
+
 #include <config.h>
 
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+/* QNX's inotify is broken, and requires stdint.h to be manually included first */
+#include <stdint.h>
 #include <sys/inotify.h>
 #include <sys/types.h>
 #include <signal.h>
