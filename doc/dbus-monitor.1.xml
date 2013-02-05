@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <!-- lifted from troff+man by doclifter -->
 <refentry id='dbusmonitor1'>
-<!--   -->
-<!--  dbus\-monitor manual page. -->
-<!--  Copyright (C) 2003 Red Hat, Inc. -->
+
+<!--  dbus&bsol;-monitor manual page.
+ Copyright (C) 2003 Red Hat, Inc. -->
 
 <refmeta>
 <refentrytitle>dbus-monitor</refentrytitle>
 <manvolnum>1</manvolnum>
 </refmeta>
-<refnamediv id='name'>
+<refnamediv>
 <refname>dbus-monitor</refname>
 <refpurpose>debug probe to print message bus messages</refpurpose>
 </refnamediv>

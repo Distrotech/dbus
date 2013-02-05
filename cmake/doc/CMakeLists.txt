@@ -102,6 +102,8 @@ DOCBOOK(${CMAKE_BINARY_DIR}/doc/dbus-daemon.1.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-monitor.1.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-send.1.xml html-nochunks)
 DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-launch.1.xml html-nochunks)
+DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-uuidgen.1.xml html-nochunks)
+DOCBOOK(${CMAKE_SOURCE_DIR}/../doc/dbus-cleanup-sockets.1.xml html-nochunks)
 
 #
 # handle html index file
