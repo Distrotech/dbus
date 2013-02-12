@@ -42,6 +42,9 @@ Fixes:
     described above if you require a different autolaunch scope.
     (fd.o #38201, Simon McVittie)
 
+• Create session.d, system.d directories under CMake (fd.o #41319,
+  Ralf Habacker)
+
 D-Bus 1.6.8 (2012-09-28)
 ==
 
