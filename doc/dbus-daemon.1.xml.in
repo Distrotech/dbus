@@ -10,6 +10,9 @@
 <refmeta>
 <refentrytitle>dbus-daemon</refentrytitle>
 <manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+<refmiscinfo class="source">D-Bus</refmiscinfo>
+<refmiscinfo class="version">@DBUS_VERSION@</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>dbus-daemon</refname>

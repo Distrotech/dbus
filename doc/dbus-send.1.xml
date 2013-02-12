@@ -10,6 +10,8 @@
 <refmeta>
 <refentrytitle>dbus-send</refentrytitle>
 <manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+<refmiscinfo class="source">D-Bus</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>dbus-send</refname>
