@@ -2,6 +2,7 @@
 .libs
 Makefile
 Makefile.in
+*.1
 *.1.html
 *.lo
 *.la
@@ -12,7 +13,7 @@ dbus-specification.html
 dbus-test-plan.html
 dbus-tutorial.html
 dbus-faq.html
-dbus-daemon.1
+dbus-daemon.1.xml
 dbus-docs
 dbus-docs.tar.gz
 doxygen.stamp

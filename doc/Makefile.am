@@ -1,20 +1,27 @@
 apidir = @htmldir@/api
 
-# automake normally assumes that man pages are generated files;
-# these ones aren't, so we need the dist_ prefix to say that they're
-# their own source code
-dist_man1_MANS = \
+MAN_XML_FILES = \
+	dbus-daemon.1.xml \
+	$(NULL)
+
+DIST_MAN_XML_FILES = \
+	dbus-cleanup-sockets.1.xml \
+	dbus-daemon.1.xml \
+	dbus-launch.1.xml \
+	dbus-monitor.1.xml \
+	dbus-send.1.xml \
+	dbus-uuidgen.1.xml \
+	$(NULL)
+
+if DBUS_XML_DOCS_ENABLED
+man1_MANS = \
 	dbus-cleanup-sockets.1 \
+	dbus-daemon.1 \
 	dbus-launch.1 \
 	dbus-monitor.1 \
 	dbus-send.1 \
 	dbus-uuidgen.1
-
-# on the other hand, this one is generated
-man1_MANS = \
-	dbus-daemon.1
-
-MAN_IN_FILES = dbus-daemon.1.in
+endif
 
 MAN_HTML_FILES = \
 	dbus-cleanup-sockets.1.html \
@@ -32,6 +39,7 @@ dist_doc_DATA = system-activation.txt
 
 # uploaded and distributed, but not installed
 STATIC_DOCS = \
+	$(DIST_MAN_XML_FILES) \
 	dbus-faq.xml \
 	dbus-specification.xml \
 	dbus-test-plan.xml \
@@ -43,8 +51,7 @@ STATIC_DOCS = \
 EXTRA_DIST = \
 	file-boilerplate.c \
 	doxygen_to_devhelp.xsl \
-	$(STATIC_DOCS) \
-	$(MAN_IN_FILES)
+	$(STATIC_DOCS)
 
 html_DATA =
 
@@ -59,26 +66,22 @@ STATIC_HTML = \
 
 dist_html_DATA += $(STATIC_HTML)
 
-XMLTO_OUTPUT=					\
+XMLTO_HTML =					\
 	dbus-faq.html				\
 	dbus-specification.html			\
 	dbus-test-plan.html			\
-	dbus-tutorial.html
+	dbus-tutorial.html			\
+	$(MAN_HTML_FILES)			\
+	$(NULL)
 
 if DBUS_XML_DOCS_ENABLED
-html_DATA += $(XMLTO_OUTPUT)
+html_DATA += $(XMLTO_HTML)
 
-dbus-specification.html: dbus-specification.xml
+%.html: %.xml
 	$(XMLTO) html-nochunks $<
 
-dbus-test-plan.html: dbus-test-plan.xml
-	$(XMLTO) html-nochunks $<
-
-dbus-tutorial.html: dbus-tutorial.xml
-	$(XMLTO) html-nochunks $<
-
-dbus-faq.html: dbus-faq.xml
-	$(XMLTO) html-nochunks $<
+%.1: %.1.xml
+	$(XMLTO) man $<
 endif
 
 if DBUS_DOXYGEN_DOCS_ENABLED
@@ -114,13 +117,6 @@ uninstall-local::
 		rmdir $(DESTDIR)$(apidir)
 endif
 
-if DBUS_HAVE_MAN2HTML
-html_DATA += $(MAN_HTML_FILES)
-
-%.1.html: %.1
-	$(AM_V_GEN)( $(MAN2HTML) < $< > $@.tmp && mv $@.tmp $@ )
-endif
-
 if DBUS_CAN_UPLOAD_DOCS
 BONUS_FILES = \
 	$(top_srcdir)/README \
@@ -130,14 +126,15 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp $(XMLTO_OUTPUT)
+dbus-docs: $(STATIC_DOCS) $(MAN_XML_FILES) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp $(XMLTO_HTML)
 	$(AM_V_at)rm -rf $@ $@.tmp
 	$(AM_V_GEN)$(MKDIR_P) $@.tmp/api
 	$(AM_V_at)cd $(srcdir) && cp $(STATIC_DOCS) @abs_builddir@/$@.tmp
 	$(AM_V_at)cd $(srcdir) && cp $(dist_doc_DATA) @abs_builddir@/$@.tmp
 	$(AM_V_at)cd $(srcdir) && cp $(STATIC_HTML) @abs_builddir@/$@.tmp
-	$(AM_V_at)cp $(XMLTO_OUTPUT) @abs_builddir@/$@.tmp
+	$(AM_V_at)cp $(XMLTO_HTML) @abs_builddir@/$@.tmp
 	$(AM_V_at)cp $(MAN_HTML_FILES) @abs_builddir@/$@.tmp
+	$(AM_V_at)cp $(MAN_XML_FILES) @abs_builddir@/$@.tmp
 	$(AM_V_at)cp $(BONUS_FILES) @abs_builddir@/$@.tmp
 	$(AM_V_at)cp -r api/html @abs_builddir@/$@.tmp/api
 	$(AM_V_at)mv $@.tmp $@
@@ -164,12 +161,15 @@ maintainer-upload-docs:
 	@false
 endif
 
+CLEANFILES = \
+	$(man1_MANS) \
+	$(MAN_XML_FILES) \
+	$(XMLTO_HTML) \
+	$(NULL)
+
 clean-local:
 	rm -f $(html_DATA)
 	rm -rf api
 	rm -rf dbus-docs dbus-docs.tmp
 	rm -f *.1.html
 	rm -f doxygen.stamp
-
-maintainer-clean-local:
-	rm -f $(XMLTO_OUTPUT)

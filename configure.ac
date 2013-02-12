@@ -1488,13 +1488,8 @@ fi
 AM_CONDITIONAL(DBUS_XML_DOCS_ENABLED, test x$enable_xml_docs = xyes)
 AC_MSG_RESULT($enable_xml_docs)
 
-AC_PATH_PROG([MAN2HTML], [man2html])
-AC_ARG_VAR([MAN2HTML], [Path to man2html (optional)])
-AM_CONDITIONAL(DBUS_HAVE_MAN2HTML, test x$MAN2HTML != x)
-
 AM_CONDITIONAL(DBUS_CAN_UPLOAD_DOCS,
-    test x$enable_doxygen_docs = xyes -a x$enable_xml_docs = xyes -a \
-         x$MAN2HTML != x)
+    [test x$enable_doxygen_docs = xyes && test x$enable_xml_docs = xyes])
 
 #### Have to go $localstatedir->$prefix/var->/usr/local/var
 
@@ -1815,7 +1810,7 @@ tools/Makefile
 test/Makefile
 test/name-test/Makefile
 doc/Makefile
-doc/dbus-daemon.1
+doc/dbus-daemon.1.xml
 dbus-1.pc
 dbus-1-uninstalled.pc
 test/data/valid-config-files/debug-allow-all.conf
@@ -1860,8 +1855,7 @@ echo "
 	32-bit int:		  ${DBUS_INT32_TYPE}
 	16-bit int:		  ${DBUS_INT16_TYPE}
         Doxygen:                  ${DOXYGEN:-not found}
-        xmlto:                    ${XMLTO:-not found}
-        man2html:                 ${MAN2HTML:-not found}"
+        xmlto:                    ${XMLTO:-not found}"
 
 echo "
         Rebuilding generated files: ${USE_MAINTAINER_MODE}
