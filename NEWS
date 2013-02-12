@@ -29,11 +29,24 @@ Fixes:
 • Fix building with Valgrind 3.8, at the cost of causing harmless warnings
   with Valgrind 3.6 on some compilers (fd.o #55932, Arun Raghavan)
 
+• Merge <servicehelper> from system-local.conf if necessary (fd.o #51560,
+  Krzysztof Konopko)
+
+• Under CMake, prefer xmlto over meinproc (fd.o #59733, Ralf Habacker)
+
+• Stop duplicating CMake's own logic to find libexpat
+  (fd.o #59733, Ralf Habacker)
+
+• Don't assume CMake host and build system are the same (fd.o #59733,
+  Ralf Habacker)
+
 • Unix-specific:
   · Check for functions in libpthread correctly, fixing compilation on
     (at least) OpenBSD (fd.o #47239, Simon)
   · Don't leak temporary fds pointing to /dev/null (fd.o #56927,
     Michel HERMIER)
+  · Update sd-daemon.[ch] from systemd (fd.o #60681)
+  · Add partial support for QNX (fd.o #60339, Matt Fischer)
 
 • Windows-specific:
   · The default session bus listening and connecting address is now
@@ -41,6 +54,7 @@ Fixes:
     and GDBus "out of the box". Use the configure options and cmake variables
     described above if you require a different autolaunch scope.
     (fd.o #38201, Simon McVittie)
+  · Avoid a CMake warning under Cygwin (fd.o #59401, Ralf Habacker)
 
 • Create session.d, system.d directories under CMake (fd.o #41319,
   Ralf Habacker)
