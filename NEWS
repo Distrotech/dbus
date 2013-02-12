@@ -9,6 +9,9 @@ D-Bus 1.6.10 (UNRELEASED)
 
 • Don't leak temporary fds pointing to /dev/null (fd.o #56927, Michel HERMIER)
 
+• Create session.d, system.d directories under CMake (fd.o #41319,
+  Ralf Habacker)
+
 D-Bus 1.6.8 (2012-09-28)
 ==
 
