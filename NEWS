@@ -13,6 +13,11 @@ Build-time configuration changes:
   supported; use the new DBUS_SESSION_BUS_LISTEN_ADDRESS and
   DBUS_SESSION_BUS_CONNECT_ADDRESS variables instead.
 
+Requirements:
+
+• Man pages now require xmlto (or either xmlto or meinproc, if using CMake).
+• man2html is no longer used.
+
 Enhancements:
 
 • D-Bus Specification 0.21
@@ -20,6 +25,10 @@ Enhancements:
     implements o.fd.DBus (fd.o #51865, Colin Walters)
   · various reorganisation for better clarity (fd.o #38252, Simon McVittie)
   · stop claiming that all basic types work just like INT32 (strings don't!)
+
+• The "source code" for the man pages is now Docbook XML, eliminating
+  the outdated duplicate copies used when building with CMake.
+  (fd.o #59805; Ralf Habacker, Simon McVittie)
 
 Fixes:
 
