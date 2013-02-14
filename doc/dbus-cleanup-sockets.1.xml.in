@@ -32,15 +32,15 @@ connection sockets. See <ulink url='http://www.freedesktop.org/software/dbus/'>h
 more information about the big picture.</para>
 
 
-<para>If given no arguments, <command>dbus-cleanup-sockets</command> cleans up sockets 
+<para>If given no arguments, <command>dbus-cleanup-sockets</command> cleans up sockets
 in the standard default socket directory for the
-per-user-login-session message bus; this is usually /tmp. 
+per-user-login-session message bus; this is usually /tmp.
 Optionally, you can pass a different directory on the command line.</para>
 
 
 <para>On Linux, this program is essentially useless, because D-Bus defaults
 to using "abstract sockets" that exist only in memory and don't have a
-corresponding file in /tmp.</para> 
+corresponding file in /tmp.</para>
 
 
 <para>On most other flavors of UNIX, it's possible for the socket files to
@@ -63,4 +63,3 @@ linc-cleanup-sockets written by Michael Meeks.</para>
 see <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink></para>
 </refsect1>
 </refentry>
-

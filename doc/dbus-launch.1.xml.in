@@ -35,7 +35,7 @@
 
 
 <refsect1 id='description'><title>DESCRIPTION</title>
-<para>The <command>dbus-launch</command> command is used to start a session bus 
+<para>The <command>dbus-launch</command> command is used to start a session bus
 instance of <emphasis remap='I'>dbus-daemon</emphasis> from a shell script.
 It would normally be called from a user's login
 scripts. Unlike the daemon itself, <command>dbus-launch</command> exits, so
@@ -56,7 +56,7 @@ examples.</para>
 information about the new bus to standard output.</para>
 
 <para>When <command>dbus-launch</command> prints bus information to standard output, by
-default it is in a simple key-value pairs format. However, you may 
+default it is in a simple key-value pairs format. However, you may
 request several alternate syntaxes using the --sh-syntax, --csh-syntax,
 --binary-syntax, or
 --auto-syntax options. Several of these cause <command>dbus-launch</command> to emit shell code
@@ -121,14 +121,14 @@ terminated automatically on logout.</para>
 <refsect1 id='automatic_launching'><title>AUTOMATIC LAUNCHING</title>
 <para>If DBUS_SESSION_BUS_ADDRESS is not set for a process that tries to use
 D-Bus, by default the process will attempt to invoke dbus-launch with
-the --autolaunch option to start up a new session bus or find the 
+the --autolaunch option to start up a new session bus or find the
 existing bus address on the X display or in a file in
 ~/.dbus/session-bus/</para>
 
 
 <para>Whenever an autolaunch occurs, the application that had to
 start a new bus will be in its own little world; it can effectively
-end up starting a whole new session if it tries to use a lot of 
+end up starting a whole new session if it tries to use a lot of
 bus services. This can be suboptimal or even totally broken, depending
 on the app and what it tries to do.</para>
 
@@ -136,7 +136,7 @@ on the app and what it tries to do.</para>
 <para>There are two common reasons for autolaunch. One is ssh to a remote
 machine. The ideal fix for that would be forwarding of
 DBUS_SESSION_BUS_ADDRESS in the same way that DISPLAY is forwarded.
-In the meantime, you can edit the session.conf config file to 
+In the meantime, you can edit the session.conf config file to
 have your session bus listen on TCP, and manually set
 DBUS_SESSION_BUS_ADDRESS, if you like.</para>
 
@@ -194,7 +194,7 @@ your application.</para>
   <varlistentry>
   <term><option>--config-file=FILENAME</option></term>
   <listitem>
-<para>Pass --config-file=FILENAME to the bus daemon, instead of passing it 
+<para>Pass --config-file=FILENAME to the bus daemon, instead of passing it
 the --session argument. See the man page for dbus-daemon</para>
 
   </listitem>
@@ -209,7 +209,7 @@ the --session argument. See the man page for dbus-daemon</para>
   <varlistentry>
   <term><option>--exit-with-session</option></term>
   <listitem>
-<para>If this option is provided, a persistent "babysitter" process will be 
+<para>If this option is provided, a persistent "babysitter" process will be
 created that watches stdin for HUP and tries to connect to the X
 server. If this process gets a HUP on stdin or loses its X connection,
 it kills the message bus daemon.</para>
@@ -269,4 +269,3 @@ own right.</para>
 see <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink></para>
 </refsect1>
 </refentry>
-

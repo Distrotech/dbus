@@ -54,8 +54,8 @@ for a single machine until the next reboot at least.</para>
 
 
 <para>The important properties of the machine UUID are that 1) it remains
-unchanged until the next reboot and 2) it is different for any two 
-running instances of the OS kernel. That is, if two processes see the 
+unchanged until the next reboot and 2) it is different for any two
+running instances of the OS kernel. That is, if two processes see the
 same UUID, they should also see the same shared memory, UNIX domain
 sockets, local X displays, localhost.localdomain resolution, process
 IDs, and so forth.</para>
@@ -88,7 +88,7 @@ because there are two different kernels.</para>
   <listitem>
 <para>If a filename is not given, defaults to localstatedir/lib/dbus/machine-id
 (localstatedir is usually /var). If this file exists and is valid, the
-uuid in the file is printed on stdout. Otherwise, the command exits 
+uuid in the file is printed on stdout. Otherwise, the command exits
 with a nonzero status.</para>
 
   </listitem>
@@ -124,4 +124,3 @@ On success, prints no output.</para>
 see <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink></para>
 </refsect1>
 </refentry>
-

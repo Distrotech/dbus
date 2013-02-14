@@ -20,7 +20,7 @@
 <!-- body begins here -->
 <refsynopsisdiv id='synopsis'>
 <cmdsynopsis>
-  <command>dbus-send</command>    
+  <command>dbus-send</command>
     <group choice='opt'><arg choice='plain'>--system </arg><arg choice='plain'>--session </arg></group>
     <arg choice='opt'>--dest=<replaceable>NAME</replaceable></arg>
     <arg choice='opt'><arg choice='plain'>--print-reply </arg><arg choice='opt'><replaceable>=literal</replaceable></arg></arg>
@@ -36,12 +36,12 @@
 
 <refsect1 id='description'><title>DESCRIPTION</title>
 <para>The <command>dbus-send</command> command is used to send a message to a D-Bus message
-bus. See <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink> for more 
+bus. See <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink> for more
 information about the big picture.</para>
 
 
-<para>There are two well-known message buses: the systemwide message bus 
-(installed on many systems as the "messagebus" service) and the 
+<para>There are two well-known message buses: the systemwide message bus
+(installed on many systems as the "messagebus" service) and the
 per-user-login-session message bus (started each time a user logs in).
 The <option>--system</option> and <option>--session</option> options direct
 <command>dbus-send</command> to send messages to the system or session buses respectively.
@@ -55,14 +55,14 @@ which is the name of a connection on the bus to send the message to. If
 
 <para>The object path and the name of the message to send must always be
 specified. Following arguments, if any, are the message contents
-(message arguments).  These are given as type-specified values and 
+(message arguments).  These are given as type-specified values and
 may include containers (arrays, dicts, and variants) as described below.</para>
 
 <literallayout remap='.nf'>
 &lt;contents&gt;   ::= &lt;item&gt; | &lt;container&gt; [ &lt;item&gt; | &lt;container&gt;...]
 &lt;item&gt;       ::= &lt;type&gt;:&lt;value&gt;
 &lt;container&gt;  ::= &lt;array&gt; | &lt;dict&gt; | &lt;variant&gt;
-&lt;array&gt;      ::= array:&lt;type&gt;:&lt;value&gt;[,&lt;value&gt;...] 
+&lt;array&gt;      ::= array:&lt;type&gt;:&lt;value&gt;[,&lt;value&gt;...]
 &lt;dict&gt;       ::= dict:&lt;type&gt;:&lt;type&gt;:&lt;key&gt;,&lt;value&gt;[,&lt;key&gt;,&lt;value&gt;...]
 &lt;variant&gt;    ::= variant:&lt;type&gt;:&lt;value&gt;
 &lt;type&gt;       ::= string | int16 | uint 16 | int32 | uint32 | int64 | uint64 | double | byte | boolean | objpath
@@ -83,11 +83,11 @@ or nested containers (e.g. arrays of variants).</para>
             array:string:"1st item","next item","last item"  &bsol;
             dict:string:int32:"one",1,"two",2,"three",3      &bsol;
             variant:int32:-8                                 &bsol;
-            objpath:/org/freedesktop/sample/object/name 
+            objpath:/org/freedesktop/sample/object/name
 
 </literallayout> <!-- .fi -->
 
-<para>Note that the interface is separated from a method or signal 
+<para>Note that the interface is separated from a method or signal
 name by a dot, though in the actual protocol the interface
 and the interface member are separate fields.</para>
 
@@ -156,4 +156,3 @@ The default is implementation&hyphen;defined, typically 25 seconds.</para>
 see <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink></para>
 </refsect1>
 </refentry>
-
