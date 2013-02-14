@@ -1,10 +1,6 @@
 apidir = @htmldir@/api
 
 MAN_XML_FILES = \
-	dbus-daemon.1.xml \
-	$(NULL)
-
-DIST_MAN_XML_FILES = \
 	dbus-cleanup-sockets.1.xml \
 	dbus-daemon.1.xml \
 	dbus-launch.1.xml \
@@ -39,7 +35,6 @@ dist_doc_DATA = system-activation.txt
 
 # uploaded and distributed, but not installed
 STATIC_DOCS = \
-	$(DIST_MAN_XML_FILES) \
 	dbus-faq.xml \
 	dbus-specification.xml \
 	dbus-test-plan.xml \

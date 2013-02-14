@@ -1810,7 +1810,12 @@ tools/Makefile
 test/Makefile
 test/name-test/Makefile
 doc/Makefile
+doc/dbus-cleanup-sockets.1.xml
 doc/dbus-daemon.1.xml
+doc/dbus-launch.1.xml
+doc/dbus-monitor.1.xml
+doc/dbus-send.1.xml
+doc/dbus-uuidgen.1.xml
 dbus-1.pc
 dbus-1-uninstalled.pc
 test/data/valid-config-files/debug-allow-all.conf
