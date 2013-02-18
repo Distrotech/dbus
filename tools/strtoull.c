@@ -27,6 +27,7 @@
  * SUCH DAMAGE.
  */
 
+#include "config.h"
 
 #include <limits.h>
 #ifdef HAVE_ERRNO_H
