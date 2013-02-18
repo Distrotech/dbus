@@ -13,6 +13,12 @@ Build-time configuration changes:
   supported; use the new DBUS_SESSION_BUS_LISTEN_ADDRESS and
   DBUS_SESSION_BUS_CONNECT_ADDRESS variables instead.
 
+• cmake/cross-compile.sh has been removed. Instead, please use a
+  cross-toolchain file (-DCMAKE_TOOLCHAIN_FILE) as documented at
+  <http://www.vtk.org/Wiki/CMake_Cross_Compiling>; or use Autotools
+  as documented in "info automake Cross-Compilation", and set
+  PKG_CONFIG_PATH appropriately.
+
 Requirements:
 
 • Man pages now require xmlto (or either xmlto or meinproc, if using CMake).
