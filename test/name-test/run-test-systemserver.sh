@@ -30,6 +30,11 @@ if test -n "$DBUS_TEST_MONITOR"; then
   dbus-monitor --session &
 fi
 
+XDG_RUNTIME_DIR="$DBUS_TOP_BUILDDIR"/test/XDG_RUNTIME_DIR
+test -d "$XDG_RUNTIME_DIR" || mkdir "$XDG_RUNTIME_DIR"
+chmod 0700 "$XDG_RUNTIME_DIR"
+export XDG_RUNTIME_DIR
+
 echo "running test-expected-echo-fail"
 ${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/tools/dbus-send --print-reply --dest=org.freedesktop.DBus.TestSuiteEchoService /org/freedesktop/TestSuite org.freedesktop.TestSuite.Echo string:hi >echo-error-output.tmp 2>&1
 if ! grep -q 'DBus.Error' echo-error-output.tmp; then

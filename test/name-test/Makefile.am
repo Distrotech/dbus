@@ -19,7 +19,9 @@ TESTS_ENVIRONMENT = \
         PYTHON=@PYTHON@ \
         DBUS_TEST_DATA=@abs_top_builddir@/test/data \
         DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
+        XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
         $(NULL)
+
 TESTS=run-test.sh run-test-systemserver.sh
 else
 TESTS=

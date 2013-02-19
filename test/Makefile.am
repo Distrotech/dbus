@@ -149,11 +149,13 @@ endif DBUS_WITH_GLIB
 
 installcheck_tests =
 installcheck_environment = \
+	XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
 	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
 	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
 	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
 
 TESTS_ENVIRONMENT = \
+	XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
 	DBUS_BLOCK_ON_ABORT=1 \
 	DBUS_FATAL_WARNINGS=1 \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
@@ -368,7 +370,7 @@ imported_data = \
 	$(NULL)
 
 noinst_DATA = $(imported_data)
-CLEANFILES = $(noinst_DATA)
+CLEANFILES = $(noinst_DATA) XDG_RUNTIME_DIR
 
 $(imported_data): data/valid-config-files/%.conf: $(top_builddir)/bus/%.conf
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files
