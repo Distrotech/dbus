@@ -2951,6 +2951,35 @@
       <programlisting>unix:path=/tmp/dbus-test;unix:path=/tmp/dbus-test2</programlisting>
     </para>
 
+    <para>
+      Some addresses are <firstterm>connectable</firstterm>. A connectable
+      address is one containing enough information for a client to connect
+      to it. For instance, <literal>tcp:host=127.0.0.1,port=4242</literal>
+      is a connectable address. It is not necessarily possible to listen
+      on every connectable address: for instance, it is not possible to
+      listen on a <literal>unixexec:</literal> address.
+    </para>
+
+    <para>
+      Some addresses are <firstterm>listenable</firstterm>. A listenable
+      address is one containing enough information for a server to listen on
+      it, producing a connectable address (which may differ from the
+      original address). Many listenable addresses are not connectable:
+      for instance, <literal>tcp:host=127.0.0.1</literal>
+      is listenable, but not connectable (because it does not specify
+      a port number).
+    </para>
+
+    <para>
+      Listening on an address that is not connectable will result in a
+      connectable address that is not the same as the listenable address.
+      For instance, listening on <literal>tcp:host=127.0.0.1</literal>
+      might result in the connectable address
+      <literal>tcp:host=127.0.0.1,port=30958</literal>,
+      or listening on <literal>unix:tmpdir=/tmp</literal>
+      might result in the connectable address
+      <literal>unix:abstract=/tmp/dbus-U8OSdmf7</literal>.
+    </para>
   </sect1>
   
   <sect1 id="transports">
@@ -2983,6 +3012,13 @@
       <para>
         Unix domain sockets are not available on Windows.
       </para>
+      <para>
+        Unix addresses that specify <literal>path</literal> or
+        <literal>abstract</literal> are both listenable and connectable.
+        Unix addresses that specify <literal>tmpdir</literal> are only
+        listenable: the corresponding connectable address will specify
+        either <literal>path</literal> or <literal>abstract</literal>.
+      </para>
       <sect3 id="transports-unix-domain-sockets-addresses">
         <title>Server Address Format</title>
         <para> 
@@ -3012,11 +3048,16 @@
           <row>
             <entry>abstract</entry>
             <entry>(string)</entry>
-            <entry>unique string (path) in the abstract namespace. If set, the "path" or "tempdir" key must not be set.</entry>
+            <entry>unique string (path) in the abstract namespace. If set, the "path" or "tmpdir" key must not be set. This key is only supported on platforms with "abstract Unix sockets", of which Linux is the only known example.</entry>
           </row>
         </tbody>
         </tgroup>
        </informaltable>
+       <para>
+         Exactly one of the keys <literal>path</literal>,
+         <literal>abstract</literal> or
+         <literal>tmpdir</literal> must be provided.
+       </para>
       </sect3>
     </sect2>
     <sect2 id="transports-launchd">
@@ -3039,6 +3080,9 @@
       </para>
       <para>
         launchd is not available on Microsoft Windows.
+      </para>
+      <para>
+        launchd addresses are listenable and connectable.
       </para>
       <sect3 id="transports-launchd-addresses">
         <title>Server Address Format</title>
@@ -3064,6 +3108,9 @@
         </tbody>
         </tgroup>
        </informaltable>
+       <para>
+         The <literal>env</literal> key is required.
+       </para>
       </sect3>
     </sect2>
     <sect2 id="transports-systemd">
@@ -3086,6 +3133,11 @@
       <para>
         The systemd transport defines no parameter keys.
       </para>
+      <para>
+        systemd addresses are listenable, but not connectable. The
+        corresponding connectable address is the <literal>unix</literal>
+        or <literal>tcp</literal> address of the socket.
+      </para>
     </sect2>
     <sect2 id="transports-tcp-sockets">
       <title>TCP Sockets</title>
@@ -3098,9 +3150,16 @@
         over a network is unsecure. 
       </para>
       <para>  
-        Windows notes: Because of the tcp stack on Windows does not provide sending
-        credentials over a tcp connection, the EXTERNAL authentification 
-        mechanismus does not work. 
+        On Windows and most Unix platforms, the TCP stack is unable to transfer
+        credentials over a TCP connection, so the EXTERNAL authentication
+        mechanism does not work for this transport.
+      </para>
+      <para>
+        All <literal>tcp</literal> addresses are listenable.
+        <literal>tcp</literal> addresses in which both
+        <literal>host</literal> and <literal>port</literal> are
+        specified, and <literal>port</literal> is non-zero,
+        are also connectable.
       </para>
       <sect3 id="transports-tcp-sockets-addresses">
         <title>Server Address Format</title>
@@ -3172,6 +3231,12 @@
         key-value pair and send it over the socket. After that, the
         transport behaves like an unsecured tcp transport.
       </para>
+      <para>
+        All nonce-tcp addresses are listenable. nonce-tcp addresses in which
+        <literal>host</literal>, <literal>port</literal> and
+        <literal>noncefile</literal> are all specified,
+        and <literal>port</literal> is nonzero, are also connectable.
+      </para>
       <sect3 id="transports-nonce-tcp-sockets-addresses">
         <title>Server Address Format</title>
         <para> 
@@ -3209,7 +3274,10 @@
           <row>
            <entry>noncefile</entry>
            <entry>(path)</entry>
-           <entry>file location containing the secret</entry>
+           <entry>File location containing the secret.
+             This is only meaningful in connectable addresses:
+             a listening D-Bus server that offers this transport
+             will always create a new nonce file.</entry>
           </row>
          </tbody>
         </tgroup>
@@ -3231,6 +3299,10 @@
       </para>
       <para>
         Executed subprocesses are not available on Windows.
+      </para>
+      <para>
+        <literal>unixexec</literal> addresses are connectable, but are not
+        listenable.
       </para>
       <sect3 id="transports-exec-addresses">
         <title>Server Address Format</title>
@@ -3290,6 +3362,15 @@
      <para>The autolaunch transport provides a way for dbus clients to autodetect
        a running dbus session bus and to autolaunch a session bus if not present.
      </para>
+      <para>
+        On Unix, <literal>autolaunch</literal> addresses are connectable,
+        but not listenable.
+      </para>
+      <para>
+        On Windows, <literal>autolaunch</literal> addresses are both
+        connectable and listenable.
+      </para>
+
      <sect3 id="meta-transports-autolaunch-addresses">
        <title>Server Address Format</title>
        <para>
