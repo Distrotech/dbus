@@ -420,9 +420,9 @@ bus_config_parser_new (const DBusString      *basedir,
       maximum number of file descriptors we can receive. Picking a
       high value here thus translates directly to more memory
       allocation. */
-      parser->limits.max_incoming_unix_fds = 1024*4;
-      parser->limits.max_outgoing_unix_fds = 1024*4;
-      parser->limits.max_message_unix_fds = 1024;
+      parser->limits.max_incoming_unix_fds = DBUS_DEFAULT_MESSAGE_UNIX_FDS*4;
+      parser->limits.max_outgoing_unix_fds = DBUS_DEFAULT_MESSAGE_UNIX_FDS*4;
+      parser->limits.max_message_unix_fds = DBUS_DEFAULT_MESSAGE_UNIX_FDS;
       
       /* Making this long means the user has to wait longer for an error
        * message if something screws up, but making it too short means

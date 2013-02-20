@@ -3802,7 +3802,7 @@ _dbus_message_loader_new (void)
   SCM_RIGHTS works we need to preallocate an fd array of the maximum
   number of unix fds we want to receive in advance. A
   try-and-reallocate loop is not possible. */
-  loader->max_message_unix_fds = 1024;
+  loader->max_message_unix_fds = DBUS_DEFAULT_MESSAGE_UNIX_FDS;
 
   if (!_dbus_string_init (&loader->data))
     {
