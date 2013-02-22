@@ -1,5 +1,11 @@
-D-Bus 1.7.0 (UNRELEASED)
+D-Bus 1.7.0 (2013-02-22)
 ==
+
+The "Disingenuous Assertions" release.
+
+This is a new development release, starting the 1.7.x branch. D-Bus 1.6
+remains the recommended version for long-term-supported distributions
+or the upcoming GNOME 3.8 release.
 
 Build-time configuration changes:
 
@@ -9,7 +15,7 @@ Build-time configuration changes:
   usually want them to have the same argument; on Unix, the defaults are
   usually correct.
 
-• Similarly, the DBUS_SESSION_BUS_DEFAULT_ADDRESS cmake variable is no longer
+• Similarly, the DBUS_SESSION_BUS_DEFAULT_ADDRESS CMake variable is no longer
   supported; use the new DBUS_SESSION_BUS_LISTEN_ADDRESS and
   DBUS_SESSION_BUS_CONNECT_ADDRESS variables instead.
 
@@ -26,7 +32,7 @@ Requirements:
 
 Enhancements:
 
-• D-Bus Specification 0.21
+• D-Bus Specification 0.20
   · actually say that /org/freedesktop/DBus is the object that
     implements o.fd.DBus (fd.o #51865, Colin Walters)
   · various reorganisation for better clarity (fd.o #38252, Simon McVittie)
@@ -55,13 +61,15 @@ Fixes:
 • Don't assume CMake host and build system are the same (fd.o #59733,
   Ralf Habacker)
 
+• Avoid deprecation warnings for GLib 2.35 (fd.o #59971, Simon McVittie)
+
 • Unix-specific:
   · Check for functions in libpthread correctly, fixing compilation on
     (at least) OpenBSD (fd.o #47239, Simon)
   · Don't leak temporary fds pointing to /dev/null (fd.o #56927,
     Michel HERMIER)
   · Update sd-daemon.[ch] from systemd (fd.o #60681)
-  · Add partial support for QNX (fd.o #60339, Matt Fischer)
+  · Add partial support for QNX (fd.o #60339, fd.o #61176; Matt Fischer)
 
 • Windows-specific:
   · The default session bus listening and connecting address is now
