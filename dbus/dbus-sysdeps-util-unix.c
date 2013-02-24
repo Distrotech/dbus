@@ -429,13 +429,16 @@ void
 _dbus_init_system_log (void)
 {
 #ifdef HAVE_SYSLOG_H
+  int logopts = LOG_PID;
 
-#if HAVE_DECL_LOG_PERROR
-  openlog ("dbus", LOG_PID | LOG_PERROR, LOG_DAEMON);
-#else
-  openlog ("dbus", LOG_PID, LOG_DAEMON);
+#ifdef HAVE_DECL_LOG_PERROR
+#ifdef HAVE_SYSTEMD
+  if (sd_booted () <= 0)
+#endif
+    logopts |= LOG_PERROR;
 #endif
 
+  openlog ("dbus", logopts, LOG_DAEMON);
 #endif
 }
 
