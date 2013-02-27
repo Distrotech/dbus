@@ -5681,6 +5681,123 @@
         </para>
       </sect3>
 
+      <sect3 id="bus-messages-get-adt-audit-session-data">
+        <title><literal>org.freedesktop.DBus.GetAdtAuditSessionData</literal></title>
+        <para>
+          As a method:
+          <programlisting>
+            ARRAY of BYTE GetAdtAuditSessionData (in STRING bus_name)
+          </programlisting>
+          Message arguments:
+          <informaltable>
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>Argument</entry>
+                  <entry>Type</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>0</entry>
+                  <entry>STRING</entry>
+                  <entry>Unique or well-known bus name of the connection to
+                    query, such as <literal>:12.34</literal> or
+                    <literal>com.example.tea</literal></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          Reply arguments:
+          <informaltable>
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>Argument</entry>
+                  <entry>Type</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>0</entry>
+                  <entry>ARRAY of BYTE</entry>
+                  <entry>auditing data as returned by
+                    adt_export_session_data()</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          Returns auditing data used by Solaris ADT, in an unspecified
+          binary format. If you know what this means, please contribute
+          documentation via the D-Bus bug tracking system.
+          This method is on the core DBus interface for historical reasons;
+          the same information should be made available via
+          <xref linkend="bus-messages-get-connection-credentials"/>
+          in future.
+        </para>
+      </sect3>
+
+      <sect3 id="bus-messages-get-connection-selinux-security-context">
+        <title><literal>org.freedesktop.DBus.GetConnectionSELinuxSecurityContext</literal></title>
+        <para>
+          As a method:
+          <programlisting>
+            ARRAY of BYTE GetConnectionSELinuxSecurityContext (in STRING bus_name)
+          </programlisting>
+          Message arguments:
+          <informaltable>
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>Argument</entry>
+                  <entry>Type</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>0</entry>
+                  <entry>STRING</entry>
+                  <entry>Unique or well-known bus name of the connection to
+                    query, such as <literal>:12.34</literal> or
+                    <literal>com.example.tea</literal></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          Reply arguments:
+          <informaltable>
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>Argument</entry>
+                  <entry>Type</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>0</entry>
+                  <entry>ARRAY of BYTE</entry>
+                  <entry>some sort of string of bytes, not necessarily UTF-8,
+                    not including '\0'</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          Returns the security context used by SELinux, in an unspecified
+          format. If you know what this means, please contribute
+          documentation via the D-Bus bug tracking system.
+          This method is on the core DBus interface for historical reasons;
+          the same information should be made available via
+          <xref linkend="bus-messages-get-connection-credentials"/>
+          in future.
+        </para>
+      </sect3>
+
+
       <sect3 id="bus-messages-add-match">
         <title><literal>org.freedesktop.DBus.AddMatch</literal></title>
         <para>
