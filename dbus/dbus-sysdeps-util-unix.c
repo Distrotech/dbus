@@ -58,6 +58,8 @@
 #include <sys/syslimits.h>
 #endif
 
+#include "sd-daemon.h"
+
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
