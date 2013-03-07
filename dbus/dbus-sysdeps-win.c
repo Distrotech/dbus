@@ -1690,7 +1690,7 @@ _dbus_read_credentials_socket  (int              handle,
       bytes_read = _dbus_read_socket(handle, &buf, 1 );
 
       if (bytes_read > 0) 
-        _dbus_verbose("got one zero byte from server");
+        _dbus_verbose("got one zero byte from server\n");
 
       _dbus_string_free(&buf);
     }
