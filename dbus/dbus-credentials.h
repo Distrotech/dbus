@@ -41,7 +41,7 @@ DBusCredentials* _dbus_credentials_new_from_current_process (void);
 DBusCredentials* _dbus_credentials_new                      (void);
 void             _dbus_credentials_ref                      (DBusCredentials    *credentials);
 void             _dbus_credentials_unref                    (DBusCredentials    *credentials);
-dbus_bool_t      _dbus_credentials_add_unix_pid             (DBusCredentials    *credentials,
+dbus_bool_t      _dbus_credentials_add_pid                  (DBusCredentials    *credentials,
                                                              dbus_pid_t          pid);
 dbus_bool_t      _dbus_credentials_add_unix_uid             (DBusCredentials    *credentials,
                                                              dbus_uid_t          uid);
@@ -52,7 +52,7 @@ dbus_bool_t      _dbus_credentials_add_adt_audit_data       (DBusCredentials    
                                                              dbus_int32_t        size);
 dbus_bool_t      _dbus_credentials_include                  (DBusCredentials    *credentials,
                                                              DBusCredentialType  type);
-dbus_pid_t       _dbus_credentials_get_unix_pid             (DBusCredentials    *credentials);
+dbus_pid_t       _dbus_credentials_get_pid                  (DBusCredentials    *credentials);
 dbus_uid_t       _dbus_credentials_get_unix_uid             (DBusCredentials    *credentials);
 const char*      _dbus_credentials_get_windows_sid          (DBusCredentials    *credentials);
 void *           _dbus_credentials_get_adt_audit_data       (DBusCredentials    *credentials);

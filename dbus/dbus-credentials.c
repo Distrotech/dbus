@@ -48,7 +48,7 @@
 struct DBusCredentials {
   int refcount;
   dbus_uid_t unix_uid;
-  dbus_pid_t unix_pid;
+  dbus_pid_t pid;
   char *windows_sid;
   void *adt_audit_data;
   dbus_int32_t adt_audit_data_size;
@@ -77,7 +77,7 @@ _dbus_credentials_new (void)
   
   creds->refcount = 1;
   creds->unix_uid = DBUS_UID_UNSET;
-  creds->unix_pid = DBUS_PID_UNSET;
+  creds->pid = DBUS_PID_UNSET;
   creds->windows_sid = NULL;
   creds->adt_audit_data = NULL;
   creds->adt_audit_data_size = 0;
@@ -146,10 +146,10 @@ _dbus_credentials_unref (DBusCredentials    *credentials)
  * @returns #FALSE if no memory
  */
 dbus_bool_t
-_dbus_credentials_add_unix_pid (DBusCredentials    *credentials,
-                                dbus_pid_t          pid)
+_dbus_credentials_add_pid (DBusCredentials    *credentials,
+                           dbus_pid_t          pid)
 {
-  credentials->unix_pid = pid;
+  credentials->pid = pid;
   return TRUE;
 }
 
@@ -231,7 +231,7 @@ _dbus_credentials_include (DBusCredentials    *credentials,
   switch (type)
     {
     case DBUS_CREDENTIAL_UNIX_PROCESS_ID:
-      return credentials->unix_pid != DBUS_PID_UNSET;
+      return credentials->pid != DBUS_PID_UNSET;
     case DBUS_CREDENTIAL_UNIX_USER_ID:
       return credentials->unix_uid != DBUS_UID_UNSET;
     case DBUS_CREDENTIAL_WINDOWS_SID:
@@ -252,9 +252,9 @@ _dbus_credentials_include (DBusCredentials    *credentials,
  * @returns UNIX process ID
  */
 dbus_pid_t
-_dbus_credentials_get_unix_pid (DBusCredentials    *credentials)
+_dbus_credentials_get_pid (DBusCredentials    *credentials)
 {
-  return credentials->unix_pid;
+  return credentials->pid;
 }
 
 /**
@@ -322,8 +322,8 @@ _dbus_credentials_are_superset (DBusCredentials    *credentials,
                                 DBusCredentials    *possible_subset)
 {
   return
-    (possible_subset->unix_pid == DBUS_PID_UNSET ||
-     possible_subset->unix_pid == credentials->unix_pid) &&
+    (possible_subset->pid == DBUS_PID_UNSET ||
+     possible_subset->pid == credentials->pid) &&
     (possible_subset->unix_uid == DBUS_UID_UNSET ||
      possible_subset->unix_uid == credentials->unix_uid) &&
     (possible_subset->windows_sid == NULL ||
@@ -345,7 +345,7 @@ dbus_bool_t
 _dbus_credentials_are_empty (DBusCredentials    *credentials)
 {
   return
-    credentials->unix_pid == DBUS_PID_UNSET &&
+    credentials->pid == DBUS_PID_UNSET &&
     credentials->unix_uid == DBUS_UID_UNSET &&
     credentials->windows_sid == NULL &&
     credentials->adt_audit_data == NULL;
@@ -410,9 +410,9 @@ _dbus_credentials_add_credential (DBusCredentials    *credentials,
                                   DBusCredentials    *other_credentials)
 {
   if (which == DBUS_CREDENTIAL_UNIX_PROCESS_ID &&
-      other_credentials->unix_pid != DBUS_PID_UNSET)
+      other_credentials->pid != DBUS_PID_UNSET)
     {
-      if (!_dbus_credentials_add_unix_pid (credentials, other_credentials->unix_pid))
+      if (!_dbus_credentials_add_pid (credentials, other_credentials->pid))
         return FALSE;
     }
   else if (which == DBUS_CREDENTIAL_UNIX_USER_ID &&
@@ -445,7 +445,7 @@ _dbus_credentials_add_credential (DBusCredentials    *credentials,
 void
 _dbus_credentials_clear (DBusCredentials    *credentials)
 {
-  credentials->unix_pid = DBUS_PID_UNSET;
+  credentials->pid = DBUS_PID_UNSET;
   credentials->unix_uid = DBUS_UID_UNSET;
   dbus_free (credentials->windows_sid);
   credentials->windows_sid = NULL;
@@ -523,9 +523,9 @@ _dbus_credentials_to_string_append (DBusCredentials    *credentials,
         goto oom;
       join = TRUE;
     }
-  if (credentials->unix_pid != DBUS_PID_UNSET)
+  if (credentials->pid != DBUS_PID_UNSET)
     {
-      if (!_dbus_string_append_printf (string, "%spid=" DBUS_PID_FORMAT, join ? " " : "", credentials->unix_pid))
+      if (!_dbus_string_append_printf (string, "%spid=" DBUS_PID_FORMAT, join ? " " : "", credentials->pid))
         goto oom;
       join = TRUE;
     }

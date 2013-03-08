@@ -1794,7 +1794,7 @@ _dbus_credentials_add_from_current_process (DBusCredentials *credentials)
   if (!_dbus_getsid(&sid))
     goto failed;
 
-  if (!_dbus_credentials_add_unix_pid(credentials, _dbus_getpid()))
+  if (!_dbus_credentials_add_pid (credentials, _dbus_getpid()))
     goto failed;
 
   if (!_dbus_credentials_add_windows_sid (credentials,sid))

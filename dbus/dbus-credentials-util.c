@@ -40,7 +40,7 @@
 
 static DBusCredentials*
 make_credentials(dbus_uid_t  unix_uid,
-                 dbus_pid_t  unix_pid,
+                 dbus_pid_t  pid,
                  const char *windows_sid)
 {
   DBusCredentials *credentials;
@@ -56,9 +56,9 @@ make_credentials(dbus_uid_t  unix_uid,
         }
     }
 
-  if (unix_pid != DBUS_PID_UNSET)
+  if (pid != DBUS_PID_UNSET)
     {
-      if (!_dbus_credentials_add_unix_pid (credentials, unix_pid))
+      if (!_dbus_credentials_add_pid (credentials, pid))
         {
           _dbus_credentials_unref (credentials);
           return NULL;
@@ -102,7 +102,7 @@ _dbus_credentials_test (const char *test_data_dir)
   _dbus_assert (_dbus_credentials_include (creds, DBUS_CREDENTIAL_WINDOWS_SID));
 
   _dbus_assert (_dbus_credentials_get_unix_uid (creds) == 12);
-  _dbus_assert (_dbus_credentials_get_unix_pid (creds) == 511);
+  _dbus_assert (_dbus_credentials_get_pid (creds) == 511);
   _dbus_assert (strcmp (_dbus_credentials_get_windows_sid (creds), SAMPLE_SID) == 0);
 
   _dbus_assert (!_dbus_credentials_are_empty (creds));
@@ -118,7 +118,7 @@ _dbus_credentials_test (const char *test_data_dir)
   _dbus_assert (_dbus_credentials_include (creds2, DBUS_CREDENTIAL_WINDOWS_SID));
 
   _dbus_assert (_dbus_credentials_get_unix_uid (creds2) == 12);
-  _dbus_assert (_dbus_credentials_get_unix_pid (creds2) == 511);
+  _dbus_assert (_dbus_credentials_get_pid (creds2) == 511);
   _dbus_assert (strcmp (_dbus_credentials_get_windows_sid (creds2), SAMPLE_SID) == 0);  
 
   _dbus_assert (_dbus_credentials_are_superset (creds, creds2));
@@ -192,7 +192,7 @@ _dbus_credentials_test (const char *test_data_dir)
   _dbus_assert (!_dbus_credentials_include (creds, DBUS_CREDENTIAL_WINDOWS_SID));
 
   _dbus_assert (_dbus_credentials_get_unix_uid (creds) == DBUS_UID_UNSET);
-  _dbus_assert (_dbus_credentials_get_unix_pid (creds) == DBUS_PID_UNSET);
+  _dbus_assert (_dbus_credentials_get_pid (creds) == DBUS_PID_UNSET);
   _dbus_assert (_dbus_credentials_get_windows_sid (creds) == NULL);
 
   _dbus_assert (_dbus_credentials_are_empty (creds));

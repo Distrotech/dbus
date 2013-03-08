@@ -223,7 +223,7 @@ auth_set_unix_credentials(DBusAuth  *auth,
   if (uid != DBUS_UID_UNSET)
     _dbus_credentials_add_unix_uid (credentials, uid);
   if (pid != DBUS_PID_UNSET)
-    _dbus_credentials_add_unix_pid (credentials, pid);
+    _dbus_credentials_add_pid (credentials, pid);
 
   _dbus_auth_set_credentials (auth, credentials);
 

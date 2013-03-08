@@ -1337,7 +1337,7 @@ _dbus_transport_get_unix_process_id (DBusTransport *transport,
   if (_dbus_credentials_include (auth_identity,
                                  DBUS_CREDENTIAL_UNIX_PROCESS_ID))
     {
-      *pid = _dbus_credentials_get_unix_pid (auth_identity);
+      *pid = _dbus_credentials_get_pid (auth_identity);
       return TRUE;
     }
   else
