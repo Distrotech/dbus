@@ -6,7 +6,7 @@
  * Copyright (C) 2005 Novell, Inc.
  * Copyright (C) 2006 Peter Kümmel  <syntheticpp@gmx.net>
  * Copyright (C) 2006 Christian Ehrlicher <ch.ehrlicher@gmx.de>
- * Copyright (C) 2006-2010 Ralf Habacker <ralf.habacker@freenet.de>
+ * Copyright (C) 2006-2013 Ralf Habacker <ralf.habacker@freenet.de>
  *
  * Licensed under the Academic Free License version 2.1
  * 
@@ -54,8 +54,9 @@
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <wincrypt.h>
+#include <iphlpapi.h>
 
-/* Declarations missing in mingw's headers */
+/* Declarations missing in mingw's and windows sdk 7.0 headers */
 extern BOOL WINAPI ConvertStringSidToSidA (LPCSTR  StringSid, PSID *Sid);
 extern BOOL WINAPI ConvertSidToStringSidA (PSID Sid, LPSTR *StringSid);
 
@@ -103,6 +104,93 @@ _dbus_win_set_errno (int err)
 #endif
 }
 
+/**
+ * @brief return peer process id from tcp handle for localhost connections
+ * @param handle tcp socket descriptor
+ * @return process id or 0 in case the process id could not be fetched
+ */
+static dbus_pid_t
+_dbus_get_peer_pid_from_tcp_handle (int handle)
+{
+  struct sockaddr_storage addr;
+  socklen_t len = sizeof (addr);
+  int peer_port;
+
+  dbus_pid_t result;
+  DWORD size;
+  MIB_TCPTABLE_OWNER_PID *tcp_table;
+  DWORD i;
+  dbus_bool_t is_localhost = FALSE;
+
+  getpeername (handle, (struct sockaddr *) &addr, &len);
+
+  if (addr.ss_family == AF_INET)
+    {
+      struct sockaddr_in *s = (struct sockaddr_in *) &addr;
+      peer_port = ntohs (s->sin_port);
+      is_localhost = (htonl (s->sin_addr.s_addr) == INADDR_LOOPBACK);
+    }
+  else if (addr.ss_family == AF_INET6)
+    {
+      _dbus_verbose ("FIXME [61922]: IPV6 support not working on windows\n");
+      return 0;
+      /*
+         struct sockaddr_in6 *s = (struct sockaddr_in6 * )&addr;
+         peer_port = ntohs (s->sin6_port);
+         is_localhost = (memcmp(s->sin6_addr.s6_addr, in6addr_loopback.s6_addr, 16) == 0);
+         _dbus_verbose ("IPV6 %08x %08x\n", s->sin6_addr.s6_addr, in6addr_loopback.s6_addr);
+       */
+    }
+  else
+    {
+      _dbus_verbose ("no idea what address family %d is\n", addr.ss_family);
+      return 0;
+    }
+
+  if (!is_localhost)
+    {
+      _dbus_verbose ("could not fetch process id from remote process\n");
+      return 0;
+    }
+
+  if (peer_port == 0)
+    {
+      _dbus_verbose
+        ("Error not been able to fetch tcp peer port from connection\n");
+      return 0;
+    }
+
+  if ((result =
+       GetExtendedTcpTable (NULL, &size, TRUE, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0)) == ERROR_INSUFFICIENT_BUFFER)
+    {
+      tcp_table = (MIB_TCPTABLE_OWNER_PID *) dbus_malloc (size);
+      if (tcp_table == NULL)
+        {
+          _dbus_verbose ("Error allocating memory\n");
+          return 0;
+        }
+    }
+
+  if ((result = GetExtendedTcpTable (tcp_table, &size, TRUE, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0)) != NO_ERROR)
+    {
+      _dbus_verbose ("Error fetching tcp table %d\n", result);
+      dbus_free (tcp_table);
+      return 0;
+    }
+
+  result = 0;
+  for (i = 0; i < tcp_table->dwNumEntries; i++)
+    {
+      MIB_TCPROW_OWNER_PID *p = &tcp_table->table[i];
+      int local_port = ntohs (p->dwLocalPort);
+      if (p->dwState == MIB_TCP_STATE_ESTAB && local_port == peer_port)
+        result = p->dwOwningPid;
+    }
+
+  _dbus_verbose ("got pid %d\n", result);
+  dbus_free (tcp_table);
+  return result;
+}
 
 /* Convert GetLastError() to a dbus error.  */
 const char*
@@ -738,22 +826,23 @@ _dbus_pid_for_log (void)
   return _dbus_getpid ();
 }
 
-
 #ifndef DBUS_WINCE
 /** Gets our SID
- * @param points to sid buffer, need to be freed with LocalFree()
+ * @param sid points to sid buffer, need to be freed with LocalFree()
+ * @param process_id the process id for which the sid should be returned
  * @returns process sid
  */
 static dbus_bool_t
-_dbus_getsid(char **sid)
+_dbus_getsid(char **sid, dbus_pid_t process_id)
 {
   HANDLE process_token = INVALID_HANDLE_VALUE;
   TOKEN_USER *token_user = NULL;
   DWORD n;
   PSID psid;
   int retval = FALSE;
-  
-  if (!OpenProcessToken (GetCurrentProcess (), TOKEN_QUERY, &process_token)) 
+  HANDLE process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id);
+
+  if (!OpenProcessToken (process_handle, TOKEN_QUERY, &process_token))
     {
       _dbus_win_warn_win_error ("OpenProcessToken failed", GetLastError ());
       goto failed;
@@ -781,6 +870,7 @@ _dbus_getsid(char **sid)
   retval = TRUE;
 
 failed:
+  CloseHandle (process_handle);
   if (process_token != INVALID_HANDLE_VALUE)
     CloseHandle (process_token);
 
@@ -1665,7 +1755,7 @@ again:
  * a byte was read, not whether we got valid credentials. On some
  * systems, such as Linux, reading/writing the byte isn't actually
  * required, but we do it anyway just to avoid multiple codepaths.
- * 
+ *
  * Fails if no byte is available, so you must select() first.
  *
  * The point of the byte is that on some systems we have to
@@ -1683,21 +1773,41 @@ _dbus_read_credentials_socket  (int              handle,
 {
   int bytes_read = 0;
   DBusString buf;
-  
+
+  char *sid = NULL;
+  dbus_pid_t pid;
+  int retval = FALSE;
+
   // could fail due too OOM
-  if (_dbus_string_init(&buf))
+  if (_dbus_string_init (&buf))
     {
-      bytes_read = _dbus_read_socket(handle, &buf, 1 );
+      bytes_read = _dbus_read_socket (handle, &buf, 1 );
 
       if (bytes_read > 0) 
-        _dbus_verbose("got one zero byte from server\n");
+        _dbus_verbose ("got one zero byte from server\n");
 
-      _dbus_string_free(&buf);
+      _dbus_string_free (&buf);
     }
 
-  _dbus_verbose("FIXME: fetch credentials from client connection\n");
+  pid = _dbus_get_peer_pid_from_tcp_handle (handle);
+  if (pid == 0)
+    return TRUE;
 
-  return TRUE;
+  _dbus_credentials_add_pid (credentials, pid);
+
+  if (_dbus_getsid (&sid, pid))
+    {
+      if (!_dbus_credentials_add_windows_sid (credentials, sid))
+        goto out;
+    }
+
+  retval = TRUE;
+
+out:
+  if (sid)
+    LocalFree (sid);
+
+  return retval;
 }
 
 /**
@@ -1791,7 +1901,7 @@ _dbus_credentials_add_from_current_process (DBusCredentials *credentials)
   dbus_bool_t retval = FALSE;
   char *sid = NULL;
 
-  if (!_dbus_getsid(&sid))
+  if (!_dbus_getsid(&sid, _dbus_getpid()))
     goto failed;
 
   if (!_dbus_credentials_add_pid (credentials, _dbus_getpid()))
@@ -1829,7 +1939,7 @@ _dbus_append_user_from_current_process (DBusString *str)
   dbus_bool_t retval = FALSE;
   char *sid = NULL;
 
-  if (!_dbus_getsid(&sid))
+  if (!_dbus_getsid(&sid, _dbus_getpid()))
     return FALSE;
 
   retval = _dbus_string_append (str,sid);
