@@ -1695,8 +1695,7 @@ _dbus_read_credentials_socket  (int              handle,
       _dbus_string_free(&buf);
     }
 
-  _dbus_credentials_add_from_current_process (credentials);
-  _dbus_verbose("FIXME: get faked credentials from current process");
+  _dbus_verbose("FIXME: fetch credentials from client connection\n");
 
   return TRUE;
 }
