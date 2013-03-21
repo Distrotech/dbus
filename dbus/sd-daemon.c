@@ -25,7 +25,7 @@
 ***/
 
 #ifndef _GNU_SOURCE
-#define _GNU_SOURCE
+#  define _GNU_SOURCE
 #endif
 
 #include <sys/types.h>
@@ -33,9 +33,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #ifdef __BIONIC__
-#include <linux/fcntl.h>
+#  include <linux/fcntl.h>
 #else
-#include <sys/fcntl.h>
+#  include <sys/fcntl.h>
 #endif
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -48,21 +48,21 @@
 #include <limits.h>
 
 #if defined(__linux__)
-#include <mqueue.h>
+#  include <mqueue.h>
 #endif
 
 #include "sd-daemon.h"
 
 #if (__GNUC__ >= 4)
-#ifdef SD_EXPORT_SYMBOLS
+#  ifdef SD_EXPORT_SYMBOLS
 /* Export symbols */
-#define _sd_export_ __attribute__ ((visibility("default")))
-#else
+#    define _sd_export_ __attribute__ ((visibility("default")))
+#  else
 /* Don't export the symbols */
-#define _sd_export_ __attribute__ ((visibility("hidden")))
-#endif
+#    define _sd_export_ __attribute__ ((visibility("hidden")))
+#  endif
 #else
-#define _sd_export_
+#  define _sd_export_
 #endif
 
 _sd_export_ int sd_listen_fds(int unset_environment) {
@@ -519,18 +519,15 @@ _sd_export_ int sd_booted(void) {
 #if defined(DISABLE_SYSTEMD) || !defined(__linux__)
         return 0;
 #else
+        struct stat st;
 
-        struct stat a, b;
+        /* We test whether the runtime unit file directory has been
+         * created. This takes place in mount-setup.c, so is
+         * guaranteed to happen very early during boot. */
 
-        /* We simply test whether the systemd cgroup hierarchy is
-         * mounted */
-
-        if (lstat("/sys/fs/cgroup", &a) < 0)
+        if (lstat("/run/systemd/system/", &st) < 0)
                 return 0;
 
-        if (lstat("/sys/fs/cgroup/systemd", &b) < 0)
-                return 0;
-
-        return a.st_dev != b.st_dev;
+        return !!S_ISDIR(st.st_mode);
 #endif
 }
