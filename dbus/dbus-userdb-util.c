@@ -21,6 +21,7 @@
  *
  */
 #include <config.h>
+#include <unistd.h>
 #define DBUS_USERDB_INCLUDES_PRIVATE 1
 #include "dbus-userdb.h"
 #include "dbus-test.h"
@@ -29,7 +30,6 @@
 #include <string.h>
 
 #if HAVE_SYSTEMD
-#include <systemd/sd-daemon.h>
 #include <systemd/sd-login.h>
 #endif
 
@@ -55,7 +55,8 @@ _dbus_is_console_user (dbus_uid_t uid,
   dbus_bool_t result = FALSE;
 
 #ifdef HAVE_SYSTEMD
-  if (sd_booted () > 0)
+  /* check if we have logind */
+  if (access ("/run/systemd/seats/", F_OK) >= 0)
     {
       int r;
 
