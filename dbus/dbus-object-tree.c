@@ -2064,6 +2064,30 @@ object_tree_test_iteration (void *data)
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
   _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
 
+  /* Test that unregistered parents cannot be freed out from under their
+     children */
+  if (!do_register (tree, path2, TRUE, 2, tree_test_data))
+    goto out;
+
+  _dbus_assert (!find_subtree (tree, path1, NULL));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+#if 0
+  /* This triggers the "Attempted to unregister path ..." warning message */
+  _dbus_object_tree_unregister_and_unlock (tree, path1);
+#endif
+  _dbus_assert (find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree (tree, path1, NULL));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
   /* Register it all again, and test dispatch */
   
   if (!do_register (tree, path0, TRUE, 0, tree_test_data))
