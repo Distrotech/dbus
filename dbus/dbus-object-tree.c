@@ -1900,6 +1900,15 @@ object_tree_test_iteration (void *data)
       ++i;
     }
 
+  /* Test removal of newly-childless unregistered nodes */
+  if (!do_register (tree, path2, TRUE, 2, tree_test_data))
+    goto out;
+
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
   /* Register it all again, and test dispatch */
   
   if (!do_register (tree, path0, TRUE, 0, tree_test_data))
