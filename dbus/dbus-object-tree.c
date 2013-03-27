@@ -623,21 +623,27 @@ void
 _dbus_object_tree_unregister_and_unlock (DBusObjectTree          *tree,
                                          const char             **path)
 {
-  int i;
-  DBusObjectSubtree *subtree;
+  dbus_bool_t found_subtree;
+  dbus_bool_t continue_removal_attempts;
   DBusObjectPathUnregisterFunction unregister_function;
   void *user_data;
   DBusConnection *connection;
 
+  _dbus_assert (tree != NULL);
   _dbus_assert (path != NULL);
 
+  continue_removal_attempts = TRUE;
   unregister_function = NULL;
   user_data = NULL;
 
-  subtree = find_subtree (tree, path, &i);
+  found_subtree = unregister_and_free_path_recurse (tree->root,
+                                                    path,
+                                                    &continue_removal_attempts,
+                                                    &unregister_function,
+                                                    &user_data);
 
 #ifndef DBUS_DISABLE_CHECKS
-  if (subtree == NULL)
+  if (found_subtree == FALSE)
     {
       _dbus_warn ("Attempted to unregister path (path[0] = %s path[1] = %s) which isn't registered\n",
                   path[0] ? path[0] : "null",
@@ -645,38 +651,8 @@ _dbus_object_tree_unregister_and_unlock (DBusObjectTree          *tree,
       goto unlock;    
     }
 #else
-  _dbus_assert (subtree != NULL);
+  _dbus_assert (found_subtree == TRUE);
 #endif
-
-  _dbus_assert (subtree->parent == NULL ||
-                (i >= 0 && subtree->parent->subtrees[i] == subtree));
-
-  subtree->message_function = NULL;
-
-  unregister_function = subtree->unregister_function;
-  user_data = subtree->user_data;
-
-  subtree->unregister_function = NULL;
-  subtree->user_data = NULL;
-
-  /* If we have no subtrees of our own, remove from
-   * our parent (FIXME could also be more aggressive
-   * and remove our parent if it becomes empty)
-   */
-  if (subtree->parent && subtree->n_subtrees == 0)
-    {
-      /* assumes a 0-byte memmove is OK */
-      memmove (&subtree->parent->subtrees[i],
-               &subtree->parent->subtrees[i+1],
-               (subtree->parent->n_subtrees - i - 1) *
-               sizeof (subtree->parent->subtrees[0]));
-      subtree->parent->n_subtrees -= 1;
-
-      subtree->parent = NULL;
-
-      _dbus_object_subtree_unref (subtree);
-    }
-  subtree = NULL;
 
 unlock:
   connection = tree->connection;
