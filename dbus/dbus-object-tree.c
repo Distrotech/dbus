@@ -434,6 +434,51 @@ _dbus_object_tree_register (DBusObjectTree              *tree,
 }
 
 /**
+ * Attempts to unregister the given subtree.  If the subtree is registered,
+ * stores its unregister function and user data for later use and returns
+ * #TRUE.  If subtree is not registered, simply returns #FALSE.  Does not free
+ * subtree or remove it from the object tree.
+ *
+ * @param subtree the subtree to unregister
+ * @param unregister_function_out stores subtree's unregister_function
+ * @param user_data_out stores subtree's user_data
+ * @return #FALSE if the subtree was not registered, #TRUE on success
+ */
+static dbus_bool_t
+unregister_subtree (DBusObjectSubtree                 *subtree,
+                    DBusObjectPathUnregisterFunction  *unregister_function_out,
+                    void                             **user_data_out)
+{
+  _dbus_assert (subtree != NULL);
+  _dbus_assert (unregister_function_out != NULL);
+  _dbus_assert (user_data_out != NULL);
+
+  /* Confirm subtree is registered */
+  if (subtree->message_function != NULL)
+    {
+      subtree->message_function = NULL;
+
+      *unregister_function_out = subtree->unregister_function;
+      *user_data_out = subtree->user_data;
+
+      subtree->unregister_function = NULL;
+      subtree->user_data = NULL;
+
+      return TRUE;
+    }
+  else
+    {
+      /* Assert that this unregistered subtree is either the root node or has
+         children, otherwise we have a dangling path which should never
+         happen */
+      _dbus_assert (subtree->parent == NULL || subtree->n_subtrees > 0);
+
+      /* The subtree is not registered */
+      return FALSE;
+    }
+}
+
+/**
  * Unregisters an object subtree that was registered with the
  * same path.
  *
