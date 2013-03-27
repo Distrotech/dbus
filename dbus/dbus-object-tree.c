@@ -1507,6 +1507,17 @@ run_decompose_tests (void)
   return TRUE;
 }
 
+static DBusObjectSubtree*
+find_subtree_registered_or_unregistered (DBusObjectTree *tree,
+                                         const char    **path)
+{
+#if VERBOSE_FIND
+  _dbus_verbose ("Looking for exact subtree, registered or unregistered\n");
+#endif
+
+  return find_subtree_recurse (tree->root, path, FALSE, NULL, NULL);
+}
+
 static dbus_bool_t
 object_tree_test_iteration (void *data)
 {
