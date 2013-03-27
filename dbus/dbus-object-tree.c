@@ -2246,6 +2246,16 @@ object_tree_test_iteration (void *data)
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path10));
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path5));
 
+#if 0
+  /* Test attempting to unregister non-existent paths.  These trigger
+     "Attempted to unregister path ..." warning messages */
+  _dbus_object_tree_unregister_and_unlock (tree, path0);
+  _dbus_object_tree_unregister_and_unlock (tree, path1);
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_object_tree_unregister_and_unlock (tree, path3);
+  _dbus_object_tree_unregister_and_unlock (tree, path4);
+#endif
+
   /* Register it all again, and test dispatch */
   
   if (!do_register (tree, path0, TRUE, 0, tree_test_data))
