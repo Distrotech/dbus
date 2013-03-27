@@ -1685,6 +1685,12 @@ object_tree_test_iteration (void *data)
   const char *path6[] = { "blah", "boof", NULL };
   const char *path7[] = { "blah", "boof", "this", "is", "really", "long", NULL };
   const char *path8[] = { "childless", NULL };
+  const char *path9[] = { "blah", "a", NULL };
+  const char *path10[] = { "blah", "b", NULL };
+  const char *path11[] = { "blah", "c", NULL };
+  const char *path12[] = { "blah", "a", "d", NULL };
+  const char *path13[] = { "blah", "b", "d", NULL };
+  const char *path14[] = { "blah", "c", "d", NULL };
   DBusObjectPathVTable test_vtable = { NULL, test_message_function, NULL };
   DBusObjectTree *tree;
   TreeTestData tree_test_data[9];
@@ -2162,6 +2168,83 @@ object_tree_test_iteration (void *data)
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path3));
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+
+  /* Test subtree removal */
+  if (!_dbus_object_tree_register (tree, TRUE, path12,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path13,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path13, NULL));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path14,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path14, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path12);
+
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path12));
+  _dbus_assert (find_subtree (tree, path13, NULL));
+  _dbus_assert (find_subtree (tree, path14, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path9));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path12,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path13);
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path13));
+  _dbus_assert (find_subtree (tree, path14, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path10));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path13,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path13, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path14);
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+  _dbus_assert (find_subtree (tree, path13, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path14));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path11));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path12);
+
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path12));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path9));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path13);
+
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path13));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path10));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path5));
 
   /* Register it all again, and test dispatch */
   
