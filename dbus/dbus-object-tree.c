@@ -2127,6 +2127,17 @@ object_tree_test_iteration (void *data)
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
   _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
 
+  /* Test freeing a long path */
+  if (!do_register (tree, path3, TRUE, 3, tree_test_data))
+    goto out;
+
+  _dbus_object_tree_unregister_and_unlock (tree, path3);
+  _dbus_assert (!find_subtree (tree, path3, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path3));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
   /* Register it all again, and test dispatch */
   
   if (!do_register (tree, path0, TRUE, 0, tree_test_data))
