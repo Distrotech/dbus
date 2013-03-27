@@ -525,6 +525,94 @@ attempt_child_removal (DBusObjectSubtree  *parent,
 }
 
 /**
+ * Searches the object tree for a registered subtree node at the given path.
+ * If a registered node is found, it is removed from the tree and freed, and
+ * TRUE is returned.  If a registered subtree node is not found at the given
+ * path, the tree is not modified and FALSE is returned.
+ *
+ * The found node's unregister_function and user_data are returned in the
+ * corresponding _out arguments.  The caller should define these variables and
+ * pass their addresses as arguments.
+ *
+ * Likewise, the caller should define and set to TRUE a boolean variable, then
+ * pass its address as the continue_removal_attempts argument.
+ *
+ * Once a matching registered node is found, removed and freed, the recursive
+ * return path is traversed.  Along the way, eligible ancestor nodes are
+ * removed and freed.  An ancestor node is eligible for removal if and only if
+ * 1) it has no children, i.e., it has become childless and 2) it is not itself
+ * a registered handler.
+ *
+ * For example, suppose /A/B and /A/C are registered paths, and that these are
+ * the only paths in the tree.  If B is removed and freed, C is still reachable
+ * through A, so A cannot be removed and freed.  If C is subsequently removed
+ * and freed, then A becomes a childless node and it becomes eligible for
+ * removal, and will be removed and freed.
+ *
+ * Similarly, suppose /A is a registered path, and /A/B is also a registered
+ * path, and that these are the only paths in the tree.  If B is removed and
+ * freed, then even though A has become childless, it can't be freed because it
+ * refers to a path that is still registered.
+ *
+ * @param subtree subtree from which to start the search, root for initial call
+ * @param path path to subtree (same as _dbus_object_tree_unregister_and_unlock)
+ * @param continue_removal_attempts pointer to a bool, #TRUE for initial call
+ * @param unregister_function_out returns the found node's unregister_function
+ * @param user_data_out returns the found node's user_data
+ * @returns #TRUE if a registered node was found at path, #FALSE otherwise
+ */
+static dbus_bool_t
+unregister_and_free_path_recurse
+(DBusObjectSubtree                 *subtree,
+ const char                       **path,
+ dbus_bool_t                       *continue_removal_attempts,
+ DBusObjectPathUnregisterFunction  *unregister_function_out,
+ void                             **user_data_out)
+{
+  int i, j;
+
+  _dbus_assert (continue_removal_attempts != NULL);
+  _dbus_assert (*continue_removal_attempts);
+  _dbus_assert (unregister_function_out != NULL);
+  _dbus_assert (user_data_out != NULL);
+
+  if (path[0] == NULL)
+    return unregister_subtree (subtree, unregister_function_out, user_data_out);
+
+  i = 0;
+  j = subtree->n_subtrees;
+  while (i < j)
+    {
+      int k, v;
+
+      k = (i + j) / 2;
+      v = strcmp (path[0], subtree->subtrees[k]->name);
+
+      if (v == 0)
+        {
+          dbus_bool_t freed;
+          freed = unregister_and_free_path_recurse (subtree->subtrees[k],
+                                                    &path[1],
+                                                    continue_removal_attempts,
+                                                    unregister_function_out,
+                                                    user_data_out);
+          if (freed && *continue_removal_attempts)
+            *continue_removal_attempts = attempt_child_removal (subtree, k);
+          return freed;
+        }
+      else if (v < 0)
+        {
+          j = k;
+        }
+      else
+        {
+          i = k + 1;
+        }
+    }
+  return FALSE;
+}
+
+/**
  * Unregisters an object subtree that was registered with the
  * same path.
  *
