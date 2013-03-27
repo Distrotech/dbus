@@ -1685,6 +1685,7 @@ object_tree_test_iteration (void *data)
   const char *path6[] = { "blah", "boof", NULL };
   const char *path7[] = { "blah", "boof", "this", "is", "really", "long", NULL };
   const char *path8[] = { "childless", NULL };
+  DBusObjectPathVTable test_vtable = { NULL, test_message_function, NULL };
   DBusObjectTree *tree;
   TreeTestData tree_test_data[9];
   int i;
@@ -2110,6 +2111,20 @@ object_tree_test_iteration (void *data)
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
   _dbus_assert (!find_subtree (tree, path2, NULL));
   _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  /* Test with NULL unregister_function and user_data */
+  if (!_dbus_object_tree_register (tree, TRUE, path2,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (_dbus_object_tree_get_user_data_unlocked (tree, path2) == NULL);
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
   _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
 
   /* Register it all again, and test dispatch */
