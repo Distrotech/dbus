@@ -479,6 +479,52 @@ unregister_subtree (DBusObjectSubtree                 *subtree,
 }
 
 /**
+ * Attempts to remove a child subtree from its parent.  If removal is
+ * successful, also frees the child.  Returns #TRUE on success, #FALSE
+ * otherwise.  A #FALSE return value tells unregister_and_free_path_recurse to
+ * stop attempting to remove ancestors, i.e., that no ancestors of the
+ * specified child are eligible for removal.
+ *
+ * @param parent parent from which to remove child
+ * @param child_index parent->subtrees index of child to remove
+ * @return #TRUE if removal and free succeed, #FALSE otherwise
+ */
+static dbus_bool_t
+attempt_child_removal (DBusObjectSubtree  *parent,
+                       int child_index)
+{
+  /* Candidate for removal */
+  DBusObjectSubtree* candidate;
+
+  _dbus_assert (parent != NULL);
+  _dbus_assert (child_index >= 0 && child_index < parent->n_subtrees);
+
+  candidate = parent->subtrees[child_index];
+  _dbus_assert (candidate != NULL);
+
+  if (candidate->n_subtrees == 0 && candidate->message_function == NULL)
+    {
+      /* The candidate node is childless and is not a registered
+         path, so... */
+
+      /* ... remove it from its parent... */
+      /* Assumes a 0-byte memmove is OK */
+      memmove (&parent->subtrees[child_index],
+               &parent->subtrees[child_index + 1],
+               (parent->n_subtrees - child_index - 1)
+               * sizeof (parent->subtrees[0]));
+      parent->n_subtrees -= 1;
+
+      /* ... and free it */
+      candidate->parent = NULL;
+      _dbus_object_subtree_unref (candidate);
+
+      return TRUE;
+    }
+  return FALSE;
+}
+
+/**
  * Unregisters an object subtree that was registered with the
  * same path.
  *
