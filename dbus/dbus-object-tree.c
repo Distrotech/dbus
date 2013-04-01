@@ -647,7 +647,7 @@ _dbus_object_tree_unregister_and_unlock (DBusObjectTree          *tree,
     {
       _dbus_warn ("Attempted to unregister path (path[0] = %s path[1] = %s) which isn't registered\n",
                   path[0] ? path[0] : "null",
-                  path[1] ? path[1] : "null");
+                  (path[0] && path[1]) ? path[1] : "null");
       goto unlock;    
     }
 #else
