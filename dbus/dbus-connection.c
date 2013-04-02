@@ -3962,7 +3962,7 @@ _dbus_connection_pop_message_link_unlocked (DBusConnection *connection)
       link = _dbus_list_pop_first_link (&connection->incoming_messages);
       connection->n_incoming -= 1;
 
-      _dbus_verbose ("Message %p (%s %s %s %s '%s') removed from incoming queue %p, %d incoming\n",
+      _dbus_verbose ("Message %p (%s %s %s %s sig:'%s' serial:%u) removed from incoming queue %p, %d incoming\n",
                      link->data,
                      dbus_message_type_to_string (dbus_message_get_type (link->data)),
                      dbus_message_get_path (link->data) ?
@@ -3975,6 +3975,7 @@ _dbus_connection_pop_message_link_unlocked (DBusConnection *connection)
                      dbus_message_get_member (link->data) :
                      "no member",
                      dbus_message_get_signature (link->data),
+                     dbus_message_get_serial (link->data),
                      connection, connection->n_incoming);
 
       _dbus_message_trace_ref (link->data, -1, -1,
