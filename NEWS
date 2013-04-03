@@ -1,6 +1,20 @@
 D-Bus 1.7.2 (UNRELEASED)
 ==
 
+• Unix-specific:
+  · Under systemd, log to syslog only, not stderr, avoiding duplication
+    (fd.o #61399, #39987; Colin Walters, Dagobert Michelsen)
+  · Include alloca.h for alloca() if available, fixing compilation on
+    Solaris 10 (fd.o #63071, Dagobert Michelsen)
+  · Allow use of systemd-logind without the rest of systemd
+    (fd.o #62585, Martin Pitt)
+  · When built with CMake, link to librt and use the right path for
+    meinproc's XSLT stylesheets (fd.o #61637, Ralf Habacker)
+
+• Windows-specific:
+  · Do not claim that all bus clients have the dbus-daemon's credentials
+    (fd.o #61787, Ralf Habacker)
+
 D-Bus 1.7.0 (2013-02-22)
 ==
 

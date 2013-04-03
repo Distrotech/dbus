@@ -72,6 +72,9 @@
 #ifdef HAVE_GETPEERUCRED
 #include <ucred.h>
 #endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
 
 #ifdef HAVE_ADT
 #include <bsm/adt.h>
