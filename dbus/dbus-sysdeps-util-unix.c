@@ -433,7 +433,7 @@ _dbus_init_system_log (void)
 #ifdef HAVE_SYSLOG_H
   int logopts = LOG_PID;
 
-#ifdef HAVE_DECL_LOG_PERROR
+#if HAVE_DECL_LOG_PERROR
 #ifdef HAVE_SYSTEMD
   if (sd_booted () <= 0)
 #endif
