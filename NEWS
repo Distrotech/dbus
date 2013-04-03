@@ -12,6 +12,10 @@ D-Bus 1.6.10 (UNRELEASED)
 • Create session.d, system.d directories under CMake (fd.o #41319,
   Ralf Habacker)
 
+• Unix-specific:
+  · Include alloca.h for alloca() if available, fixing compilation on
+    Solaris 10 (fd.o #63071, Dagobert Michelsen)
+
 D-Bus 1.6.8 (2012-09-28)
 ==
 
