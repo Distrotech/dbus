@@ -1,6 +1,10 @@
 D-Bus 1.6.10 (UNRELEASED)
 ==
 
+• Diagnose incorrect use of dbus_connection_get_data() with negative slot
+  (i.e. before allocating the slot) rather than returning junk
+  (fd.o #63127, Dan Williams)
+
 • In the activation helper, when compiled for tests, do not reset the system
   bus address, fixing the regression tests. (fd.o #52202, Simon)
 
