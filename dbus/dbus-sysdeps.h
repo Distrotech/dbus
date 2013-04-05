@@ -450,7 +450,7 @@ void _dbus_set_signal_handler (int               sig,
 dbus_bool_t _dbus_user_at_console (const char *username,
                                    DBusError  *error);
 
-void _dbus_init_system_log (void);
+void _dbus_init_system_log (dbus_bool_t is_daemon);
 
 typedef enum {
   DBUS_SYSTEM_LOG_INFO,

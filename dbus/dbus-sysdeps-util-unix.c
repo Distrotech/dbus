@@ -428,14 +428,14 @@ _dbus_request_file_descriptor_limit (unsigned int limit)
 }
 
 void
-_dbus_init_system_log (void)
+_dbus_init_system_log (dbus_bool_t is_daemon)
 {
 #ifdef HAVE_SYSLOG_H
   int logopts = LOG_PID;
 
 #if HAVE_DECL_LOG_PERROR
 #ifdef HAVE_SYSTEMD
-  if (sd_booted () <= 0)
+  if (!is_daemon || sd_booted () <= 0)
 #endif
     logopts |= LOG_PERROR;
 #endif
