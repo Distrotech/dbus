@@ -1,6 +1,10 @@
 D-Bus 1.7.2 (UNRELEASED)
 ==
 
+• Diagnose incorrect use of dbus_connection_get_data() with negative slot
+  (i.e. before allocating the slot) rather than returning junk
+  (fd.o #63127, Dan Williams)
+
 • Unix-specific:
   · Under systemd, log to syslog only, not stderr, avoiding duplication
     (fd.o #61399, #39987; Colin Walters, Dagobert Michelsen)
