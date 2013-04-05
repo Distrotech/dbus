@@ -16,10 +16,10 @@ D-Bus 1.7.2 (UNRELEASED)
     meinproc's XSLT stylesheets (fd.o #61637, Ralf Habacker)
 
 • Windows-specific:
-  · Do not claim that all bus clients have the dbus-daemon's credentials
-    (fd.o #61787, Ralf Habacker)
-  · Pick up local TCPv4 clients' credentials (process ID and session ID)
-    using GetExtendedTcpTable() (fd.o #61787, Ralf Habacker)
+  · Do not claim that all bus clients have the dbus-daemon's credentials;
+    pick up local TCPv4 clients' credentials (process ID and security
+    identifier, i.e. user) using GetExtendedTcpTable() (fd.o #61787,
+    Ralf Habacker)
 
 D-Bus 1.7.0 (2013-02-22)
 ==
