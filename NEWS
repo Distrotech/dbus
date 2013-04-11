@@ -1,6 +1,15 @@
 D-Bus 1.7.2 (UNRELEASED)
 ==
 
+Configuration changes:
+
+• On non-QNX Unix platforms, the default limit on fds per message in the
+  session bus configuration has reduced from 4096 to 1024. The default
+  limit used on the system bus was already 1024. On QNX, both limits are
+  reduced further, to 128.
+
+Fixes:
+
 • Diagnose incorrect use of dbus_connection_get_data() with negative slot
   (i.e. before allocating the slot) rather than returning junk
   (fd.o #63127, Dan Williams)
@@ -14,6 +23,8 @@ D-Bus 1.7.2 (UNRELEASED)
     (fd.o #62585, Martin Pitt)
   · When built with CMake, link to librt and use the right path for
     meinproc's XSLT stylesheets (fd.o #61637, Ralf Habacker)
+  · Reduce the default limit on number of fds per message to 128 under
+    QNX, working around an arbitrary OS limit (fd.o #61176, Matt Fischer)
 
 • Windows-specific:
   · Do not claim that all bus clients have the dbus-daemon's credentials;
