@@ -584,7 +584,8 @@ dbus_threads_init (const DBusThreadFunctions *functions)
   if (thread_init_generation == _dbus_current_generation)
     return TRUE;
 
-  if (!init_locks ())
+  if (!_dbus_threads_init_platform_specific() ||
+      !init_locks ())
     return FALSE;
 
   thread_init_generation = _dbus_current_generation;
@@ -613,7 +614,7 @@ dbus_threads_init (const DBusThreadFunctions *functions)
 dbus_bool_t
 dbus_threads_init_default (void)
 {
-  return _dbus_threads_init_platform_specific ();
+  return dbus_threads_init (NULL);
 }
 
 
@@ -624,7 +625,7 @@ dbus_threads_init_default (void)
 dbus_bool_t
 _dbus_threads_init_debug (void)
 {
-  return _dbus_threads_init_platform_specific();
+  return dbus_threads_init (NULL);
 }
 
 #endif /* DBUS_BUILD_TESTS */

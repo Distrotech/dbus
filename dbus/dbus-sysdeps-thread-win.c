@@ -269,6 +269,6 @@ _dbus_threads_init_platform_specific (void)
 	return FALSE;
     }
 
-  return dbus_threads_init (NULL);
+  return TRUE;
 }
 

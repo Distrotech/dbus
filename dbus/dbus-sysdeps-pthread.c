@@ -283,5 +283,6 @@ _dbus_threads_init_platform_specific (void)
    */
   check_monotonic_clock ();
   (void) _dbus_check_setuid ();
-  return dbus_threads_init (NULL);
+
+  return TRUE;
 }
