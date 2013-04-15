@@ -82,6 +82,10 @@
 
 #include "sd-daemon.h"
 
+#if !DBUS_USE_SYNC
+#include <pthread.h>
+#endif
+
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
@@ -2428,7 +2432,12 @@ _dbus_parse_uid (const DBusString      *uid_str,
 }
 
 #if !DBUS_USE_SYNC
-_DBUS_DEFINE_GLOBAL_LOCK (atomic);
+/* To be thread-safe by default on platforms that don't necessarily have
+ * atomic operations (notably Debian armel, which is armv4t), we must
+ * use a mutex that can be initialized statically, like this.
+ * GLib >= 2.32 uses a similar system.
+ */
+static pthread_mutex_t atomic_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 /**
@@ -2444,10 +2453,12 @@ _dbus_atomic_inc (DBusAtomic *atomic)
   return __sync_add_and_fetch(&atomic->value, 1)-1;
 #else
   dbus_int32_t res;
-  _DBUS_LOCK (atomic);
+
+  pthread_mutex_lock (&atomic_mutex);
   res = atomic->value;
   atomic->value += 1;
-  _DBUS_UNLOCK (atomic);
+  pthread_mutex_unlock (&atomic_mutex);
+
   return res;
 #endif
 }
@@ -2466,10 +2477,11 @@ _dbus_atomic_dec (DBusAtomic *atomic)
 #else
   dbus_int32_t res;
 
-  _DBUS_LOCK (atomic);
+  pthread_mutex_lock (&atomic_mutex);
   res = atomic->value;
   atomic->value -= 1;
-  _DBUS_UNLOCK (atomic);
+  pthread_mutex_unlock (&atomic_mutex);
+
   return res;
 #endif
 }
@@ -2490,9 +2502,10 @@ _dbus_atomic_get (DBusAtomic *atomic)
 #else
   dbus_int32_t res;
 
-  _DBUS_LOCK (atomic);
+  pthread_mutex_lock (&atomic_mutex);
   res = atomic->value;
-  _DBUS_UNLOCK (atomic);
+  pthread_mutex_unlock (&atomic_mutex);
+
   return res;
 #endif
 }

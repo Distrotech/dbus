@@ -323,12 +323,7 @@ _DBUS_DECLARE_GLOBAL_LOCK (win_fds);
 _DBUS_DECLARE_GLOBAL_LOCK (sid_atom_cache);
 _DBUS_DECLARE_GLOBAL_LOCK (machine_uuid);
 
-#if !DBUS_USE_SYNC
-_DBUS_DECLARE_GLOBAL_LOCK (atomic);
-#define _DBUS_N_GLOBAL_LOCKS (15)
-#else
 #define _DBUS_N_GLOBAL_LOCKS (14)
-#endif
 
 dbus_bool_t _dbus_threads_init_debug (void);
 
