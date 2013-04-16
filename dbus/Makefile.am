@@ -12,6 +12,10 @@ AM_CPPFLAGS = \
 	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\" \
 	$(NULL)
 
+# On Linux with glibc 2.17, sd-daemon.c support for POSIX message queues
+# results in an otherwise unnecessary dependency on librt. Disable it.
+AM_CPPFLAGS += -DSD_DAEMON_DISABLE_MQ
+
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
