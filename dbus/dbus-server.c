@@ -1071,9 +1071,8 @@ dbus_server_set_auth_mechanisms (DBusServer  *server,
   return TRUE;
 }
 
-
-static DBusDataSlotAllocator slot_allocator;
-_DBUS_DEFINE_GLOBAL_LOCK (server_slots);
+static DBusDataSlotAllocator slot_allocator =
+  _DBUS_DATA_SLOT_ALLOCATOR_INIT (_DBUS_LOCK_NAME (server_slots));
 
 /**
  * Allocates an integer ID to be used for storing application-specific
@@ -1093,7 +1092,6 @@ dbus_bool_t
 dbus_server_allocate_data_slot (dbus_int32_t *slot_p)
 {
   return _dbus_data_slot_allocator_alloc (&slot_allocator,
-                                          (DBusRMutex **)&_DBUS_LOCK_NAME (server_slots),
                                           slot_p);
 }
 

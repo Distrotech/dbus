@@ -1531,7 +1531,7 @@ _dbus_connection_handle_watch (DBusWatch                   *watch,
   return retval;
 }
 
-_DBUS_DEFINE_GLOBAL_LOCK (shared_connections);
+/* Protected by _DBUS_LOCK (shared_connections) */
 static DBusHashTable *shared_connections = NULL;
 static DBusList *shared_connections_no_guid = NULL;
 
@@ -5852,8 +5852,8 @@ dbus_connection_list_registered (DBusConnection              *connection,
   return retval;
 }
 
-static DBusDataSlotAllocator slot_allocator;
-_DBUS_DEFINE_GLOBAL_LOCK (connection_slots);
+static DBusDataSlotAllocator slot_allocator =
+  _DBUS_DATA_SLOT_ALLOCATOR_INIT (_DBUS_LOCK_NAME (connection_slots));
 
 /**
  * Allocates an integer ID to be used for storing application-specific
@@ -5873,7 +5873,6 @@ dbus_bool_t
 dbus_connection_allocate_data_slot (dbus_int32_t *slot_p)
 {
   return _dbus_data_slot_allocator_alloc (&slot_allocator,
-                                          &_DBUS_LOCK_NAME (connection_slots),
                                           slot_p);
 }
 

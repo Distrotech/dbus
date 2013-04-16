@@ -57,8 +57,10 @@ struct DBusDataSlotAllocator
   DBusAllocatedSlot *allocated_slots; /**< Allocated slots */
   int  n_allocated_slots; /**< number of slots malloc'd */
   int  n_used_slots;      /**< number of slots used */
-  DBusRMutex **lock_loc;  /**< location of thread lock */
+  DBusGlobalLock lock;    /**< index of thread lock */
 };
+
+#define _DBUS_DATA_SLOT_ALLOCATOR_INIT(x) { NULL, 0, 0, x }
 
 /**
  * Data structure that stores the actual user data set at a given
@@ -70,9 +72,9 @@ struct DBusDataSlotList
   int           n_slots; /**< Slots we have storage for in data_slots */
 };
 
-dbus_bool_t _dbus_data_slot_allocator_init  (DBusDataSlotAllocator  *allocator);
+dbus_bool_t _dbus_data_slot_allocator_init  (DBusDataSlotAllocator  *allocator,
+                                             DBusGlobalLock          lock);
 dbus_bool_t _dbus_data_slot_allocator_alloc (DBusDataSlotAllocator  *allocator,
-                                             DBusRMutex             **mutex_loc,
                                              int                    *slot_id_p);
 void        _dbus_data_slot_allocator_free  (DBusDataSlotAllocator  *allocator,
                                              int                    *slot_id_p);

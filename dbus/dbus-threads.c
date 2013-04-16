@@ -343,23 +343,19 @@ _dbus_condvar_wake_one (DBusCondVar *cond)
     _dbus_platform_condvar_wake_one (cond);
 }
 
+static DBusRMutex *global_locks[_DBUS_N_GLOBAL_LOCKS] = { NULL };
+
 static void
-shutdown_global_locks (void *data)
+shutdown_global_locks (void *nil)
 {
-  DBusRMutex ***locks = data;
   int i;
 
-  i = 0;
-  while (i < _DBUS_N_GLOBAL_LOCKS)
+  for (i = 0; i < _DBUS_N_GLOBAL_LOCKS; i++)
     {
-      if (*(locks[i]) != NULL)
-        _dbus_platform_rmutex_free (*(locks[i]));
-
-      *(locks[i]) = NULL;
-      ++i;
+      _dbus_assert (global_locks[i] != NULL);
+      _dbus_platform_rmutex_free (global_locks[i]);
+      global_locks[i] = NULL;
     }
-  
-  dbus_free (locks);
 }
 
 static void
@@ -483,65 +479,58 @@ init_uninitialized_locks (void)
 }
 
 static dbus_bool_t
-init_locks (void)
+init_global_locks (void)
 {
   int i;
-  DBusRMutex ***dynamic_global_locks;
-  DBusRMutex **global_locks[] = {
-#define LOCK_ADDR(name) (& _dbus_lock_##name)
-    LOCK_ADDR (list),
-    LOCK_ADDR (connection_slots),
-    LOCK_ADDR (pending_call_slots),
-    LOCK_ADDR (server_slots),
-    LOCK_ADDR (message_slots),
-    LOCK_ADDR (bus),
-    LOCK_ADDR (bus_datas),
-    LOCK_ADDR (shutdown_funcs),
-    LOCK_ADDR (system_users),
-    LOCK_ADDR (message_cache),
-    LOCK_ADDR (shared_connections),
-    LOCK_ADDR (machine_uuid)
-#undef LOCK_ADDR
-  };
+  dbus_bool_t ok;
 
-  _DBUS_STATIC_ASSERT (_DBUS_N_ELEMENTS (global_locks) == _DBUS_N_GLOBAL_LOCKS);
-
-  i = 0;
-  
-  dynamic_global_locks = dbus_new (DBusRMutex**, _DBUS_N_GLOBAL_LOCKS);
-  if (dynamic_global_locks == NULL)
-    goto failed;
-  
-  while (i < _DBUS_N_ELEMENTS (global_locks))
+  for (i = 0; i < _DBUS_N_GLOBAL_LOCKS; i++)
     {
-      *global_locks[i] = _dbus_platform_rmutex_new ();
+      _dbus_assert (global_locks[i] == NULL);
 
-      if (*global_locks[i] == NULL)
+      global_locks[i] = _dbus_platform_rmutex_new ();
+
+      if (global_locks[i] == NULL)
         goto failed;
-
-      dynamic_global_locks[i] = global_locks[i];
-
-      ++i;
     }
-  
-  if (!_dbus_register_shutdown_func (shutdown_global_locks,
-                                     dynamic_global_locks))
+
+  _dbus_lock (_DBUS_LOCK_NAME (shutdown_funcs));
+  ok = _dbus_register_shutdown_func_unlocked (shutdown_global_locks, NULL);
+  _dbus_unlock (_DBUS_LOCK_NAME (shutdown_funcs));
+
+  if (!ok)
     goto failed;
 
-  if (!init_uninitialized_locks ())
-    goto failed;
-  
   return TRUE;
 
  failed:
-  dbus_free (dynamic_global_locks);
-                                     
   for (i = i - 1; i >= 0; i--)
     {
-      _dbus_platform_rmutex_free (*global_locks[i]);
-      *global_locks[i] = NULL;
+      _dbus_platform_rmutex_free (global_locks[i]);
+      global_locks[i] = NULL;
     }
+
   return FALSE;
+}
+
+void
+_dbus_lock (DBusGlobalLock lock)
+{
+  _dbus_assert (lock >= 0);
+  _dbus_assert (lock < _DBUS_N_GLOBAL_LOCKS);
+
+  if (thread_init_generation == _dbus_current_generation)
+    _dbus_platform_rmutex_lock (global_locks[lock]);
+}
+
+void
+_dbus_unlock (DBusGlobalLock lock)
+{
+  _dbus_assert (lock >= 0);
+  _dbus_assert (lock < _DBUS_N_GLOBAL_LOCKS);
+
+  if (thread_init_generation == _dbus_current_generation)
+    _dbus_platform_rmutex_unlock (global_locks[lock]);
 }
 
 /** @} */ /* end of internals */
@@ -587,7 +576,8 @@ dbus_threads_init (const DBusThreadFunctions *functions)
     }
 
   if (!_dbus_threads_init_platform_specific() ||
-      !init_locks ())
+      !init_global_locks () ||
+      !init_uninitialized_locks ())
     {
       _dbus_threads_unlock_platform_specific ();
       return FALSE;

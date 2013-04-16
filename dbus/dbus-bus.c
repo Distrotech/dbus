@@ -95,19 +95,6 @@ static DBusBusType activation_bus_type = DBUS_BUS_STARTER;
 
 static dbus_bool_t initialized = FALSE;
 
-/**
- * Lock for globals in this file
- */
-_DBUS_DEFINE_GLOBAL_LOCK (bus);
-
-/**
- * Global lock covering all BusData on any connection. The bet is
- * that some lock contention is better than more memory
- * for a per-connection lock, but it's tough to imagine it mattering
- * either way.
- */
-_DBUS_DEFINE_GLOBAL_LOCK (bus_datas);
-
 static void
 addresses_shutdown_func (void *data)
 {

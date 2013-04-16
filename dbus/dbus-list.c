@@ -35,8 +35,8 @@
  * Types and functions related to DBusList.
  */
 
+/* Protected by _DBUS_LOCK (list) */
 static DBusMemPool *list_pool;
-_DBUS_DEFINE_GLOBAL_LOCK (list);
 
 /**
  * @defgroup DBusListInternals Linked list implementation details

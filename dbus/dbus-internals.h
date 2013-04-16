@@ -293,35 +293,42 @@ dbus_bool_t _dbus_test_oom_handling (const char             *description,
 #endif /* !DBUS_BUILD_TESTS */
 
 typedef void (* DBusShutdownFunction) (void *data);
-dbus_bool_t _dbus_register_shutdown_func (DBusShutdownFunction  function,
-                                          void                 *data);
+dbus_bool_t _dbus_register_shutdown_func          (DBusShutdownFunction  function,
+                                                   void                 *data);
+dbus_bool_t _dbus_register_shutdown_func_unlocked (DBusShutdownFunction  function,
+                                                   void                 *data);
 
 extern int _dbus_current_generation;
 
-/* Thread initializers */
-#define _DBUS_LOCK_NAME(name)           _dbus_lock_##name
-#define _DBUS_DECLARE_GLOBAL_LOCK(name) extern DBusRMutex *_dbus_lock_##name
-#define _DBUS_DEFINE_GLOBAL_LOCK(name)  DBusRMutex        *_dbus_lock_##name
-#define _DBUS_LOCK(name)                _dbus_rmutex_lock   (_dbus_lock_##name)
-#define _DBUS_UNLOCK(name)              _dbus_rmutex_unlock (_dbus_lock_##name)
+/* The weird case convention is to avoid having to change all the callers,
+ * which would be quite a mega-patch. */
+typedef enum
+{
+  /* index 0-4 */
+  _DBUS_LOCK_list,
+  _DBUS_LOCK_connection_slots,
+  _DBUS_LOCK_pending_call_slots,
+  _DBUS_LOCK_server_slots,
+  _DBUS_LOCK_message_slots,
+  /* index 5-9 */
+  _DBUS_LOCK_bus,
+  _DBUS_LOCK_bus_datas,
+  _DBUS_LOCK_shutdown_funcs,
+  _DBUS_LOCK_system_users,
+  _DBUS_LOCK_message_cache,
+  /* index 10-11 */
+  _DBUS_LOCK_shared_connections,
+  _DBUS_LOCK_machine_uuid,
 
-/* index 0-4 */
-_DBUS_DECLARE_GLOBAL_LOCK (list);
-_DBUS_DECLARE_GLOBAL_LOCK (connection_slots);
-_DBUS_DECLARE_GLOBAL_LOCK (pending_call_slots);
-_DBUS_DECLARE_GLOBAL_LOCK (server_slots);
-_DBUS_DECLARE_GLOBAL_LOCK (message_slots);
-/* index 5-9 */
-_DBUS_DECLARE_GLOBAL_LOCK (bus);
-_DBUS_DECLARE_GLOBAL_LOCK (bus_datas);
-_DBUS_DECLARE_GLOBAL_LOCK (shutdown_funcs);
-_DBUS_DECLARE_GLOBAL_LOCK (system_users);
-_DBUS_DECLARE_GLOBAL_LOCK (message_cache);
-/* index 10-11 */
-_DBUS_DECLARE_GLOBAL_LOCK (shared_connections);
-_DBUS_DECLARE_GLOBAL_LOCK (machine_uuid);
+  _DBUS_N_GLOBAL_LOCKS
+} DBusGlobalLock;
 
-#define _DBUS_N_GLOBAL_LOCKS (12)
+void _dbus_lock   (DBusGlobalLock lock);
+void _dbus_unlock (DBusGlobalLock lock);
+
+#define _DBUS_LOCK_NAME(name)           _DBUS_LOCK_##name
+#define _DBUS_LOCK(name)                _dbus_lock   (_DBUS_LOCK_##name)
+#define _DBUS_UNLOCK(name)              _dbus_unlock (_DBUS_LOCK_##name)
 
 dbus_bool_t _dbus_threads_init_debug (void);
 

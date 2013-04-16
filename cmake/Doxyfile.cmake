@@ -147,7 +147,6 @@ PREDEFINED             = "DBUS_BEGIN_DECLS=" 			\
 			 "DBUS_END_DECLS=" 			\
 			 "DOXYGEN_SHOULD_SKIP_THIS" 		\
                          "DBUS_GNUC_DEPRECATED="                \
-			 "_DBUS_DEFINE_GLOBAL_LOCK(name)="	\
 			 "_DBUS_GNUC_PRINTF(from,to)=" \
 			 "DBUS_EXPORT="
 SKIP_FUNCTION_MACROS   = YES

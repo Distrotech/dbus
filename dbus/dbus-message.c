@@ -506,7 +506,7 @@ _dbus_message_set_signature (DBusMessage *message,
 /** Avoid caching too many messages */
 #define MAX_MESSAGE_CACHE_SIZE    5
 
-_DBUS_DEFINE_GLOBAL_LOCK (message_cache);
+/* Protected by _DBUS_LOCK (message_cache) */
 static DBusMessage *message_cache[MAX_MESSAGE_CACHE_SIZE];
 static int message_cache_count = 0;
 static dbus_bool_t message_cache_shutdown_registered = FALSE;
@@ -4423,8 +4423,8 @@ _dbus_message_loader_get_max_message_unix_fds (DBusMessageLoader  *loader)
   return loader->max_message_unix_fds;
 }
 
-static DBusDataSlotAllocator slot_allocator;
-_DBUS_DEFINE_GLOBAL_LOCK (message_slots);
+static DBusDataSlotAllocator slot_allocator =
+  _DBUS_DATA_SLOT_ALLOCATOR_INIT (_DBUS_LOCK_NAME (message_slots));
 
 /**
  * Allocates an integer ID to be used for storing application-specific
@@ -4444,7 +4444,6 @@ dbus_bool_t
 dbus_message_allocate_data_slot (dbus_int32_t *slot_p)
 {
   return _dbus_data_slot_allocator_alloc (&slot_allocator,
-                                          &_DBUS_LOCK_NAME (message_slots),
                                           slot_p);
 }
 

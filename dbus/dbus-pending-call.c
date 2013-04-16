@@ -489,8 +489,8 @@ _dbus_pending_call_get_completed_unlocked (DBusPendingCall    *pending)
   return pending->completed;
 }
 
-static DBusDataSlotAllocator slot_allocator;
-_DBUS_DEFINE_GLOBAL_LOCK (pending_call_slots);
+static DBusDataSlotAllocator slot_allocator =
+  _DBUS_DATA_SLOT_ALLOCATOR_INIT (_DBUS_LOCK_NAME (pending_call_slots));
 
 /**
  * Stores a pointer on a #DBusPendingCall, along
@@ -768,7 +768,6 @@ dbus_pending_call_allocate_data_slot (dbus_int32_t *slot_p)
   _dbus_return_val_if_fail (slot_p != NULL, FALSE);
 
   return _dbus_data_slot_allocator_alloc (&slot_allocator,
-                                          &_DBUS_LOCK_NAME (pending_call_slots),
                                           slot_p);
 }
 

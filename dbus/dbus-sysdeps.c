@@ -46,8 +46,6 @@
 #include <errno.h>
 #endif
 
-_DBUS_DEFINE_GLOBAL_LOCK (system_users);
-
 #ifdef DBUS_WIN
   #include <stdlib.h>
 #elif (defined __APPLE__)

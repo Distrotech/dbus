@@ -795,7 +795,7 @@ struct ShutdownClosure
   void *data;                /**< Data for function */
 };
 
-_DBUS_DEFINE_GLOBAL_LOCK (shutdown_funcs);
+/* Protected by _DBUS_LOCK (shutdown_funcs) */
 static ShutdownClosure *registered_globals = NULL;
 
 /**
@@ -810,6 +810,18 @@ dbus_bool_t
 _dbus_register_shutdown_func (DBusShutdownFunction  func,
                               void                 *data)
 {
+  dbus_bool_t ok;
+
+  _DBUS_LOCK (shutdown_funcs);
+  ok = _dbus_register_shutdown_func_unlocked (func, data);
+  _DBUS_UNLOCK (shutdown_funcs);
+  return ok;
+}
+
+dbus_bool_t
+_dbus_register_shutdown_func_unlocked (DBusShutdownFunction  func,
+                                       void                 *data)
+{
   ShutdownClosure *c;
 
   c = dbus_new (ShutdownClosure, 1);
@@ -820,13 +832,9 @@ _dbus_register_shutdown_func (DBusShutdownFunction  func,
   c->func = func;
   c->data = data;
 
-  _DBUS_LOCK (shutdown_funcs);
-  
   c->next = registered_globals;
   registered_globals = c;
 
-  _DBUS_UNLOCK (shutdown_funcs);
-  
   return TRUE;
 }
 
