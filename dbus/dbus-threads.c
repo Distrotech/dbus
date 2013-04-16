@@ -27,18 +27,6 @@
 #include "dbus-list.h"
 
 static int thread_init_generation = 0;
- 
-static DBusList *uninitialized_rmutex_list = NULL;
-static DBusList *uninitialized_cmutex_list = NULL;
-static DBusList *uninitialized_condvar_list = NULL;
-
-/** This is used for the no-op default mutex pointer, just to be distinct from #NULL */
-#define _DBUS_DUMMY_MUTEX ((DBusMutex*)0xABCDEF)
-#define _DBUS_DUMMY_RMUTEX ((DBusRMutex *) _DBUS_DUMMY_MUTEX)
-#define _DBUS_DUMMY_CMUTEX ((DBusCMutex *) _DBUS_DUMMY_MUTEX)
-
-/** This is used for the no-op default mutex pointer, just to be distinct from #NULL */
-#define _DBUS_DUMMY_CONDVAR ((DBusCondVar*)0xABCDEF2)
 
 /**
  * @defgroup DBusThreadsInternals Thread functions
@@ -59,11 +47,6 @@ static DBusList *uninitialized_condvar_list = NULL;
  * If possible, the mutex returned by this function is recursive, to
  * avoid deadlocks. However, that cannot be relied on.
  *
- * The extra level of indirection given by allocating a pointer
- * to point to the mutex location allows the threading
- * module to swap out dummy mutexes for a real mutex so libraries
- * can initialize threads even after the D-Bus API has been used.
- *
  * @param location_p the location of the new mutex, can return #NULL on OOM
  */
 void
@@ -71,17 +54,13 @@ _dbus_rmutex_new_at_location (DBusRMutex **location_p)
 {
   _dbus_assert (location_p != NULL);
 
-  if (thread_init_generation == _dbus_current_generation)
+  if (!dbus_threads_init_default ())
     {
-      *location_p = _dbus_platform_rmutex_new ();
+      *location_p = NULL;
+      return;
     }
-  else
-    {
-      *location_p = _DBUS_DUMMY_RMUTEX;
 
-      if (!_dbus_list_append (&uninitialized_rmutex_list, location_p))
-        *location_p = NULL;
-    }
+  *location_p = _dbus_platform_rmutex_new ();
 }
 
 /**
@@ -92,11 +71,6 @@ _dbus_rmutex_new_at_location (DBusRMutex **location_p)
  *
  * The returned mutex is suitable for use with condition variables.
  *
- * The extra level of indirection given by allocating a pointer
- * to point to the mutex location allows the threading
- * module to swap out dummy mutexes for a real mutex so libraries
- * can initialize threads even after the D-Bus API has been used.
- *
  * @param location_p the location of the new mutex, can return #NULL on OOM
  */
 void
@@ -104,22 +78,17 @@ _dbus_cmutex_new_at_location (DBusCMutex **location_p)
 {
   _dbus_assert (location_p != NULL);
 
-  if (thread_init_generation == _dbus_current_generation)
+  if (!dbus_threads_init_default ())
     {
-      *location_p = _dbus_platform_cmutex_new ();
+      *location_p = NULL;
+      return;
     }
-  else
-    {
-      *location_p = _DBUS_DUMMY_CMUTEX;
 
-      if (!_dbus_list_append (&uninitialized_cmutex_list, location_p))
-        *location_p = NULL;
-    }
+  *location_p = _dbus_platform_cmutex_new ();
 }
 
 /**
- * Frees a DBusRMutex or removes it from the uninitialized mutex list;
- * does nothing if passed a #NULL pointer.
+ * Frees a DBusRMutex; does nothing if passed a #NULL pointer.
  */
 void
 _dbus_rmutex_free_at_location (DBusRMutex **location_p)
@@ -127,23 +96,12 @@ _dbus_rmutex_free_at_location (DBusRMutex **location_p)
   if (location_p == NULL)
     return;
 
-  if (thread_init_generation == _dbus_current_generation)
-    {
-      if (*location_p != NULL)
-        _dbus_platform_rmutex_free (*location_p);
-    }
-  else
-    {
-      _dbus_assert (*location_p == NULL || *location_p == _DBUS_DUMMY_RMUTEX);
-
-      _dbus_list_remove (&uninitialized_rmutex_list, location_p);
-    }
+  if (*location_p != NULL)
+    _dbus_platform_rmutex_free (*location_p);
 }
 
 /**
- * Frees a DBusCMutex and removes it from the
- * uninitialized mutex list;
- * does nothing if passed a #NULL pointer.
+ * Frees a DBusCMutex; does nothing if passed a #NULL pointer.
  */
 void
 _dbus_cmutex_free_at_location (DBusCMutex **location_p)
@@ -151,17 +109,8 @@ _dbus_cmutex_free_at_location (DBusCMutex **location_p)
   if (location_p == NULL)
     return;
 
-  if (thread_init_generation == _dbus_current_generation)
-    {
-      if (*location_p != NULL)
-        _dbus_platform_cmutex_free (*location_p);
-    }
-  else
-    {
-      _dbus_assert (*location_p == NULL || *location_p == _DBUS_DUMMY_CMUTEX);
-
-      _dbus_list_remove (&uninitialized_cmutex_list, location_p);
-    }
+  if (*location_p != NULL)
+    _dbus_platform_cmutex_free (*location_p);
 }
 
 /**
@@ -172,8 +121,10 @@ _dbus_cmutex_free_at_location (DBusCMutex **location_p)
 void
 _dbus_rmutex_lock (DBusRMutex *mutex)
 {
-  if (mutex && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_rmutex_lock (mutex);
+  if (mutex == NULL)
+    return;
+
+  _dbus_platform_rmutex_lock (mutex);
 }
 
 /**
@@ -184,8 +135,10 @@ _dbus_rmutex_lock (DBusRMutex *mutex)
 void
 _dbus_cmutex_lock (DBusCMutex *mutex)
 {
-  if (mutex && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_cmutex_lock (mutex);
+  if (mutex == NULL)
+    return;
+
+  _dbus_platform_cmutex_lock (mutex);
 }
 
 /**
@@ -196,8 +149,10 @@ _dbus_cmutex_lock (DBusCMutex *mutex)
 void
 _dbus_rmutex_unlock (DBusRMutex *mutex)
 {
-  if (mutex && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_rmutex_unlock (mutex);
+  if (mutex == NULL)
+    return;
+
+  _dbus_platform_rmutex_unlock (mutex);
 }
 
 /**
@@ -208,8 +163,10 @@ _dbus_rmutex_unlock (DBusRMutex *mutex)
 void
 _dbus_cmutex_unlock (DBusCMutex *mutex)
 {
-  if (mutex && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_cmutex_unlock (mutex);
+  if (mutex == NULL)
+    return;
+
+  _dbus_platform_cmutex_unlock (mutex);
 }
 
 /**
@@ -223,19 +180,17 @@ _dbus_cmutex_unlock (DBusCMutex *mutex)
 DBusCondVar *
 _dbus_condvar_new (void)
 {
-  if (thread_init_generation == _dbus_current_generation)
-    return _dbus_platform_condvar_new ();
-  else
-    return _DBUS_DUMMY_CONDVAR;
+  if (!dbus_threads_init_default ())
+    return NULL;
+
+  return _dbus_platform_condvar_new ();
 }
 
 
 /**
  * This does the same thing as _dbus_condvar_new.  It however
  * gives another level of indirection by allocating a pointer
- * to point to the condvar location.  This allows the threading
- * module to swap out dummy condvars for a real condvar so libraries
- * can initialize threads even after the D-Bus API has been used.
+ * to point to the condvar location; this used to be useful.
  *
  * @returns the location of a new condvar or #NULL on OOM
  */
@@ -245,17 +200,7 @@ _dbus_condvar_new_at_location (DBusCondVar **location_p)
 {
   _dbus_assert (location_p != NULL);
 
-  if (thread_init_generation == _dbus_current_generation)
-    {
-      *location_p = _dbus_condvar_new();
-    }
-  else
-    {
-      *location_p = _DBUS_DUMMY_CONDVAR;
-
-      if (!_dbus_list_append (&uninitialized_condvar_list, location_p))
-        *location_p = NULL;
-    }
+  *location_p = _dbus_condvar_new();
 }
 
 
@@ -266,14 +211,14 @@ _dbus_condvar_new_at_location (DBusCondVar **location_p)
 void
 _dbus_condvar_free (DBusCondVar *cond)
 {
-  if (cond && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_condvar_free (cond);
+  if (cond == NULL)
+    return;
+
+  _dbus_platform_condvar_free (cond);
 }
 
 /**
- * Frees a conditional variable and removes it from the 
- * uninitialized_condvar_list; 
- * does nothing if passed a #NULL pointer.
+ * Frees a condition variable; does nothing if passed a #NULL pointer.
  */
 void
 _dbus_condvar_free_at_location (DBusCondVar **location_p)
@@ -281,17 +226,8 @@ _dbus_condvar_free_at_location (DBusCondVar **location_p)
   if (location_p == NULL)
     return;
 
-  if (thread_init_generation == _dbus_current_generation)
-    {
-      if (*location_p != NULL)
-        _dbus_platform_condvar_free (*location_p);
-    }
-  else
-    {
-      _dbus_assert (*location_p == NULL || *location_p == _DBUS_DUMMY_CONDVAR);
-
-      _dbus_list_remove (&uninitialized_condvar_list, location_p);
-    }
+  if (*location_p != NULL)
+    _dbus_platform_condvar_free (*location_p);
 }
 
 /**
@@ -304,8 +240,10 @@ void
 _dbus_condvar_wait (DBusCondVar *cond,
                     DBusCMutex  *mutex)
 {
-  if (cond && mutex && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_condvar_wait (cond, mutex);
+  if (cond == NULL || mutex == NULL)
+    return;
+
+  _dbus_platform_condvar_wait (cond, mutex);
 }
 
 /**
@@ -324,11 +262,11 @@ _dbus_condvar_wait_timeout (DBusCondVar               *cond,
                             DBusCMutex                *mutex,
                             int                        timeout_milliseconds)
 {
-  if (cond && mutex && thread_init_generation == _dbus_current_generation)
-    return _dbus_platform_condvar_wait_timeout (cond, mutex,
-                                                timeout_milliseconds);
-  else
+  if (cond == NULL || mutex == NULL)
     return TRUE;
+
+  return _dbus_platform_condvar_wait_timeout (cond, mutex,
+      timeout_milliseconds);
 }
 
 /**
@@ -339,8 +277,10 @@ _dbus_condvar_wait_timeout (DBusCondVar               *cond,
 void
 _dbus_condvar_wake_one (DBusCondVar *cond)
 {
-  if (cond && thread_init_generation == _dbus_current_generation)
-    _dbus_platform_condvar_wake_one (cond);
+  if (cond == NULL)
+    return;
+
+  _dbus_platform_condvar_wake_one (cond);
 }
 
 static DBusRMutex *global_locks[_DBUS_N_GLOBAL_LOCKS] = { NULL };
@@ -356,132 +296,6 @@ shutdown_global_locks (void *nil)
       _dbus_platform_rmutex_free (global_locks[i]);
       global_locks[i] = NULL;
     }
-}
-
-static void
-shutdown_uninitialized_locks (void *data)
-{
-  _dbus_list_clear (&uninitialized_rmutex_list);
-  _dbus_list_clear (&uninitialized_cmutex_list);
-  _dbus_list_clear (&uninitialized_condvar_list);
-}
-
-/* init_global_locks() must be called first. */
-static dbus_bool_t
-init_uninitialized_locks (void)
-{
-  DBusList *link;
-  dbus_bool_t ok;
-
-  _dbus_assert (thread_init_generation != _dbus_current_generation);
-
-  link = uninitialized_rmutex_list;
-  while (link != NULL)
-    {
-      DBusRMutex **mp;
-
-      mp = link->data;
-      _dbus_assert (*mp == _DBUS_DUMMY_RMUTEX);
-
-      *mp = _dbus_platform_rmutex_new ();
-      if (*mp == NULL)
-        goto fail_mutex;
-
-      link = _dbus_list_get_next_link (&uninitialized_rmutex_list, link);
-    }
-
-  link = uninitialized_cmutex_list;
-  while (link != NULL)
-    {
-      DBusCMutex **mp;
-
-      mp = link->data;
-      _dbus_assert (*mp == _DBUS_DUMMY_CMUTEX);
-
-      *mp = _dbus_platform_cmutex_new ();
-      if (*mp == NULL)
-        goto fail_mutex;
-
-      link = _dbus_list_get_next_link (&uninitialized_cmutex_list, link);
-    }
-
-  link = uninitialized_condvar_list;
-  while (link != NULL)
-    {
-      DBusCondVar **cp;
-
-      cp = (DBusCondVar **)link->data;
-      _dbus_assert (*cp == _DBUS_DUMMY_CONDVAR);
-
-      *cp = _dbus_platform_condvar_new ();
-      if (*cp == NULL)
-        goto fail_condvar;
-
-      link = _dbus_list_get_next_link (&uninitialized_condvar_list, link);
-    }
-
-  _dbus_list_clear (&uninitialized_rmutex_list);
-  _dbus_list_clear (&uninitialized_cmutex_list);
-  _dbus_list_clear (&uninitialized_condvar_list);
-
-  /* This assumes that init_global_locks() has already been called. */
-  _dbus_platform_rmutex_lock (global_locks[_DBUS_LOCK_shutdown_funcs]);
-  ok = _dbus_register_shutdown_func_unlocked (shutdown_uninitialized_locks, NULL);
-  _dbus_platform_rmutex_unlock (global_locks[_DBUS_LOCK_shutdown_funcs]);
-
-  if (!ok)
-    goto fail_condvar;
-
-  return TRUE;
-
- fail_condvar:
-  link = uninitialized_condvar_list;
-  while (link != NULL)
-    {
-      DBusCondVar **cp;
-
-      cp = link->data;
-
-      if (*cp != _DBUS_DUMMY_CONDVAR && *cp != NULL)
-        _dbus_platform_condvar_free (*cp);
-
-      *cp = _DBUS_DUMMY_CONDVAR;
-
-      link = _dbus_list_get_next_link (&uninitialized_condvar_list, link);
-    }
-
- fail_mutex:
-  link = uninitialized_rmutex_list;
-  while (link != NULL)
-    {
-      DBusRMutex **mp;
-
-      mp = link->data;
-
-      if (*mp != _DBUS_DUMMY_RMUTEX && *mp != NULL)
-        _dbus_platform_rmutex_free (*mp);
-
-      *mp = _DBUS_DUMMY_RMUTEX;
-
-      link = _dbus_list_get_next_link (&uninitialized_rmutex_list, link);
-    }
-
-  link = uninitialized_cmutex_list;
-  while (link != NULL)
-    {
-      DBusCMutex **mp;
-
-      mp = link->data;
-
-      if (*mp != _DBUS_DUMMY_CMUTEX && *mp != NULL)
-        _dbus_platform_cmutex_free (*mp);
-
-      *mp = _DBUS_DUMMY_CMUTEX;
-
-      link = _dbus_list_get_next_link (&uninitialized_cmutex_list, link);
-    }
-
-  return FALSE;
 }
 
 static dbus_bool_t
@@ -585,9 +399,7 @@ dbus_threads_init (const DBusThreadFunctions *functions)
     }
 
   if (!_dbus_threads_init_platform_specific() ||
-      /* init_global_locks() must be called before init_uninitialized_locks. */
-      !init_global_locks () ||
-      !init_uninitialized_locks ())
+      !init_global_locks ())
     {
       _dbus_threads_unlock_platform_specific ();
       return FALSE;
