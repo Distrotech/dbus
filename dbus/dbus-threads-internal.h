@@ -32,6 +32,12 @@
  * @{
  */
 
+/* glibc can implement global locks without needing an initialization step,
+ * which improves our thread-safety-by-default further. */
+#if defined(__GLIBC__) && defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP)
+#   define DBUS_HAVE_STATIC_RECURSIVE_MUTEXES 1
+#endif
+
 /**
  * A mutex which is recursive if possible, else non-recursive.
  * This is typically recursive, but that cannot be relied upon.
