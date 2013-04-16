@@ -56,7 +56,8 @@ alloc_link (void *data)
 {
   DBusList *link;
 
-  _DBUS_LOCK (list);
+  if (!_DBUS_LOCK (list))
+    return FALSE;
 
   if (list_pool == NULL)
     {      
@@ -93,7 +94,10 @@ alloc_link (void *data)
 static void
 free_link (DBusList *link)
 {  
-  _DBUS_LOCK (list);
+  if (!_DBUS_LOCK (list))
+    _dbus_assert_not_reached ("we should have initialized global locks "
+        "before we allocated a linked-list link");
+
   if (_dbus_mem_pool_dealloc (list_pool, link))
     {
       _dbus_mem_pool_free (list_pool);
@@ -152,7 +156,14 @@ _dbus_list_get_stats     (dbus_uint32_t *in_use_p,
                           dbus_uint32_t *in_free_list_p,
                           dbus_uint32_t *allocated_p)
 {
-  _DBUS_LOCK (list);
+  if (!_DBUS_LOCK (list))
+    {
+      *in_use_p = 0;
+      *in_free_list_p = 0;
+      *allocated_p = 0;
+      return;
+    }
+
   _dbus_mem_pool_get_stats (list_pool, in_use_p, in_free_list_p, allocated_p);
   _DBUS_UNLOCK (list);
 }

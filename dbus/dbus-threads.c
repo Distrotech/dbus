@@ -366,10 +366,12 @@ shutdown_uninitialized_locks (void *data)
   _dbus_list_clear (&uninitialized_condvar_list);
 }
 
+/* init_global_locks() must be called first. */
 static dbus_bool_t
 init_uninitialized_locks (void)
 {
   DBusList *link;
+  dbus_bool_t ok;
 
   _dbus_assert (thread_init_generation != _dbus_current_generation);
 
@@ -422,8 +424,12 @@ init_uninitialized_locks (void)
   _dbus_list_clear (&uninitialized_cmutex_list);
   _dbus_list_clear (&uninitialized_condvar_list);
 
-  if (!_dbus_register_shutdown_func (shutdown_uninitialized_locks,
-                                     NULL))
+  /* This assumes that init_global_locks() has already been called. */
+  _dbus_platform_rmutex_lock (global_locks[_DBUS_LOCK_shutdown_funcs]);
+  ok = _dbus_register_shutdown_func_unlocked (shutdown_uninitialized_locks, NULL);
+  _dbus_platform_rmutex_unlock (global_locks[_DBUS_LOCK_shutdown_funcs]);
+
+  if (!ok)
     goto fail_condvar;
 
   return TRUE;
@@ -494,9 +500,9 @@ init_global_locks (void)
         goto failed;
     }
 
-  _dbus_lock (_DBUS_LOCK_NAME (shutdown_funcs));
+  _dbus_platform_rmutex_lock (global_locks[_DBUS_LOCK_shutdown_funcs]);
   ok = _dbus_register_shutdown_func_unlocked (shutdown_global_locks, NULL);
-  _dbus_unlock (_DBUS_LOCK_NAME (shutdown_funcs));
+  _dbus_platform_rmutex_unlock (global_locks[_DBUS_LOCK_shutdown_funcs]);
 
   if (!ok)
     goto failed;
@@ -513,14 +519,18 @@ init_global_locks (void)
   return FALSE;
 }
 
-void
+dbus_bool_t
 _dbus_lock (DBusGlobalLock lock)
 {
   _dbus_assert (lock >= 0);
   _dbus_assert (lock < _DBUS_N_GLOBAL_LOCKS);
 
-  if (thread_init_generation == _dbus_current_generation)
-    _dbus_platform_rmutex_lock (global_locks[lock]);
+  if (thread_init_generation != _dbus_current_generation &&
+      !dbus_threads_init_default ())
+    return FALSE;
+
+  _dbus_platform_rmutex_lock (global_locks[lock]);
+  return TRUE;
 }
 
 void
@@ -529,8 +539,7 @@ _dbus_unlock (DBusGlobalLock lock)
   _dbus_assert (lock >= 0);
   _dbus_assert (lock < _DBUS_N_GLOBAL_LOCKS);
 
-  if (thread_init_generation == _dbus_current_generation)
-    _dbus_platform_rmutex_unlock (global_locks[lock]);
+  _dbus_platform_rmutex_unlock (global_locks[lock]);
 }
 
 /** @} */ /* end of internals */
@@ -576,6 +585,7 @@ dbus_threads_init (const DBusThreadFunctions *functions)
     }
 
   if (!_dbus_threads_init_platform_specific() ||
+      /* init_global_locks() must be called before init_uninitialized_locks. */
       !init_global_locks () ||
       !init_uninitialized_locks ())
     {

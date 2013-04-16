@@ -86,7 +86,7 @@ void           _dbus_group_info_free_allocated  (DBusGroupInfo    *info);
 #endif /* DBUS_USERDB_INCLUDES_PRIVATE */
 
 DBusUserDatabase* _dbus_user_database_get_system    (void);
-void              _dbus_user_database_lock_system   (void);
+dbus_bool_t       _dbus_user_database_lock_system   (void) _DBUS_GNUC_WARN_UNUSED_RESULT;
 void              _dbus_user_database_unlock_system (void);
 void              _dbus_user_database_flush_system  (void);
 

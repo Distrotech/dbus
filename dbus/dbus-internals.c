@@ -165,7 +165,9 @@
 /**
  * @def _DBUS_LOCK
  *
- * Locks a global lock
+ * Locks a global lock, initializing it first if necessary.
+ *
+ * @returns #FALSE if not enough memory
  */
 
 /**
@@ -849,7 +851,9 @@ _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str)
 {
   dbus_bool_t ok;
   
-  _DBUS_LOCK (machine_uuid);
+  if (!_DBUS_LOCK (machine_uuid))
+    return FALSE;
+
   if (machine_uuid_initialized_generation != _dbus_current_generation)
     {
       DBusError error = DBUS_ERROR_INIT;

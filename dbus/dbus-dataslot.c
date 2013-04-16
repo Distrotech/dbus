@@ -71,7 +71,8 @@ _dbus_data_slot_allocator_alloc (DBusDataSlotAllocator *allocator,
 {
   dbus_int32_t slot;
 
-  _dbus_lock (allocator->lock);
+  if (!_dbus_lock (allocator->lock))
+    return FALSE;
 
   if (*slot_id_p >= 0)
     {
@@ -153,8 +154,10 @@ void
 _dbus_data_slot_allocator_free (DBusDataSlotAllocator *allocator,
                                 dbus_int32_t          *slot_id_p)
 {
-  _dbus_lock (allocator->lock);
-  
+  if (!_dbus_lock (allocator->lock))
+    _dbus_assert_not_reached ("we should have initialized global locks "
+        "before we allocated this slot");
+
   _dbus_assert (*slot_id_p < allocator->n_allocated_slots);
   _dbus_assert (allocator->allocated_slots[*slot_id_p].slot_id == *slot_id_p);
   _dbus_assert (allocator->allocated_slots[*slot_id_p].refcount > 0);
@@ -228,7 +231,10 @@ _dbus_data_slot_list_set  (DBusDataSlotAllocator *allocator,
    * be e.g. realloc()ing allocated_slots. We avoid doing this if asserts
    * are disabled, since then the asserts are empty.
    */
-  _dbus_lock (allocator->lock);
+  if (!_dbus_lock (allocator->lock))
+    _dbus_assert_not_reached ("we should have initialized global locks "
+        "before we allocated this slot");
+
   _dbus_assert (slot < allocator->n_allocated_slots);
   _dbus_assert (allocator->allocated_slots[slot].slot_id == slot);
   _dbus_unlock (allocator->lock);
@@ -285,7 +291,10 @@ _dbus_data_slot_list_get  (DBusDataSlotAllocator *allocator,
    * be e.g. realloc()ing allocated_slots. We avoid doing this if asserts
    * are disabled, since then the asserts are empty.
    */
-  _dbus_lock (allocator->lock);
+  if (!_dbus_lock (allocator->lock))
+    _dbus_assert_not_reached ("we should have initialized global locks "
+        "before we allocated this slot");
+
   _dbus_assert (slot >= 0);
   _dbus_assert (slot < allocator->n_allocated_slots);
   _dbus_assert (allocator->allocated_slots[slot].slot_id == slot);

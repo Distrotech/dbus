@@ -306,11 +306,18 @@ init_system_db (void)
 /**
  * Locks global system user database.
  */
-void
+dbus_bool_t
 _dbus_user_database_lock_system (void)
 {
-  _DBUS_LOCK (system_users);
-  database_locked = TRUE;
+  if (_DBUS_LOCK (system_users))
+    {
+      database_locked = TRUE;
+      return TRUE;
+    }
+  else
+    {
+      return FALSE;
+    }
 }
 
 /**
@@ -345,8 +352,12 @@ _dbus_user_database_get_system (void)
 void
 _dbus_user_database_flush_system (void)
 {
-  _dbus_user_database_lock_system ();
-   
+  if (!_dbus_user_database_lock_system ())
+    {
+      /* nothing to flush */
+      return;
+    }
+
    if (system_db != NULL)
     _dbus_user_database_flush (system_db);
 
@@ -363,7 +374,9 @@ _dbus_user_database_flush_system (void)
 dbus_bool_t
 _dbus_username_from_current_process (const DBusString **username)
 {
-  _dbus_user_database_lock_system ();
+  if (!_dbus_user_database_lock_system ())
+    return FALSE;
+
   if (!init_system_db ())
     {
       _dbus_user_database_unlock_system ();
@@ -385,7 +398,9 @@ _dbus_username_from_current_process (const DBusString **username)
 dbus_bool_t
 _dbus_homedir_from_current_process (const DBusString  **homedir)
 {
-  _dbus_user_database_lock_system ();
+  if (!_dbus_user_database_lock_system ())
+    return FALSE;
+
   if (!init_system_db ())
     {
       _dbus_user_database_unlock_system ();
@@ -410,7 +425,10 @@ _dbus_homedir_from_username (const DBusString *username,
 {
   DBusUserDatabase *db;
   const DBusUserInfo *info;
-  _dbus_user_database_lock_system ();
+
+  /* FIXME: this can't distinguish ENOMEM from other errors */
+  if (!_dbus_user_database_lock_system ())
+    return FALSE;
 
   db = _dbus_user_database_get_system ();
   if (db == NULL)
@@ -449,7 +467,10 @@ _dbus_homedir_from_uid (dbus_uid_t         uid,
 {
   DBusUserDatabase *db;
   const DBusUserInfo *info;
-  _dbus_user_database_lock_system ();
+
+  /* FIXME: this can't distinguish ENOMEM from other errors */
+  if (!_dbus_user_database_lock_system ())
+    return FALSE;
 
   db = _dbus_user_database_get_system ();
   if (db == NULL)
@@ -496,7 +517,9 @@ _dbus_credentials_add_from_user (DBusCredentials  *credentials,
   DBusUserDatabase *db;
   const DBusUserInfo *info;
 
-  _dbus_user_database_lock_system ();
+  /* FIXME: this can't distinguish ENOMEM from other errors */
+  if (!_dbus_user_database_lock_system ())
+    return FALSE;
 
   db = _dbus_user_database_get_system ();
   if (db == NULL)

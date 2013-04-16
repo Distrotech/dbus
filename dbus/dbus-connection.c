@@ -1555,9 +1555,14 @@ static void
 shared_connections_shutdown (void *data)
 {
   int n_entries;
-  
-  _DBUS_LOCK (shared_connections);
-  
+
+  if (!_DBUS_LOCK (shared_connections))
+    {
+      /* We'd have initialized locks before adding anything, so there
+       * can't be anything there. */
+      return;
+    }
+
   /* This is a little bit unpleasant... better ideas? */
   while ((n_entries = _dbus_hash_table_get_n_entries (shared_connections)) > 0)
     {
@@ -1571,7 +1576,8 @@ shared_connections_shutdown (void *data)
 
       _DBUS_UNLOCK (shared_connections);
       close_connection_on_shutdown (connection);
-      _DBUS_LOCK (shared_connections);
+      if (!_DBUS_LOCK (shared_connections))
+        _dbus_assert_not_reached ("global locks were already initialized");
 
       /* The connection should now be dead and not in our hash ... */
       _dbus_assert (_dbus_hash_table_get_n_entries (shared_connections) < n_entries);
@@ -1590,7 +1596,8 @@ shared_connections_shutdown (void *data)
         {
           _DBUS_UNLOCK (shared_connections);
           close_connection_on_shutdown (connection);
-          _DBUS_LOCK (shared_connections);
+          if (!_DBUS_LOCK (shared_connections))
+            _dbus_assert_not_reached ("global locks were already initialized");
           connection = _dbus_list_pop_first (&shared_connections_no_guid);
         }
     }
@@ -1607,8 +1614,13 @@ connection_lookup_shared (DBusAddressEntry  *entry,
   _dbus_verbose ("checking for existing connection\n");
   
   *result = NULL;
-  
-  _DBUS_LOCK (shared_connections);
+
+  if (!_DBUS_LOCK (shared_connections))
+    {
+      /* If it was shared, we'd have initialized global locks when we put
+       * it in shared_connections. */
+      return FALSE;
+    }
 
   if (shared_connections == NULL)
     {
@@ -1706,7 +1718,8 @@ connection_record_shared_unlocked (DBusConnection *connection,
 
   if (guid == NULL)
     {
-      _DBUS_LOCK (shared_connections);
+      if (!_DBUS_LOCK (shared_connections))
+        return FALSE;
 
       if (!_dbus_list_prepend (&shared_connections_no_guid, connection))
         {
@@ -1733,8 +1746,14 @@ connection_record_shared_unlocked (DBusConnection *connection,
       dbus_free (guid_key);
       return FALSE;
     }
-  
-  _DBUS_LOCK (shared_connections);
+
+  if (!_DBUS_LOCK (shared_connections))
+    {
+      dbus_free (guid_in_connection);
+      dbus_free (guid_key);
+      return FALSE;
+    }
+
   _dbus_assert (shared_connections != NULL);
   
   if (!_dbus_hash_table_insert_string (shared_connections,
@@ -1765,9 +1784,14 @@ connection_forget_shared_unlocked (DBusConnection *connection)
 
   if (!connection->shareable)
     return;
-  
-  _DBUS_LOCK (shared_connections);
-      
+
+  if (!_DBUS_LOCK (shared_connections))
+    {
+      /* If it was shared, we'd have initialized global locks when we put
+       * it in the table; so it can't be there. */
+      return;
+    }
+
   if (connection->server_guid != NULL)
     {
       _dbus_verbose ("dropping connection to %s out of the shared table\n",

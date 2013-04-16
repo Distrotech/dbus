@@ -323,8 +323,8 @@ typedef enum
   _DBUS_N_GLOBAL_LOCKS
 } DBusGlobalLock;
 
-void _dbus_lock   (DBusGlobalLock lock);
-void _dbus_unlock (DBusGlobalLock lock);
+dbus_bool_t _dbus_lock   (DBusGlobalLock lock) _DBUS_GNUC_WARN_UNUSED_RESULT;
+void        _dbus_unlock (DBusGlobalLock lock);
 
 #define _DBUS_LOCK_NAME(name)           _DBUS_LOCK_##name
 #define _DBUS_LOCK(name)                _dbus_lock   (_DBUS_LOCK_##name)

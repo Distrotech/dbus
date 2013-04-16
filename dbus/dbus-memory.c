@@ -812,7 +812,9 @@ _dbus_register_shutdown_func (DBusShutdownFunction  func,
 {
   dbus_bool_t ok;
 
-  _DBUS_LOCK (shutdown_funcs);
+  if (!_DBUS_LOCK (shutdown_funcs))
+    return FALSE;
+
   ok = _dbus_register_shutdown_func_unlocked (func, data);
   _DBUS_UNLOCK (shutdown_funcs);
   return ok;

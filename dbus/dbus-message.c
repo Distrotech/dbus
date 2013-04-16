@@ -516,7 +516,9 @@ dbus_message_cache_shutdown (void *data)
 {
   int i;
 
-  _DBUS_LOCK (message_cache);
+  if (!_DBUS_LOCK (message_cache))
+    _dbus_assert_not_reached ("we would have initialized global locks "
+        "before registering a shutdown function");
 
   i = 0;
   while (i < MAX_MESSAGE_CACHE_SIZE)
@@ -548,7 +550,12 @@ dbus_message_get_cached (void)
 
   message = NULL;
 
-  _DBUS_LOCK (message_cache);
+  if (!_DBUS_LOCK (message_cache))
+    {
+      /* we'd have initialized global locks before caching anything,
+       * so there can't be anything in the cache */
+      return NULL;
+    }
 
   _dbus_assert (message_cache_count >= 0);
 
@@ -660,7 +667,13 @@ dbus_message_cache_or_finalize (DBusMessage *message)
 
   was_cached = FALSE;
 
-  _DBUS_LOCK (message_cache);
+  if (!_DBUS_LOCK (message_cache))
+    {
+      /* The only way to get a non-null message goes through
+       * dbus_message_get_cached() which takes the lock. */
+      _dbus_assert_not_reached ("we would have initialized global locks "
+          "the first time we constructed a message");
+    }
 
   if (!message_cache_shutdown_registered)
     {
