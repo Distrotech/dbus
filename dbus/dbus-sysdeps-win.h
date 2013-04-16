@@ -85,6 +85,9 @@ dbus_bool_t _dbus_get_config_file_name(DBusString *config_file,
 
 dbus_bool_t _dbus_get_install_root(char *prefix, int len);
 
+void        _dbus_threads_windows_init_global (void);
+void        _dbus_threads_windows_ensure_ctor_linked (void);
+
 #endif
 
 /** @} end of sysdeps-win.h */

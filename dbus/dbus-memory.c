@@ -26,6 +26,7 @@
 #include "dbus-internals.h"
 #include "dbus-sysdeps.h"
 #include "dbus-list.h"
+#include "dbus-threads.h"
 #include <stdlib.h>
 
 /**
@@ -890,7 +891,13 @@ dbus_shutdown (void)
       dbus_free (c);
     }
 
+  /* We wrap this in the thread-initialization lock because
+   * dbus_threads_init() uses the current generation to tell whether
+   * we're initialized, so we need to make sure that un-initializing
+   * propagates into all threads. */
+  _dbus_threads_lock_platform_specific ();
   _dbus_current_generation += 1;
+  _dbus_threads_unlock_platform_specific ();
 }
 
 /** @} */ /** End of public API docs block */

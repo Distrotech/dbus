@@ -72,6 +72,7 @@ endif
 DBUS_SHARED_arch_sources = 			\
 	$(wince_source)				\
 	dbus-file-win.c 			\
+	dbus-init-win.cpp			\
 	dbus-pipe-win.c 			\
 	dbus-sockets-win.h			\
 	dbus-sysdeps-win.c 			\

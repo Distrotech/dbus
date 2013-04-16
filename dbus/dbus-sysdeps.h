@@ -520,6 +520,18 @@ dbus_bool_t _dbus_read_local_machine_uuid   (DBusGUID         *machine_id,
  */
 dbus_bool_t _dbus_threads_init_platform_specific (void);
 
+/**
+ * Lock a static mutex used to protect _dbus_threads_init_platform_specific().
+ *
+ * On Windows, this is currently unimplemented and does nothing.
+ */
+void _dbus_threads_lock_platform_specific (void);
+
+/**
+ * Undo _dbus_threads_lock_platform_specific().
+ */
+void _dbus_threads_unlock_platform_specific (void);
+
 dbus_bool_t _dbus_split_paths_and_append (DBusString *dirs, 
                                           const char *suffix, 
                                           DBusList **dir_list);

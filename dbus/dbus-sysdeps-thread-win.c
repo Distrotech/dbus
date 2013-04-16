@@ -30,6 +30,21 @@
 
 #include <windows.h>
 
+static dbus_bool_t global_init_done = FALSE;
+static CRITICAL_SECTION init_lock;
+
+/* Called from C++ code in dbus-init-win.cpp. */
+void
+_dbus_threads_windows_init_global (void)
+{
+  /* this ensures that the object that acts as our global constructor
+   * actually gets linked in when we're linked statically */
+  _dbus_threads_windows_ensure_ctor_linked ();
+
+  InitializeCriticalSection (&init_lock);
+  global_init_done = TRUE;
+}
+
 struct DBusCondVar {
   DBusList *list;        /**< list thread-local-stored events waiting on the cond variable */
   CRITICAL_SECTION lock; /**< lock protecting the list */
@@ -272,3 +287,16 @@ _dbus_threads_init_platform_specific (void)
   return TRUE;
 }
 
+void
+_dbus_threads_lock_platform_specific (void)
+{
+  _dbus_assert (global_init_done);
+  EnterCriticalSection (&init_lock);
+}
+
+void
+_dbus_threads_unlock_platform_specific (void)
+{
+  _dbus_assert (global_init_done);
+  LeaveCriticalSection (&init_lock);
+}

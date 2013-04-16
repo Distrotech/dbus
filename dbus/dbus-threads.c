@@ -581,15 +581,24 @@ init_locks (void)
 dbus_bool_t
 dbus_threads_init (const DBusThreadFunctions *functions)
 {
+  _dbus_threads_lock_platform_specific ();
+
   if (thread_init_generation == _dbus_current_generation)
-    return TRUE;
+    {
+      _dbus_threads_unlock_platform_specific ();
+      return TRUE;
+    }
 
   if (!_dbus_threads_init_platform_specific() ||
       !init_locks ())
-    return FALSE;
+    {
+      _dbus_threads_unlock_platform_specific ();
+      return FALSE;
+    }
 
   thread_init_generation = _dbus_current_generation;
-  
+
+  _dbus_threads_unlock_platform_specific ();
   return TRUE;
 }
 
@@ -600,11 +609,16 @@ dbus_threads_init (const DBusThreadFunctions *functions)
 /**
  * Initializes threads. If this function is not called, the D-Bus
  * library will not lock any data structures.  If it is called, D-Bus
- * will do locking, at some cost in efficiency. Note that this
- * function must be called BEFORE the second thread is started.
+ * will do locking, at some cost in efficiency.
  *
- * It's safe to call dbus_threads_init_default() as many times as you
- * want, but only the first time will have an effect.
+ * Since D-Bus 1.7 it is safe to call this function from any thread,
+ * any number of times (but it must be called before any other
+ * libdbus API is used).
+ *
+ * In D-Bus 1.6 or older, this function must be called in the main thread
+ * before any other thread starts. As a result, it is not sufficient to
+ * call this function in a library or plugin, unless the library or plugin
+ * imposes a similar requirement on its callers.
  *
  * dbus_shutdown() reverses the effects of this function when it
  * resets all global state in libdbus.
