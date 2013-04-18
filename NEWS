@@ -14,6 +14,9 @@ Fixes:
   (i.e. before allocating the slot) rather than returning junk
   (fd.o #63127, Dan Williams)
 
+• Fix a cmake build regression since 1.7.0 (fd.o #63682; Ralf Habacker,
+  Simon McVittie)
+
 • Unix-specific:
   · Under systemd, log to syslog only, not stderr, avoiding duplication
     (fd.o #61399, #39987; Colin Walters, Dagobert Michelsen)
