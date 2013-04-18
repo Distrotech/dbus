@@ -1299,13 +1299,13 @@ fi
 # Determine maximum number of Unix fds which may be passed
 AS_CASE([$host_os],
   [*qnx*],
-    [default_message_unix_fds=256],
+    [DEFAULT_MESSAGE_UNIX_FDS=256],
   [*],
-    [default_message_unix_fds=1024])
+    [DEFAULT_MESSAGE_UNIX_FDS=1024])
 AC_DEFINE_UNQUOTED([DBUS_DEFAULT_MESSAGE_UNIX_FDS],
-  [$default_message_unix_fds],
+  [$DEFAULT_MESSAGE_UNIX_FDS],
   [Default for dbus_connection_get_max_message_unix_fds()])
-AC_SUBST([default_message_unix_fds])
+AC_SUBST([DEFAULT_MESSAGE_UNIX_FDS])
 
 #### Set up final flags
 LIBDBUS_LIBS="$THREAD_LIBS $NETWORK_libs"

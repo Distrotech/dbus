@@ -82,7 +82,7 @@
 # define DBUS_ENABLE_X11_AUTOLAUNCH 1
 #endif
 
-#define DBUS_DEFAULT_MESSAGE_UNIX_FDS @default_message_unix_fds@
+#define DBUS_DEFAULT_MESSAGE_UNIX_FDS @DEFAULT_MESSAGE_UNIX_FDS@
 
 #define _DBUS_VA_COPY_ASSIGN(a1,a2) { a1 = a2; }
 

@@ -437,7 +437,7 @@ set (DBUS_USER )
 
 # In Autotools this has a different default on QNX, but there seems little
 # point in replicating that here; if you're on an unusual Unix, use Autotools.
-set (default_message_unix_fds 1024)
+set (DEFAULT_MESSAGE_UNIX_FDS 1024)
 
 # This won't work on Windows. It's not meant to - the system bus is
 # meaningless on Windows anyway.
