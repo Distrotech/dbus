@@ -1,6 +1,10 @@
 D-Bus 1.6.10 (UNRELEASED)
 ==
 
+• Following Unicode Corrigendum #9, the noncharacters U+nFFFE, U+nFFFF,
+  U+FDD0..U+FDEF are allowed in UTF-8 strings again.
+  (fd.o #63072, Simon McVittie)
+
 • Diagnose incorrect use of dbus_connection_get_data() with negative slot
   (i.e. before allocating the slot) rather than returning junk
   (fd.o #63127, Dan Williams)
