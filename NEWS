@@ -8,11 +8,14 @@ Configuration changes:
   limit used on the system bus was already 1024. On QNX, both limits are
   reduced further, to 128.
 
-Fixes:
+Enhancements:
 
-• Following Unicode Corrigendum #9, the noncharacters U+nFFFE, U+nFFFF,
-  U+FDD0..U+FDEF are allowed in UTF-8 strings again.
-  (fd.o #63072, Simon McVittie)
+• D-Bus Specification 0.21
+  · Following Unicode Corrigendum #9, the noncharacters U+nFFFE, U+nFFFF,
+    U+FDD0..U+FDEF are allowed in UTF-8 strings again. (fd.o #63072,
+    Simon McVittie)
+
+Fixes:
 
 • Diagnose incorrect use of dbus_connection_get_data() with negative slot
   (i.e. before allocating the slot) rather than returning junk
@@ -24,6 +27,8 @@ Fixes:
 • Unix-specific:
   · Under systemd, log to syslog only, not stderr, avoiding duplication
     (fd.o #61399, #39987; Colin Walters, Dagobert Michelsen)
+  · Under systemd, remove unnecessary dependency on syslog.socket
+    (fd.o #63531, Cristian Rodríguez)
   · Include alloca.h for alloca() if available, fixing compilation on
     Solaris 10 (fd.o #63071, Dagobert Michelsen)
   · Allow use of systemd-logind without the rest of systemd
