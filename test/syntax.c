@@ -178,12 +178,14 @@ const char * const invalid_single_signatures[] = {
 
 const char * const valid_strings[] = {
     "",
-    "\xc2\xa9",
+    "\xc2\xa9",       /* UTF-8 (c) symbol */
+    "\xef\xbf\xbe",   /* U+FFFE is reserved but Corrigendum 9 says it's OK */
     NULL
 };
 
 const char * const invalid_strings[] = {
-    "\xa9",
+    "\xa9",           /* Latin-1 (c) symbol */
+    "\xed\xa0\x80",   /* UTF-16 surrogates are not valid in UTF-8 */
     NULL
 };
 
