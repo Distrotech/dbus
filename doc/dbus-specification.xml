@@ -454,8 +454,15 @@
         are basic types with a variable length. The value of any string-like
         type is conceptually 0 or more Unicode codepoints encoded in UTF-8,
         none of which may be U+0000. The UTF-8 text must be validated
-        strictly: in particular, it must not contain overlong sequences,
-        noncharacters such as U+FFFE, or codepoints above U+10FFFF.
+        strictly: in particular, it must not contain overlong sequences
+        or codepoints above U+10FFFF.
+      </para>
+
+      <para>
+        Since D-Bus Specification version 0.21, in accordance with Unicode
+        Corrigendum #9, the "noncharacters" U+FDD0..U+FDEF, U+nFFFE and
+        U+nFFFF are allowed in UTF-8 strings (but note that older versions of
+        D-Bus rejected these noncharacters).
       </para>
 
       <para>
