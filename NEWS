@@ -25,6 +25,7 @@ Fixes:
   Simon McVittie)
 
 • Unix-specific:
+  · On Linux, link successfully with glibc 2.17 (fd.o #63166, Simon McVittie)
   · Under systemd, log to syslog only, not stderr, avoiding duplication
     (fd.o #61399, #39987; Colin Walters, Dagobert Michelsen)
   · Under systemd, remove unnecessary dependency on syslog.socket
