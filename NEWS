@@ -1,5 +1,7 @@
-D-Bus 1.6.10 (UNRELEASED)
+D-Bus 1.6.10 (2013-04-24)
 ==
+
+The “little-known facts about bananas” release.
 
 • Following Unicode Corrigendum #9, the noncharacters U+nFFFE, U+nFFFF,
   U+FDD0..U+FDEF are allowed in UTF-8 strings again.
