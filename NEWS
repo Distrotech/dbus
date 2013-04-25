@@ -1,5 +1,7 @@
-D-Bus 1.7.2 (UNRELEASED)
+D-Bus 1.7.2 (2013-04-25)
 ==
+
+The “only partially opaque” release.
 
 Configuration changes:
 
