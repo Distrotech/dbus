@@ -149,16 +149,6 @@ main (int argc, char *argv[])
                                          &dispatch_cond1,
                                          &io_path_cond1);
 
-  /* Since 1.7 it is no longer the case that mutex1 != mutex2, because
-   * initializing global locks automatically initializes locks
-   * in general. However, it is true that the mutex is not the dummy
-   * implementation, which is what we really wanted to check here. */
-  _dbus_assert (mutex1 != (DBusMutex *) 0xABCDEF);
-  _dbus_assert (dispatch_mutex1 != (DBusMutex *) 0xABCDEF);
-  _dbus_assert (dispatch_cond1 != (DBusCondVar *) 0xABCDEF2);
-  _dbus_assert (io_path_mutex1 != (DBusMutex *) 0xABCDEF);
-  _dbus_assert (io_path_cond1 != (DBusCondVar *) 0xABCDEF2);
-
   _run_iteration (conn);
   _dbus_connection_test_get_locks (conn, &mutex2,
                                          &dispatch_mutex2,
