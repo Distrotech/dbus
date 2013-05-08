@@ -3220,6 +3220,7 @@ _dbus_get_tmpdir(void)
   return tmpdir;
 }
 
+#if defined(DBUS_ENABLE_X11_AUTOLAUNCH) || defined(DBUS_ENABLE_LAUNCHD)
 /**
  * Execute a subprocess, returning up to 1024 bytes of output
  * into @p result.
@@ -3421,6 +3422,7 @@ _read_subprocess_line_argv (const char *progpath,
 
   return retval;
 }
+#endif
 
 /**
  * Returns the address of a new session bus.

@@ -1162,7 +1162,6 @@ main (int argc, char **argv)
       char *end;
       long wid = 0;
       long val;
-      int ret2;
 
       verbose ("=== Parent dbus-launch continues\n");
       
@@ -1236,6 +1235,8 @@ main (int argc, char **argv)
 #ifdef DBUS_ENABLE_X11_AUTOLAUNCH
       if (xdisplay != NULL)
         {
+          int ret2;
+
           verbose("Saving x11 address\n");
           ret2 = x11_save_address (bus_address, bus_pid, &wid);
           /* Only get an existing dbus session when autolaunching */
