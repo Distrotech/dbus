@@ -1,7 +1,11 @@
 D-Bus 1.7.4 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Windows-specific:
+  · Under cmake, install runtime libraries (DLLs) into bin/ instead of lib/
+    so that Windows finds them (fd.o #59733, Ralf Habacker)
 
 D-Bus 1.7.2 (2013-04-25)
 ==
