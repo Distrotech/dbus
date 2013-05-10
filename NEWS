@@ -1,6 +1,19 @@
 D-Bus 1.7.4 (UNRELEASED)
 ==
 
+Dependencies:
+
+• The Windows version of libdbus now contains a C++ source file, used
+  to provide global initialization when the library is loaded.
+  gcc (mingw*) users should ensure that g++ is also installed.
+
+Enhancements:
+
+• It should now be safe to call dbus_threads_init_default() from any thread,
+  at any time. Authors of loadable modules and plugins that use libdbus
+  should consider doing so during initialization.
+  (fd.o #54972, Simon McVittie)
+
 Fixes:
 
 • Windows-specific:
