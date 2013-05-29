@@ -80,7 +80,14 @@ typedef struct BusPendingActivationEntry BusPendingActivationEntry;
 
 struct BusPendingActivationEntry
 {
+  /* Normally a method call, but if connection is NULL, this is a signal
+   * instead.
+   */
   DBusMessage *activation_message;
+  /* NULL if this activation entry is for the dbus-daemon itself,
+   * waiting for systemd to start. In this case, auto_activation is always
+   * TRUE.
+   */
   DBusConnection *connection;
 
   dbus_bool_t auto_activation;
@@ -1106,7 +1113,8 @@ bus_activation_service_created (BusActivation  *activation,
       BusPendingActivationEntry *entry = link->data;
       DBusList *next = _dbus_list_get_next_link (&pending_activation->entries, link);
 
-      if (dbus_connection_get_is_connected (entry->connection))
+      /* entry->connection is NULL for activating systemd */
+      if (entry->connection && dbus_connection_get_is_connected (entry->connection))
         {
           /* Only send activation replies to regular activation requests. */
           if (!entry->auto_activation)
@@ -1175,7 +1183,7 @@ bus_activation_send_pending_auto_activation_messages (BusActivation  *activation
       BusPendingActivationEntry *entry = link->data;
       DBusList *next = _dbus_list_get_next_link (&pending_activation->entries, link);
 
-      if (entry->auto_activation && dbus_connection_get_is_connected (entry->connection))
+      if (entry->auto_activation && (entry->connection == NULL || dbus_connection_get_is_connected (entry->connection)))
         {
           DBusConnection *addressed_recipient;
 
@@ -1233,7 +1241,7 @@ try_send_activation_failure (BusPendingActivation *pending_activation,
       BusPendingActivationEntry *entry = link->data;
       DBusList *next = _dbus_list_get_next_link (&pending_activation->entries, link);
 
-      if (dbus_connection_get_is_connected (entry->connection))
+      if (entry->connection && dbus_connection_get_is_connected (entry->connection))
         {
           if (!bus_transaction_send_error_reply (transaction,
                                                  entry->connection,
@@ -1759,7 +1767,8 @@ bus_activation_activate_service (BusActivation  *activation,
   pending_activation_entry->activation_message = activation_message;
   dbus_message_ref (activation_message);
   pending_activation_entry->connection = connection;
-  dbus_connection_ref (connection);
+  if (connection)
+    dbus_connection_ref (connection);
 
   /* Check if the service is being activated */
   pending_activation = _dbus_hash_table_lookup_string (activation->pending_activations, service_name);
@@ -1972,7 +1981,7 @@ bus_activation_activate_service (BusActivation  *activation,
                                service_name,
                                entry->systemd_service);
               /* systemd is not around, let's "activate" it. */
-              retval = bus_activation_activate_service (activation, connection, activation_transaction, TRUE,
+              retval = bus_activation_activate_service (activation, NULL, activation_transaction, TRUE,
                                                         message, "org.freedesktop.systemd1", error);
             }
 
