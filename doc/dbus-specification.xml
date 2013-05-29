@@ -175,23 +175,18 @@
   <sect1 id="introduction">
     <title>Introduction</title>
     <para>
-      D-Bus is a system for low-latency, low-overhead, easy to use
+      D-Bus is a system for low-overhead, easy to use
       interprocess communication (IPC). In more detail:
       <itemizedlist>
-        <listitem>
-          <para>
-            D-Bus is <emphasis>low-latency</emphasis> because it is designed 
-            to avoid round trips and allow asynchronous operation, much like 
-            the X protocol.
-          </para>
-        </listitem>
         <listitem>
           <para>
             D-Bus is <emphasis>low-overhead</emphasis> because it uses a
             binary protocol, and does not have to convert to and from a text
             format such as XML. Because D-Bus is intended for potentially
             high-resolution same-machine IPC, not primarily for Internet IPC,
-            this is an interesting optimization.
+            this is an interesting optimization. D-Bus is also designed to
+            avoid round trips and allow asynchronous operation, much like
+            the X protocol.
           </para>
         </listitem>
         <listitem>
