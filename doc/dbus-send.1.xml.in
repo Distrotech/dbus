@@ -21,7 +21,7 @@
 <refsynopsisdiv id='synopsis'>
 <cmdsynopsis>
   <command>dbus-send</command>
-    <group choice='opt'><arg choice='plain'>--system </arg><arg choice='plain'>--session </arg></group>
+    <group choice='opt'><arg choice='plain'>--system </arg><arg choice='plain'>--session </arg><arg choice='plain'>--address=<replaceable>ADDRESS</replaceable></arg></group>
     <arg choice='opt'>--dest=<replaceable>NAME</replaceable></arg>
     <arg choice='opt'><arg choice='plain'>--print-reply </arg><arg choice='opt'><replaceable>=literal</replaceable></arg></arg>
     <arg choice='opt'>--reply-timeout=<replaceable>MSEC</replaceable></arg>
@@ -106,7 +106,7 @@ and the interface member are separate fields.</para>
   <term><option>--print-reply</option></term>
   <listitem>
 <para>Block for a reply to the message sent, and print any reply received
-in a human-readable form.</para>
+in a human-readable form. It also means the message type (<option>--type=</option>) is <emphasis remap='B'>method_call</emphasis>.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
@@ -134,6 +134,12 @@ The default is implementation&hyphen;defined, typically 25 seconds.</para>
   <term><option>--session</option></term>
   <listitem>
 <para>Send to the session message bus.  (This is the default.)</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--address=</option><replaceable>ADDRESS</replaceable></term>
+  <listitem>
+<para>Send to <replaceable>ADDRESS</replaceable>.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
