@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Dbus by Distrotech</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Dbus</h1>
+          <h2>Mirror Of git://anongit.freedesktop.org/git/dbus/dbus Root Of Much Evil See also Systemd</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/Distrotech/dbus/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/Distrotech/dbus/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/Distrotech/dbus" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <p>Sections in this file describe:</p>
+
+<ul>
+<li>introduction and overview</li>
+<li>low-level vs. high-level API</li>
+<li>version numbers</li>
+<li>options to the configure script</li>
+<li>ABI stability policy</li>
+</ul><h1>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<p>D-Bus is a simple system for interprocess communication and coordination.</p>
+
+<p>The "and coordination" part is important; D-Bus provides a bus daemon that does things like:</p>
+
+<ul>
+<li>notify applications when other apps exit</li>
+<li>start services on demand</li>
+<li>support single-instance applications</li>
+</ul><p>See <a href="http://www.freedesktop.org/software/dbus/">http://www.freedesktop.org/software/dbus/</a> for lots of documentation, 
+mailing lists, etc.</p>
+
+<p>See also the file HACKING for notes of interest to developers working on D-Bus.</p>
+
+<p>If you're considering D-Bus for use in a project, you should be aware
+that D-Bus was designed for a couple of specific use cases, a "system
+bus" and a "desktop session bus." These are documented in more detail
+in the D-Bus specification and FAQ available on the web site.</p>
+
+<p>If your use-case isn't one of these, D-Bus may still be useful, but
+only by accident; so you should evaluate carefully whether D-Bus makes
+sense for your project.</p>
+
+<h1>
+<a name="note-low-level-api-vs-high-level-binding-apis" class="anchor" href="#note-low-level-api-vs-high-level-binding-apis"><span class="octicon octicon-link"></span></a>Note: low-level API vs. high-level binding APIs</h1>
+
+<p>A core concept of the D-Bus implementation is that "libdbus" is
+intended to be a low-level API. Most programmers are intended to use
+the bindings to GLib, Qt, Python, Mono, Java, or whatever. These
+bindings have varying levels of completeness and are maintained as
+separate projects from the main D-Bus package. The main D-Bus package
+contains the low-level libdbus, the bus daemon, and a few command-line
+tools such as dbus-launch.</p>
+
+<p>If you use the low-level API directly, you're signing up for some
+pain. Think of the low-level API as analogous to Xlib or GDI, and the
+high-level API as analogous to Qt/GTK+/HTML.</p>
+
+<h1>
+<a name="version-numbers" class="anchor" href="#version-numbers"><span class="octicon octicon-link"></span></a>Version numbers</h1>
+
+<p>D-Bus uses the common "Linux kernel" versioning system, where
+even-numbered minor versions are stable and odd-numbered minor
+versions are development snapshots.</p>
+
+<p>So for example, development snapshots: 1.1.1, 1.1.2, 1.1.3, 1.3.4
+Stable versions: 1.0, 1.0.1, 1.0.2, 1.2.1, 1.2.3</p>
+
+<p>All pre-1.0 versions were development snapshots.</p>
+
+<p>Development snapshots make no ABI stability guarantees for new ABI
+introduced since the last stable release. Development snapshots are
+likely to have more bugs than stable releases, obviously.</p>
+
+<h1>
+<a name="configuration-" class="anchor" href="#configuration-"><span class="octicon octicon-link"></span></a>Configuration </h1>
+
+<p>dbus could be build by using autotools or cmake. </p>
+
+<p>When using autotools the configure step is initiated by running ./configure 
+with or without additional configuration flags. </p>
+
+<p>When using cmake the configure step is initiated by running the cmake 
+program with or without additional configuration flags. </p>
+
+<h1>
+<a name="configuration-flags" class="anchor" href="#configuration-flags"><span class="octicon octicon-link"></span></a>Configuration flags</h1>
+
+<p>When using autotools, run "./configure --help" to see the possible
+configuration options and environment variables.</p>
+
+<p>When using cmake, inspect README.cmake to see the possible
+configuration options and environment variables.</p>
+
+<h1>
+<a name="apiabi-policy" class="anchor" href="#apiabi-policy"><span class="octicon octicon-link"></span></a>API/ABI Policy</h1>
+
+<p>Now that D-Bus has reached version 1.0, the objective is that all
+applications dynamically linked to libdbus will continue working
+indefinitely with the most recent system and session bus daemons.</p>
+
+<ul>
+<li><p>The protocol will never be broken again; any message bus should 
+work with any client forever. However, extensions are possible
+where the protocol is extensible.</p></li>
+<li><p>If the library API is modified incompatibly, we will rename it 
+as in <a href="http://ometer.com/parallel.html">http://ometer.com/parallel.html</a> - in other words, 
+it will always be possible to compile against and use the older 
+API, and apps will always get the API they expect.</p></li>
+</ul><p>Interfaces can and probably will be <em>added</em>. This means both new
+functions and types in libdbus, and new methods exported to
+applications by the bus daemon.</p>
+
+<p>The above policy is intended to make D-Bus as API-stable as other
+widely-used libraries (such as GTK+, Qt, Xlib, or your favorite
+example). If you have questions or concerns they are very welcome on
+the D-Bus mailing list.</p>
+
+<p>NOTE ABOUT DEVELOPMENT SNAPSHOTS AND VERSIONING</p>
+
+<p>Odd-numbered minor releases (1.1.x, 1.3.x, 2.1.x, etc. -
+major.minor.micro) are devel snapshots for testing, and any new ABI
+they introduce relative to the last stable version is subject to
+change during the development cycle.</p>
+
+<p>Any ABI found in a stable release, however, is frozen.</p>
+
+<p>ABI will not be added in a stable series if we can help it. i.e. the
+ABI of 1.2.0 and 1.2.5 you can expect to be the same, while the ABI of
+1.4.x may add more stuff not found in 1.2.x.</p>
+
+<p>NOTE ABOUT STATIC LINKING</p>
+
+<p>We are not yet firmly freezing all runtime dependencies of the libdbus
+library. For example, the library may read certain files as part of
+its implementation, and these files may move around between versions.</p>
+
+<p>As a result, we don't yet recommend statically linking to
+libdbus. Also, reimplementations of the protocol from scratch might
+have to work to stay in sync with how libdbus behaves.</p>
+
+<p>To lock things down and declare static linking and reimplementation to
+be safe, we'd like to see all the internal dependencies of libdbus
+(for example, files read) well-documented in the specification, and
+we'd like to have a high degree of confidence that these dependencies
+are supportable over the long term and extensible where required.</p>
+
+<p>NOTE ABOUT HIGH-LEVEL BINDINGS</p>
+
+<p>Note that the high-level bindings are <em>separate projects</em> from the
+main D-Bus package, and have their own release cycles, levels of
+maturity, and ABI stability policies. Please consult the documentation
+for your binding.</p>
+
+<h1>
+<a name="bootstrapping-d-bus-on-new-platforms" class="anchor" href="#bootstrapping-d-bus-on-new-platforms"><span class="octicon octicon-link"></span></a>Bootstrapping D-Bus on new platforms</h1>
+
+<p>A full build of D-Bus, with all regression tests enabled and run, has some
+dependencies which themselves depend on D-Bus, either for compilation or
+for some of <em>their</em> regression tests: GLib, dbus-glib and dbus-python are
+currently affected.</p>
+
+<p>To avoid circular dependencies, when bootstrapping D-Bus for the first time
+on a new OS or CPU architecture, you can either cross-compile some of
+those components, or choose the build order and options carefully:</p>
+
+<ul>
+<li>build and install D-Bus without tests
+
+<ul>
+<li>do not use the --enable-modular-tests=yes configure option</li>
+<li>do not use the --enable-tests=yes configure option</li>
+</ul>
+</li>
+<li>build and install GLib, again without tests</li>
+<li>use those versions of libdbus and GLib to build and install dbus-glib</li>
+<li>... and use those to install dbus-python</li>
+<li>rebuild libdbus; this time you can run all of the tests</li>
+<li>rebuild GLib; this time you can run all of the tests</li>
+</ul>
+        </section>
+
+        <footer>
+          Dbus is maintained by <a href="https://github.com/Distrotech">Distrotech</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
