@@ -8,7 +8,6 @@
 #endif
 
 #include <dbus/dbus.h>
-#include "dbus/dbus-sysdeps.h"
 
 int
 main (int argc, char *argv[])
@@ -16,7 +15,7 @@ main (int argc, char *argv[])
   DBusConnection *conn = NULL;
   DBusError error;
 
-  _dbus_setenv ("DBUS_SESSION_BUS_ADDRESS", NULL);
+  dbus_setenv ("DBUS_SESSION_BUS_ADDRESS", NULL);
 
   dbus_error_init (&error);
 

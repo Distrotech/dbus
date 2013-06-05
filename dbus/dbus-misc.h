@@ -44,6 +44,10 @@ void        dbus_get_version           (int *major_version_p,
                                         int *minor_version_p,
                                         int *micro_version_p);
 
+DBUS_EXPORT
+dbus_bool_t dbus_setenv                (const char *variable,
+                                        const char *value);
+
 /** @} */
 
 DBUS_END_DECLS

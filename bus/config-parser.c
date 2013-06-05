@@ -30,6 +30,7 @@
 #include "selinux.h"
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-internals.h>
+#include <dbus/dbus-misc.h>
 #include <dbus/dbus-sysdeps.h>
 #include <string.h>
 
@@ -3417,10 +3418,10 @@ test_default_session_servicedirs (void)
     }
 
 #ifdef DBUS_UNIX
-  if (!_dbus_setenv ("XDG_DATA_HOME", "/testhome/foo/.testlocal/testshare"))
+  if (!dbus_setenv ("XDG_DATA_HOME", "/testhome/foo/.testlocal/testshare"))
     _dbus_assert_not_reached ("couldn't setenv XDG_DATA_HOME");
 
-  if (!_dbus_setenv ("XDG_DATA_DIRS", ":/testusr/testlocal/testshare: :/testusr/testshare:"))
+  if (!dbus_setenv ("XDG_DATA_DIRS", ":/testusr/testlocal/testshare: :/testusr/testshare:"))
     _dbus_assert_not_reached ("couldn't setenv XDG_DATA_DIRS");
 #endif
   if (!_dbus_get_standard_session_servicedirs (&dirs))
@@ -3550,10 +3551,10 @@ test_default_system_servicedirs (void)
     }
 
 #ifdef DBUS_UNIX
-  if (!_dbus_setenv ("XDG_DATA_HOME", "/testhome/foo/.testlocal/testshare"))
+  if (!dbus_setenv ("XDG_DATA_HOME", "/testhome/foo/.testlocal/testshare"))
     _dbus_assert_not_reached ("couldn't setenv XDG_DATA_HOME");
 
-  if (!_dbus_setenv ("XDG_DATA_DIRS", ":/testusr/testlocal/testshare: :/testusr/testshare:"))
+  if (!dbus_setenv ("XDG_DATA_DIRS", ":/testusr/testlocal/testshare: :/testusr/testshare:"))
     _dbus_assert_not_reached ("couldn't setenv XDG_DATA_DIRS");
 #endif
   if (!_dbus_get_standard_system_servicedirs (&dirs))

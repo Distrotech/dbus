@@ -29,6 +29,7 @@
 #include "dbus-protocol.h"
 #include "dbus-string.h"
 #include "dbus-list.h"
+#include "dbus-misc.h"
 
 /* NOTE: If you include any unix/windows-specific headers here, you are probably doing something
  * wrong and should be putting some code in dbus-sysdeps-unix.c or dbus-sysdeps-win.c.
@@ -92,6 +93,8 @@ _dbus_abort (void)
 }
 
 /**
+ * @ingroup DBusMisc
+ *
  * Wrapper for setenv(). If the value is #NULL, unsets
  * the environment variable.
  *
@@ -100,13 +103,16 @@ _dbus_abort (void)
  * we can not rely on internal implementation details of
  * the underlying libc library.
  *
+ * This function is not thread-safe, because altering the environment
+ * in Unix is not thread-safe in general.
+ *
  * @param varname name of environment variable
- * @param value value of environment variable
- * @returns #TRUE on success.
+ * @param value value of environment variable, or #NULL to unset
+ * @returns #TRUE on success, #FALSE if not enough memory.
  */
 dbus_bool_t
-_dbus_setenv (const char *varname,
-              const char *value)
+dbus_setenv (const char *varname,
+             const char *value)
 {
   _dbus_assert (varname != NULL);
   

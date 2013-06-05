@@ -40,6 +40,7 @@
 #include <launch.h>
 #include <errno.h>
 
+#include "dbus-misc.h"
 #include "dbus-server-socket.h"
 
 /* put other private launchd functions here */
@@ -176,7 +177,7 @@ _dbus_server_new_for_launchd (const char *launchd_env_var, DBusError * error)
           else
             {
               display = launch_data_get_string(environment_param);
-              _dbus_setenv ("DISPLAY", display);
+              dbus_setenv ("DISPLAY", display);
             }
         }
     }

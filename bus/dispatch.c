@@ -34,6 +34,7 @@
 #include "signals.h"
 #include "test.h"
 #include <dbus/dbus-internals.h>
+#include <dbus/dbus-misc.h>
 #include <string.h>
 
 #ifdef HAVE_UNIX_FD_PASSING
@@ -4466,7 +4467,7 @@ setenv_TEST_LAUNCH_HELPER_CONFIG(const DBusString *test_data_dir,
   _dbus_verbose ("Setting TEST_LAUNCH_HELPER_CONFIG to '%s'\n",
                  _dbus_string_get_const_data (&full));
 
-  _dbus_setenv ("TEST_LAUNCH_HELPER_CONFIG", _dbus_string_get_const_data (&full));
+  dbus_setenv ("TEST_LAUNCH_HELPER_CONFIG", _dbus_string_get_const_data (&full));
 
   _dbus_string_free (&full);
 

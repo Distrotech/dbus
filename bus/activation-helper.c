@@ -40,6 +40,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include <dbus/dbus-misc.h>
 #include <dbus/dbus-shell.h>
 #include <dbus/dbus-marshal-validate.h>
 
@@ -156,8 +157,8 @@ clear_environment (DBusError *error)
     }
 
   /* Ensure the bus is set to system */
-  _dbus_setenv ("DBUS_STARTER_ADDRESS", DBUS_SYSTEM_BUS_DEFAULT_ADDRESS);
-  _dbus_setenv ("DBUS_STARTER_BUS_TYPE", "system");
+  dbus_setenv ("DBUS_STARTER_ADDRESS", DBUS_SYSTEM_BUS_DEFAULT_ADDRESS);
+  dbus_setenv ("DBUS_STARTER_BUS_TYPE", "system");
 #endif
 
   return TRUE;

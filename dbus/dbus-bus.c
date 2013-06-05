@@ -28,6 +28,7 @@
 #include "dbus-internals.h"
 #include "dbus-message.h"
 #include "dbus-marshal-validate.h"
+#include "dbus-misc.h"
 #include "dbus-threads-internal.h"
 #include "dbus-connection-internal.h"
 #include "dbus-string.h"
@@ -293,10 +294,10 @@ init_connections_unlocked (void)
        * the above code will work right
        */
       
-      if (!_dbus_setenv ("DBUS_ACTIVATION_ADDRESS", NULL))
+      if (!dbus_setenv ("DBUS_ACTIVATION_ADDRESS", NULL))
         return FALSE;
 
-      if (!_dbus_setenv ("DBUS_ACTIVATION_BUS_TYPE", NULL))
+      if (!dbus_setenv ("DBUS_ACTIVATION_BUS_TYPE", NULL))
         return FALSE;
       
       if (!_dbus_register_shutdown_func (addresses_shutdown_func,

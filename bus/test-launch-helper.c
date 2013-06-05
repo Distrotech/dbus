@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dbus/dbus-internals.h>
+#include <dbus/dbus-misc.h>
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static void
@@ -122,8 +123,8 @@ main (int argc, char **argv)
     return 1;
 
   /* use a config file that will actually work... */
-  _dbus_setenv ("TEST_LAUNCH_HELPER_CONFIG",
-                _dbus_string_get_const_data (&config_file));
+  dbus_setenv ("TEST_LAUNCH_HELPER_CONFIG",
+               _dbus_string_get_const_data (&config_file));
 
   _dbus_string_free (&config_file);
 
