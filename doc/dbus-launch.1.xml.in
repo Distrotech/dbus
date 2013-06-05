@@ -102,8 +102,10 @@ run by your X session, such as
 or
 <filename>~/.Xclients</filename>.</para>
 
-<para>To start a D-Bus session within a text-mode session, you can run
-dbus-launch in the background. For instance, in a sh-compatible shell:</para>
+<para>To start a D-Bus session within a text\(hymode session,
+  do not use <emphasis remap='B'>dbus-launch</emphasis>.
+  Instead, see <citerefentry><refentrytitle>dbus-run-session</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+</para>
 
 <literallayout remap='.nf'>
   ## test for an existing bus daemon, just to be safe
