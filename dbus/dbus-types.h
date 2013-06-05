@@ -79,43 +79,23 @@ typedef dbus_uint32_t  dbus_bool_t;
 /**
  * @typedef dbus_uint64_t
  *
- * A 64-bit unsigned integer on all platforms that support it.
- * If supported, #DBUS_HAVE_INT64 will be defined.
- *
- * C99 requires a 64-bit type and most likely all interesting
- * compilers support one. GLib for example flat-out requires
- * a 64-bit type.
- *
- * You probably want to just assume #DBUS_HAVE_INT64 is always defined.
+ * A 64-bit unsigned integer.
  */
 
 /**
  * @typedef dbus_int64_t
  *
- * A 64-bit signed integer on all platforms that support it.
- * If supported, #DBUS_HAVE_INT64 will be defined.
- *
- * C99 requires a 64-bit type and most likely all interesting
- * compilers support one. GLib for example flat-out requires
- * a 64-bit type.
- * 
- * You probably want to just assume #DBUS_HAVE_INT64 is always defined.
+ * A 64-bit signed integer.
  */
 
 /**
  * @def DBUS_HAVE_INT64
  *
- * Defined if 64-bit integers are available. Will be defined
- * on any platform you care about, unless you care about
- * some truly ancient UNIX, or some bizarre embedded platform.
+ * Always defined.
  *
- * C99 requires a 64-bit type and most likely all interesting
- * compilers support one. GLib for example flat-out requires
- * a 64-bit type.
- *
- * You should feel comfortable ignoring this macro and just using
- * int64 unconditionally.
- * 
+ * In older libdbus versions, this would be undefined if there was no
+ * 64-bit integer type on that platform. libdbus no longer supports
+ * such platforms.
  */
 
 /**
@@ -136,7 +116,7 @@ typedef dbus_uint32_t  dbus_bool_t;
 
 /**
  * An 8-byte struct you could use to access int64 without having
- * int64 support
+ * int64 support. Use #dbus_int64_t or #dbus_uint64_t instead.
  */
 typedef struct
 {
@@ -162,10 +142,8 @@ typedef union
   dbus_int32_t  i32;   /**< as int32 */
   dbus_uint32_t u32;   /**< as int32 */
   dbus_bool_t   bool_val; /**< as boolean */
-#ifdef DBUS_HAVE_INT64
   dbus_int64_t  i64;   /**< as int64 */
   dbus_uint64_t u64;   /**< as int64 */
-#endif
   DBus8ByteStruct eight; /**< as 8-byte struct */
   double dbl;          /**< as double */
   unsigned char byt;   /**< as byte */

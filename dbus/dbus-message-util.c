@@ -754,10 +754,8 @@ message_iter_test (DBusMessage *message)
   dbus_uint16_t v_UINT16;
   dbus_int32_t v_INT32;
   dbus_uint32_t v_UINT32;
-#ifdef DBUS_HAVE_INT64
   dbus_int64_t v_INT64;
   dbus_uint64_t v_UINT64;
-#endif
   unsigned char v_BYTE;
   dbus_bool_t v_BOOLEAN;
 
@@ -830,14 +828,12 @@ verify_test_message (DBusMessage *message)
   int our_uint32_array_len;
   dbus_int32_t *our_int32_array = (void*)0xdeadbeef;
   int our_int32_array_len;
-#ifdef DBUS_HAVE_INT64
   dbus_int64_t our_int64;
   dbus_uint64_t our_uint64;
   dbus_int64_t *our_uint64_array = (void*)0xdeadbeef;
   int our_uint64_array_len;
   const dbus_int64_t *our_int64_array = (void*)0xdeadbeef;
   int our_int64_array_len;
-#endif
   const double *our_double_array = (void*)0xdeadbeef;
   int our_double_array_len;
   const unsigned char *our_byte_array = (void*)0xdeadbeef;
@@ -854,10 +850,8 @@ verify_test_message (DBusMessage *message)
                                    DBUS_TYPE_UINT16, &our_uint16,
 				   DBUS_TYPE_INT32, &our_int,
                                    DBUS_TYPE_UINT32, &our_uint,
-#ifdef DBUS_HAVE_INT64
                                    DBUS_TYPE_INT64, &our_int64,
                                    DBUS_TYPE_UINT64, &our_uint64,
-#endif
 				   DBUS_TYPE_STRING, &our_str,
 				   DBUS_TYPE_DOUBLE, &our_double,
 				   DBUS_TYPE_BOOLEAN, &our_bool,
@@ -867,12 +861,10 @@ verify_test_message (DBusMessage *message)
                                    &our_uint32_array, &our_uint32_array_len,
                                    DBUS_TYPE_ARRAY, DBUS_TYPE_INT32,
                                    &our_int32_array, &our_int32_array_len,
-#ifdef DBUS_HAVE_INT64
 				   DBUS_TYPE_ARRAY, DBUS_TYPE_UINT64,
                                    &our_uint64_array, &our_uint64_array_len,
                                    DBUS_TYPE_ARRAY, DBUS_TYPE_INT64,
                                    &our_int64_array, &our_int64_array_len,
-#endif
                                    DBUS_TYPE_ARRAY, DBUS_TYPE_DOUBLE,
                                    &our_double_array, &our_double_array_len,
                                    DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE,
@@ -900,12 +892,10 @@ verify_test_message (DBusMessage *message)
   if (our_uint != 0x12300042)
     _dbus_assert_not_reached ("uints differ!");
 
-#ifdef DBUS_HAVE_INT64
   if (our_int64 != DBUS_INT64_CONSTANT (-0x123456789abcd))
     _dbus_assert_not_reached ("64-bit integers differ!");
   if (our_uint64 != DBUS_UINT64_CONSTANT (0x123456789abcd))
     _dbus_assert_not_reached ("64-bit unsigned integers differ!");
-#endif
 
   v_DOUBLE = 3.14159;
   if (! _DBUS_DOUBLES_BITWISE_EQUAL (our_double, v_DOUBLE))
@@ -937,7 +927,6 @@ verify_test_message (DBusMessage *message)
       our_int32_array[3] != -0x45678123)
     _dbus_assert_not_reached ("int array differs");
 
-#ifdef DBUS_HAVE_INT64
   if (our_uint64_array_len != 4 ||
       our_uint64_array[0] != 0x12345678 ||
       our_uint64_array[1] != 0x23456781 ||
@@ -951,7 +940,6 @@ verify_test_message (DBusMessage *message)
       our_int64_array[2] != 0x34567812 ||
       our_int64_array[3] != -0x45678123)
     _dbus_assert_not_reached ("int64 array differs");
-#endif /* DBUS_HAVE_INT64 */
 
   if (our_double_array_len != 3)
     _dbus_assert_not_reached ("double array had wrong length");
@@ -1025,14 +1013,12 @@ _dbus_message_test (const char *test_data_dir)
     { 0x12345678, -0x23456781, 0x34567812, -0x45678123 };
   const dbus_uint32_t *v_ARRAY_UINT32 = our_uint32_array;
   const dbus_int32_t *v_ARRAY_INT32 = our_int32_array;
-#ifdef DBUS_HAVE_INT64
   const dbus_uint64_t our_uint64_array[] =
     { 0x12345678, 0x23456781, 0x34567812, 0x45678123 };
   const dbus_int64_t our_int64_array[] =
     { 0x12345678, -0x23456781, 0x34567812, -0x45678123 };
   const dbus_uint64_t *v_ARRAY_UINT64 = our_uint64_array;
   const dbus_int64_t *v_ARRAY_INT64 = our_int64_array;
-#endif
   const char *our_string_array[] = { "Foo", "bar", "", "woo woo woo woo" };
   const char **v_ARRAY_STRING = our_string_array;
   const double our_double_array[] = { 0.1234, 9876.54321, -300.0 };
@@ -1049,10 +1035,8 @@ _dbus_message_test (const char *test_data_dir)
   dbus_uint16_t v_UINT16;
   dbus_int32_t v_INT32;
   dbus_uint32_t v_UINT32;
-#ifdef DBUS_HAVE_INT64
   dbus_int64_t v_INT64;
   dbus_uint64_t v_UINT64;
-#endif
   unsigned char v_BYTE;
   unsigned char v2_BYTE;
   dbus_bool_t v_BOOLEAN;
@@ -1201,10 +1185,8 @@ _dbus_message_test (const char *test_data_dir)
   v_UINT16 = 0x123;
   v_INT32 = -0x12345678;
   v_UINT32 = 0x12300042;
-#ifdef DBUS_HAVE_INT64
   v_INT64 = DBUS_INT64_CONSTANT (-0x123456789abcd);
   v_UINT64 = DBUS_UINT64_CONSTANT (0x123456789abcd);
-#endif
   v_STRING = "Test string";
   v_DOUBLE = 3.14159;
   v_BOOLEAN = TRUE;
@@ -1219,10 +1201,8 @@ _dbus_message_test (const char *test_data_dir)
                             DBUS_TYPE_UINT16, &v_UINT16,
 			    DBUS_TYPE_INT32, &v_INT32,
                             DBUS_TYPE_UINT32, &v_UINT32,
-#ifdef DBUS_HAVE_INT64
                             DBUS_TYPE_INT64, &v_INT64,
                             DBUS_TYPE_UINT64, &v_UINT64,
-#endif
 			    DBUS_TYPE_STRING, &v_STRING,
 			    DBUS_TYPE_DOUBLE, &v_DOUBLE,
 			    DBUS_TYPE_BOOLEAN, &v_BOOLEAN,
@@ -1232,12 +1212,10 @@ _dbus_message_test (const char *test_data_dir)
                             _DBUS_N_ELEMENTS (our_uint32_array),
                             DBUS_TYPE_ARRAY, DBUS_TYPE_INT32, &v_ARRAY_INT32,
                             _DBUS_N_ELEMENTS (our_int32_array),
-#ifdef DBUS_HAVE_INT64
                             DBUS_TYPE_ARRAY, DBUS_TYPE_UINT64, &v_ARRAY_UINT64,
                             _DBUS_N_ELEMENTS (our_uint64_array),
                             DBUS_TYPE_ARRAY, DBUS_TYPE_INT64, &v_ARRAY_INT64,
                             _DBUS_N_ELEMENTS (our_int64_array),
-#endif
                             DBUS_TYPE_ARRAY, DBUS_TYPE_DOUBLE, &v_ARRAY_DOUBLE,
                             _DBUS_N_ELEMENTS (our_double_array),
                             DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE, &v_ARRAY_BYTE,
@@ -1254,10 +1232,8 @@ _dbus_message_test (const char *test_data_dir)
   sig[i++] = DBUS_TYPE_UINT16;
   sig[i++] = DBUS_TYPE_INT32;
   sig[i++] = DBUS_TYPE_UINT32;
-#ifdef DBUS_HAVE_INT64
   sig[i++] = DBUS_TYPE_INT64;
   sig[i++] = DBUS_TYPE_UINT64;
-#endif
   sig[i++] = DBUS_TYPE_STRING;
   sig[i++] = DBUS_TYPE_DOUBLE;
   sig[i++] = DBUS_TYPE_BOOLEAN;
@@ -1267,12 +1243,10 @@ _dbus_message_test (const char *test_data_dir)
   sig[i++] = DBUS_TYPE_UINT32;
   sig[i++] = DBUS_TYPE_ARRAY;
   sig[i++] = DBUS_TYPE_INT32;
-#ifdef DBUS_HAVE_INT64
   sig[i++] = DBUS_TYPE_ARRAY;
   sig[i++] = DBUS_TYPE_UINT64;
   sig[i++] = DBUS_TYPE_ARRAY;
   sig[i++] = DBUS_TYPE_INT64;
-#endif
   sig[i++] = DBUS_TYPE_ARRAY;
   sig[i++] = DBUS_TYPE_DOUBLE;
   sig[i++] = DBUS_TYPE_ARRAY;

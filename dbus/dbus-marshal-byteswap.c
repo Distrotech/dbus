@@ -73,11 +73,7 @@ byteswap_body_helper (DBusTypeReader       *reader,
         case DBUS_TYPE_DOUBLE:
           {
             p = _DBUS_ALIGN_ADDRESS (p, 8);
-#ifdef DBUS_HAVE_INT64
             *((dbus_uint64_t*)p) = DBUS_UINT64_SWAP_LE_BE (*((dbus_uint64_t*)p));
-#else
-            _dbus_swap_array (p, 1, 8);
-#endif
             p += 8;
           }
           break;

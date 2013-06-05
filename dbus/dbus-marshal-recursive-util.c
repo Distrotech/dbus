@@ -34,13 +34,7 @@
 static void
 basic_value_zero (DBusBasicValue *value)
 {
-
-#ifdef DBUS_HAVE_INT64
   value->u64 = 0;
-#else
-  value->eight.first32 = 0;
-  value->eight.second32 = 0;
-#endif
 }
 
 static dbus_bool_t
@@ -56,12 +50,7 @@ basic_value_equal (int             type,
     }
   else
     {
-#ifdef DBUS_HAVE_INT64
       return lhs->u64 == rhs->u64;
-#else
-      return lhs->eight.first32 == rhs->eight.first32 &&
-        lhs->eight.second32 == rhs->eight.second32;
-#endif
     }
 }
 
@@ -2337,7 +2326,6 @@ int32_read_multi (TestTypeNode   *node,
   return TRUE;
 }
 
-#ifdef DBUS_HAVE_INT64
 static dbus_int64_t
 int64_from_seed (int seed)
 {
@@ -2351,7 +2339,6 @@ int64_from_seed (int seed)
 
   return v;
 }
-#endif
 
 static dbus_bool_t
 int64_write_value (TestTypeNode   *node,
@@ -2359,7 +2346,6 @@ int64_write_value (TestTypeNode   *node,
                    DBusTypeWriter *writer,
                    int             seed)
 {
-#ifdef DBUS_HAVE_INT64
   /* also used for uint64 */
   dbus_int64_t v;
 
@@ -2368,9 +2354,6 @@ int64_write_value (TestTypeNode   *node,
   return _dbus_type_writer_write_basic (writer,
                                         node->klass->typecode,
                                         &v);
-#else
-  return TRUE;
-#endif
 }
 
 static dbus_bool_t
@@ -2378,7 +2361,6 @@ int64_read_value (TestTypeNode   *node,
                   DBusTypeReader *reader,
                   int             seed)
 {
-#ifdef DBUS_HAVE_INT64
   /* also used for uint64 */
   dbus_int64_t v;
 
@@ -2390,9 +2372,6 @@ int64_read_value (TestTypeNode   *node,
   _dbus_assert (v == int64_from_seed (seed));
 
   return TRUE;
-#else
-  return TRUE;
-#endif
 }
 
 static dbus_bool_t
@@ -2401,7 +2380,6 @@ int64_set_value (TestTypeNode   *node,
                  DBusTypeReader *realign_root,
                  int             seed)
 {
-#ifdef DBUS_HAVE_INT64
   /* also used for uint64 */
   dbus_int64_t v;
 
@@ -2410,9 +2388,6 @@ int64_set_value (TestTypeNode   *node,
   return _dbus_type_reader_set_basic (reader,
                                       &v,
                                       realign_root);
-#else
-  return TRUE;
-#endif
 }
 
 #define MAX_SAMPLE_STRING_LEN 10

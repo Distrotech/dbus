@@ -31,19 +31,13 @@
 
 DBUS_BEGIN_DECLS
 
-#if @DBUS_HAVE_INT64@
+/* D-Bus no longer supports platforms with no 64-bit integer type. */
 #define DBUS_HAVE_INT64 1
 _DBUS_GNUC_EXTENSION typedef @DBUS_INT64_TYPE@ dbus_int64_t;
 _DBUS_GNUC_EXTENSION typedef unsigned @DBUS_INT64_TYPE@ dbus_uint64_t;
 
 #define DBUS_INT64_CONSTANT(val)  (_DBUS_GNUC_EXTENSION @DBUS_INT64_CONSTANT@)
 #define DBUS_UINT64_CONSTANT(val) (_DBUS_GNUC_EXTENSION @DBUS_UINT64_CONSTANT@)
-
-#else
-#undef DBUS_HAVE_INT64
-#undef DBUS_INT64_CONSTANT
-#undef DBUS_UINT64_CONSTANT
-#endif
 
 typedef @DBUS_INT32_TYPE@ dbus_int32_t;
 typedef unsigned @DBUS_INT32_TYPE@ dbus_uint32_t;

@@ -938,29 +938,9 @@ _dbus_string_append (DBusString *str,
 #define ASSIGN_4_OCTETS(p, octets) \
   *((dbus_uint32_t*)(p)) = *((dbus_uint32_t*)(octets));
 
-#ifdef DBUS_HAVE_INT64
 /** assign 8 bytes from one string to another */
 #define ASSIGN_8_OCTETS(p, octets) \
   *((dbus_uint64_t*)(p)) = *((dbus_uint64_t*)(octets));
-#else
-/** assign 8 bytes from one string to another */
-#define ASSIGN_8_OCTETS(p, octets)              \
-do {                                            \
-  unsigned char *b;                             \
-                                                \
-  b = p;                                        \
-                                                \
-  *b++ = octets[0];                             \
-  *b++ = octets[1];                             \
-  *b++ = octets[2];                             \
-  *b++ = octets[3];                             \
-  *b++ = octets[4];                             \
-  *b++ = octets[5];                             \
-  *b++ = octets[6];                             \
-  *b++ = octets[7];                             \
-  _dbus_assert (b == p + 8);                    \
-} while (0)
-#endif /* DBUS_HAVE_INT64 */
 
 /**
  * Inserts 2 bytes aligned on a 2 byte boundary

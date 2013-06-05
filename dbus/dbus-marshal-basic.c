@@ -58,12 +58,10 @@ _DBUS_ASSERT_ALIGNMENT (dbus_bool_t, <=, 4);
 _DBUS_STATIC_ASSERT (sizeof (double) == 8);
 _DBUS_ASSERT_ALIGNMENT (double, <=, 8);
 
-#ifdef DBUS_HAVE_INT64
 _DBUS_STATIC_ASSERT (sizeof (dbus_int64_t) == 8);
 _DBUS_ASSERT_ALIGNMENT (dbus_int64_t, <=, 8);
 _DBUS_STATIC_ASSERT (sizeof (dbus_uint64_t) == 8);
 _DBUS_ASSERT_ALIGNMENT (dbus_uint64_t, <=, 8);
-#endif
 
 _DBUS_STATIC_ASSERT (sizeof (DBusBasicValue) >= 8);
 /* The alignment of a DBusBasicValue might conceivably be > 8 because of the
@@ -120,15 +118,10 @@ pack_8_octets (DBusBasicValue     value,
 {
   _dbus_assert (_DBUS_ALIGN_ADDRESS (data, 8) == data);
 
-#ifdef DBUS_HAVE_INT64
   if ((byte_order) == DBUS_LITTLE_ENDIAN)
     *((dbus_uint64_t*)(data)) = DBUS_UINT64_TO_LE (value.u64);
   else
     *((dbus_uint64_t*)(data)) = DBUS_UINT64_TO_BE (value.u64);
-#else
-  *(DBus8ByteStruct*)data = value.eight;
-  swap_8_octets ((DBusBasicValue*)data, byte_order);
-#endif
 }
 
 /**
@@ -146,64 +139,15 @@ _dbus_pack_uint32 (dbus_uint32_t   value,
   pack_4_octets (value, byte_order, data);
 }
 
-#ifndef DBUS_HAVE_INT64
-/* from ORBit */
-static void
-swap_bytes (unsigned char *data,
-            unsigned int   len)
-{
-  unsigned char *p1 = data;
-  unsigned char *p2 = data + len - 1;
-
-  while (p1 < p2)
-    {
-      unsigned char tmp = *p1;
-      *p1 = *p2;
-      *p2 = tmp;
-
-      --p2;
-      ++p1;
-    }
-}
-#endif /* !DBUS_HAVE_INT64 */
-
 static void
 swap_8_octets (DBusBasicValue    *value,
                int                byte_order)
 {
   if (byte_order != DBUS_COMPILER_BYTE_ORDER)
     {
-#ifdef DBUS_HAVE_INT64
       value->u64 = DBUS_UINT64_SWAP_LE_BE (value->u64);
-#else
-      swap_bytes (&value->bytes, 8);
-#endif
     }
 }
-
-#if 0
-static DBusBasicValue
-unpack_8_octets (int                  byte_order,
-                 const unsigned char *data)
-{
-  DBusBasicValue r;
-
-  _dbus_assert (_DBUS_ALIGN_ADDRESS (data, 8) == data);
-  _dbus_assert (sizeof (r) == 8);
-
-#ifdef DBUS_HAVE_INT64
-  if (byte_order == DBUS_LITTLE_ENDIAN)
-    r.u64 = DBUS_UINT64_FROM_LE (*(dbus_uint64_t*)data);
-  else
-    r.u64 = DBUS_UINT64_FROM_BE (*(dbus_uint64_t*)data);
-#else
-  r.eight = *(DBus8ByteStruct*)data;
-  swap_8_octets (&r, byte_order);
-#endif
-
-  return r;
-}
-#endif
 
 #ifndef _dbus_unpack_uint16
 /**
@@ -601,15 +545,10 @@ _dbus_marshal_read_basic (const DBusString      *str,
       {
       volatile dbus_uint64_t *vp = value;
       pos = _DBUS_ALIGN_VALUE (pos, 8);
-#ifdef DBUS_HAVE_INT64
       if (byte_order != DBUS_COMPILER_BYTE_ORDER)
         *vp = DBUS_UINT64_SWAP_LE_BE (*(dbus_uint64_t*)(str_data + pos));
       else
         *vp = *(dbus_uint64_t*)(str_data + pos);
-#else
-      *vp = *(DBus8ByteStruct*) (str_data + pos);
-      swap_8_octets (vp, byte_order);
-#endif
       pos += 8;
       }
       break;
@@ -965,11 +904,7 @@ _dbus_swap_array (unsigned char *data,
     {
       while (d != end)
         {
-#ifdef DBUS_HAVE_INT64
           *((dbus_uint64_t*)d) = DBUS_UINT64_SWAP_LE_BE (*((dbus_uint64_t*)d));
-#else
-          swap_8_bytes ((DBusBasicValue*) d);
-#endif
           d += 8;
         }
     }
@@ -1674,12 +1609,10 @@ _dbus_marshal_test (void)
   unsigned char array1[5] = { 3, 4, 0, 1, 9 };
   dbus_int16_t array2[3] = { 124, 457, 780 };
   dbus_int32_t array4[3] = { 123, 456, 789 };
-#ifdef DBUS_HAVE_INT64
   dbus_int64_t array8[3] = { DBUS_INT64_CONSTANT (0x123ffffffff),
                              DBUS_INT64_CONSTANT (0x456ffffffff),
                              DBUS_INT64_CONSTANT (0x789ffffffff) };
   dbus_int64_t *v_ARRAY_INT64;
-#endif
   unsigned char *v_ARRAY_BYTE;
   dbus_int16_t *v_ARRAY_INT16;
   dbus_uint16_t *v_ARRAY_UINT16;
@@ -1735,7 +1668,6 @@ _dbus_marshal_test (void)
   MARSHAL_TEST (UINT32, DBUS_BIG_ENDIAN, 0x12345678);
   MARSHAL_TEST (UINT32, DBUS_LITTLE_ENDIAN, 0x12345678);
 
-#ifdef DBUS_HAVE_INT64
   /* Marshal signed integers */
   MARSHAL_TEST (INT64, DBUS_BIG_ENDIAN, DBUS_INT64_CONSTANT (-0x123456789abc7));
   MARSHAL_TEST (INT64, DBUS_LITTLE_ENDIAN, DBUS_INT64_CONSTANT (-0x123456789abc7));
@@ -1743,7 +1675,6 @@ _dbus_marshal_test (void)
   /* Marshal unsigned integers */
   MARSHAL_TEST (UINT64, DBUS_BIG_ENDIAN, DBUS_UINT64_CONSTANT (0x123456789abc7));
   MARSHAL_TEST (UINT64, DBUS_LITTLE_ENDIAN, DBUS_UINT64_CONSTANT (0x123456789abc7));
-#endif /* DBUS_HAVE_INT64 */
 
   /* Marshal byte */
   MARSHAL_TEST (BYTE, DBUS_BIG_ENDIAN, 5);
@@ -1785,10 +1716,8 @@ _dbus_marshal_test (void)
   MARSHAL_TEST_FIXED_ARRAY (BYTE, DBUS_BIG_ENDIAN, array1);
   MARSHAL_TEST_FIXED_ARRAY (BYTE, DBUS_LITTLE_ENDIAN, array1);
   
-#ifdef DBUS_HAVE_INT64
   MARSHAL_TEST_FIXED_ARRAY (INT64, DBUS_BIG_ENDIAN, array8);
   MARSHAL_TEST_FIXED_ARRAY (INT64, DBUS_LITTLE_ENDIAN, array8);
-#endif
 
 #if 0
 
@@ -1796,7 +1725,6 @@ _dbus_marshal_test (void)
    * FIXME restore the set/pack tests
    */
 
-#ifdef DBUS_HAVE_INT64
   /* set/pack 64-bit integers */
   _dbus_string_set_length (&str, 8);
 
@@ -1867,7 +1795,6 @@ _dbus_marshal_test (void)
   _dbus_assert (DBUS_UINT64_CONSTANT (0x123456789abc7) ==
                 _dbus_unpack_uint64 (DBUS_BIG_ENDIAN,
                                      _dbus_string_get_const_data (&str)));
-#endif /* DBUS_HAVE_INT64 */
 
   /* set/pack 32-bit integers */
   _dbus_string_set_length (&str, 4);

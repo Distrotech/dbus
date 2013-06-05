@@ -57,8 +57,6 @@
 
 #endif /* HAVE_BYTESWAP_H */
 
-#ifdef DBUS_HAVE_INT64
-
 #ifdef HAVE_BYTESWAP_H
 #define DBUS_UINT64_SWAP_LE_BE_CONSTANT(val) bswap_64(val)
 #else /* HAVE_BYTESWAP_H */
@@ -80,7 +78,6 @@
 	(dbus_uint64_t) DBUS_UINT64_CONSTANT (0x00ff000000000000)) >> 40) |    \
       (((dbus_uint64_t) (val) &                                                 \
 	(dbus_uint64_t) DBUS_UINT64_CONSTANT (0xff00000000000000)) >> 56)))
-#endif /* DBUS_HAVE_INT64 */
 
 #endif /* HAVE_BYTESWAP_H */
 
@@ -90,10 +87,8 @@
 #define DBUS_UINT32_SWAP_LE_BE(val) (DBUS_UINT32_SWAP_LE_BE_CONSTANT (val))
 #define DBUS_INT32_SWAP_LE_BE(val)  ((dbus_int32_t)DBUS_UINT32_SWAP_LE_BE_CONSTANT (val))
 
-#ifdef DBUS_HAVE_INT64
-#  define DBUS_UINT64_SWAP_LE_BE(val) (DBUS_UINT64_SWAP_LE_BE_CONSTANT (val))
-#  define DBUS_INT64_SWAP_LE_BE(val)  ((dbus_int64_t)DBUS_UINT64_SWAP_LE_BE_CONSTANT (val))
-#endif /* DBUS_HAVE_INT64 */
+#define DBUS_UINT64_SWAP_LE_BE(val) (DBUS_UINT64_SWAP_LE_BE_CONSTANT (val))
+#define DBUS_INT64_SWAP_LE_BE(val)  ((dbus_int64_t)DBUS_UINT64_SWAP_LE_BE_CONSTANT (val))
 
 #ifdef WORDS_BIGENDIAN
 
@@ -105,12 +100,10 @@
 #  define DBUS_UINT32_TO_BE(val)	((dbus_uint32_t) (val))
 #  define DBUS_INT32_TO_LE(val)	(DBUS_INT32_SWAP_LE_BE (val))
 #  define DBUS_UINT32_TO_LE(val)	(DBUS_UINT32_SWAP_LE_BE (val))
-#  ifdef DBUS_HAVE_INT64
-#    define DBUS_INT64_TO_BE(val)	((dbus_int64_t) (val))
-#    define DBUS_UINT64_TO_BE(val)	((dbus_uint64_t) (val))
-#    define DBUS_INT64_TO_LE(val)	(DBUS_INT64_SWAP_LE_BE (val))
-#    define DBUS_UINT64_TO_LE(val)	(DBUS_UINT64_SWAP_LE_BE (val))
-#  endif /* DBUS_HAVE_INT64 */
+#  define DBUS_INT64_TO_BE(val)	((dbus_int64_t) (val))
+#  define DBUS_UINT64_TO_BE(val)	((dbus_uint64_t) (val))
+#  define DBUS_INT64_TO_LE(val)	(DBUS_INT64_SWAP_LE_BE (val))
+#  define DBUS_UINT64_TO_LE(val)	(DBUS_UINT64_SWAP_LE_BE (val))
 
 #else /* WORDS_BIGENDIAN */
 
@@ -122,12 +115,10 @@
 #  define DBUS_UINT32_TO_LE(val)	((dbus_uint32_t) (val))
 #  define DBUS_INT32_TO_BE(val)	((dbus_int32_t) DBUS_UINT32_SWAP_LE_BE (val))
 #  define DBUS_UINT32_TO_BE(val)	(DBUS_UINT32_SWAP_LE_BE (val))
-#  ifdef DBUS_HAVE_INT64
-#    define DBUS_INT64_TO_LE(val)	((dbus_int64_t) (val))
-#    define DBUS_UINT64_TO_LE(val)	((dbus_uint64_t) (val))
-#    define DBUS_INT64_TO_BE(val)	((dbus_int64_t) DBUS_UINT64_SWAP_LE_BE (val))
-#    define DBUS_UINT64_TO_BE(val)	(DBUS_UINT64_SWAP_LE_BE (val))
-#  endif /* DBUS_HAVE_INT64 */
+#  define DBUS_INT64_TO_LE(val)	((dbus_int64_t) (val))
+#  define DBUS_UINT64_TO_LE(val)	((dbus_uint64_t) (val))
+#  define DBUS_INT64_TO_BE(val)	((dbus_int64_t) DBUS_UINT64_SWAP_LE_BE (val))
+#  define DBUS_UINT64_TO_BE(val)	(DBUS_UINT64_SWAP_LE_BE (val))
 #endif
 
 /* The transformation is symmetric, so the FROM just maps to the TO. */
@@ -139,12 +130,10 @@
 #define DBUS_UINT32_FROM_LE(val) (DBUS_UINT32_TO_LE (val))
 #define DBUS_INT32_FROM_BE(val)	 (DBUS_INT32_TO_BE (val))
 #define DBUS_UINT32_FROM_BE(val) (DBUS_UINT32_TO_BE (val))
-#ifdef DBUS_HAVE_INT64
-#  define DBUS_INT64_FROM_LE(val)	 (DBUS_INT64_TO_LE (val))
-#  define DBUS_UINT64_FROM_LE(val) (DBUS_UINT64_TO_LE (val))
-#  define DBUS_INT64_FROM_BE(val)	 (DBUS_INT64_TO_BE (val))
-#  define DBUS_UINT64_FROM_BE(val) (DBUS_UINT64_TO_BE (val))
-#endif /* DBUS_HAVE_INT64 */
+#define DBUS_INT64_FROM_LE(val)	 (DBUS_INT64_TO_LE (val))
+#define DBUS_UINT64_FROM_LE(val) (DBUS_UINT64_TO_LE (val))
+#define DBUS_INT64_FROM_BE(val)	 (DBUS_INT64_TO_BE (val))
+#define DBUS_UINT64_FROM_BE(val) (DBUS_UINT64_TO_BE (val))
 
 #ifdef DBUS_DISABLE_ASSERT
 #define _dbus_unpack_uint16(byte_order, data)           \
