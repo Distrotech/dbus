@@ -14,7 +14,15 @@ Enhancements:
   should consider doing so during initialization.
   (fd.o #54972, Simon McVittie)
 
+• Improve dbus-send documentation (Chengwei Yang)
+
 Fixes:
+
+• Unix-specific:
+  · Fix an assertion failure if we try to activate systemd services before
+    systemd connects to the bus (fd.o #50199, Chengwei Yang)
+  · Avoid compiler warnings for ignoring the return from write()
+    (Chengwei Yang)
 
 • Windows-specific:
   · Under cmake, install runtime libraries (DLLs) into bin/ instead of lib/
