@@ -1830,6 +1830,7 @@ doc/dbus-cleanup-sockets.1.xml
 doc/dbus-daemon.1.xml
 doc/dbus-launch.1.xml
 doc/dbus-monitor.1.xml
+doc/dbus-run-session.1.xml
 doc/dbus-send.1.xml
 doc/dbus-uuidgen.1.xml
 dbus-1.pc

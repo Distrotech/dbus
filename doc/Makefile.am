@@ -5,6 +5,7 @@ MAN_XML_FILES = \
 	dbus-daemon.1.xml \
 	dbus-launch.1.xml \
 	dbus-monitor.1.xml \
+	dbus-run-session.1.xml \
 	dbus-send.1.xml \
 	dbus-uuidgen.1.xml \
 	$(NULL)
