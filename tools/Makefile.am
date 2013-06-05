@@ -47,6 +47,10 @@ dbus_launch_SOURCES=				\
 
 dbus_run_session_SOURCES =			\
 	dbus-run-session.c
+
+dbus_run_session_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(NULL)
 endif
 
 dbus_cleanup_sockets_SOURCES=			\

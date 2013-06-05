@@ -36,6 +36,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#include "dbus/dbus.h"
+
 #define MAX_ADDR_LEN 512
 #define PIPE_READ_END  0
 #define PIPE_WRITE_END 1
@@ -98,22 +100,6 @@ oom (void)
 {
   fprintf (stderr, "%s: out of memory\n", me);
   exit (1);
-}
-
-static void *
-xmalloc (size_t bytes)
-{
-  void *ret;
-
-  if (bytes == 0)
-    bytes = 1;
-
-  ret = malloc (bytes);
-
-  if (ret == NULL)
-    oom ();
-
-  return ret;
 }
 
 typedef enum
@@ -228,7 +214,6 @@ main (int argc, char **argv)
   int requires_arg = 0;
   pid_t bus_pid;
   pid_t app_pid;
-  char *envvar;
 
   while (i < argc)
     {
@@ -397,11 +382,12 @@ main (int argc, char **argv)
 
   close (bus_address_pipe[PIPE_READ_END]);
 
-  envvar = xmalloc (strlen ("DBUS_SESSION_BUS_ADDRESS=") +
-                    strlen (bus_address) + 1);
-  strcpy (envvar, "DBUS_SESSION_BUS_ADDRESS=");
-  strcat (envvar, bus_address);
-  putenv (envvar);
+  if (!dbus_setenv ("DBUS_SESSION_BUS_ADDRESS", bus_address) ||
+      !dbus_setenv ("DBUS_SESSION_BUS_PID", NULL) ||
+      !dbus_setenv ("DBUS_SESSION_BUS_WINDOWID", NULL) ||
+      !dbus_setenv ("DBUS_STARTER_ADDRESS", NULL) ||
+      !dbus_setenv ("DBUS_STARTER_BUS_TYPE", NULL))
+    oom ();
 
   app_pid = fork ();
 

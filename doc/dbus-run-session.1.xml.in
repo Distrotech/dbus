@@ -130,6 +130,13 @@ contain a
 <emphasis remap='I'>PROGRAM</emphasis>
 in the environment variable
 <emphasis remap='B'>DBUS_SESSION_BUS_ADDRESS</emphasis>.</para>
+
+<para>The variables
+  <emphasis remap='B'>DBUS_SESSION_BUS_PID</emphasis>,
+  <emphasis remap='B'>DBUS_SESSION_BUS_WINDOWID</emphasis>,
+  <emphasis remap='B'>DBUS_STARTER_BUS_TYPE</emphasis> and
+  <emphasis remap='B'>DBUS_STARTER_ADDRESS</emphasis>
+  are removed from the environment, if present.</para>
 </refsect1>
 
 <refsect1 id='bugs'><title>BUGS</title>
