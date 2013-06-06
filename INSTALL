@@ -51,10 +51,7 @@ Core library
  Requisite:
 
   - Gettext
-  - expat or libxml-2
-
- NB, expat is the recommended XML parser because it has more robust
- handling of OOM conditions.
+  - expat
 
  Optional:
 

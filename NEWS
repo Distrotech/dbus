@@ -7,6 +7,10 @@ Dependencies:
   to provide global initialization when the library is loaded.
   gcc (mingw*) users should ensure that g++ is also installed.
 
+• The libxml2-based configuration reader (which hasn't worked for 2.5 years,
+  and was never the recommended option) has been removed. Expat is now a
+  hard dependency.
+
 Enhancements:
 
 • It should now be safe to call dbus_threads_init_default() from any thread,
@@ -14,9 +18,13 @@ Enhancements:
   should consider doing so during initialization.
   (fd.o #54972, Simon McVittie)
 
-• Improve dbus-send documentation (Chengwei Yang)
+• Improve dbus-send documentation and command-line parsing (fd.o #65424,
+  Chengwei Yang)
 
 Fixes:
+
+• In dbus-daemon, don't crash if a .service file starts with key=value
+  (fd.o #60853, Chengwei Yang)
 
 • Unix-specific:
   · Fix an assertion failure if we try to activate systemd services before
