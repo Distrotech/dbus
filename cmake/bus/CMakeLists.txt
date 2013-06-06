@@ -29,11 +29,7 @@ FOREACH(FILE ${FILES})
 	configure_file(${FILE} ${TARGET} )
 ENDFOREACH(FILE)
 
-if(DBUS_USE_EXPAT)
-    SET (XML_SOURCES ${BUS_DIR}/config-loader-expat.c)
-else(DBUS_USE_EXPAT)
-    SET (XML_SOURCES ${BUS_DIR}/config-loader-libxml.c)
-endif (DBUS_USE_EXPAT)
+SET (XML_SOURCES ${BUS_DIR}/config-loader-expat.c)
 
 # after next cvs update
 #set (DIR_WATCH_SOURCE ${BUS_DIR}/dir-watch-default.c)

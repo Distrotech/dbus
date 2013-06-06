@@ -158,7 +158,6 @@ AC_ARG_ENABLE(userdb-cache, AS_HELP_STRING([--enable-userdb-cache],[build with u
 AC_ARG_ENABLE(launchd, AS_HELP_STRING([--enable-launchd],[build with launchd auto-launch support]),enable_launchd=$enableval,enable_launchd=auto)
 AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[build with systemd at_console support]),enable_systemd=$enableval,enable_systemd=auto)
 
-AC_ARG_WITH(xml, AS_HELP_STRING([--with-xml=[libxml/expat]],[XML library to use (libxml may be named libxml2 on some systems)]))
 AC_ARG_WITH(init-scripts, AS_HELP_STRING([--with-init-scripts=[redhat]],[Style of init scripts to install]))
 AC_ARG_WITH(session-socket-dir, AS_HELP_STRING([--with-session-socket-dir=[dirname]],[Where to put sockets for the per-login-session message bus]))
 AC_ARG_WITH(test-socket-dir, AS_HELP_STRING([--with-test-socket-dir=[dirname]],[Where to put sockets for make check]))
@@ -910,49 +909,13 @@ PKG_PROG_PKG_CONFIG
 
 #### Sort out XML library
 
-# see what we have
 AC_CHECK_LIB(expat, XML_ParserCreate_MM,
-             [ AC_CHECK_HEADERS(expat.h, have_expat=true, have_expat=false) ],
-             have_expat=false)
+             [ AC_CHECK_HEADERS(expat.h, [],
+                                [AC_MSG_ERROR([Could not find expat.h, check config.log for failed attempts])]) ],
+             [ AC_MSG_ERROR([Explicitly requested expat but expat not found]) ])
 
-# see what we want to use
-dbus_use_libxml=false
-dbus_use_expat=false
-if test x$with_xml = xexpat; then
-        if ! $have_expat ; then
-           AC_MSG_ERROR([Explicitly requested expat but expat not found])
-        fi
-        dbus_use_expat=true
-elif test x$with_xml = xlibxml; then
-        PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.0, have_libxml=true, have_libxml=false)
-        if ! $have_libxml ; then
-           AC_MSG_ERROR([Explicitly requested libxml but libxml not found])
-        fi
-        dbus_use_libxml=true
-else
-        ### expat is the default because libxml can't currently survive
-        ### our brutal OOM-handling unit test setup.
-        ### http://bugzilla.gnome.org/show_bug.cgi?id=109368
-        if test x$have_expat = xfalse; then
-                AC_MSG_ERROR([Could not find expat.h, check config.log for failed attempts])
-        fi
-	### By default, only use Expat since it's tested and known to work.  If you're a
-	### general-purpose OS vendor, please don't enable libxml.  For embedded use
-	### if your OS is built around libxml, that's another case.
-	dbus_use_expat=true
-fi
-
-AM_CONDITIONAL(DBUS_USE_EXPAT, $dbus_use_expat)
-AM_CONDITIONAL(DBUS_USE_LIBXML, $dbus_use_libxml)
-
-if $dbus_use_expat; then
-   XML_LIBS=-lexpat
-   XML_CFLAGS=
-fi
-if $dbus_use_libxml; then
-   XML_LIBS=$LIBXML_LIBS
-   XML_CFLAGS=$LIBXML_CFLAGS
-fi
+XML_LIBS=-lexpat
+XML_CFLAGS=
 AC_SUBST([XML_CFLAGS])
 AC_SUBST([XML_LIBS])
 
@@ -1899,7 +1862,6 @@ echo "
         Building XML docs:        ${enable_xml_docs}
         Building cache support:   ${enable_userdb_cache}
         Building launchd support: ${have_launchd}
-        Using XML parser:         ${with_xml}
         Init scripts style:       ${with_init_scripts}
         Abstract socket names:    ${ac_cv_have_abstract_sockets}
         System bus socket:        ${DBUS_SYSTEM_SOCKET}
@@ -1936,10 +1898,6 @@ if test x$enable_asserts = xyes; then
 fi
 if test x$enable_checks = xno; then
         echo "NOTE: building without checks for arguments passed to public API makes it harder to debug apps using D-Bus, but will slightly decrease D-Bus library size and _very_ slightly improve performance."
-fi
-if test x$dbus_use_libxml = xtrue; then
-        echo
-	echo "WARNING: You have chosen to use libxml as your xml parser however this code path is not maintained by the D-Bus developers and if it breaks you get to keep the pieces.  If you have selected this option in err please reconfigure with expat (e.g. --with-xml=expat)."
 fi
 
 if test "x$DBUS_HAVE_INT64" = x0; then

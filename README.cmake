@@ -141,9 +141,6 @@ DBUS_SYSTEM_BUS_DEFAULT_ADDRESS:STRING=unix:path=/var/run/dbus/system_bus_socket
 // Use atomic integer implementation for 486
 DBUS_USE_ATOMIC_INT_486:BOOL=OFF
 
-// Use expat (== ON) or libxml2 (==OFF)
-DBUS_USE_EXPAT:BOOL=ON
-
 win32 only:
 // enable win32 debug port for message output
 DBUS_USE_OUTPUT_DEBUG_STRING:BOOL=OFF

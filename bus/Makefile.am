@@ -42,12 +42,7 @@ agentdir=$(LAUNCHD_AGENT_DIR)
 agent_DATA=org.freedesktop.dbus-session.plist
 endif
 
-if DBUS_USE_LIBXML
-XML_SOURCES=config-loader-libxml.c
-endif
-if DBUS_USE_EXPAT
 XML_SOURCES=config-loader-expat.c
-endif
 
 if DBUS_BUS_ENABLE_KQUEUE
 DIR_WATCH_SOURCE=dir-watch-kqueue.c

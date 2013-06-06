@@ -1,14 +1,7 @@
 
 if (DBUS_INSTALL_SYSTEM_LIBS)
 	if (MINGW)
-		if (DBUS_USE_EXPAT)
-			# expat
-			install_files(/bin FILES ${LIBEXPAT_LIBRARIES})	
-		else (DBUS_USE_EXPAT)
-			# xml2
-			install_files(/bin FILES ${LIBXML2_LIBRARIES})	
-			install_files(/bin FILES ${LIBICONV_LIBRARIES})	
-		endif (DBUS_USE_EXPAT)
+		install_files(/bin FILES ${LIBEXPAT_LIBRARIES})
 	else (MINGW)
 		INCLUDE(InstallRequiredSystemLibraries)
 	endif (MINGW)
