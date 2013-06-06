@@ -63,5 +63,5 @@ AC_DEFUN([COMPILER_COVERAGE],
 	if test "x$GCC" = "xyes"; then
 		CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
 	fi
-fi])dnl
+fi],[enable_compiler_coverage=no])dnl
 ])# COMPILER_COVERAGE
