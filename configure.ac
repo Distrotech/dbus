@@ -1857,7 +1857,7 @@ echo "
         Building dnotify support: ${have_dnotify}
         Building kqueue support:  ${have_kqueue}
         Building systemd support: ${have_systemd}
-        Building X11 code:        ${enable_x11}
+        Building X11 code:        ${have_x11}
         Building Doxygen docs:    ${enable_doxygen_docs}
         Building XML docs:        ${enable_xml_docs}
         Building cache support:   ${enable_userdb_cache}
