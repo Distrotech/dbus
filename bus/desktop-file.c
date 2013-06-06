@@ -688,6 +688,12 @@ bus_desktop_file_load (DBusString *filename,
       else if (is_blank_line (&parser) ||
 	       _dbus_string_get_byte (&parser.data, parser.pos) == '#')
 	parse_comment_or_blank (&parser);
+      else if (parser.current_section < 0)
+	{
+           dbus_set_error(error, DBUS_ERROR_FAILED,
+                          "invalid service file: key=value before [Section]");
+           return NULL;
+	}
       else
 	{
 	  if (!parse_key_value (&parser, error))
