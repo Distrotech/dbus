@@ -266,34 +266,52 @@ main (int argc, char *argv[])
 	  type = DBUS_BUS_SESSION;
           session_or_system = TRUE;
         }
-      else if (strstr (arg, "--address") == arg)
+      else if (strstr (arg, "--address=") == arg)
         {
-          address = strchr (arg, '=');
-
-          if (address == NULL) 
+          if (*(strchr (arg, '=') + 1) == '\0')
             {
               fprintf (stderr, "\"--address=\" requires an ADDRESS\n");
               usage (1);
             }
-          else
-            {
-              address = address + 1;
-            }
+          address = strchr (arg, '=') + 1;
         }
       else if (strncmp (arg, "--print-reply", 13) == 0)
 	{
 	  print_reply = TRUE;
 	  message_type = DBUS_MESSAGE_TYPE_METHOD_CALL;
-	  if (*(arg + 13) != '\0')
+	  if (strcmp (arg + 13, "=literal") == 0)
 	    print_reply_literal = TRUE;
+	  else if (*(arg + 13) != '\0')
+	    {
+	      fprintf (stderr, "invalid value (%s) of \"--print-reply\"\n", arg + 13);
+	      usage (1);
+	    }
 	}
       else if (strstr (arg, "--reply-timeout=") == arg)
 	{
+	  if (*(strchr (arg, '=') + 1) == '\0')
+	    {
+	      fprintf (stderr, "\"--reply-timeout=\" requires an MSEC\n");
+	      usage (1);
+	    }
 	  reply_timeout = strtol (strchr (arg, '=') + 1,
 				  NULL, 10);
+	  if (reply_timeout <= 0)
+	    {
+	      fprintf (stderr, "invalid value (%s) of \"--reply-timeout\"\n",
+	               strchr (arg, '=') + 1);
+	      usage (1);
+	    }
 	}
       else if (strstr (arg, "--dest=") == arg)
-	dest = strchr (arg, '=') + 1;
+	{
+	  if (*(strchr (arg, '=') + 1) == '\0')
+	    {
+	      fprintf (stderr, "\"--dest=\" requires an NAME\n");
+	      usage (1);
+	    }
+	  dest = strchr (arg, '=') + 1;
+	}
       else if (strstr (arg, "--type=") == arg)
 	type_str = strchr (arg, '=') + 1;
       else if (!strcmp(arg, "--help"))
@@ -329,6 +347,12 @@ main (int argc, char *argv[])
     }
   
   dbus_error_init (&error);
+
+  if (!dbus_validate_bus_name (dest, &error))
+    {
+      fprintf (stderr, "invalid value (%s) of \"--dest\"\n", dest);
+      usage (1);
+    }
 
   if (address != NULL)
     {
