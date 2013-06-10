@@ -138,10 +138,7 @@ dbusinclude_HEADERS=				\
 	dbus-signature.h			\
 	dbus-syntax.h				\
 	dbus-threads.h				\
-	dbus-types.h
-
-
-nodist_dbusarchinclude_HEADERS=			\
+	dbus-types.h				\
 	dbus-arch-deps.h
 
 ### source code that goes in the installed client library
