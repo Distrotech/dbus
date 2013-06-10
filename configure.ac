@@ -1020,7 +1020,7 @@ if test x$have_selinux = xyes ; then
     AC_CHECK_FUNC(pthread_create,,[AC_CHECK_LIB(pthread,pthread_create,
                                                 [SELINUX_THREAD_LIBS="-lpthread"])])
 
-    SELINUX_LIBS="-lsepol -lselinux $SELINUX_THREAD_LIBS"
+    SELINUX_LIBS="-lselinux -lsepol $SELINUX_THREAD_LIBS"
     AC_DEFINE(HAVE_SELINUX,1,[SELinux support])
 else
     SELINUX_LIBS=
