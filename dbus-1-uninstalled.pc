@@ -1,0 +1,17 @@
+abs_top_builddir=/usr/src/dbus/dbus
+abs_top_srcdir=/usr/src/dbus/dbus
+prefix=
+exec_prefix=
+system_bus_default_address=unix:path=/usr/local/var/run/dbus/system_bus_socket
+sysconfdir=/usr/local/etc
+session_bus_services_dir=/usr/local/share/dbus-1/services
+system_bus_services_dir=/usr/local/share/dbus-1/system-services
+interfaces_dir=/usr/local/share/dbus-1/interfaces
+daemondir=/usr/local/bin
+
+Name: dbus
+Description: Free desktop message bus (uninstalled copy)
+Version: 1.7.2
+Libs: ${abs_top_builddir}/dbus/libdbus-1.la
+Libs.private: -lpthread   
+Cflags: -I${abs_top_srcdir} 
