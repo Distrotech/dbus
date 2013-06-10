@@ -1,4 +1,0 @@
-[D-BUS Service]
-Exec=/usr/src/dbus/dbus/test/test-service
-User=anyrandomuser
-
