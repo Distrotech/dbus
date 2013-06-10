@@ -97,6 +97,10 @@ shell_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 spawn_test_LDADD=$(TEST_LIBS)
 spawn_test_LDFLAGS=@R_DYNAMIC_LDFLAG@
 
+test_printf_SOURCES = internals/printf.c
+test_printf_CPPFLAGS = $(static_cppflags)
+test_printf_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+
 test_refs_SOURCES = internals/refs.c
 test_refs_CPPFLAGS = -DDBUS_STATIC_BUILD $(GLIB_CFLAGS)
 test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS) $(TEST_LIBS)
@@ -116,6 +120,7 @@ installable_tests = \
 	test-dbus-daemon \
 	test-loopback \
 	test-marshal \
+	test-printf \
 	test-refs \
 	test-relay \
 	test-syslog \
