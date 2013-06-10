@@ -538,9 +538,12 @@ int _dbus_printf_string_upper_bound (const char *format,
   char buf[1024];
   int bufsize;
   int len;
+  va_list args_copy;
 
   bufsize = sizeof (buf);
-  len = _vsnprintf (buf, bufsize - 1, format, args);
+  DBUS_VA_COPY (args_copy, args);
+  len = _vsnprintf (buf, bufsize - 1, format, args_copy);
+  va_end (args_copy);
 
   while (len == -1) /* try again */
     {
@@ -553,7 +556,9 @@ int _dbus_printf_string_upper_bound (const char *format,
       if (p == NULL)
         return -1;
 
-      len = _vsnprintf (p, bufsize - 1, format, args);
+      DBUS_VA_COPY (args_copy, args);
+      len = _vsnprintf (p, bufsize - 1, format, args_copy);
+      va_end (args_copy);
       free (p);
     }
 
