@@ -477,6 +477,7 @@ _dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...)
 void
 _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args)
 {
+  va_list tmp;
 #ifdef HAVE_SYSLOG_H
   int flags;
   switch (severity)
@@ -494,14 +495,14 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
         return;
     }
 
-  vsyslog (flags, msg, args);
+  DBUS_VA_COPY (tmp, args);
+  vsyslog (flags, msg, tmp);
+  va_end (tmp);
 #endif
 
 #if !defined(HAVE_SYSLOG_H) || !HAVE_DECL_LOG_PERROR
     {
       /* vsyslog() won't write to stderr, so we'd better do it */
-      va_list tmp;
-
       DBUS_VA_COPY (tmp, args);
       fprintf (stderr, "dbus[" DBUS_PID_FORMAT "]: ", _dbus_getpid ());
       vfprintf (stderr, msg, tmp);
