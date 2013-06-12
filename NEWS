@@ -1,6 +1,12 @@
 D-Bus 1.7.4 (UNRELEASED)
 ==
 
+Security fixes:
+
+• CVE-2013-2168: Fix misuse of va_list that could be used as a denial
+  of service for system services. Vulnerability reported by Alexandru Cornea.
+  (Simon)
+
 Dependencies:
 
 • The Windows version of libdbus now contains a C++ source file, used
@@ -21,7 +27,7 @@ Enhancements:
 • Improve dbus-send documentation and command-line parsing (fd.o #65424,
   Chengwei Yang)
 
-Fixes:
+Other fixes:
 
 • In dbus-daemon, don't crash if a .service file starts with key=value
   (fd.o #60853, Chengwei Yang)
