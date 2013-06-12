@@ -1,7 +1,11 @@
-D-Bus 1.6.12 (UNRELEASED)
+D-Bus 1.6.12 (2013-06-13)
 ==
 
 Fixes:
+
+• CVE-2013-2168: Fix misuse of va_list that could be used as a denial
+  of service for system services. Vulnerability reported by Alexandru Cornea.
+  (Simon)
 
 • In dbus-daemon, don't crash if a .service file starts with key=value
   (fd.o #60853, Chengwei Yang)
