@@ -33,6 +33,9 @@ Other fixes:
   (fd.o #60853, Chengwei Yang)
 
 • Unix-specific:
+  · Fix a crash similar to CVE-2013-2168 the first time we try to use syslog
+    on a platform not defining LOG_PERROR, such as Solaris or QNX.
+    This regressed in 1.7.0. (Simon)
   · Fix an assertion failure if we try to activate systemd services before
     systemd connects to the bus (fd.o #50199, Chengwei Yang)
   · Avoid compiler warnings for ignoring the return from write()
