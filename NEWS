@@ -1,5 +1,9 @@
-D-Bus 1.4.26 (UNRELEASED)
+D-Bus 1.4.26 (2013-06-13)
 ==
+
+• CVE-2013-2168: Fix misuse of va_list that could be used as a denial
+  of service for system services. Vulnerability reported by Alexandru Cornea.
+  (Simon)
 
 • In the activation helper, when compiled for tests, do not reset the system
   bus address, fixing the regression tests. (fd.o #52202, Simon)
