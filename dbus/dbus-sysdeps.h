@@ -522,8 +522,6 @@ dbus_bool_t _dbus_threads_init_platform_specific (void);
 
 /**
  * Lock a static mutex used to protect _dbus_threads_init_platform_specific().
- *
- * On Windows, this is currently unimplemented and does nothing.
  */
 void _dbus_threads_lock_platform_specific (void);
 
