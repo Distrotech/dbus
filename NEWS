@@ -1,5 +1,12 @@
+D-Bus 1.4.28 (UNRELEASED)
+==
+
+...
+
 D-Bus 1.4.26 (2013-06-13)
 ==
+
+The “tiny pottery tortoise” release.
 
 • CVE-2013-2168: Fix misuse of va_list that could be used as a denial
   of service for system services. Vulnerability reported by Alexandru Cornea.
