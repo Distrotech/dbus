@@ -105,6 +105,7 @@ save_machine_uuid (const char *uuid_arg)
   machine_uuid = xstrdup (uuid_arg);
 }
 
+#ifdef DBUS_BUILD_X11
 #define UUID_MAXLEN 40
 /* Read the machine uuid from file if needed. Returns TRUE if machine_uuid is
  * set after this function */
@@ -146,7 +147,7 @@ out:
   fclose(f);
   return ret;
 }
-
+#endif /* DBUS_BUILD_X11 */
 
 void
 verbose (const char *format,
