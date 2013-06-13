@@ -6,6 +6,8 @@ D-Bus 1.6.14 (UNRELEASED)
 D-Bus 1.6.12 (2013-06-13)
 ==
 
+The “does this unit have a soul?” release.
+
 Fixes:
 
 • CVE-2013-2168: Fix misuse of va_list that could be used as a denial
