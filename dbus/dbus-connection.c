@@ -2174,7 +2174,7 @@ _dbus_connection_close_if_only_one_ref (DBusConnection *connection)
  * relatively long time for memory, if they were only willing to block
  * briefly then we retry for memory at a rapid rate.
  *
- * @timeout_milliseconds the timeout requested for blocking
+ * @param timeout_milliseconds the timeout requested for blocking
  */
 static void
 _dbus_memory_pause_based_on_timeout (int timeout_milliseconds)

@@ -150,7 +150,7 @@ unquote_string_inplace (char* str, char** end)
  * through literally instead of being expanded). This function is
  * guaranteed to succeed if applied to the result of
  * _dbus_shell_quote(). If it fails, it returns %NULL.
- * The @quoted_string need not actually contain quoted or
+ * The @p quoted_string need not actually contain quoted or
  * escaped text; _dbus_shell_unquote() simply goes through the string and
  * unquotes/unescapes anything that the shell would. Both single and
  * double quotes are handled, as are escapes including escaped
@@ -163,7 +163,7 @@ unquote_string_inplace (char* str, char** end)
  * be escaped with backslash. Otherwise double quotes preserve things
  * literally.
  *
- * @quoted_string: shell-quoted string
+ * @param quoted_string shell-quoted string
  **/
 char*
 _dbus_shell_unquote (const char *quoted_string)
@@ -544,10 +544,10 @@ tokenize_command_line (const char *command_line, DBusError *error)
  * does contain such expansions, they are passed through
  * literally. Free the returned vector with dbus_free_string_array().
  * 
- * @command_line: command line to parse
- * @argcp: return location for number of args
- * @argvp: return location for array of args
- * @error: error information
+ * @param command_line command line to parse
+ * @param argcp return location for number of args
+ * @param argvp return location for array of args
+ * @param error error information
  **/
 dbus_bool_t
 _dbus_shell_parse_argv (const char *command_line,

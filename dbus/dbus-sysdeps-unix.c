@@ -1153,7 +1153,7 @@ _dbus_listen_unix_socket (const char     *path,
  *
  * This will set FD_CLOEXEC for the sockets returned.
  *
- * @oaram fds the file descriptors
+ * @param fds the file descriptors
  * @param error return location for errors
  * @returns the number of file descriptors
  */

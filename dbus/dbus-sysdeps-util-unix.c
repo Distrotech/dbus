@@ -381,13 +381,13 @@ _dbus_change_to_daemon_user  (const char    *user,
 
 /**
  * Attempt to ensure that the current process can open
- * at least @limit file descriptors.
+ * at least @p limit file descriptors.
  *
- * If @limit is lower than the current, it will not be
+ * If @p limit is lower than the current, it will not be
  * lowered.  No error is returned if the request can
  * not be satisfied.
  *
- * @limit Number of file descriptors
+ * @param limit number of file descriptors
  */
 void
 _dbus_request_file_descriptor_limit (unsigned int limit)
