@@ -348,7 +348,7 @@ main (int argc, char *argv[])
   
   dbus_error_init (&error);
 
-  if (!dbus_validate_bus_name (dest, &error))
+  if (dest && !dbus_validate_bus_name (dest, &error))
     {
       fprintf (stderr, "invalid value (%s) of \"--dest\"\n", dest);
       usage (1);
