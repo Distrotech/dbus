@@ -449,8 +449,6 @@ _dbus_init_system_log (dbus_bool_t is_daemon)
  *
  * @param severity a severity value
  * @param msg a printf-style format string
- * @param args arguments for the format string
- *
  */
 void
 _dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...)

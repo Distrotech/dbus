@@ -741,6 +741,7 @@ handle_default_introspect_and_unlock (DBusObjectTree          *tree,
  *
  * @param tree the global object tree
  * @param message the message to dispatch
+ * @param found_object return location for the object
  * @returns whether message was handled successfully
  */
 DBusHandlerResult

@@ -491,7 +491,7 @@ SearchPathA (LPCSTR lpPath, LPCSTR lpFileName, LPCSTR lpExtension,
 
 
 /** Gets our SID
- * @param points to sid buffer, need to be freed with LocalFree()
+ * @param sid points to sid buffer, need to be freed with LocalFree()
  * @returns process sid
  */
 dbus_bool_t

@@ -93,7 +93,7 @@ dbus_validate_path (const char       *path,
  * is also checked, since it assumes that the string ends at the first zero
  * byte according to normal C conventions.
  *
- * @param path a potentially invalid interface name, which must not be #NULL
+ * @param name a potentially invalid interface name, which must not be #NULL
  * @param error error return
  * @returns #TRUE if name is valid
  */
@@ -140,7 +140,7 @@ dbus_validate_interface (const char       *name,
  * is also checked, since it assumes that the string ends at the first zero
  * byte according to normal C conventions.
  *
- * @param path a potentially invalid member name, which must not be #NULL
+ * @param name a potentially invalid member name, which must not be #NULL
  * @param error error return
  * @returns #TRUE if name is valid
  */
@@ -187,7 +187,7 @@ dbus_validate_member (const char       *name,
  * is also checked, since it assumes that the string ends at the first zero
  * byte according to normal C conventions.
  *
- * @param path a potentially invalid error name, which must not be #NULL
+ * @param name a potentially invalid error name, which must not be #NULL
  * @param error error return
  * @returns #TRUE if name is valid
  */
@@ -234,7 +234,7 @@ dbus_validate_error_name (const char       *name,
  * is also checked, since it assumes that the string ends at the first zero
  * byte according to normal C conventions.
  *
- * @param path a potentially invalid bus name, which must not be #NULL
+ * @param name a potentially invalid bus name, which must not be #NULL
  * @param error error return
  * @returns #TRUE if name is valid
  */

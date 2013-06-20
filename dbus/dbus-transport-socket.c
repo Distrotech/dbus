@@ -1299,7 +1299,7 @@ _dbus_transport_new_for_socket (int               fd,
  * @param host the host to connect to
  * @param port the port to connect to
  * @param family the address family to connect to
- * @param path to nonce file
+ * @param noncefile path to nonce file
  * @param error location to store reason for failure.
  * @returns a new transport, or #NULL on failure.
  */

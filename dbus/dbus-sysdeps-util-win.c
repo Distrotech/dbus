@@ -54,7 +54,7 @@
  * Does the chdir, fork, setsid, etc. to become a daemon process.
  *
  * @param pidfile #NULL, or pidfile to create
- * @param print_pid_fd file descriptor to print daemon's pid to, or -1 for none
+ * @param print_pid_pipe file descriptor to print daemon's pid to, or -1 for none
  * @param error return location for errors
  * @param keep_umask #TRUE to keep the original umask
  * @returns #FALSE on failure
@@ -272,8 +272,6 @@ _dbus_init_system_log (dbus_bool_t is_daemon)
  *
  * @param severity a severity value
  * @param msg a printf-style format string
- * @param args arguments for the format string
- *
  */
 void
 _dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...)

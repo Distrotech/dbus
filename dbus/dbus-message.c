@@ -3981,7 +3981,7 @@ _dbus_message_loader_get_unix_fds(DBusMessageLoader  *loader,
  *
  * @param loader the message loader.
  * @param fds the array fds were read into
- * @param max_n_fds how many fds were read
+ * @param n_fds how many fds were read
  */
 
 void
@@ -4409,7 +4409,7 @@ _dbus_message_loader_get_max_message_size (DBusMessageLoader  *loader)
  * Sets the maximum unix fds per message we allow.
  *
  * @param loader the loader
- * @param size the max number of unix fds in a message
+ * @param n the max number of unix fds in a message
  */
 void
 _dbus_message_loader_set_max_message_unix_fds (DBusMessageLoader  *loader,
@@ -4729,9 +4729,8 @@ dbus_message_demarshal (const char *str,
  * Generally, this function is only useful for encapsulating D-Bus messages in
  * a different protocol.
  *
- * @param str data to be marshalled
- * @param len the length of str
- * @param error the location to save errors to
+ * @param buf data to be marshalled
+ * @param len the length of @p buf
  * @returns -1 if there was no valid data to be demarshalled, 0 if there wasn't enough data to determine how much should be demarshalled. Otherwise returns the number of bytes to be demarshalled
  * 
  */

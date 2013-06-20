@@ -5230,7 +5230,8 @@ dbus_connection_get_unix_process_id (DBusConnection *connection,
  * connection.
  *
  * @param connection the connection
- * @param data return location for audit data 
+ * @param data return location for audit data
+ * @param data_size return location for length of audit data
  * @returns #TRUE if audit data is filled in with a valid ucred pointer
  */
 dbus_bool_t
@@ -6068,7 +6069,7 @@ dbus_connection_get_max_message_size (DBusConnection *connection)
  * result in disconnecting the connection.
  *
  * @param connection a #DBusConnection
- * @param size maximum message unix fds the connection can receive
+ * @param n maximum message unix fds the connection can receive
  */
 void
 dbus_connection_set_max_message_unix_fds (DBusConnection *connection,
@@ -6166,7 +6167,7 @@ dbus_connection_get_max_received_size (DBusConnection *connection)
  * The semantics are analogous to those of dbus_connection_set_max_received_size().
  *
  * @param connection the connection
- * @param size the maximum size in bytes of all outstanding messages
+ * @param n the maximum size in bytes of all outstanding messages
  */
 void
 dbus_connection_set_max_received_unix_fds (DBusConnection *connection,

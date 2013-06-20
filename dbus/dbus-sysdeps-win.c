@@ -522,7 +522,7 @@ _dbus_close_socket (int        fd,
  * on exec. Should be called for all file
  * descriptors in D-Bus code.
  *
- * @param fd the file descriptor
+ * @param handle the Windows HANDLE
  */
 void
 _dbus_fd_set_close_on_exec (intptr_t handle)
@@ -538,7 +538,7 @@ _dbus_fd_set_close_on_exec (intptr_t handle)
 /**
  * Sets a file descriptor to be nonblocking.
  *
- * @param fd the file descriptor.
+ * @param handle the file descriptor.
  * @param error address of error location.
  * @returns #TRUE on success.
  */
@@ -1909,7 +1909,7 @@ again:
  * The point of the byte is that on some systems we have to
  * use sendmsg()/recvmsg() to transmit credentials.
  *
- * @param client_fd the client file descriptor
+ * @param handle the client file descriptor
  * @param credentials struct to fill with credentials of client
  * @param error location to store error code
  * @returns #TRUE on success
@@ -3418,7 +3418,7 @@ _dbus_get_is_errno_eagain_or_ewouldblock (void)
 /**
  * return the absolute path of the dbus installation 
  *
- * @param s buffer for installation path
+ * @param prefix buffer for installation path
  * @param len length of buffer
  * @returns #FALSE on failure
  */

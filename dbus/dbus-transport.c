@@ -242,6 +242,7 @@ _dbus_transport_finalize_base (DBusTransport *transport)
  * opened DBusTransport object. If it isn't, returns #NULL
  * and sets @p error.
  *
+ * @param address the address to be checked.
  * @param error address where an error can be returned.
  * @returns a new transport, or #NULL on failure.
  */
@@ -272,6 +273,7 @@ check_address (const char *address, DBusError *error)
  * Creates a new transport for the "autostart" method.
  * This creates a client-side of a transport.
  *
+ * @param scope scope of autolaunch (Windows only)
  * @param error address where an error can be returned.
  * @returns a new transport, or #NULL on failure.
  */

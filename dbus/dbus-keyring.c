@@ -697,10 +697,10 @@ _dbus_keyring_unref (DBusKeyring *keyring)
 
 /**
  * Creates a new keyring that lives in the ~/.dbus-keyrings directory
- * of the given user credentials. If the credentials are #NULL or
- * empty, uses those of the current process.
+ * of the user represented by @p credentials. If the @p credentials are
+ * #NULL or empty, uses those of the current process.
  *
- * @param username username to get keyring for, or #NULL
+ * @param credentials a set of credentials representing a user or #NULL
  * @param context which keyring to get
  * @param error return location for errors
  * @returns the keyring or #NULL on error

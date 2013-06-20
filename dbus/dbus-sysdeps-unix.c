@@ -2929,6 +2929,7 @@ _dbus_close (int        fd,
  * (i.e. avoids stdin/stdout/stderr). Sets O_CLOEXEC.
  *
  * @param fd the file descriptor to duplicate
+ * @param error address of error location.
  * @returns duplicated file descriptor
  * */
 int
@@ -3441,6 +3442,7 @@ _read_subprocess_line_argv (const char *progpath,
  * address. If a failure happens, returns #FALSE and
  * sets an error in @p error.
  *
+ * @param scope scope of autolaunch (Windows only)
  * @param address a DBusString where the address can be stored
  * @param error a DBusError to store the error in case of failure
  * @returns #TRUE on success, #FALSE if an error happened
@@ -3569,6 +3571,7 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
 
 /**
  * quries launchd for a specific env var which holds the socket path.
+ * @param socket_path append the socket path to this DBusString
  * @param launchd_env_var the env var to look up
  * @param error a DBusError to store the error in case of failure
  * @return the value of the env var

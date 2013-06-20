@@ -94,6 +94,7 @@ run_data_test (const char             *test_name,
  * (with --enable-tests=no)
  *
  * @param test_data_dir the directory with test data (test/data normally)
+ * @param specific_test run specific test or #NULL to run all tests
  */
 void
 dbus_internal_do_not_use_run_tests (const char *test_data_dir, const char *specific_test)

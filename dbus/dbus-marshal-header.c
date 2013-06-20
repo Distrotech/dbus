@@ -276,6 +276,7 @@ _dbus_header_cache_known_nonexistent (DBusHeader    *header,
  * Writes a struct of { byte, variant } with the given basic type.
  *
  * @param writer the writer (should be ready to write a struct)
+ * @param field the header field
  * @param type the type of the value
  * @param value the value as for _dbus_marshal_set_basic()
  * @returns #FALSE if no memory
@@ -336,6 +337,7 @@ write_basic_field (DBusTypeWriter *writer,
  * Sets a struct of { byte, variant } with the given basic type.
  *
  * @param reader the reader (should be iterating over the array pointing at the field to set)
+ * @param field the header field
  * @param type the type of the value
  * @param value the value as for _dbus_marshal_set_basic()
  * @param realign_root where to realign from
@@ -452,7 +454,6 @@ _dbus_header_reinit (DBusHeader *header)
  * to make the header valid, you have to call _dbus_header_create().
  *
  * @param header header to initialize
- * @param byte_order byte order of the header
  * @returns #FALSE if not enough memory
  */
 dbus_bool_t
@@ -514,6 +515,7 @@ _dbus_header_copy (const DBusHeader *header,
  * sense, and passing them in will trigger an assertion failure.
  *
  * @param header the header
+ * @param byte_order byte order of the header
  * @param message_type the message type
  * @param destination destination field or #NULL
  * @param path path field or #NULL
