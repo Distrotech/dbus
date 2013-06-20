@@ -246,6 +246,14 @@ _dbus_string_free (DBusString *str)
   
   if (real->constant)
     return;
+
+  /* so it's safe if @p str returned by a failed
+   * _dbus_string_init call
+   * Bug: https://bugs.freedesktop.org/show_bug.cgi?id=65959
+   */
+  if (real->str == NULL)
+    return;
+
   dbus_free (real->str - real->align_offset);
 
   real->invalid = TRUE;
