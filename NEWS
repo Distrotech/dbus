@@ -3,6 +3,9 @@ D-Bus 1.7.6 (UNRELEASED)
 
 Fixes:
 
+• Don't crash on "dbus-send --session / x.y.z" which regressed in 1.7.4.
+  (fd.o #65923, Chengwei Yang)
+
 • If malloc() returns NULL in _dbus_string_init() or similar, don't free
   an invalid pointer if the string is later freed (fd.o #65959, Chengwei Yang)
 
