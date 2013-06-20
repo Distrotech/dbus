@@ -1,7 +1,10 @@
 D-Bus 1.6.14 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• If malloc() returns NULL in _dbus_string_init() or similar, don't free
+  an invalid pointer if the string is later freed (fd.o #65959, Chengwei Yang)
 
 D-Bus 1.6.12 (2013-06-13)
 ==
