@@ -6,9 +6,10 @@ endif(DOXYGEN_EXECUTABLE)
 
 if (DBUS_ENABLE_DOXYGEN_DOCS)
     set (top_srcdir ${CMAKE_SOURCE_DIR}/..)
-    configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.cmake ${CMAKE_BINARY_DIR}/Doxyfile )
+    configure_file(${CMAKE_SOURCE_DIR}/../Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile )
     add_custom_target(doc 
         COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 endif (DBUS_ENABLE_DOXYGEN_DOCS)
 
