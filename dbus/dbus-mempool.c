@@ -459,8 +459,10 @@ time_for_size (int size)
 {
   int i;
   int j;
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   clock_t start;
   clock_t end;
+#endif
 #define FREE_ARRAY_SIZE 512
 #define N_ITERATIONS FREE_ARRAY_SIZE * 512
   void *to_free[FREE_ARRAY_SIZE];
@@ -470,8 +472,10 @@ time_for_size (int size)
   
   _dbus_verbose (" malloc\n");
   
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   start = clock ();
-  
+#endif
+
   i = 0;
   j = 0;
   while (i < N_ITERATIONS)
@@ -496,6 +500,7 @@ time_for_size (int size)
       ++i;
     }
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   end = clock ();
 
   _dbus_verbose ("  created/destroyed %d elements in %g seconds\n",
@@ -506,6 +511,7 @@ time_for_size (int size)
   _dbus_verbose (" mempools\n");
   
   start = clock ();
+#endif
 
   pool = _dbus_mem_pool_new (size, FALSE);
   
@@ -535,6 +541,7 @@ time_for_size (int size)
 
   _dbus_mem_pool_free (pool);
   
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   end = clock ();
 
   _dbus_verbose ("  created/destroyed %d elements in %g seconds\n",
@@ -543,6 +550,7 @@ time_for_size (int size)
   _dbus_verbose (" zeroed malloc\n");
     
   start = clock ();
+#endif
   
   i = 0;
   j = 0;
@@ -568,6 +576,7 @@ time_for_size (int size)
       ++i;
     }
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   end = clock ();
 
   _dbus_verbose ("  created/destroyed %d elements in %g seconds\n",
@@ -576,6 +585,7 @@ time_for_size (int size)
   _dbus_verbose (" zeroed mempools\n");
   
   start = clock ();
+#endif
 
   pool = _dbus_mem_pool_new (size, TRUE);
   
@@ -605,10 +615,12 @@ time_for_size (int size)
 
   _dbus_mem_pool_free (pool);
   
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   end = clock ();
 
   _dbus_verbose ("  created/destroyed %d elements in %g seconds\n",
                  N_ITERATIONS, (end - start) / (double) CLOCKS_PER_SEC);
+#endif
 }
 
 /**
