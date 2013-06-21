@@ -203,8 +203,9 @@ bus_stats_handle_get_stats (DBusConnection *connection,
   if (!asv_add_uint32 (&iter, &arr_iter, "Serial", stats_serial++))
     goto oom;
 
-  if (!_dbus_list_get_stats (&in_use, &in_free_list, &allocated) ||
-      !asv_add_uint32 (&iter, &arr_iter, "ListMemPoolUsedBytes", in_use) ||
+  _dbus_list_get_stats (&in_use, &in_free_list, &allocated);
+
+  if (!asv_add_uint32 (&iter, &arr_iter, "ListMemPoolUsedBytes", in_use) ||
       !asv_add_uint32 (&iter, &arr_iter, "ListMemPoolCachedBytes",
                        in_free_list) ||
       !asv_add_uint32 (&iter, &arr_iter, "ListMemPoolAllocatedBytes",
