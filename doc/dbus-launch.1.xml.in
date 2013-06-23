@@ -20,10 +20,14 @@
 <!-- body begins here -->
 <refsynopsisdiv id='synopsis'>
 <cmdsynopsis>
-  <command>dbus-launch</command>    <arg choice='opt'>--version </arg>
+  <command>dbus-launch</command>
+    <arg choice='opt'>--version </arg>
+    <arg choice='opt'>--help </arg>
     <arg choice='opt'>--sh-syntax </arg>
     <arg choice='opt'>--csh-syntax </arg>
     <arg choice='opt'>--auto-syntax </arg>
+    <arg choice='opt'>--binary-syntax </arg>
+    <arg choice='opt'>--close-stderr </arg>
     <arg choice='opt'>--exit-with-session </arg>
     <arg choice='opt'>--autolaunch=<replaceable>MACHINEID</replaceable></arg>
     <arg choice='opt'>--config-file=<replaceable>FILENAME</replaceable></arg>
@@ -175,8 +179,12 @@ no real reason to use it outside of the libdbus implementation anyhow.</para>
   <listitem>
 <para>Choose --csh-syntax or --sh-syntax based on the SHELL environment variable.</para>
 
-<para><option>--binary-syntax</option>
-Write to stdout a nul-terminated bus address, then the bus PID as a
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--binary-syntax</option></term>
+  <listitem>
+<para>Write to stdout a nul-terminated bus address, then the bus PID as a
 binary integer of size sizeof(pid_t), then the bus X window ID as a
 binary integer of size sizeof(long). Integers are in the machine's
 byte order, not network byte order or any other canonical byte order.</para>
@@ -241,6 +249,13 @@ use it manually. It may change in the future.</para>
   <term><option>--version</option></term>
   <listitem>
 <para>Print the version of dbus-launch</para>
+
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--help</option></term>
+  <listitem>
+<para>Print the help info of dbus-launch</para>
 
   </listitem>
   </varlistentry>

@@ -182,7 +182,10 @@ verbose (const char *format,
 static void
 usage (int ecode)
 {
-  fprintf (stderr, "dbus-launch [--version] [--help] [--sh-syntax] [--csh-syntax] [--auto-syntax] [--exit-with-session]\n");
+  fprintf (stderr, "dbus-launch [--version] [--help] [--sh-syntax]"
+           " [--csh-syntax] [--auto-syntax] [--binary-syntax] [--close-stderr]"
+           " [--exit-with-session] [--autolaunch=MACHINEID]"
+           " [--config-file=FILENAME] [PROGRAM] [ARGS...]\n");
   exit (ecode);
 }
 
