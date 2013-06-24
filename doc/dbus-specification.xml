@@ -4416,8 +4416,7 @@
         </para>
         <para>
           The following table describes the keys that can be used to create 
-          a match rule:
-          The following table summarizes the D-Bus types.
+          a match rule.
           <informaltable>
             <tgroup cols="3">
               <thead>
