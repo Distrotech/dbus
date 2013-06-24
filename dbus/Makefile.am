@@ -237,6 +237,8 @@ DBUS_SHARED_SOURCES=				\
 ### should be underscore-prefixed but don't really need
 ### to be unless they move to DBUS_SHARED_SOURCES later)
 DBUS_UTIL_SOURCES=				\
+	dbus-asv-util.c				\
+	dbus-asv-util.h				\
 	dbus-auth-script.c			\
 	dbus-auth-script.h			\
 	dbus-auth-util.c			\

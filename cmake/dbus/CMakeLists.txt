@@ -149,6 +149,7 @@ set (DBUS_SHARED_HEADERS
 ### should be underscore-prefixed but don't really need 
 ### to be unless they move to DBUS_SHARED_SOURCES later)
 set (DBUS_UTIL_SOURCES
+	${DBUS_DIR}/dbus-asv-util.c
 	${DBUS_DIR}/dbus-auth-script.c
 	${DBUS_DIR}/dbus-auth-util.c
 	${DBUS_DIR}/dbus-credentials-util.c
@@ -173,6 +174,7 @@ if (DBUS_BUILD_TESTS)
 endif (DBUS_BUILD_TESTS)
 
 set (DBUS_UTIL_HEADERS
+	${DBUS_DIR}/dbus-asv-util.h
 	${DBUS_DIR}/dbus-auth-script.h
 	${DBUS_DIR}/dbus-mainloop.h
 	${DBUS_DIR}/dbus-message-factory.h
