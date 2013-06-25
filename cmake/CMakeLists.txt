@@ -64,7 +64,7 @@ set(EXPANDED_SYSCONFDIR      ${DBUS_INSTALL_DIR}/etc)
 set(EXPANDED_DATADIR         ${DBUS_INSTALL_DIR}/${DBUS_DATADIR})
 set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_DIR}/lib/dbus/machine-id)
 set(DBUS_BINDIR              ${EXPANDED_BINDIR})
-set(DBUS_DAEMONDIR 			 ${EXPANDED_BINDIR})
+set(DBUS_DAEMONDIR           ${EXPANDED_BINDIR})
 
 
 #enable building of shared library
@@ -97,8 +97,6 @@ endif(NOT WIN32)
 
 #AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
 option (DBUS_DISABLE_ASSERT "Disable assertion checking" OFF)
-
-option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
