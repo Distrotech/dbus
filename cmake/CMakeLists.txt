@@ -96,7 +96,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 #AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
-option (DBUS_DISABLE_ASSERTS "Disable assertion checking" OFF)
+option (DBUS_DISABLE_ASSERT "Disable assertion checking" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
@@ -161,12 +161,12 @@ if(WIN32)
 	endif(MSVC)
 endif(WIN32)
 
-if (UNIX AND NOT DBUS_DISABLE_ASSERTS)
+if (UNIX AND NOT DBUS_DISABLE_ASSERT)
 	# required for backtrace
 	SET(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -Wl,--export-dynamic")
 	SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,--export-dynamic")
 	add_definitions(-DDBUS_BUILT_R_DYNAMIC)
-endif (UNIX AND NOT DBUS_DISABLE_ASSERTS)
+endif (UNIX AND NOT DBUS_DISABLE_ASSERT)
 
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}  -D_DEBUG")
 
@@ -559,7 +559,7 @@ message("        Docbook Generator:        ${DOCBOOK_GENERATOR_NAME}           "
 message("        gcc coverage profiling:   ${DBUS_GCOV_ENABLED}                ")
 message("        Building unit tests:      ${DBUS_BUILD_TESTS}                 ")
 message("        Building verbose mode:    ${DBUS_ENABLE_VERBOSE_MODE}         ")
-message("        Building w/o assertions:  ${DBUS_DISABLE_ASSERTS}             ")
+message("        Building w/o assertions:  ${DBUS_DISABLE_ASSERT}             ")
 message("        Building w/o checks:      ${DBUS_DISABLE_CHECKS}              ")
 message("        Building bus stats API:   ${DBUS_ENABLE_STATS}                ")
 message("        installing system libs:   ${DBUS_INSTALL_SYSTEM_LIBS}         ")
@@ -595,9 +595,9 @@ if (DBUS_BUILD_TESTS)
     message("NOTE: building with unit tests increases the size of the installed library and renders it insecure.")
 endif(DBUS_BUILD_TESTS)
 
-if (DBUS_BUILD_TESTS AND DBUS_DISABLE_ASSERTS)
+if (DBUS_BUILD_TESTS AND DBUS_DISABLE_ASSERT)
     message("NOTE: building with unit tests but without assertions means tests may not properly report failures (this configuration is only useful when doing something like profiling the tests)")
-endif(DBUS_BUILD_TESTS AND DBUS_DISABLE_ASSERTS)
+endif(DBUS_BUILD_TESTS AND DBUS_DISABLE_ASSERT)
 
 if (DBUS_GCOV_ENABLED)
     message("NOTE: building with coverage profiling is definitely for developers only.")
@@ -607,9 +607,9 @@ if (DBUS_ENABLE_VERBOSE_MODE)
     message("NOTE: building with verbose mode increases library size, may slightly increase security risk, and decreases performance.")
 endif(DBUS_ENABLE_VERBOSE_MODE)
 
-if(NOT DBUS_DISABLE_ASSERTS)
+if(NOT DBUS_DISABLE_ASSERT)
     message("NOTE: building with assertions increases library size and decreases performance.")
-endif(NOT DBUS_DISABLE_ASSERTS)
+endif(NOT DBUS_DISABLE_ASSERT)
 
 if (DBUS_DISABLE_CHECKS)
     message("NOTE: building without checks for arguments passed to public API makes it harder to debug apps using D-BUS, but will slightly decrease D-BUS library size and _very_ slightly improve performance.")

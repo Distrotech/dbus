@@ -2221,7 +2221,7 @@ _dbus_replace_install_prefix (const char *configure_time_path)
 #endif
 }
 
-#if !defined (DBUS_DISABLE_ASSERTS) || defined(DBUS_BUILD_TESTS)
+#if !defined (DBUS_DISABLE_ASSERT) || defined(DBUS_BUILD_TESTS)
 
 #if defined(_MSC_VER) || defined(DBUS_WINCE)
 # ifdef BACKTRACES
