@@ -1,6 +1,12 @@
 D-Bus 1.7.6 (UNRELEASED)
 ==
 
+Build-time configuration changes:
+
+• The DBUS_DISABLE_ASSERTS CMake option didn't actually disable most
+  assertions. It has been renamed to DBUS_DISABLE_ASSERT to be consistent
+  with the Autotools build system. (fd.o #66142, Chengwei Yang)
+
 Fixes:
 
 • Don't crash on "dbus-send --session / x.y.z" which regressed in 1.7.4.
@@ -8,6 +14,10 @@ Fixes:
 
 • If malloc() returns NULL in _dbus_string_init() or similar, don't free
   an invalid pointer if the string is later freed (fd.o #65959, Chengwei Yang)
+
+• Windows-specific:
+  · Remove unavailable command-line options from 'dbus-daemon --help'
+    (fd.o #42441, Ralf Habacker)
 
 D-Bus 1.7.4 (2013-06-13)
 ==
