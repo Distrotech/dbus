@@ -43,7 +43,13 @@
 #cmakedefine DBUS_ENABLE_ANSI 1
 #cmakedefine DBUS_ENABLE_VERBOSE_MODE 1
 #cmakedefine DBUS_DISABLE_ASSERT 1
+#ifndef DBUS_DISABLE_ASSERT
+#  define DBUS_ENABLE_ASSERT 1
+#endif
 #cmakedefine DBUS_DISABLE_CHECKS 1
+#ifndef DBUS_DISABLE_CHECKS
+#  define DBUS_ENABLE_CHECKS 1
+#endif
 /* xmldocs */
 /* doxygen */
 #cmakedefine DBUS_GCOV_ENABLED 1

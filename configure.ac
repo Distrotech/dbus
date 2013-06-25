@@ -297,6 +297,15 @@ if test x$enable_checks = xno; then
     DISABLE_UNUSED_WARNINGS="unused-label"
 fi
 
+AH_BOTTOM([
+/* explicitly define these macros to get less confusing conditions */
+#ifndef DBUS_DISABLE_ASSERT
+#  define DBUS_ENABLE_ASSERT 1
+#endif
+#ifndef DBUS_DISABLE_CHECKS
+#  define DBUS_ENABLE_CHECKS 1
+#endif])
+
 if test x$enable_userdb_cache = xyes; then
     AC_DEFINE(DBUS_ENABLE_USERDB_CACHE,1,[Build with caching of user data])
 fi
