@@ -729,7 +729,7 @@ dbus_message_cache_or_finalize (DBusMessage *message)
     dbus_message_finalize (message);
 }
 
-#ifndef DBUS_DISABLE_CHECKS
+#if defined(DBUS_ENABLE_CHECKS) || defined(DBUS_ENABLE_ASSERT)
 static dbus_bool_t
 _dbus_message_iter_check (DBusMessageRealIter *iter)
 {
@@ -777,13 +777,7 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
 
   return TRUE;
 }
-#else
-static dbus_bool_t
-_dbus_message_iter_check (DBusMessageRealIter *iter)
-{
-  return TRUE;
-}
-#endif /* DBUS_DISABLE_CHECKS */
+#endif /* DBUS_ENABLE_CHECKS || DBUS_ENABLE_ASSERT */
 
 /**
  * Implementation of the varargs arg-getting functions.
