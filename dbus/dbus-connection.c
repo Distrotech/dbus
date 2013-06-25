@@ -336,8 +336,8 @@ struct DBusConnection
 #ifndef DBUS_DISABLE_CHECKS
   unsigned int have_connection_lock : 1; /**< Used to check locking */
 #endif
-  
-#ifndef DBUS_DISABLE_CHECKS
+
+#if !defined(DBUS_DISABLE_CHECKS) || !defined(DBUS_DISABLE_ASSERT)
   int generation; /**< _dbus_current_generation that should correspond to this connection */
 #endif 
 };
@@ -1354,7 +1354,7 @@ _dbus_connection_new_for_transport (DBusTransport *transport)
   connection->disconnected_message_arrived = FALSE;
   connection->disconnected_message_processed = FALSE;
   
-#ifndef DBUS_DISABLE_CHECKS
+#if !defined(DBUS_DISABLE_CHECKS) || !defined(DBUS_DISABLE_ASSERT)
   connection->generation = _dbus_current_generation;
 #endif
   

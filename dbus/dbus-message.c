@@ -777,6 +777,12 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
 
   return TRUE;
 }
+#else
+static dbus_bool_t
+_dbus_message_iter_check (DBusMessageRealIter *iter)
+{
+  return TRUE;
+}
 #endif /* DBUS_DISABLE_CHECKS */
 
 /**
