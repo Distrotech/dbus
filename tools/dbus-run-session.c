@@ -34,6 +34,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #define MAX_ADDR_LEN 512
 #define PIPE_READ_END  0
