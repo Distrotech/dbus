@@ -139,7 +139,7 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
   int new_fds[MAX_DIRS_TO_WATCH];
   char *new_dirs[MAX_DIRS_TO_WATCH];
   DBusList *link;
-  int i, j, f, fd;
+  int i, j, fd;
   struct kevent ev;
 
   if (!_init_kqueue (context))
