@@ -370,10 +370,6 @@ imported_data = \
 noinst_DATA = $(imported_data)
 CLEANFILES = $(noinst_DATA)
 
-data/valid-config-files/session.conf: $(top_builddir)/bus/session.conf
-	$(AM_V_at)$(MKDIR_P) data/valid-config-files
-	$(AM_V_GEN)cp $< $@
-
-data/valid-config-files/system.conf: $(top_builddir)/bus/system.conf
+$(imported_data): data/valid-config-files/%.conf: $(top_builddir)/bus/%.conf
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files
 	$(AM_V_GEN)cp $< $@

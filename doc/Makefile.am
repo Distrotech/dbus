@@ -1,34 +1,22 @@
 apidir = @htmldir@/api
 
-MAN_XML_FILES = \
-	dbus-cleanup-sockets.1.xml \
-	dbus-daemon.1.xml \
-	dbus-launch.1.xml \
-	dbus-monitor.1.xml \
-	dbus-run-session.1.xml \
-	dbus-send.1.xml \
-	dbus-uuidgen.1.xml \
-	$(NULL)
-
-if DBUS_XML_DOCS_ENABLED
-man1_MANS = \
+man_pages = \
 	dbus-cleanup-sockets.1 \
 	dbus-daemon.1 \
 	dbus-launch.1 \
 	dbus-monitor.1 \
 	dbus-run-session.1 \
 	dbus-send.1 \
-	dbus-uuidgen.1
+	dbus-uuidgen.1 \
+	$(NULL)
+
+MAN_XML_FILES = $(patsubst %.1,%.1.xml,$(man_pages))
+
+if DBUS_XML_DOCS_ENABLED
+man1_MANS = $(man_pages)
 endif
 
-MAN_HTML_FILES = \
-	dbus-cleanup-sockets.1.html \
-	dbus-daemon.1.html \
-	dbus-launch.1.html \
-	dbus-monitor.1.html \
-	dbus-run-session.1.html \
-	dbus-send.1.html \
-	dbus-uuidgen.1.html
+MAN_HTML_FILES = $(patsubst %.1,%.1.html,$(man_pages))
 
 DTDS = \
 	busconfig.dtd \
