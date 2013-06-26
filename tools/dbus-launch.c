@@ -153,6 +153,7 @@ void
 verbose (const char *format,
          ...)
 {
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   va_list args;
   static int verbose = TRUE;
   static int verbose_initted = FALSE;
@@ -177,6 +178,7 @@ verbose (const char *format,
   va_start (args, format);
   vfprintf (stderr, format, args);
   va_end (args);
+#endif /* DBUS_ENABLE_VERBOSE_MODE */
 }
 
 static void
