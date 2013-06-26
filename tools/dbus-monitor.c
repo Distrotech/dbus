@@ -383,22 +383,7 @@ main (int argc, char *argv[])
   else
     {
       dbus_bus_add_match (connection,
-		          EAVESDROPPING_RULE ",type='signal'",
-		          &error);
-      if (dbus_error_is_set (&error))
-        goto lose;
-      dbus_bus_add_match (connection,
-		          EAVESDROPPING_RULE ",type='method_call'",
-		          &error);
-      if (dbus_error_is_set (&error))
-        goto lose;
-      dbus_bus_add_match (connection,
-		          EAVESDROPPING_RULE ",type='method_return'",
-		          &error);
-      if (dbus_error_is_set (&error))
-        goto lose;
-      dbus_bus_add_match (connection,
-		          EAVESDROPPING_RULE ",type='error'",
+		          EAVESDROPPING_RULE,
 		          &error);
       if (dbus_error_is_set (&error))
         goto lose;
