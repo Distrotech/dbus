@@ -273,6 +273,11 @@ if test x$enable_asserts = xno; then
     AC_DEFINE(DBUS_DISABLE_ASSERT,1,[Disable assertion checking])
     DISABLE_UNUSED_WARNINGS="unused-label"
     R_DYNAMIC_LDFLAG=""
+    if test x$enable_embedded_tests = xyes; then
+        DISABLE_UNUSED_WARNINGS="$DISABLE_UNUSED_WARNINGS \
+                unused-but-set-variable unused-variable \
+                unused-function"
+    fi
 else
     # -rdynamic is needed for glibc's backtrace_symbols to work.
     # No clue how much overhead this adds, but it's useful
