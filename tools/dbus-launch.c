@@ -451,9 +451,7 @@ signal_handler (int sig)
 {
   switch (sig)
     {
-#ifdef SIGHUP
     case SIGHUP:
-#endif
     case SIGINT:
     case SIGTERM:
       got_sighup = TRUE;
@@ -769,7 +767,11 @@ pass_info (const char *runprog, const char *bus_address, pid_t bus_pid,
           size_t len = strlen (argv[remaining_args+i-1])+1;
           args[i] = malloc (len);
           if (!args[i])
-            goto oom;
+	    {
+              while (i > 1)
+                free (args[--i]);
+              goto oom;
+	    }
           strncpy (args[i], argv[remaining_args+i-1], len);
         }
       args[i] = NULL;
