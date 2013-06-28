@@ -276,7 +276,7 @@ if("${sysname}" MATCHES ".*SOLARIS.*")
 endif("${sysname}" MATCHES ".*SOLARIS.*")
 
 if(NOT EXPAT_FOUND)
-    message(FATAL "expat not found!")
+    message(FATAL_ERROR "expat not found!")
 endif(NOT EXPAT_FOUND)
 
 SET(XML_LIB "Expat")
@@ -354,7 +354,7 @@ endif (MSVC_IDE)
          else (NOT $ENV{TMP} STREQUAL "")
          if (WIN32)
              #Should never happen, both TMP and TEMP seem always set on Windows
-             message(FATAL "Could not determine a usable temporary directory")
+             message(FATAL_ERROR "Could not determine a usable temporary directory")
          else(WIN32)
             set (DBUS_SESSION_SOCKET_DIR /tmp)
          endif(WIN32)
