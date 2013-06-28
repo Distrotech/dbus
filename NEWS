@@ -6,6 +6,9 @@ Fixes:
 • If malloc() returns NULL in _dbus_string_init() or similar, don't free
   an invalid pointer if the string is later freed (fd.o #65959, Chengwei Yang)
 
+• If malloc() returns NULL in dbus_set_error(), don't va_end() a va_list
+  that was never va_start()ed (fd.o #66300, Chengwei Yang)
+
 D-Bus 1.6.12 (2013-06-13)
 ==
 
