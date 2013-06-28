@@ -235,7 +235,7 @@ dbus_error_free (DBusError *error)
  * must ensure the name and message are global data that won't be
  * freed. You probably want dbus_set_error() instead, in most cases.
  * 
- * @param error the error.or #NULL
+ * @param error the error or #NULL
  * @param name the error name (not copied!!!)
  * @param message the error message (not copied!!!)
  */
@@ -379,7 +379,6 @@ dbus_set_error (DBusError  *error,
                                 message_from_error (name)))
         {
           _dbus_string_free (&str);
-          va_end (args);
           goto nomem;
         }
     }
