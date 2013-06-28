@@ -149,10 +149,6 @@ gcc only:
 // compile with coverage profiling instrumentation
 DBUS_GCOV_ENABLED:BOOL=OFF
 
-linux only:
-// build with dnotify support 
-DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX:BOOL=ON
-
 solaris only:
 // enable console owner file 
 HAVE_CONSOLE_OWNER_FILE:BOOL=ON

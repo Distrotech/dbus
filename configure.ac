@@ -150,7 +150,6 @@ AC_ARG_ENABLE(doxygen-docs, AS_HELP_STRING([--enable-doxygen-docs],[build DOXYGE
 AC_ARG_ENABLE(abstract-sockets, AS_HELP_STRING([--enable-abstract-sockets],[use abstract socket namespace (linux only)]),enable_abstract_sockets=$enableval,enable_abstract_sockets=auto)
 AC_ARG_ENABLE(selinux, AS_HELP_STRING([--enable-selinux],[build with SELinux support]),enable_selinux=$enableval,enable_selinux=auto)
 AC_ARG_ENABLE(libaudit,AS_HELP_STRING([--enable-libaudit],[build audit daemon support for SELinux]),enable_libaudit=$enableval,enable_libaudit=auto)
-AC_ARG_ENABLE(dnotify, AS_HELP_STRING([--enable-dnotify],[build with dnotify support (linux only)]),enable_dnotify=$enableval,enable_dnotify=auto)
 AC_ARG_ENABLE(inotify, AS_HELP_STRING([--enable-inotify],[build with inotify support (linux only)]),enable_inotify=$enableval,enable_inotify=auto)
 AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue support]),enable_kqueue=$enableval,enable_kqueue=auto)
 AC_ARG_ENABLE(console-owner-file, AS_HELP_STRING([--enable-console-owner-file],[enable console owner file]),enable_console_owner_file=$enableval,enable_console_owner_file=auto)
@@ -1060,24 +1059,6 @@ fi
 
 AM_CONDITIONAL(DBUS_BUS_ENABLE_INOTIFY, test x$have_inotify = xyes)
 
-# dnotify checks
-if test x$enable_dnotify = xno ; then
-    have_dnotify=no;
-else
-    if test x$have_inotify = xno -a x$host_os = xlinux-gnu -o x$host_os = xlinux; then
-        have_dnotify=yes;
-    else
-        have_dnotify=no;
-    fi
-fi
-
-dnl check if dnotify backend is enabled
-if test x$have_dnotify = xyes; then
-   AC_DEFINE(DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX,1,[Use dnotify on Linux])
-fi
-
-AM_CONDITIONAL(DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX, test x$have_dnotify = xyes)
-
 # For simplicity, we require the userland API for epoll_create1 at
 # compile-time (glibc 2.9), but we'll run on kernels that turn out
 # not to have it at runtime.
@@ -1863,7 +1844,6 @@ echo "
         Building bus stats API:   ${enable_stats}
         Building SELinux support: ${have_selinux}
         Building inotify support: ${have_inotify}
-        Building dnotify support: ${have_dnotify}
         Building kqueue support:  ${have_kqueue}
         Building systemd support: ${have_systemd}
         Building X11 code:        ${have_x11}

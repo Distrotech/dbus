@@ -279,11 +279,6 @@ endif(NOT MSVC)
 #AC_ARG_ENABLE(selinux, AS_HELP_STRING([--enable-selinux],[build with SELinux support]),enable_selinux=$enableval,enable_selinux=auto)
 #selinux missing
 
-#AC_ARG_ENABLE(dnotify, AS_HELP_STRING([--enable-dnotify],[build with dnotify support (linux only)]),enable_dnotify=$enableval,enable_dnotify=auto)
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    option (DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX "build with dnotify support (linux only)" ON) # add a check !
-endif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-
 #AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue support (FreeBSD only)]),enable_kqueue=$enableval,enable_kqueue=auto)
 #missing
 
@@ -561,7 +556,6 @@ message("        Building w/o checks:      ${DBUS_DISABLE_CHECKS}              "
 message("        Building bus stats API:   ${DBUS_ENABLE_STATS}                ")
 message("        installing system libs:   ${DBUS_INSTALL_SYSTEM_LIBS}         ")
 #message("        Building SELinux support: ${have_selinux}                     ")
-#message("        Building dnotify support: ${have_dnotify}                     ")
 message("        Building Doxygen docs:    ${DBUS_ENABLE_DOXYGEN_DOCS}         ")
 message("        Building XML docs:        ${DBUS_ENABLE_XML_DOCS}             ")
 #message("        Gettext libs (empty OK):  ${INTLLIBS}                         ")

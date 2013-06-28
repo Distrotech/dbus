@@ -61,10 +61,6 @@ signal_handler (int sig)
 {
   switch (sig)
     {
-#ifdef DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX
-    case SIGIO:
-      /* explicit fall-through */
-#endif /* DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX  */
 #ifdef SIGHUP
     case SIGHUP:
       {
@@ -649,9 +645,6 @@ main (int argc, char **argv)
 #ifdef SIGHUP
   _dbus_set_signal_handler (SIGHUP, signal_handler);
 #endif
-#ifdef DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX
-  _dbus_set_signal_handler (SIGIO, signal_handler);
-#endif /* DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX */
 #endif /* DBUS_UNIX */
 
   _dbus_verbose ("We are on D-Bus...\n");

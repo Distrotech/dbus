@@ -69,7 +69,6 @@
 #endif
 
 /* selinux */
-#cmakedefine DBUS_BUS_ENABLE_DNOTIFY_ON_LINUX 1
 /* kqueue */
 #cmakedefine HAVE_CONSOLE_OWNER_FILE 1
 #define DBUS_CONSOLE_OWNER_FILE "@DBUS_CONSOLE_OWNER_FILE@"

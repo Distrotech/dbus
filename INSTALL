@@ -56,7 +56,6 @@ Core library
  Optional:
 
   - libselinux           (for SELinux integration)
-  - dnotify              (for automatic service file reload)
   - doxygen              (for API documentation)
   - xmlto or meinproc4   (for Spec & other XML documentation)
 
