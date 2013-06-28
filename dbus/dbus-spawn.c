@@ -936,7 +936,7 @@ do_exec (int                       child_err_report_fd,
 	 DBusSpawnChildSetupFunc   child_setup,
 	 void                     *user_data)
 {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   int i, max_open;
 #endif
 
@@ -947,7 +947,7 @@ do_exec (int                       child_err_report_fd,
   if (child_setup)
     (* child_setup) (user_data);
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   max_open = sysconf (_SC_OPEN_MAX);
   
   for (i = 3; i < max_open; i++)
@@ -1325,7 +1325,7 @@ _dbus_babysitter_set_result_function  (DBusBabysitter             *sitter,
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 static char *
 get_test_exec (const char *exe,

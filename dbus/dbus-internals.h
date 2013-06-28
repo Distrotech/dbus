@@ -266,7 +266,7 @@ void _dbus_verbose_bytes_of_string (const DBusString    *str,
 extern const char *_dbus_no_memory_message;
 #define _DBUS_SET_OOM(error) dbus_set_error_const ((error), DBUS_ERROR_NO_MEMORY, _dbus_no_memory_message)
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /* Memory debugging */
 void        _dbus_set_fail_alloc_counter        (int  until_next_fail);
 int         _dbus_get_fail_alloc_counter        (void);
@@ -290,7 +290,7 @@ dbus_bool_t _dbus_test_oom_handling (const char             *description,
 #define _dbus_decrement_fail_alloc_counter() (FALSE)
 #define _dbus_disable_mem_pools()            (FALSE)
 #define _dbus_get_malloc_blocks_outstanding  (0)
-#endif /* !DBUS_BUILD_TESTS */
+#endif /* !DBUS_ENABLE_EMBEDDED_TESTS */
 
 typedef void (* DBusShutdownFunction) (void *data);
 dbus_bool_t _dbus_register_shutdown_func          (DBusShutdownFunction  function,

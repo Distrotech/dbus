@@ -173,7 +173,7 @@ dbus_get_version (int *major_version_p,
 
 /** @} */ /* End of public API */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 

@@ -213,7 +213,7 @@ _dbus_mem_pool_free (DBusMemPool *pool)
 void*
 _dbus_mem_pool_alloc (DBusMemPool *pool)
 {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (_dbus_disable_mem_pools ())
     {
       DBusMemBlock *block;
@@ -280,7 +280,7 @@ _dbus_mem_pool_alloc (DBusMemPool *pool)
               /* Need a new block */
               DBusMemBlock *block;
               int alloc_size;
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
               int saved_counter;
 #endif
           
@@ -294,7 +294,7 @@ _dbus_mem_pool_alloc (DBusMemPool *pool)
 
               alloc_size = sizeof (DBusMemBlock) - ELEMENT_PADDING + pool->block_size;
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
               /* We save/restore the counter, so that memory pools won't
                * cause a given function to have different number of
                * allocations on different invocations. i.e.  when testing
@@ -310,7 +310,7 @@ _dbus_mem_pool_alloc (DBusMemPool *pool)
               else
                 block = dbus_malloc (alloc_size);
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
               _dbus_set_fail_alloc_counter (saved_counter);
               _dbus_assert (saved_counter == _dbus_get_fail_alloc_counter ());
 #endif
@@ -349,7 +349,7 @@ _dbus_mem_pool_dealloc (DBusMemPool *pool,
 {
   VALGRIND_MEMPOOL_FREE (pool, element);
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (_dbus_disable_mem_pools ())
     {
       DBusMemBlock *block;
@@ -449,7 +449,7 @@ _dbus_mem_pool_get_stats (DBusMemPool   *pool,
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <stdio.h>
 #include <time.h>
@@ -644,4 +644,4 @@ _dbus_mem_pool_test (void)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

@@ -503,7 +503,7 @@ unlock:
   connection = tree->connection;
 
   /* Unlock and call application code */
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (connection)
 #endif
     {
@@ -515,7 +515,7 @@ unlock:
   if (unregister_function)
     (* unregister_function) (connection, user_data);
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (connection)
 #endif
     dbus_connection_unref (connection);
@@ -638,7 +638,7 @@ handle_default_introspect_and_unlock (DBusObjectTree          *tree,
                                     DBUS_INTERFACE_INTROSPECTABLE,
                                     "Introspect"))
     {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (tree->connection)
 #endif
         {
@@ -653,7 +653,7 @@ handle_default_introspect_and_unlock (DBusObjectTree          *tree,
   
   if (!_dbus_string_init (&xml))
     {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (tree->connection)
 #endif
         {
@@ -698,7 +698,7 @@ handle_default_introspect_and_unlock (DBusObjectTree          *tree,
   if (!dbus_message_iter_append_basic (&iter, DBUS_TYPE_STRING, &v_STRING))
     goto out;
   
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (tree->connection)
 #endif
     {
@@ -711,7 +711,7 @@ handle_default_introspect_and_unlock (DBusObjectTree          *tree,
   result = DBUS_HANDLER_RESULT_HANDLED;
   
  out:
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (tree->connection)
 #endif
     {
@@ -762,7 +762,7 @@ _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
   path = NULL;
   if (!dbus_message_get_path_decomposed (message, &path))
     {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (tree->connection)
 #endif
         {
@@ -777,7 +777,7 @@ _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
 
   if (path == NULL)
     {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (tree->connection)
 #endif
         {
@@ -846,7 +846,7 @@ _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
           _dbus_verbose ("  (invoking a handler)\n");
 #endif
           
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
           if (tree->connection)
 #endif
             {
@@ -863,7 +863,7 @@ _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
                                          message,
                                          user_data);
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
           if (tree->connection)
 #endif
             _dbus_connection_lock (tree->connection);
@@ -886,7 +886,7 @@ _dbus_object_tree_dispatch_and_unlock (DBusObjectTree          *tree,
     }
   else
     {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (tree->connection)
 #endif
         {
@@ -1057,7 +1057,7 @@ _dbus_object_tree_list_registered_and_unlock (DBusObjectTree *tree,
                                                        parent_path,
                                                        child_entries);
   
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (tree->connection)
 #endif
     {
@@ -1214,7 +1214,7 @@ flatten_path (const char **path)
 }
 
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
@@ -1962,4 +1962,4 @@ _dbus_object_tree_test (void)
 
 #endif /* !DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

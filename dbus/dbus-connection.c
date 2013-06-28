@@ -446,7 +446,7 @@ _dbus_connection_wakeup_mainloop (DBusConnection *connection)
     (*connection->wakeup_main_function) (connection->wakeup_main_data);
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /**
  * Gets the locks so we can examine them
  *
@@ -6283,7 +6283,7 @@ dbus_connection_get_outgoing_unix_fds (DBusConnection *connection)
   return res;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /**
  * Returns the address of the transport object of this connection
  *

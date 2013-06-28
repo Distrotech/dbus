@@ -24,7 +24,7 @@
 #ifndef DBUS_MESSAGE_FACTORY_H
 #define DBUS_MESSAGE_FACTORY_H
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-marshal-basic.h>
@@ -56,6 +56,6 @@ dbus_bool_t _dbus_message_data_iter_get_and_next (DBusMessageDataIter *iter,
 
 DBUS_END_DECLS
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
 #endif /* DBUS_MESSAGE_FACTORY_H */

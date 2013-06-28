@@ -24,7 +24,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-message-factory.h"
 #include "dbus-message-private.h"
 #include "dbus-signature.h"
@@ -1302,4 +1302,4 @@ _dbus_message_data_iter_get_and_next (DBusMessageDataIter *iter,
 
 #endif /* !DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

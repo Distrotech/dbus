@@ -3923,7 +3923,7 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
   if (!_dbus_homedir_from_uid (uid, &homedir))
     goto failed;
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   {
     const char *override;
 

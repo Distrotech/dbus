@@ -285,9 +285,9 @@ compact (DBusRealString *real,
   return TRUE;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /* Not using this feature at the moment,
- * so marked DBUS_BUILD_TESTS-only
+ * so marked DBUS_ENABLE_EMBEDDED_TESTS-only
  */
 /**
  * Locks a string such that any attempts to change the string will
@@ -311,7 +311,7 @@ _dbus_string_lock (DBusString *str)
 #define MAX_WASTE 48
   compact (real, MAX_WASTE);
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
 static dbus_bool_t
 reallocate_for_length (DBusRealString *real,
@@ -337,11 +337,11 @@ reallocate_for_length (DBusRealString *real,
    */
 #ifdef DBUS_DISABLE_ASSERT
 #else
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   new_allocated = 0; /* ensure a realloc every time so that we go
                       * through all malloc failure codepaths
                       */
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 #endif /* !DBUS_DISABLE_ASSERT */
 
   /* But be sure we always alloc at least space for the new length */
@@ -1904,7 +1904,7 @@ _dbus_string_skip_white_reverse (const DBusString *str,
  * @todo owen correctly notes that this is a stupid function (it was
  * written purely for test code,
  * e.g. dbus-message-builder.c). Probably should be enforced as test
- * code only with ifdef DBUS_BUILD_TESTS
+ * code only with ifdef DBUS_ENABLE_EMBEDDED_TESTS
  * 
  * @param source the source string
  * @param dest the destination string (contents are replaced)
@@ -1948,7 +1948,7 @@ _dbus_string_pop_line (DBusString *source,
   return TRUE;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /**
  * Deletes up to and including the first blank space
  * in the string.
@@ -1967,7 +1967,7 @@ _dbus_string_delete_first_word (DBusString *str)
 }
 #endif
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /**
  * Deletes any leading blanks in the string
  *

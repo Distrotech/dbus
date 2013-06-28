@@ -1401,7 +1401,7 @@ _dbus_hash_table_get_n_entries (DBusHashTable *table)
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -1828,4 +1828,4 @@ _dbus_hash_test (void)
   return ret;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

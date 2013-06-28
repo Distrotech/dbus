@@ -32,7 +32,7 @@
 #include "dbus-credentials.h"
 #include "dbus-mainloop.h"
 #include "dbus-message.h"
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-server-debug-pipe.h"
 #endif
 
@@ -348,7 +348,7 @@ static const struct {
   { _dbus_transport_open_socket },
   { _dbus_transport_open_platform_specific },
   { _dbus_transport_open_autolaunch }
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   , { _dbus_transport_open_debug_pipe }
 #endif
 };

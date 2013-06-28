@@ -80,7 +80,7 @@
  * Maximum number of keys in the keyring before
  * we just ignore the rest
  */
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #define MAX_KEYS_IN_FILE 10
 #else
 #define MAX_KEYS_IN_FILE 256
@@ -1023,7 +1023,7 @@ _dbus_keyring_get_hex_key (DBusKeyring       *keyring,
 
 /** @} */ /* end of exposed API */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -1156,5 +1156,5 @@ _dbus_keyring_test (void)
   return FALSE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
      

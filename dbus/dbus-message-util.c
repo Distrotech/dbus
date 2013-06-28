@@ -45,7 +45,7 @@
  * @{
  */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /**
  * Reads arguments from a message iterator given a variable argument
  * list. Only arguments of basic type and arrays of fixed-length
@@ -76,11 +76,11 @@ dbus_message_iter_get_args (DBusMessageIter *iter,
 
   return retval;
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include "dbus-message-factory.h"
 #include <stdio.h>
@@ -1542,4 +1542,4 @@ _dbus_message_test (const char *test_data_dir)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

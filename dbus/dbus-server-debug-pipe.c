@@ -31,7 +31,7 @@
 #include "dbus-string.h"
 #include "dbus-protocol.h"
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 /**
  * @defgroup DBusServerDebugPipe DBusServerDebugPipe
@@ -427,5 +427,5 @@ _dbus_transport_open_debug_pipe (DBusAddressEntry  *entry,
 
 /** @} */
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 

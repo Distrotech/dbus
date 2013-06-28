@@ -80,7 +80,7 @@ _dbus_get_environment (void)
   return environment;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static void
 check_dirname (const char *filename,
                const char *dirname)
@@ -196,4 +196,4 @@ _dbus_sysdeps_test (void)
   
   return TRUE;
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

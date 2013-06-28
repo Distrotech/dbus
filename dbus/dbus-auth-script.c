@@ -22,7 +22,7 @@
  */
 #include <config.h>
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #include "dbus-auth-script.h"
 #include "dbus-auth.h"
@@ -800,4 +800,4 @@ _dbus_auth_script_run (const DBusString *filename)
 }
 
 /** @} */
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

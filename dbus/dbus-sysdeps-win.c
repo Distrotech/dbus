@@ -2221,7 +2221,7 @@ _dbus_replace_install_prefix (const char *configure_time_path)
 #endif
 }
 
-#if !defined (DBUS_DISABLE_ASSERT) || defined(DBUS_BUILD_TESTS)
+#if !defined (DBUS_DISABLE_ASSERT) || defined(DBUS_ENABLE_EMBEDDED_TESTS)
 
 #if defined(_MSC_VER) || defined(DBUS_WINCE)
 # ifdef BACKTRACES
@@ -3457,7 +3457,7 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
       _dbus_string_append(&homedir,homepath);
     }
   
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   {
     const char *override;
     

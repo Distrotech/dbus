@@ -348,7 +348,7 @@ _dbus_data_slot_list_free (DBusDataSlotList *list)
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -459,4 +459,4 @@ _dbus_data_slot_test (void)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

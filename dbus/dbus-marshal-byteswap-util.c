@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#ifdef DBUS_BUILD_TESTS 
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-marshal-byteswap.h"
 #include "dbus-test.h"
 #include <stdio.h>
@@ -102,4 +102,4 @@ _dbus_marshal_byteswap_test (void)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

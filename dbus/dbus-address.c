@@ -648,7 +648,7 @@ dbus_address_unescape_value (const char *value,
 
 /** @} */ /* End of public API */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 

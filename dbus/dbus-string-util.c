@@ -115,7 +115,7 @@ _dbus_string_find_byte_backward (const DBusString  *str,
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -935,4 +935,4 @@ _dbus_string_test (void)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

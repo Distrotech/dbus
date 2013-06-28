@@ -922,7 +922,7 @@ _dbus_loop_quit (DBusLoop *loop)
 int
 _dbus_get_oom_wait (void)
 {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   /* make tests go fast */
   return 0;
 #else

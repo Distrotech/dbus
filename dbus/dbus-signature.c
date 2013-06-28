@@ -410,7 +410,7 @@ dbus_type_is_valid (int typecode)
 
 /** @} */ /* end of DBusSignature group */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 /**
  * @ingroup DBusSignatureInternals

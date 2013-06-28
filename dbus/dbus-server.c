@@ -26,7 +26,7 @@
 #include "dbus-server-unix.h"
 #include "dbus-server-socket.h"
 #include "dbus-string.h"
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-server-debug-pipe.h"
 #endif
 #include "dbus-address.h"
@@ -529,7 +529,7 @@ static const struct {
 } listen_funcs[] = {
   { _dbus_server_listen_socket }
   , { _dbus_server_listen_platform_specific }
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   , { _dbus_server_listen_debug_pipe }
 #endif
 };
@@ -1188,7 +1188,7 @@ dbus_server_get_data (DBusServer   *server,
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <string.h>
 
@@ -1244,4 +1244,4 @@ _dbus_server_test (void)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

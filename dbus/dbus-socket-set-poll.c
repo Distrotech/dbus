@@ -44,7 +44,7 @@ typedef struct {
 #define MINIMUM_SIZE 8
 
 /* If we're in the regression tests, force reallocation to happen sooner */
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #define DEFAULT_SIZE_HINT 1
 #else
 #define DEFAULT_SIZE_HINT MINIMUM_SIZE

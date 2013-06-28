@@ -56,7 +56,7 @@ static void dbus_message_finalize (DBusMessage *message);
  * @{
  */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static dbus_bool_t
 _dbus_enable_message_cache (void)
 {

@@ -602,7 +602,7 @@ _dbus_user_database_flush (DBusUserDatabase *db)
   _dbus_hash_table_remove_all(db->groups);
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /**
  * Increments refcount of user database.
  * @param db the database
@@ -617,7 +617,7 @@ _dbus_user_database_ref (DBusUserDatabase  *db)
 
   return db;
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
 /**
  * Decrements refcount of user database.

@@ -22,7 +22,7 @@
  */
 
 #include <config.h>
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
@@ -585,4 +585,4 @@ _dbus_marshal_validate_test (void)
 
 #endif /* !DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

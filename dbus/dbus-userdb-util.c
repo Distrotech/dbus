@@ -437,7 +437,7 @@ _dbus_groups_from_uid (dbus_uid_t         uid,
 }
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include <stdio.h>
 
 /**
@@ -490,4 +490,4 @@ _dbus_userdb_test (const char *test_data_dir)
 
   return TRUE;
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

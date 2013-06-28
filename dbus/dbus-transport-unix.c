@@ -412,7 +412,7 @@ _dbus_transport_open_platform_specific (DBusAddressEntry  *entry,
 
 /** @} */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 dbus_bool_t
 _dbus_transport_unix_test (void)

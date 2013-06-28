@@ -511,7 +511,7 @@ _dbus_sha_compute (const DBusString *data,
 
 /** @} */ /* end of exported functions */
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "dbus-test.h"
 #include <stdio.h>
 
@@ -966,4 +966,4 @@ _dbus_sha_test (const char *test_data_dir)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

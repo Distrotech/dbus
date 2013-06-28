@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #include "dbus-marshal-recursive.h"
 #include "dbus-marshal-basic.h"
@@ -3574,4 +3574,4 @@ container_destroy (TestTypeNode *node)
 
 #endif /* !DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

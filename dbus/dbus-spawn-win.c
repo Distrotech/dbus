@@ -63,7 +63,7 @@ struct DBusBabysitter
     int refcount;
 
     HANDLE start_sync_event;
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
     HANDLE end_sync_event;
 #endif
@@ -109,7 +109,7 @@ _dbus_babysitter_new (void)
       return NULL;
     }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   sitter->end_sync_event = CreateEvent (NULL, FALSE, FALSE, NULL);
   if (sitter->end_sync_event == NULL)
     {
@@ -250,7 +250,7 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
           sitter->start_sync_event = NULL;
         }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (sitter->end_sync_event != NULL)
         {
           CloseHandle (sitter->end_sync_event);
@@ -628,7 +628,7 @@ babysitter (void *parameter)
       sitter->child_handle = NULL;
     }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   SetEvent (sitter->end_sync_event);
 #endif
 
@@ -753,7 +753,7 @@ _dbus_babysitter_set_result_function  (DBusBabysitter             *sitter,
   sitter->finished_data = user_data;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 static char *
 get_test_exec (const char *exe,
