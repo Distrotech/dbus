@@ -103,7 +103,7 @@ find_package(EXPAT)
 find_package(X11)
 
 # analogous to AC_USE_SYSTEM_EXTENSIONS in configure.ac
-add_definitions(-D_POSIX_C_SOURCE=199309L -D_GNU_SOURCE)
+add_definitions(-D_GNU_SOURCE)
 
 # do config checks
 INCLUDE(ConfigureChecks.cmake)
