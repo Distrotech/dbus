@@ -88,13 +88,13 @@ FAQ
 
   The OpenWengo dbus-c++ binding has been ported to windows see in WinDBus svn
   (http://sf.net/projects/windbus)
-  The related test applicationa are running well.
+  The related test applications are running well.
 
 
 TODO
 ----
 
-Oktober 2010:
+October 2010:
 
 - the code wrapped with DBUS_WIN_FIXME should be inspected if it required for windows
 
