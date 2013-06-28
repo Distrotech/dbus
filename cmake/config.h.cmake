@@ -39,7 +39,6 @@
 #define TEST_BUS_BINARY          "@TEST_BUS_BINARY@"
 
 /* Some dbus features */
-#cmakedefine DBUS_BUILD_TESTS 1
 #cmakedefine DBUS_ENABLE_ANSI 1
 #cmakedefine DBUS_ENABLE_VERBOSE_MODE 1
 #cmakedefine DBUS_DISABLE_ASSERT 1

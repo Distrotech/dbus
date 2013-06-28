@@ -1,4 +1,4 @@
-if (DBUS_BUILD_TESTS)
+if (DBUS_ENABLE_EMBEDDED_TESTS)
 
 set (NAMEtest-DIR ../../../test/name-test)
 
@@ -36,4 +36,4 @@ add_executable(test-autolaunch ${NAMEtest-DIR}/test-autolaunch.c)
 target_link_libraries(test-autolaunch dbus-testutils)
 ADD_TEST(test-autolaunch ${EXECUTABLE_OUTPUT_PATH}/test-autolaunch)
 
-endif (DBUS_BUILD_TESTS)
+endif (DBUS_ENABLE_EMBEDDED_TESTS)
