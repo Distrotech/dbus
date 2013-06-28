@@ -310,7 +310,7 @@ endif
 
 noinst_PROGRAMS =
 
-if DBUS_BUILD_TESTS
+if DBUS_ENABLE_EMBEDDED_TESTS
 # We can't actually run this til we've reached test/
 noinst_PROGRAMS += dbus-test
 endif

@@ -33,7 +33,7 @@ libdbus_testutils_la_LIBADD = \
 
 noinst_LTLIBRARIES = libdbus-testutils.la
 
-if DBUS_BUILD_TESTS
+if DBUS_ENABLE_EMBEDDED_TESTS
 ## break-loader removed for now
 ## these binaries are used in tests but are not themselves tests
 TEST_BINARIES = \
@@ -59,12 +59,12 @@ if DBUS_UNIX
 TESTS += ../bus/bus-test-launch-helper$(EXEEXT)
 endif
 
-else !DBUS_BUILD_TESTS
+else !DBUS_ENABLE_EMBEDDED_TESTS
 
 TEST_BINARIES=
 TESTS=
 
-endif !DBUS_BUILD_TESTS
+endif !DBUS_ENABLE_EMBEDDED_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
 

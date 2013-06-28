@@ -192,15 +192,11 @@ AC_ARG_ENABLE([tests],
   [])
 
 # DBUS_ENABLE_EMBEDDED_TESTS controls unit tests built in to .c files
-# and also some stuff in the test/ subdir. DBUS_BUILD_TESTS was an older
-# name for this.
-AM_CONDITIONAL([DBUS_BUILD_TESTS], [test "x$enable_embedded_tests" = xyes])
+# and also some stuff in the test/ subdir.
 AM_CONDITIONAL([DBUS_ENABLE_EMBEDDED_TESTS],
   [test "x$enable_embedded_tests" = xyes])
 if test "x$enable_embedded_tests" = xyes; then
     AC_DEFINE([DBUS_ENABLE_EMBEDDED_TESTS], [1],
-      [Define to build test code into the library and binaries])
-    AC_DEFINE([DBUS_BUILD_TESTS], [1],
       [Define to build test code into the library and binaries])
 fi
 
