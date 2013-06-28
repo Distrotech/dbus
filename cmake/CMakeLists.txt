@@ -95,7 +95,6 @@ if(NOT WIN32)
 	include (FindThreads)
 endif(NOT WIN32)
 
-#AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion checks]),enable_asserts=$enableval,enable_asserts=$USE_MAINTAINER_MODE)
 option (DBUS_DISABLE_ASSERT "Disable assertion checking" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
@@ -229,7 +228,6 @@ ENABLE_TESTING()
 ########### command line options ###############
 # TODO: take check from configure.in
 
-#AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
 option (DBUS_BUILD_TESTS "enable unit test code" ON)
  
 if(DBUS_BUILD_TESTS)
@@ -246,7 +244,6 @@ if(WIN32)
 	option (DBUS_SERVICE "enable dbus service installer" OFF)
 endif(WIN32)
 
-#AC_ARG_ENABLE(ansi, AS_HELP_STRING([--enable-ansi],[enable -ansi -pedantic gcc flags]),enable_ansi=$enableval,enable_ansi=no)
 option (DBUS_ENABLE_ANSI "enable -ansi -pedantic gcc flags" OFF)
 if(DBUS_ENABLE_ANSI)
    if(NOT MSVC)
@@ -256,14 +253,11 @@ if(DBUS_ENABLE_ANSI)
    endif(NOT MSVC)
 endif(DBUS_ENABLE_ANSI)
 
-#AC_ARG_ENABLE(verbose-mode, AS_HELP_STRING([--enable-verbose-mode],[support verbose debug mode]),enable_verbose_mode=$enableval,enable_verbose_mode=$USE_MAINTAINER_MODE)
 option (DBUS_ENABLE_VERBOSE_MODE "support verbose debug mode" ON)
 
-#AC_ARG_ENABLE(checks, AS_HELP_STRING([--enable-checks],[include sanity checks on public API]),enable_checks=$enableval,enable_checks=yes)
 option (DBUS_DISABLE_CHECKS "Disable public API sanity checking" OFF)
 
 if(NOT MSVC)
-    #AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),enable_gcov=$enableval,enable_gcov=no)
     option (DBUS_GCOV_ENABLED "compile with coverage profiling instrumentation (gcc only)" OFF)
     if(DBUS_GCOV_ENABLED)
             add_definitions(-fprofile-arcs -ftest-coverage)
@@ -273,16 +267,6 @@ if(NOT MSVC)
     endif(DBUS_GCOV_ENABLED)
 endif(NOT MSVC)
 
-#AC_ARG_ENABLE(abstract-sockets, AS_HELP_STRING([--enable-abstract-sockets],[use abstract socket namespace (linux only)]),enable_abstract_sockets=$enableval,enable_abstract_sockets=auto)
-# -> moved before include(ConfigureChecks.cmake)
-
-#AC_ARG_ENABLE(selinux, AS_HELP_STRING([--enable-selinux],[build with SELinux support]),enable_selinux=$enableval,enable_selinux=auto)
-#selinux missing
-
-#AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue support (FreeBSD only)]),enable_kqueue=$enableval,enable_kqueue=auto)
-#missing
-
-#AC_ARG_ENABLE(console-owner-file, AS_HELP_STRING([--enable-console-owner-file],[enable console owner file]),enable_console_owner_file=$enableval,enable_console_owner_file=auto)
 STRING(TOUPPER ${CMAKE_SYSTEM_NAME} sysname)
 if("${sysname}" MATCHES ".*SOLARIS.*")
     option (HAVE_CONSOLE_OWNER_FILE "enable console owner file (solaris only)" ON)
@@ -299,15 +283,6 @@ SET(XML_LIB "Expat")
 SET(XML_LIBRARY     ${EXPAT_LIBRARIES})
 SET(XML_INCLUDE_DIR ${EXPAT_INCLUDE_DIR})
 
-#AC_ARG_WITH(init-scripts, AS_HELP_STRING([--with-init-scripts=[redhat]],[Style of init scripts to install]))
-#AC_ARG_WITH(session-socket-dir, AS_HELP_STRING([--with-session-socket-dir=[dirname]],[Where to put sockets for the per-login-session message bus]))
-#AC_ARG_WITH(test-socket-dir, AS_HELP_STRING([--with-test-socket-dir=[dirname]],[Where to put sockets for make check]))
-#AC_ARG_WITH(system-pid-file, AS_HELP_STRING([--with-system-pid-file=[pidfile]],[PID file for systemwide daemon]))
-#AC_ARG_WITH(system-socket, AS_HELP_STRING([--with-system-socket=[filename]],[UNIX domain socket for systemwide daemon]))
-#AC_ARG_WITH(console-auth-dir, AS_HELP_STRING([--with-console-auth-dir=[dirname]],[directory to check for console ownerhip]))
-#AC_ARG_WITH(console-owner-file, AS_HELP_STRING([--with-console-owner-file=[filename]],[file whose owner determines current console owner]))
-#AC_ARG_WITH(dbus_user, AS_HELP_STRING([--with-dbus-user=<user>],[User for running the DBUS daemon (messagebus)]))
-#AC_ARG_WITH(dbus_daemondir, AS_HELP_STRING([--with-dbus-daemondir=[dirname]],[Directory for installing the DBUS daemon]))
 # all missing or hardcoded for now
 
 # 'hidden' ones
@@ -387,17 +362,6 @@ endif (MSVC_IDE)
      endif (NOT $ENV{TEMP} STREQUAL "")
  endif (NOT $ENV{TMPDIR} STREQUAL "")
 
-#AC_ARG_WITH(test-socket-dir, AS_HELP_STRING([--with-test-socket-dir=[dirname]],[Where to put sockets for make check]))
-
-#AC_ARG_WITH(system-pid-file, AS_HELP_STRING([--with-system-pid-file=[pidfile]],[PID file for systemwide daemon]))
-
-#if ! test -z "$with_system_pid_file"; then
-#   DBUS_SYSTEM_PID_FILE=$with_system_pid_file
-#elif test x$operating_system = xredhat ; then
-#   DBUS_SYSTEM_PID_FILE=${EXPANDED_LOCALSTATEDIR}/run/messagebus.pid
-#else
-#   DBUS_SYSTEM_PID_FILE=${EXPANDED_LOCALSTATEDIR}/run/dbus/pid
-#fi
 # TODO: fix redhet
 if (WIN32)
   # bus-test expects a non empty string
@@ -406,17 +370,11 @@ else (WIN32)
 	set (DBUS_SYSTEM_PID_FILE ${EXPANDED_LOCALSTATEDIR}/run/dbus/pid)
 endif (WIN32)
 
-#AC_ARG_WITH(system-socket, AS_HELP_STRING([--with-system-socket=[filename]],[UNIX domain socket for systemwide daemon]))
-
-#AC_ARG_WITH(console-auth-dir, AS_HELP_STRING([--with-console-auth-dir=[dirname]],[directory to check for console ownerhip]))
-
 if (WIN32)
 	set (DBUS_CONSOLE_AUTH_DIR "")
 else (WIN32)
 	set (DBUS_CONSOLE_AUTH_DIR "/var/run/console/")
 endif (WIN32)
-
-#AC_ARG_WITH(dbus_user, AS_HELP_STRING([--with-dbus-user=<user>],[User for running the DBUS daemon (messagebus)]))
 
 set (DBUS_USER )
 
@@ -528,7 +486,6 @@ message("        install exec_prefix:      ${exec_prefix}                      "
 message("        install libdir:           ${EXPANDED_LIBDIR}                  ")
 message("        install bindir:           ${EXPANDED_BINDIR}                  ")
 message("        install sysconfdir:       ${EXPANDED_SYSCONFDIR}              ")
-#message("        install localstatedir:    ${EXPANDED_LOCALSTATEDIR}           ")
 message("        install datadir:          ${EXPANDED_DATADIR}                 ")
 message("        source code location:     ${DBUS_SOURCE_DIR}                  ")
 message("        build dir:                ${CMAKE_BINARY_DIR}                 ")
@@ -547,7 +504,6 @@ message("        Doxygen:                  ${DOXYGEN}                          "
 message("        Docbook Generator:        ${DOCBOOK_GENERATOR_NAME}           ")
 
 
-#message("        Maintainer mode:          ${USE_MAINTAINER_MODE}              ")
 message("        gcc coverage profiling:   ${DBUS_GCOV_ENABLED}                ")
 message("        Building unit tests:      ${DBUS_BUILD_TESTS}                 ")
 message("        Building verbose mode:    ${DBUS_ENABLE_VERBOSE_MODE}         ")
@@ -555,18 +511,14 @@ message("        Building w/o assertions:  ${DBUS_DISABLE_ASSERT}             ")
 message("        Building w/o checks:      ${DBUS_DISABLE_CHECKS}              ")
 message("        Building bus stats API:   ${DBUS_ENABLE_STATS}                ")
 message("        installing system libs:   ${DBUS_INSTALL_SYSTEM_LIBS}         ")
-#message("        Building SELinux support: ${have_selinux}                     ")
 message("        Building Doxygen docs:    ${DBUS_ENABLE_DOXYGEN_DOCS}         ")
 message("        Building XML docs:        ${DBUS_ENABLE_XML_DOCS}             ")
-#message("        Gettext libs (empty OK):  ${INTLLIBS}                         ")
 message("        Daemon executable name:   ${DBUS_DAEMON_NAME}")
 if (WIN32)
 message("        System bus address:       ${DBUS_SYSTEM_BUS_DEFAULT_ADDRESS}  ")
 message("        Session bus listens on:   ${DBUS_SESSION_BUS_LISTEN_ADDRESS} ")
 message("        Session clients connect to: ${DBUS_SESSION_BUS_CONNECT_ADDRESS} ")
 else (WIN32)
-#message("        Init scripts style:       ${with_init_scripts}                ")
-#message("        Abstract socket names:    ${have_abstract_sockets}            ")
 message("        System bus socket:        ${DBUS_SYSTEM_SOCKET}               ")
 message("        System bus address:       ${DBUS_SYSTEM_BUS_DEFAULT_ADDRESS}  ")
 message("        System bus PID file:      ${DBUS_SYSTEM_PID_FILE}             ")
