@@ -1106,7 +1106,7 @@ main (int argc, char **argv)
 
       verbose ("Calling exec()\n");
  
-#ifdef DBUS_BUILD_TESTS 
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
       /* exec from testdir */
       if (getenv("DBUS_USE_TEST_BINARY") != NULL)
         {
@@ -1123,7 +1123,7 @@ main (int argc, char **argv)
                    "Failed to execute test message bus daemon %s: %s. Will try again with the system path.\n",
                    TEST_BUS_BINARY, strerror (errno));
         }
- #endif /* DBUS_BUILD_TESTS */
+ #endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
       execl (DBUS_DAEMONDIR"/dbus-daemon",
              DBUS_DAEMONDIR"/dbus-daemon",
