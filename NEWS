@@ -3,6 +3,12 @@ D-Bus 1.7.6 (UNRELEASED)
 
 Build-time configuration changes:
 
+• Directory change notification via dnotify on Linux is no longer
+  supported; it hadn't compiled successfully since 2010 in any case.
+  If you don't have inotify (Linux) or kqueue (*BSD), you will need
+  to send SIGHUP to the dbus-daemon when its configuration changes.
+  (fd.o #33001, Chengwei Yang)
+
 • The DBUS_DISABLE_ASSERTS CMake option didn't actually disable most
   assertions. It has been renamed to DBUS_DISABLE_ASSERT to be consistent
   with the Autotools build system. (fd.o #66142, Chengwei Yang)
