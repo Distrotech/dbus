@@ -1302,12 +1302,12 @@ bus_client_policy_check_can_own (BusClientPolicy  *policy,
   return bus_rules_check_can_own (policy->rules, service_name);
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 dbus_bool_t
 bus_policy_check_can_own (BusPolicy  *policy,
                           const DBusString *service_name)
 {
   return bus_rules_check_can_own (policy->default_rules, service_name);
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 

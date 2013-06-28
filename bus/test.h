@@ -24,7 +24,7 @@
 #ifndef BUS_TEST_H
 #define BUS_TEST_H
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #include <dbus/dbus.h>
 #include <dbus/dbus-string.h>

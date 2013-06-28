@@ -330,7 +330,7 @@ bus_config_parser_get_service_dirs (BusConfigParser *parser)
   return &parser->service_dirs;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include <stdio.h>
 #include "test.h"
 
@@ -712,5 +712,5 @@ finish:
   return retval;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 

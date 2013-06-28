@@ -2742,7 +2742,7 @@ bus_config_parser_steal_service_context_table (BusConfigParser *parser)
   return table;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include <stdio.h>
 
 typedef enum
@@ -3636,5 +3636,5 @@ bus_config_parser_test (const DBusString *test_data_dir)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 

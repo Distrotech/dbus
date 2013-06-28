@@ -64,7 +64,7 @@ bus_match_rule_new (DBusConnection *matches_go_to)
   rule->refcount = 1;
   rule->matches_go_to = matches_go_to;
 
-#ifndef DBUS_BUILD_TESTS
+#ifndef DBUS_ENABLE_EMBEDDED_TESTS
   _dbus_assert (rule->matches_go_to != NULL);
 #endif
   
@@ -2056,7 +2056,7 @@ bus_matchmaker_get_recipients (BusMatchmaker   *matchmaker,
   return TRUE;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "test.h"
 #include <stdlib.h>
 
@@ -2811,5 +2811,5 @@ bus_signals_test (const DBusString *test_data_dir)
   return TRUE;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 

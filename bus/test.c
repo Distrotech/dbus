@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 #include "test.h"
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-list.h>

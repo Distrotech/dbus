@@ -428,7 +428,7 @@ bus_dispatch_remove_connection (DBusConnection *connection)
                                  NULL);
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #include <stdio.h>
 
@@ -4907,4 +4907,4 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
 }
 #endif
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

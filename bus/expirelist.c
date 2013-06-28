@@ -281,7 +281,7 @@ bus_expire_list_contains_item (BusExpireList *list,
   return _dbus_list_find_last (&list->items, item) != NULL;
 }
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 typedef struct
 {
@@ -399,4 +399,4 @@ bus_expire_list_test (const DBusString *test_data_dir)
   return result;
 }
 
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */

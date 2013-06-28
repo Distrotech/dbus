@@ -29,7 +29,7 @@
 #include <dbus/dbus-sysdeps.h>
 #include <dbus/dbus-internals.h>
 
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static void
 die (const char *failure)
 {
@@ -50,7 +50,7 @@ check_memleaks (const char *name)
       die ("memleaks");
     }
 }
-#endif /* DBUS_BUILD_TESTS */
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
 static void
 test_pre_hook (void)
@@ -67,7 +67,7 @@ test_post_hook (void)
 int
 main (int argc, char **argv)
 {
-#ifdef DBUS_BUILD_TESTS
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   const char *dir;
   DBusString test_data_dir;
 
@@ -98,7 +98,7 @@ main (int argc, char **argv)
   printf ("%s: Success\n", argv[0]);
 
   return 0;
-#else /* DBUS_BUILD_TESTS */
+#else /* DBUS_ENABLE_EMBEDDED_TESTS */
 
   printf ("Not compiled with test support\n");
 
