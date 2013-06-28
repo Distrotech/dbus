@@ -977,7 +977,7 @@ do {                                            \
 dbus_bool_t
 _dbus_string_insert_2_aligned (DBusString         *str,
                                int                 insert_at,
-                               const unsigned char octets[4])
+                               const unsigned char octets[2])
 {
   DBUS_STRING_PREAMBLE (str);
   
