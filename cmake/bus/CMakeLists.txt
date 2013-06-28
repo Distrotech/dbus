@@ -31,9 +31,13 @@ ENDFOREACH(FILE)
 
 SET (XML_SOURCES ${BUS_DIR}/config-loader-expat.c)
 
-# after next cvs update
-#set (DIR_WATCH_SOURCE ${BUS_DIR}/dir-watch-default.c)
-set (DIR_WATCH_SOURCE )
+if (DBUS_BUS_ENABLE_INOTIFY)
+    set (DIR_WATCH_SOURCE ${BUS_DIR}/dir-watch-inotify.c)
+elseif (DBUS_BUS_ENABLE_KQUEUE)
+    set (DIR_WATCH_SOURCE ${BUS_DIR}/dir-watch-kqueue.c)
+else (DBUS_BUS_ENABLE_INOTIFY)
+    set (DIR_WATCH_SOURCE ${BUS_DIR}/dir-watch-default.c)
+endif (DBUS_BUS_ENABLE_INOTIFY)
 
 set (BUS_SOURCES 
 	${BUS_DIR}/activation.c				
@@ -42,14 +46,13 @@ set (BUS_SOURCES
 	${BUS_DIR}/bus.h					
 	${BUS_DIR}/config-parser.c				
 	${BUS_DIR}/config-parser.h
-    ${BUS_DIR}/config-parser-common.c
-    ${BUS_DIR}/config-parser-common.h
+	${BUS_DIR}/config-parser-common.c
+	${BUS_DIR}/config-parser-common.h
 #    ${BUS_DIR}/config-parser-trivial.c
 	${BUS_DIR}/connection.c
 	${BUS_DIR}/connection.h				
 	${BUS_DIR}/desktop-file.c				
 	${BUS_DIR}/desktop-file.h				
-	${BUS_DIR}/dir-watch-default.c				
 	${BUS_DIR}/dir-watch.h				
 	${BUS_DIR}/dispatch.c				
 	${BUS_DIR}/dispatch.h				
@@ -77,7 +80,7 @@ if(DBUS_ENABLE_STATS)
 		${BUS_DIR}/stats.c
 		${BUS_DIR}/stats.h
 	)
-endif()
+endif(DBUS_ENABLE_STATS)
 
 include_directories(${XML_INCLUDE_DIR})
 
