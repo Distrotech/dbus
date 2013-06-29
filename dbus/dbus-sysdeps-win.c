@@ -912,7 +912,7 @@ failed:
   if (process_token != INVALID_HANDLE_VALUE)
     CloseHandle (process_token);
 
-  _dbus_verbose("_dbus_getsid() returns %d\n",retval);
+  _dbus_verbose("_dbus_getsid() got '%s' and returns %d\n", *sid, retval);
   return retval;
 }
 #endif
