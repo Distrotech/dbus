@@ -2228,7 +2228,7 @@ _dbus_string_starts_with_c_str (const DBusString *a,
  */
 dbus_bool_t
 _dbus_string_append_byte_as_hex (DBusString *str,
-                                 int         byte)
+                                 unsigned char byte)
 {
   const char hexdigits[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',

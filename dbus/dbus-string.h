@@ -259,7 +259,7 @@ void          _dbus_string_delete_first_word     (DBusString        *str);
 void          _dbus_string_delete_leading_blanks (DBusString        *str);
 void          _dbus_string_chop_white            (DBusString        *str); 
 dbus_bool_t   _dbus_string_append_byte_as_hex    (DBusString        *str,
-                                                  int                byte);
+                                                  unsigned char      byte);
 dbus_bool_t   _dbus_string_hex_encode            (const DBusString  *source,
                                                   int                start,
                                                   DBusString        *dest,
