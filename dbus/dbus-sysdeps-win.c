@@ -832,6 +832,38 @@ _dbus_pid_for_log (void)
 }
 
 #ifndef DBUS_WINCE
+
+static BOOL is_winxp_sp3_or_lower()
+{
+   OSVERSIONINFOEX osvi;
+   DWORDLONG dwlConditionMask = 0;
+   int op=VER_LESS_EQUAL;
+
+   // Initialize the OSVERSIONINFOEX structure.
+
+   ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+   osvi.dwMajorVersion = 5;
+   osvi.dwMinorVersion = 1;
+   osvi.wServicePackMajor = 3;
+   osvi.wServicePackMinor = 0;
+
+   // Initialize the condition mask.
+
+   VER_SET_CONDITION( dwlConditionMask, VER_MAJORVERSION, op );
+   VER_SET_CONDITION( dwlConditionMask, VER_MINORVERSION, op );
+   VER_SET_CONDITION( dwlConditionMask, VER_SERVICEPACKMAJOR, op );
+   VER_SET_CONDITION( dwlConditionMask, VER_SERVICEPACKMINOR, op );
+
+   // Perform the test.
+
+   return VerifyVersionInfo(
+      &osvi,
+      VER_MAJORVERSION | VER_MINORVERSION |
+      VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR,
+      dwlConditionMask);
+}
+
 /** Gets our SID
  * @param sid points to sid buffer, need to be freed with LocalFree()
  * @param process_id the process id for which the sid should be returned
@@ -845,7 +877,8 @@ _dbus_getsid(char **sid, dbus_pid_t process_id)
   DWORD n;
   PSID psid;
   int retval = FALSE;
-  HANDLE process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id);
+
+  HANDLE process_handle = OpenProcess(is_winxp_sp3_or_lower() ? PROCESS_QUERY_INFORMATION : PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id);
 
   if (!OpenProcessToken (process_handle, TOKEN_QUERY, &process_token))
     {
