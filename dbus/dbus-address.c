@@ -104,15 +104,15 @@ dbus_bool_t
 _dbus_address_append_escaped (DBusString       *escaped,
                               const DBusString *unescaped)
 {
-  const char *p;
-  const char *end;
+  const unsigned char *p;
+  const unsigned char *end;
   dbus_bool_t ret;
   int orig_len;
 
   ret = FALSE;
 
   orig_len = _dbus_string_get_length (escaped);
-  p = _dbus_string_get_const_data (unescaped);
+  p = (const unsigned char *) _dbus_string_get_const_data (unescaped);
   end = p + _dbus_string_get_length (unescaped);
   while (p != end)
     {
@@ -678,7 +678,9 @@ static const EscapeTest escape_tests[] = {
   { "Z", "Z" },
   { "a", "a" },
   { "i", "i" },
-  { "z", "z" }
+  { "z", "z" },
+  /* Bug: https://bugs.freedesktop.org/show_bug.cgi?id=53499 */
+  { "%c3%b6", "\xc3\xb6" }
 };
 
 static const char* invalid_escaped_values[] = {
