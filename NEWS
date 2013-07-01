@@ -50,7 +50,7 @@ Fixes:
   · improve verbose-mode output (fd.o #63047, Colin Walters)
   · consolidate Autotools and CMake build (fd.o #64875, Ralf Habacker)
   · fix various unused variables, unusual build configurations
-    etc. (fd.o #65712, #65990, #66005; Chengwei Yang)
+    etc. (fd.o #65712, #65990, #66005, #66257; Chengwei Yang)
 
 D-Bus 1.7.4 (2013-06-13)
 ==
