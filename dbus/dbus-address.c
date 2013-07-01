@@ -680,7 +680,7 @@ static const EscapeTest escape_tests[] = {
   { "i", "i" },
   { "z", "z" },
   /* Bug: https://bugs.freedesktop.org/show_bug.cgi?id=53499 */
-  { "%c3%b6", "\303\266" }
+  { "%c3%b6", "\xc3\xb6" }
 };
 
 static const char* invalid_escaped_values[] = {
