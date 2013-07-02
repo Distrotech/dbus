@@ -4659,7 +4659,7 @@
 	  <programlisting>
             # Sample service description file
             [D-BUS Service]
-            Names=org.freedesktop.ConfigurationDatabase;org.gnome.GConf;
+            Name=org.freedesktop.ConfigurationDatabase
             Exec=/usr/libexec/gconfd-2
           </programlisting>
 	</figure>
