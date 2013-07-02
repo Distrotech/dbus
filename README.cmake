@@ -156,6 +156,18 @@ HAVE_CONSOLE_OWNER_FILE:BOOL=ON
 // Directory to check for console ownership
 DBUS_CONSOLE_OWNER_FILE:STRING=/dev/console
 
+// Linux only:
+// enable inotify as dir watch backend
+DBUS_BUS_ENABLE_INOTIFY:BOOL=ON
+
+*BSD only:
+// enable kqueue as dir watch backend
+DBUS_BUS_ENABLE_KQUEUE:BOOL=ON
+
+not available on windows:
+// enable abstract socket transport
+DBUS_ENABLE_ABSTRACT_SOCKETS:BOOL=ON
+
 x11 only:
 // Build with X11 auto launch support
 DBUS_BUILD_X11:BOOL=ON
