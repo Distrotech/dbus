@@ -259,6 +259,25 @@ _dbus_watch_list_free (DBusWatchList *watch_list)
   dbus_free (watch_list);
 }
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+static const char*
+watch_flags_to_string (int flags)
+{
+  const char *watch_type;
+
+  if ((flags & DBUS_WATCH_READABLE) &&
+      (flags & DBUS_WATCH_WRITABLE))
+    watch_type = "readwrite";
+  else if (flags & DBUS_WATCH_READABLE)
+    watch_type = "read";
+  else if (flags & DBUS_WATCH_WRITABLE)
+    watch_type = "write";
+  else
+    watch_type = "not read or write";
+  return watch_type;
+}
+#endif /* DBUS_ENABLE_VERBOSE_MODE */
+
 /**
  * Sets the watch functions. This function is the "backend"
  * for dbus_connection_set_watch_functions() and
@@ -292,27 +311,9 @@ _dbus_watch_list_set_functions (DBusWatchList           *watch_list,
           DBusList *next = _dbus_list_get_next_link (&watch_list->watches,
                                                      link);
 
-#ifdef DBUS_ENABLE_VERBOSE_MODE
-          {
-            const char *watch_type;
-            int flags;
-
-            flags = dbus_watch_get_flags (link->data);
-            if ((flags & DBUS_WATCH_READABLE) &&
-                (flags & DBUS_WATCH_WRITABLE))
-              watch_type = "readwrite";
-            else if (flags & DBUS_WATCH_READABLE)
-              watch_type = "read";
-            else if (flags & DBUS_WATCH_WRITABLE)
-              watch_type = "write";
-            else
-              watch_type = "not read or write";
-            
-            _dbus_verbose ("Adding a %s watch on fd %d using newly-set add watch function\n",
-                           watch_type,
-                           dbus_watch_get_socket (link->data));
-          }
-#endif /* DBUS_ENABLE_VERBOSE_MODE */
+          _dbus_verbose ("Adding a %s watch on fd %d using newly-set add watch function\n",
+                         watch_flags_to_string (dbus_watch_get_flags (link->data)),
+                         dbus_watch_get_socket (link->data));
           
           if (!(* add_function) (link->data, data))
             {

@@ -34,27 +34,6 @@
 
 #define MAINLOOP_SPEW 0
 
-#if MAINLOOP_SPEW
-#ifdef DBUS_ENABLE_VERBOSE_MODE
-static const char*
-watch_flags_to_string (int flags)
-{
-  const char *watch_type;
-
-  if ((flags & DBUS_WATCH_READABLE) &&
-      (flags & DBUS_WATCH_WRITABLE))
-    watch_type = "readwrite";
-  else if (flags & DBUS_WATCH_READABLE)
-    watch_type = "read";
-  else if (flags & DBUS_WATCH_WRITABLE)
-    watch_type = "write";
-  else
-    watch_type = "not read or write";
-  return watch_type;
-}
-#endif /* DBUS_ENABLE_VERBOSE_MODE */
-#endif /* MAINLOOP_SPEW */
-
 struct DBusLoop
 {
   int refcount;
