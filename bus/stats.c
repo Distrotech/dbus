@@ -165,7 +165,7 @@ bus_stats_handle_get_connection_stats (DBusConnection *caller_connection,
         bus_connection_get_n_services_owned (stats_connection)) ||
       !_dbus_asv_add_uint32 (&arr_iter, "PeakBusNames",
         bus_connection_get_peak_bus_names (stats_connection)) ||
-      !_dbus_asv_add_uint32 (&arr_iter, "UniqueName",
+      !_dbus_asv_add_string (&arr_iter, "UniqueName",
         bus_connection_get_name (stats_connection)))
     {
       _dbus_asv_abandon (&iter, &arr_iter);
