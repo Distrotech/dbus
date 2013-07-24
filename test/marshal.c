@@ -27,6 +27,7 @@
 #include <config.h>
 
 #include <glib.h>
+#include <string.h>
 
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -244,14 +245,30 @@ int
 main (int argc,
     char **argv)
 {
+  int ret;
+  char *aligned_le_blob;
+  char *aligned_be_blob;
+
   g_test_init (&argc, &argv, NULL);
 
-  g_test_add ("/demarshal/le", Fixture, le_blob, setup, test_endian, teardown);
-  g_test_add ("/demarshal/be", Fixture, be_blob, setup, test_endian, teardown);
-  g_test_add ("/demarshal/needed/le", Fixture, le_blob, setup, test_needed,
+  /* We have to pass in a buffer that's at least "default aligned",
+   * i.e.  on GNU systems to 8 or 16.  The linker may have only given
+   * us byte-alignment for the char[] static variables.
+   */
+  aligned_le_blob = g_malloc (sizeof (le_blob));
+  memcpy (aligned_le_blob, le_blob, sizeof (le_blob));
+  aligned_be_blob = g_malloc (sizeof (be_blob));
+  memcpy (aligned_be_blob, be_blob, sizeof (be_blob));  
+
+  g_test_add ("/demarshal/le", Fixture, aligned_le_blob, setup, test_endian, teardown);
+  g_test_add ("/demarshal/be", Fixture, aligned_be_blob, setup, test_endian, teardown);
+  g_test_add ("/demarshal/needed/le", Fixture, aligned_le_blob, setup, test_needed,
       teardown);
-  g_test_add ("/demarshal/needed/be", Fixture, be_blob, setup, test_needed,
+  g_test_add ("/demarshal/needed/be", Fixture, aligned_be_blob, setup, test_needed,
       teardown);
 
-  return g_test_run ();
+  ret = g_test_run ();
+  g_free (aligned_le_blob);
+  g_free (aligned_be_blob);
+  return ret;
 }
