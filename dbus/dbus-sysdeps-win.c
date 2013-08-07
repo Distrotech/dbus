@@ -104,6 +104,31 @@ _dbus_win_set_errno (int err)
 #endif
 }
 
+static BOOL is_winxp_sp3_or_lower();
+
+/*
+ * _MIB_TCPROW_EX and friends are not available in system headers
+ *  and are mapped to attribute identical ...OWNER_PID typedefs.
+ */
+typedef MIB_TCPROW_OWNER_PID _MIB_TCPROW_EX;
+typedef MIB_TCPTABLE_OWNER_PID MIB_TCPTABLE_EX;
+typedef PMIB_TCPTABLE_OWNER_PID PMIB_TCPTABLE_EX;
+typedef DWORD (WINAPI *ProcAllocateAndGetTcpExtTableFromStack)(PMIB_TCPTABLE_EX*,BOOL,HANDLE,DWORD,DWORD);
+static ProcAllocateAndGetTcpExtTableFromStack lpfnAllocateAndGetTcpExTableFromStack = NULL;
+
+static BOOL load_ex_ip_helper_procedures(void)
+{
+    HMODULE hModule = LoadLibrary ("iphlpapi.dll");
+    if (hModule == NULL)
+        return FALSE;
+
+    lpfnAllocateAndGetTcpExTableFromStack = (ProcAllocateAndGetTcpExtTableFromStack)GetProcAddress (hModule, "AllocateAndGetTcpExTableFromStack");
+    if (lpfnAllocateAndGetTcpExTableFromStack == NULL)
+        return FALSE;
+
+    return TRUE;
+}
+
 /**
  * @brief return peer process id from tcp handle for localhost connections
  * @param handle tcp socket descriptor
@@ -158,6 +183,43 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
       _dbus_verbose
         ("Error not been able to fetch tcp peer port from connection\n");
       return 0;
+    }
+
+  if (is_winxp_sp3_or_lower ())
+    {
+      DWORD errorCode, dwSize;
+      PMIB_TCPTABLE_EX lpBuffer = NULL;
+
+      if (!load_ex_ip_helper_procedures ())
+        {
+          _dbus_verbose
+            ("Error not been able to load iphelper procedures\n");
+          return 0;
+        }
+      errorCode = (*lpfnAllocateAndGetTcpExTableFromStack) (&lpBuffer, TRUE, GetProcessHeap(), 0, 2);
+      if (errorCode != NO_ERROR)
+        {
+          _dbus_verbose
+            ("Error not been able to call AllocateAndGetTcpExTableFromStack()\n");
+          return 0;
+        }
+
+      result = 0;
+      for (dwSize = 0; dwSize < lpBuffer->dwNumEntries; dwSize++)
+        {
+          int local_port = ntohs (lpBuffer->table[dwSize].dwLocalPort);
+          if (local_port == peer_port)
+            {
+              result = lpBuffer->table[dwSize].dwOwningPid;
+              break;
+            }
+        }
+
+      if (lpBuffer)
+          HeapFree (GetProcessHeap(), 0, lpBuffer);
+
+      _dbus_verbose ("got pid %d\n", (int)result);
+      return result;
     }
 
   if ((result =
