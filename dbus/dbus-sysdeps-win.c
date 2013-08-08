@@ -116,6 +116,11 @@ typedef PMIB_TCPTABLE_OWNER_PID PMIB_TCPTABLE_EX;
 typedef DWORD (WINAPI *ProcAllocateAndGetTcpExtTableFromStack)(PMIB_TCPTABLE_EX*,BOOL,HANDLE,DWORD,DWORD);
 static ProcAllocateAndGetTcpExtTableFromStack lpfnAllocateAndGetTcpExTableFromStack = NULL;
 
+/**
+ * AllocateAndGetTcpExTableFromStack() is undocumented and not exported,
+ * but is the only way to do this in older XP versions.
+ * @return true if the procedures could be loaded
+ */
 static BOOL load_ex_ip_helper_procedures(void)
 {
     HMODULE hModule = LoadLibrary ("iphlpapi.dll");
