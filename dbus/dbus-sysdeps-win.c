@@ -138,11 +138,10 @@ static BOOL load_ex_ip_helper_procedures(void)
 dbus_pid_t get_pid_from_extended_tcp_table(int peer_port)
 {
   dbus_pid_t result;
-  DWORD size;
+  DWORD errorCode, size, i;
   MIB_TCPTABLE_OWNER_PID *tcp_table;
-  DWORD i;
 
-  if ((result =
+  if ((errorCode =
        GetExtendedTcpTable (NULL, &size, TRUE, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0)) == ERROR_INSUFFICIENT_BUFFER)
     {
       tcp_table = (MIB_TCPTABLE_OWNER_PID *) dbus_malloc (size);
@@ -153,9 +152,9 @@ dbus_pid_t get_pid_from_extended_tcp_table(int peer_port)
         }
     }
 
-  if ((result = GetExtendedTcpTable (tcp_table, &size, TRUE, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0)) != NO_ERROR)
+  if ((errorCode = GetExtendedTcpTable (tcp_table, &size, TRUE, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0)) != NO_ERROR)
     {
-      _dbus_verbose ("Error fetching tcp table %d\n", (int)result);
+      _dbus_verbose ("Error fetching tcp table %d\n", (int)errorCode);
       dbus_free (tcp_table);
       return 0;
     }
@@ -179,8 +178,8 @@ dbus_pid_t get_pid_from_extended_tcp_table(int peer_port)
 dbus_pid_t get_pid_from_tcp_ex_table(int peer_port)
 {
   dbus_pid_t result;
-  DWORD errorCode, dwSize;
-  PMIB_TCPTABLE_EX lpBuffer = NULL;
+  DWORD errorCode, i;
+  PMIB_TCPTABLE_EX tcp_table = NULL;
 
   if (!load_ex_ip_helper_procedures ())
     {
@@ -189,7 +188,7 @@ dbus_pid_t get_pid_from_tcp_ex_table(int peer_port)
       return 0;
     }
 
-  errorCode = lpfnAllocateAndGetTcpExTableFromStack (&lpBuffer, TRUE, GetProcessHeap(), 0, 2);
+  errorCode = lpfnAllocateAndGetTcpExTableFromStack (&tcp_table, TRUE, GetProcessHeap(), 0, 2);
 
   if (errorCode != NO_ERROR)
     {
@@ -197,19 +196,21 @@ dbus_pid_t get_pid_from_tcp_ex_table(int peer_port)
         ("Error not been able to call AllocateAndGetTcpExTableFromStack()\n");
       return 0;
     }
+
   result = 0;
-  for (dwSize = 0; dwSize < lpBuffer->dwNumEntries; dwSize++)
+  for (i = 0; i < tcp_table->dwNumEntries; i++)
     {
-      int local_port = ntohs (lpBuffer->table[dwSize].dwLocalPort);
-      int local_address = ntohl (lpBuffer->table[dwSize].dwLocalAddr);
+      _MIB_TCPROW_EX *p = &tcp_table->table[i];
+      int local_port = ntohs (p->dwLocalPort);
+      int local_address = ntohl (p->dwLocalAddr);
       if (local_address == INADDR_LOOPBACK && local_port == peer_port)
         {
-          result = lpBuffer->table[dwSize].dwOwningPid;
+          result = p->dwOwningPid;
           break;
         }
     }
-  if (lpBuffer)
-      HeapFree (GetProcessHeap(), 0, lpBuffer);
+  if (tcp_table)
+      HeapFree (GetProcessHeap(), 0, tcp_table);
   _dbus_verbose ("got pid %d\n", (int)result);
   return result;
 }
