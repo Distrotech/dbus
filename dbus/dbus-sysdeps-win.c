@@ -208,7 +208,8 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
       for (dwSize = 0; dwSize < lpBuffer->dwNumEntries; dwSize++)
         {
           int local_port = ntohs (lpBuffer->table[dwSize].dwLocalPort);
-          if (local_port == peer_port)
+          int local_address = ntohl (lpBuffer->table[dwSize].dwLocalAddr);
+          if (local_address == INADDR_LOOPBACK && local_port == peer_port)
             {
               result = lpBuffer->table[dwSize].dwOwningPid;
               break;
@@ -244,8 +245,10 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
   for (i = 0; i < tcp_table->dwNumEntries; i++)
     {
       MIB_TCPROW_OWNER_PID *p = &tcp_table->table[i];
+      int local_address = ntohl (p->dwLocalAddr);
       int local_port = ntohs (p->dwLocalPort);
-      if (p->dwState == MIB_TCP_STATE_ESTAB && local_port == peer_port)
+      if (p->dwState == MIB_TCP_STATE_ESTAB
+          && local_address == INADDR_LOOPBACK && local_port == peer_port)
         result = p->dwOwningPid;
     }
 
