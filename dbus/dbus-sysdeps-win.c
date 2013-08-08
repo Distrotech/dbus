@@ -125,11 +125,17 @@ static BOOL load_ex_ip_helper_procedures(void)
 {
     HMODULE hModule = LoadLibrary ("iphlpapi.dll");
     if (hModule == NULL)
+      {
+        _dbus_verbose ("could not load iphlpapi.dll\n");
         return FALSE;
+      }
 
     lpfnAllocateAndGetTcpExTableFromStack = (ProcAllocateAndGetTcpExtTableFromStack)GetProcAddress (hModule, "AllocateAndGetTcpExTableFromStack");
     if (lpfnAllocateAndGetTcpExTableFromStack == NULL)
+      {
+        _dbus_verbose ("could not find function AllocateAndGetTcpExTableFromStack in iphlpapi.dll\n");
         return FALSE;
+      }
 
     return TRUE;
 }
