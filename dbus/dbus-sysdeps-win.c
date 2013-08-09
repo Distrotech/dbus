@@ -121,27 +121,33 @@ static ProcAllocateAndGetTcpExtTableFromStack lpfnAllocateAndGetTcpExTableFromSt
  * but is the only way to do this in older XP versions.
  * @return true if the procedures could be loaded
  */
-static BOOL load_ex_ip_helper_procedures(void)
+static BOOL
+load_ex_ip_helper_procedures(void)
 {
-    HMODULE hModule = LoadLibrary ("iphlpapi.dll");
-    if (hModule == NULL)
-      {
-        _dbus_verbose ("could not load iphlpapi.dll\n");
-        return FALSE;
-      }
+  HMODULE hModule = LoadLibrary ("iphlpapi.dll");
+  if (hModule == NULL)
+    {
+      _dbus_verbose ("could not load iphlpapi.dll\n");
+      return FALSE;
+    }
 
-    lpfnAllocateAndGetTcpExTableFromStack = (ProcAllocateAndGetTcpExtTableFromStack)GetProcAddress (hModule, "AllocateAndGetTcpExTableFromStack");
-    if (lpfnAllocateAndGetTcpExTableFromStack == NULL)
-      {
-        _dbus_verbose ("could not find function AllocateAndGetTcpExTableFromStack in iphlpapi.dll\n");
-        return FALSE;
-      }
-
-    return TRUE;
+  lpfnAllocateAndGetTcpExTableFromStack = (ProcAllocateAndGetTcpExtTableFromStack)GetProcAddress (hModule, "AllocateAndGetTcpExTableFromStack");
+  if (lpfnAllocateAndGetTcpExTableFromStack == NULL)
+    {
+      _dbus_verbose ("could not find function AllocateAndGetTcpExTableFromStack in iphlpapi.dll\n");
+      return FALSE;
+    }
+  return TRUE;
 }
 
-
-dbus_pid_t get_pid_from_extended_tcp_table(int peer_port)
+/**
+ * get pid from localhost tcp connection using peer_port
+ * This function is available on WinXP >= SP3
+ * @param peer_port peers tcp port
+ * @return process id or 0 if connection has not been found
+ */
+static dbus_pid_t
+get_pid_from_extended_tcp_table(int peer_port)
 {
   dbus_pid_t result;
   DWORD errorCode, size, i;
@@ -156,6 +162,11 @@ dbus_pid_t get_pid_from_extended_tcp_table(int peer_port)
           _dbus_verbose ("Error allocating memory\n");
           return 0;
         }
+    }
+  else
+    {
+      _dbus_verbose ("unexpected error returned from GetExtendedTcpTable %d\n", errorCode);
+      return 0;
     }
 
   if ((errorCode = GetExtendedTcpTable (tcp_table, &size, TRUE, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0)) != NO_ERROR)
@@ -176,12 +187,20 @@ dbus_pid_t get_pid_from_extended_tcp_table(int peer_port)
          result = p->dwOwningPid;
     }
 
-  _dbus_verbose ("got pid %d\n", (int)result);
   dbus_free (tcp_table);
+  _dbus_verbose ("got pid %d\n", (int)result);
   return result;
 }
 
-dbus_pid_t get_pid_from_tcp_ex_table(int peer_port)
+/**
+ * get pid from localhost tcp connection using peer_port
+ * This function is available on all WinXP versions, but
+ * not in wine (at least version <= 1.6.0)
+ * @param peer_port peers tcp port
+ * @return process id or 0 if connection has not been found
+ */
+static dbus_pid_t
+get_pid_from_tcp_ex_table(int peer_port)
 {
   dbus_pid_t result;
   DWORD errorCode, i;
@@ -215,8 +234,8 @@ dbus_pid_t get_pid_from_tcp_ex_table(int peer_port)
           break;
         }
     }
-  if (tcp_table)
-      HeapFree (GetProcessHeap(), 0, tcp_table);
+
+  HeapFree (GetProcessHeap(), 0, tcp_table);
   _dbus_verbose ("got pid %d\n", (int)result);
   return result;
 }
@@ -242,7 +261,7 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
     {
       struct sockaddr_in *s = (struct sockaddr_in *) &addr;
       peer_port = ntohs (s->sin_port);
-      is_localhost = (htonl (s->sin_addr.s_addr) == INADDR_LOOPBACK);
+      is_localhost = (ntohl (s->sin_addr.s_addr) == INADDR_LOOPBACK);
     }
   else if (addr.ss_family == AF_INET6)
     {
@@ -274,12 +293,12 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
       return 0;
     }
 
-  _dbus_verbose ("\n");
+  _dbus_verbose ("trying to get peers pid");
 
-  result = get_pid_from_extended_tcp_table(peer_port);
+  result = get_pid_from_extended_tcp_table (peer_port);
   if (result > 0)
       return result;
-  result = get_pid_from_tcp_ex_table(peer_port);
+  result = get_pid_from_tcp_ex_table (peer_port);
   return result;
 }
 
