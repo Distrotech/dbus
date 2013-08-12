@@ -557,7 +557,7 @@ out:
  * 
  * @param type bus type
  * @param error address where an error can be returned.
- * @returns a #DBusConnection with new ref
+ * @returns a #DBusConnection with new ref or #NULL on error
  */
 DBusConnection *
 dbus_bus_get (DBusBusType  type,
