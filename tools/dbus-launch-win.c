@@ -159,8 +159,8 @@ main (int argc, char **argv)
   if (result == 0) 
     {
       if (verbose)
-        fprintf (stderr, "Could not start " DBUS_DAEMON_NAME ". error=%d\n",
-                 GetLastError ());
+        fprintf (stderr, "Could not start " DBUS_DAEMON_NAME ". error=%u\n",
+                 (unsigned)GetLastError ());
       return 4;
     }
    
