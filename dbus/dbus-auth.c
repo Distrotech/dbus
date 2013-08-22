@@ -170,7 +170,7 @@ struct DBusAuth
   DBusCredentials *credentials;          /**< Credentials read from socket
                                           */
 
-  DBusCredentials *authorized_identity; /**< Credentials that are authorized */
+  DBusCredentials *authenticated_identity; /**< Credentials that are authorized */
 
   DBusCredentials *desired_identity;    /**< Identity client has requested */
   
@@ -382,8 +382,8 @@ _dbus_auth_new (int size)
   if (auth->credentials == NULL)
     goto enomem_6;
   
-  auth->authorized_identity = _dbus_credentials_new ();
-  if (auth->authorized_identity == NULL)
+  auth->authenticated_identity = _dbus_credentials_new ();
+  if (auth->authenticated_identity == NULL)
     goto enomem_7;
 
   auth->desired_identity = _dbus_credentials_new ();
@@ -397,7 +397,7 @@ _dbus_auth_new (int size)
   _dbus_credentials_unref (auth->desired_identity);
 #endif
  enomem_8:
-  _dbus_credentials_unref (auth->authorized_identity);
+  _dbus_credentials_unref (auth->authenticated_identity);
  enomem_7:
   _dbus_credentials_unref (auth->credentials);
  enomem_6:
@@ -424,7 +424,7 @@ shutdown_mech (DBusAuth *auth)
   auth->already_asked_for_initial_response = FALSE;
   _dbus_string_set_length (&auth->identity, 0);
 
-  _dbus_credentials_clear (auth->authorized_identity);
+  _dbus_credentials_clear (auth->authenticated_identity);
   _dbus_credentials_clear (auth->desired_identity);
   
   if (auth->mech != NULL)
@@ -745,13 +745,13 @@ sha1_handle_second_client_response (DBusAuth         *auth,
       goto out_3;
     }
 
-  if (!_dbus_credentials_add_credentials (auth->authorized_identity,
+  if (!_dbus_credentials_add_credentials (auth->authenticated_identity,
                                           auth->desired_identity))
     goto out_3;
 
   /* Copy process ID from the socket credentials if it's there
    */
-  if (!_dbus_credentials_add_credential (auth->authorized_identity,
+  if (!_dbus_credentials_add_credential (auth->authenticated_identity,
                                          DBUS_CREDENTIAL_UNIX_PROCESS_ID,
                                          auth->credentials))
     goto out_3;
@@ -1101,20 +1101,20 @@ handle_server_data_external_mech (DBusAuth         *auth,
                                       auth->desired_identity))
     {
       /* client has authenticated */
-      if (!_dbus_credentials_add_credentials (auth->authorized_identity,
+      if (!_dbus_credentials_add_credentials (auth->authenticated_identity,
                                               auth->desired_identity))
         return FALSE;
 
       /* also copy process ID from the socket credentials
        */
-      if (!_dbus_credentials_add_credential (auth->authorized_identity,
+      if (!_dbus_credentials_add_credential (auth->authenticated_identity,
                                              DBUS_CREDENTIAL_UNIX_PROCESS_ID,
                                              auth->credentials))
         return FALSE;
 
       /* also copy audit data from the socket credentials
        */
-      if (!_dbus_credentials_add_credential (auth->authorized_identity,
+      if (!_dbus_credentials_add_credential (auth->authenticated_identity,
                                              DBUS_CREDENTIAL_ADT_AUDIT_DATA_ID,
                                              auth->credentials))
         return FALSE;
@@ -1124,7 +1124,7 @@ handle_server_data_external_mech (DBusAuth         *auth,
        * re-authorize later, but it will close the connection on fail,
        * we want to REJECT now if possible */
       if (_dbus_authorization_do_authorization (DBUS_AUTH_SERVER (auth)->authorization,
-            auth->authorized_identity))
+                                                auth->authorized_identity))
         {
           if (!send_ok (auth))
             return FALSE;
@@ -1232,7 +1232,7 @@ handle_server_data_anonymous_mech (DBusAuth         *auth,
 
   /* Copy process ID from the socket credentials
    */
-  if (!_dbus_credentials_add_credential (auth->authorized_identity,
+  if (!_dbus_credentials_add_credential (auth->authenticated_identity,
                                          DBUS_CREDENTIAL_UNIX_PROCESS_ID,
                                          auth->credentials))
     return FALSE;
@@ -2397,7 +2397,7 @@ _dbus_auth_unref (DBusAuth *auth)
       dbus_free_string_array (auth->allowed_mechs);
 
       _dbus_credentials_unref (auth->credentials);
-      _dbus_credentials_unref (auth->authorized_identity);
+      _dbus_credentials_unref (auth->authenticated_identity);
       _dbus_credentials_unref (auth->desired_identity);
       
       dbus_free (auth);
@@ -2754,7 +2754,7 @@ _dbus_auth_get_identity (DBusAuth               *auth)
 {
   if (auth->state == &common_state_authenticated)
     {
-      return auth->authorized_identity;
+      return auth->authenticated_identity;
     }
   else
     {
@@ -2762,8 +2762,8 @@ _dbus_auth_get_identity (DBusAuth               *auth)
        * doesn't require allocation or something
        */
       /* return empty credentials */
-      _dbus_assert (_dbus_credentials_are_empty (auth->authorized_identity));
-      return auth->authorized_identity;
+      _dbus_assert (_dbus_credentials_are_empty (auth->authenticated_identity));
+      return auth->authenticated_identity;
     }
 }
 
