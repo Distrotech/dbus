@@ -490,9 +490,9 @@ _dbus_connection_queue_received_message_link (DBusConnection  *connection,
   DBusPendingCall *pending;
   dbus_uint32_t reply_serial;
   DBusMessage *message;
-  
-  _dbus_assert (_dbus_transport_get_is_authenticated (connection->transport));
-  
+
+  _dbus_assert (_dbus_transport_peek_is_authenticated (connection->transport));
+
   _dbus_list_append_link (&connection->incoming_messages,
                           link);
   message = link->data;
@@ -2977,9 +2977,9 @@ dbus_connection_get_is_authenticated (DBusConnection *connection)
   dbus_bool_t res;
 
   _dbus_return_val_if_fail (connection != NULL, FALSE);
-  
+
   CONNECTION_LOCK (connection);
-  res = _dbus_transport_get_is_authenticated (connection->transport);
+  res = _dbus_transport_try_to_authenticate (connection->transport);
   CONNECTION_UNLOCK (connection);
   
   return res;
@@ -5174,10 +5174,10 @@ dbus_connection_get_unix_user (DBusConnection *connection,
 
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (uid != NULL, FALSE);
-  
+
   CONNECTION_LOCK (connection);
 
-  if (!_dbus_transport_get_is_authenticated (connection->transport))
+  if (!_dbus_transport_try_to_authenticate (connection->transport))
     result = FALSE;
   else
     result = _dbus_transport_get_unix_user (connection->transport,
@@ -5210,10 +5210,10 @@ dbus_connection_get_unix_process_id (DBusConnection *connection,
 
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (pid != NULL, FALSE);
-  
+
   CONNECTION_LOCK (connection);
 
-  if (!_dbus_transport_get_is_authenticated (connection->transport))
+  if (!_dbus_transport_try_to_authenticate (connection->transport))
     result = FALSE;
   else
     result = _dbus_transport_get_unix_process_id (connection->transport,
@@ -5245,10 +5245,10 @@ dbus_connection_get_adt_audit_session_data (DBusConnection *connection,
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (data != NULL, FALSE);
   _dbus_return_val_if_fail (data_size != NULL, FALSE);
-  
+
   CONNECTION_LOCK (connection);
 
-  if (!_dbus_transport_get_is_authenticated (connection->transport))
+  if (!_dbus_transport_try_to_authenticate (connection->transport))
     result = FALSE;
   else
     result = _dbus_transport_get_adt_audit_session_data (connection->transport,
@@ -5341,10 +5341,10 @@ dbus_connection_get_windows_user (DBusConnection             *connection,
 
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (windows_sid_p != NULL, FALSE);
-  
+
   CONNECTION_LOCK (connection);
 
-  if (!_dbus_transport_get_is_authenticated (connection->transport))
+  if (!_dbus_transport_try_to_authenticate (connection->transport))
     result = FALSE;
   else
     result = _dbus_transport_get_windows_user (connection->transport,

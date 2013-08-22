@@ -38,7 +38,8 @@ DBusTransport*     _dbus_transport_ref                    (DBusTransport        
 void               _dbus_transport_unref                  (DBusTransport              *transport);
 void               _dbus_transport_disconnect             (DBusTransport              *transport);
 dbus_bool_t        _dbus_transport_get_is_connected       (DBusTransport              *transport);
-dbus_bool_t        _dbus_transport_get_is_authenticated   (DBusTransport              *transport);
+dbus_bool_t        _dbus_transport_peek_is_authenticated  (DBusTransport              *transport);
+dbus_bool_t        _dbus_transport_try_to_authenticate    (DBusTransport              *transport);
 dbus_bool_t        _dbus_transport_get_is_anonymous       (DBusTransport              *transport);
 dbus_bool_t        _dbus_transport_can_pass_unix_fd       (DBusTransport              *transport);
 

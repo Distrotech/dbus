@@ -135,7 +135,7 @@ check_write_watch (DBusTransport *transport)
   
   _dbus_transport_ref (transport);
 
-  if (_dbus_transport_get_is_authenticated (transport))
+  if (_dbus_transport_try_to_authenticate (transport))
     needed = _dbus_connection_has_messages_to_send_unlocked (transport->connection);
   else
     {
@@ -190,7 +190,7 @@ check_read_watch (DBusTransport *transport)
   
   _dbus_transport_ref (transport);
 
-  if (_dbus_transport_get_is_authenticated (transport))
+  if (_dbus_transport_try_to_authenticate (transport))
     need_read_watch =
       (_dbus_counter_get_size_value (transport->live_messages) < transport->max_live_messages_size) &&
       (_dbus_counter_get_unix_fd_value (transport->live_messages) < transport->max_live_messages_unix_fds);
@@ -404,7 +404,7 @@ do_authentication (DBusTransport *transport,
 
   oom = FALSE;
   
-  orig_auth_state = _dbus_transport_get_is_authenticated (transport);
+  orig_auth_state = _dbus_transport_try_to_authenticate (transport);
 
   /* This is essential to avoid the check_write_watch() at the end,
    * we don't want to add a write watch in do_iteration before
@@ -419,7 +419,7 @@ do_authentication (DBusTransport *transport,
   
   _dbus_transport_ref (transport);
   
-  while (!_dbus_transport_get_is_authenticated (transport) &&
+  while (!_dbus_transport_try_to_authenticate (transport) &&
          _dbus_transport_get_is_connected (transport))
     {      
       if (!exchange_credentials (transport, do_reading, do_writing))
@@ -477,7 +477,7 @@ do_authentication (DBusTransport *transport,
 
  out:
   if (auth_completed)
-    *auth_completed = (orig_auth_state != _dbus_transport_get_is_authenticated (transport));
+    *auth_completed = (orig_auth_state != _dbus_transport_try_to_authenticate (transport));
   
   check_read_watch (transport);
   check_write_watch (transport);
@@ -498,7 +498,7 @@ do_writing (DBusTransport *transport)
   dbus_bool_t oom;
   
   /* No messages without authentication! */
-  if (!_dbus_transport_get_is_authenticated (transport))
+  if (!_dbus_transport_try_to_authenticate (transport))
     {
       _dbus_verbose ("Not authenticated, not writing anything\n");
       return TRUE;
@@ -703,7 +703,7 @@ do_reading (DBusTransport *transport)
   _dbus_verbose ("fd = %d\n",socket_transport->fd);
   
   /* No messages without authentication! */
-  if (!_dbus_transport_get_is_authenticated (transport))
+  if (!_dbus_transport_try_to_authenticate (transport))
     return TRUE;
 
   oom = FALSE;
@@ -1055,7 +1055,7 @@ socket_do_iteration (DBusTransport *transport,
   poll_fd.fd = socket_transport->fd;
   poll_fd.events = 0;
   
-  if (_dbus_transport_get_is_authenticated (transport))
+  if (_dbus_transport_try_to_authenticate (transport))
     {
       /* This is kind of a hack; if we have stuff to write, then try
        * to avoid the poll. This is probably about a 5% speedup on an

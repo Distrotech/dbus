@@ -686,10 +686,33 @@ auth_via_default_rules (DBusTransport *transport)
   return allow;
 }
 
+/**
+ * Returns #TRUE if we have been authenticated. It will return #TRUE even if
+ * the transport is now disconnected, but was ever authenticated before
+ * disconnecting.
+ *
+ * This replaces the older _dbus_transport_get_is_authenticated() which
+ * had side-effects.
+ *
+ * @param transport the transport
+ * @returns whether we're authenticated
+ */
+dbus_bool_t
+_dbus_transport_peek_is_authenticated (DBusTransport *transport)
+{
+  return transport->authenticated;
+}
 
 /**
- * Returns #TRUE if we have been authenticated.  Will return #TRUE
- * even if the transport is disconnected.
+ * Returns #TRUE if we have been authenticated. It will return #TRUE even if
+ * the transport is now disconnected, but was ever authenticated before
+ * disconnecting.
+ *
+ * If we have not finished authenticating, but we have enough buffered input
+ * to finish the job, then this function will do so before it returns.
+ *
+ * This used to be called _dbus_transport_get_is_authenticated(), but that
+ * name seems inappropriate for a function with side-effects.
  *
  * @todo we drop connection->mutex when calling the unix_user_function,
  * and windows_user_function, which may not be safe really.
@@ -698,7 +721,7 @@ auth_via_default_rules (DBusTransport *transport)
  * @returns whether we're authenticated
  */
 dbus_bool_t
-_dbus_transport_get_is_authenticated (DBusTransport *transport)
+_dbus_transport_try_to_authenticate (DBusTransport *transport)
 {  
   if (transport->authenticated)
     return TRUE;
@@ -1085,12 +1108,12 @@ _dbus_transport_get_dispatch_status (DBusTransport *transport)
       _dbus_counter_get_unix_fd_value (transport->live_messages) >= transport->max_live_messages_unix_fds)
     return DBUS_DISPATCH_COMPLETE; /* complete for now */
 
-  if (!_dbus_transport_get_is_authenticated (transport))
+  if (!_dbus_transport_try_to_authenticate (transport))
     {
       if (_dbus_auth_do_work (transport->auth) ==
           DBUS_AUTH_STATE_WAITING_FOR_MEMORY)
         return DBUS_DISPATCH_NEED_MEMORY;
-      else if (!_dbus_transport_get_is_authenticated (transport))
+      else if (!_dbus_transport_try_to_authenticate (transport))
         return DBUS_DISPATCH_COMPLETE;
     }
 
