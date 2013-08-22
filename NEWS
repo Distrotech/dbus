@@ -37,12 +37,18 @@ Fixes:
 
 • fix build failure with --enable-stats (fd.o #66004, Chengwei Yang)
 
+• fix a regression test on platforms with strict alignment (fd.o #67279,
+  Colin Walters)
+
 • Unix-specific:
   · dbus-run-session: compile on FreeBSD (fd.o #66197, Chengwei Yang)
 
 • Windows-specific:
   · Remove unavailable command-line options from 'dbus-daemon --help'
     (fd.o #42441, Ralf Habacker)
+  · Add support for looking up local TCPv4 clients' credentials on
+    Windows XP via the undocumented AllocateAndGetTcpExTableFromStack
+    function (fd.o #66060, Ralf Habacker)
 
 • Internal changes:
   · add DBUS_ENABLE_ASSERT, DBUS_ENABLE_CHECKS for less confusing
