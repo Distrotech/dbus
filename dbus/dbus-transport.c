@@ -589,9 +589,6 @@ _dbus_transport_try_to_authenticate (DBusTransport *transport)
       if (transport->disconnected)
         return FALSE;
 
-      /* paranoia ref since we call user callbacks sometimes */
-      _dbus_connection_ref_unlocked (transport->connection);
-      
       maybe_authenticated =
         (!(transport->send_credentials_pending ||
            transport->receive_credentials_pending));
@@ -623,32 +620,12 @@ _dbus_transport_try_to_authenticate (DBusTransport *transport)
               _dbus_verbose ("Client expected GUID '%s' and we got '%s' from the server\n",
                              transport->expected_guid, server_guid);
               _dbus_transport_disconnect (transport);
-              _dbus_connection_unref_unlocked (transport->connection);
               return FALSE;
-            }
-        }
-
-      /* If we're the server, see if we want to allow this identity to proceed.
-       */
-      if (maybe_authenticated && transport->is_server)
-        {
-          DBusCredentials *auth_identity;
-
-          auth_identity = _dbus_auth_get_identity (transport->auth);
-          _dbus_assert (auth_identity != NULL);
-          
-          /* If we have an authenticated user, delegate deciding whether auth
-           * credentials are good enough to the app */
-          if (!_dbus_authorization_do_authorization (transport->authorization, auth_identity))
-            {
-              _dbus_transport_disconnect (transport);
-              maybe_authenticated = FALSE;
             }
         }
 
       transport->authenticated = maybe_authenticated;
 
-      _dbus_connection_unref_unlocked (transport->connection);
       return maybe_authenticated;
     }
 }
