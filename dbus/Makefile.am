@@ -150,6 +150,8 @@ DBUS_LIB_SOURCES=				\
 	dbus-address.c				\
 	dbus-auth.c				\
 	dbus-auth.h				\
+	dbus-authorization.c			\
+	dbus-authorization.h			\
 	dbus-bus.c				\
 	dbus-connection.c			\
 	dbus-connection-internal.h		\
@@ -208,8 +210,8 @@ DBUS_LIB_SOURCES=				\
 DBUS_SHARED_SOURCES=				\
 	dbus-dataslot.c				\
 	dbus-dataslot.h				\
-	dbus-file.c                 \
-	dbus-file.h                 \
+	dbus-file.c				\
+	dbus-file.h				\
 	dbus-hash.c				\
 	dbus-hash.h				\
 	dbus-internals.c			\
@@ -221,8 +223,8 @@ DBUS_SHARED_SOURCES=				\
 	dbus-memory.c				\
 	dbus-mempool.c				\
 	dbus-mempool.h				\
-	dbus-pipe.c                 \
-	dbus-pipe.h                 \
+	dbus-pipe.c				\
+	dbus-pipe.h				\
 	dbus-string.c				\
 	dbus-string.h				\
 	dbus-string-private.h			\
