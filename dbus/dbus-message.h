@@ -71,13 +71,13 @@ DBusMessage* dbus_message_new               (int          message_type);
 DBUS_EXPORT
 DBusMessage* dbus_message_new_method_call   (const char  *bus_name,
                                              const char  *path,
-                                             const char  *interface,
+                                             const char  *iface,
                                              const char  *method);
 DBUS_EXPORT
 DBusMessage* dbus_message_new_method_return (DBusMessage *method_call);
 DBUS_EXPORT
 DBusMessage* dbus_message_new_signal        (const char  *path,
-                                             const char  *interface,
+                                             const char  *iface,
                                              const char  *name);
 DBUS_EXPORT
 DBusMessage* dbus_message_new_error         (DBusMessage *reply_to,
@@ -108,12 +108,12 @@ dbus_bool_t   dbus_message_has_path         (DBusMessage   *message,
                                              const char    *object_path);  
 DBUS_EXPORT
 dbus_bool_t   dbus_message_set_interface    (DBusMessage   *message,
-                                             const char    *interface);       
+                                             const char    *iface);
 DBUS_EXPORT
 const char*   dbus_message_get_interface    (DBusMessage   *message);
 DBUS_EXPORT
 dbus_bool_t   dbus_message_has_interface    (DBusMessage   *message, 
-                                             const char    *interface);
+                                             const char    *iface);
 DBUS_EXPORT
 dbus_bool_t   dbus_message_set_member       (DBusMessage   *message,
                                              const char    *member);
@@ -146,11 +146,11 @@ DBUS_EXPORT
 dbus_bool_t   dbus_message_get_no_reply     (DBusMessage   *message);
 DBUS_EXPORT
 dbus_bool_t   dbus_message_is_method_call   (DBusMessage   *message,
-                                             const char    *interface,
+                                             const char    *iface,
                                              const char    *method);
 DBUS_EXPORT
 dbus_bool_t   dbus_message_is_signal        (DBusMessage   *message,
-                                             const char    *interface,
+                                             const char    *iface,
                                              const char    *signal_name);
 DBUS_EXPORT
 dbus_bool_t   dbus_message_is_error         (DBusMessage   *message,
