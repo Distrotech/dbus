@@ -125,7 +125,7 @@ _dbus_transport_init_base (DBusTransport             *transport,
           return FALSE; /* OOM */
         }
 
-      auth = _dbus_auth_server_new (server_guid);
+      auth = _dbus_auth_server_new (server_guid, authorization);
     }
   else
     {

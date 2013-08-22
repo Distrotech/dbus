@@ -27,6 +27,7 @@
 #include <dbus/dbus-errors.h>
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-sysdeps.h>
+#include <dbus/dbus-authorization.h>
 
 DBUS_BEGIN_DECLS
 
@@ -41,7 +42,8 @@ typedef enum
   DBUS_AUTH_STATE_AUTHENTICATED
 } DBusAuthState;
 
-DBusAuth*     _dbus_auth_server_new          (const DBusString       *guid);
+DBusAuth*     _dbus_auth_server_new          (const DBusString       *guid,
+                                              DBusAuthorization      *authorization);
 DBusAuth*     _dbus_auth_client_new          (void);
 DBusAuth*     _dbus_auth_ref                 (DBusAuth               *auth);
 void          _dbus_auth_unref               (DBusAuth               *auth);

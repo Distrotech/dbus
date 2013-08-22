@@ -30,6 +30,7 @@
 #include "dbus-sha.h"
 #include "dbus-protocol.h"
 #include "dbus-credentials.h"
+#include "dbus-authorization.h"
 
 /**
  * @defgroup DBusAuth Authentication
@@ -212,6 +213,8 @@ typedef struct
 typedef struct
 {
   DBusAuth base;    /**< Parent class */
+
+  DBusAuthorization *authorization;             /* DBus Authorization callbacks */
 
   int failures;     /**< Number of times client has been rejected */
   int max_failures; /**< Number of times we reject before disconnect */
@@ -1115,12 +1118,26 @@ handle_server_data_external_mech (DBusAuth         *auth,
                                              DBUS_CREDENTIAL_ADT_AUDIT_DATA_ID,
                                              auth->credentials))
         return FALSE;
-      
-      if (!send_ok (auth))
-        return FALSE;
 
-      _dbus_verbose ("%s: authenticated client based on socket credentials\n",
-                     DBUS_AUTH_NAME (auth));
+      /* Do a first authorization of the transport, in order to REJECT
+       * immediately connection if needed (FDO#39720), transport will
+       * re-authorize later, but it will close the connection on fail,
+       * we want to REJECT now if possible */
+      if (_dbus_authorization_do_authorization (DBUS_AUTH_SERVER (auth)->authorization,
+            auth->authorized_identity))
+        {
+          if (!send_ok (auth))
+            return FALSE;
+        }
+      else
+        {
+          _dbus_verbose ("%s: desired identity does not match server identity: "
+              "not authorized\n", DBUS_AUTH_NAME (auth));
+          return send_rejected (auth);
+        }
+
+      _dbus_verbose ("%s: authenticated and authorized client based on "
+          "socket credentials\n", DBUS_AUTH_NAME (auth));
 
       return TRUE;
     }
@@ -2244,7 +2261,8 @@ process_command (DBusAuth *auth)
  * @returns the new object or #NULL if no memory
  */
 DBusAuth*
-_dbus_auth_server_new (const DBusString *guid)
+_dbus_auth_server_new (const DBusString *guid,
+    DBusAuthorization *authorization)
 {
   DBusAuth *auth;
   DBusAuthServer *server_auth;
@@ -2272,7 +2290,8 @@ _dbus_auth_server_new (const DBusString *guid)
   server_auth = DBUS_AUTH_SERVER (auth);
 
   server_auth->guid = guid_copy;
-  
+  server_auth->authorization = _dbus_authorization_ref (authorization);
+
   /* perhaps this should be per-mechanism with a lower
    * max
    */
@@ -2363,6 +2382,7 @@ _dbus_auth_unref (DBusAuth *auth)
           _dbus_assert (DBUS_AUTH_IS_SERVER (auth));
 
           _dbus_string_free (& DBUS_AUTH_SERVER (auth)->guid);
+          _dbus_authorization_unref (DBUS_AUTH_SERVER (auth)->authorization);
         }
 
       if (auth->keyring)
