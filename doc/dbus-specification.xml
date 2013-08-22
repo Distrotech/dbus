@@ -5579,6 +5579,108 @@
        </para>
       </sect3>
 
+      <sect3 id="bus-messages-get-connection-credentials">
+        <title><literal>org.freedesktop.DBus.GetConnectionCredentials</literal></title>
+        <para>
+          As a method:
+          <programlisting>
+            DICT&lt;STRING,VARIANT&gt; GetConnectionCredentials (in STRING bus_name)
+          </programlisting>
+          Message arguments:
+          <informaltable>
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>Argument</entry>
+                  <entry>Type</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>0</entry>
+                  <entry>STRING</entry>
+                  <entry>Unique or well-known bus name of the connection to
+                    query, such as <literal>:12.34</literal> or
+                    <literal>com.example.tea</literal></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        Reply arguments:
+        <informaltable>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Argument</entry>
+                <entry>Type</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>0</entry>
+                <entry>DICT&lt;STRING,VARIANT&gt;</entry>
+                <entry>Credentials</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+
+      <para>
+        Returns as many credentials as possible for the process connected to
+        the server. If unable to determine certain credentials (for instance,
+        because the process is not on the same machine as the bus daemon,
+        or because this version of the bus daemon does not support a
+        particular security framework), or if the values of those credentials
+        cannot be represented as documented here, then those credentials
+        are omitted.
+      </para>
+
+      <para>
+        Keys in the returned dictionary not containing "." are defined
+        by this specification. Bus daemon implementors supporting
+        credentials frameworks not mentioned in this document should either
+        contribute patches to this specification, or use keys containing
+        "." and starting with a reversed domain name.
+        <informaltable>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Key</entry>
+                <entry>Value type</entry>
+                <entry>Value</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>UnixUserID</entry>
+                <entry>UINT32</entry>
+                <entry>The numeric Unix user ID, as defined by POSIX</entry>
+              </row>
+              <row>
+                <entry>ProcessID</entry>
+                <entry>UINT32</entry>
+                <entry>The numeric process ID, on platforms that have
+                  this concept. On Unix, this is the process ID defined by
+                  POSIX.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+       </para>
+
+        <para>
+          This method was added in D-Bus 1.7 to reduce the round-trips
+          required to list a process's credentials. In older versions, calling
+          this method will fail: applications should recover by using the
+          separate methods such as
+          <xref linkend="bus-messages-get-connection-unix-user"/>
+          instead.
+        </para>
+      </sect3>
+
       <sect3 id="bus-messages-add-match">
         <title><literal>org.freedesktop.DBus.AddMatch</literal></title>
         <para>

@@ -33,6 +33,7 @@
 #include "stats.h"
 #include "utils.h"
 
+#include <dbus/dbus-asv-util.h>
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-message.h>
@@ -1524,6 +1525,80 @@ bus_driver_handle_get_connection_selinux_security_context (DBusConnection *conne
 }
 
 static dbus_bool_t
+bus_driver_handle_get_connection_credentials (DBusConnection *connection,
+                                              BusTransaction *transaction,
+                                              DBusMessage    *message,
+                                              DBusError      *error)
+{
+  DBusConnection *conn;
+  DBusMessage *reply;
+  DBusMessageIter reply_iter;
+  DBusMessageIter array_iter;
+  unsigned long ulong_val;
+  const char *service;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  reply = NULL;
+
+  conn = bus_driver_get_conn_helper (connection, message, "credentials",
+                                     &service, error);
+
+  if (conn == NULL)
+    goto failed;
+
+  reply = _dbus_asv_new_method_return (message, &reply_iter, &array_iter);
+  if (reply == NULL)
+    goto oom;
+
+  /* we can't represent > 32-bit pids; if your system needs them, please
+   * add ProcessID64 to the spec or something */
+  if (dbus_connection_get_unix_process_id (conn, &ulong_val) &&
+      ulong_val <= _DBUS_UINT32_MAX)
+    {
+      if (!_dbus_asv_add_uint32 (&array_iter, "ProcessID", ulong_val))
+        goto oom;
+    }
+
+  /* we can't represent > 32-bit uids; if your system needs them, please
+   * add UnixUserID64 to the spec or something */
+  if (dbus_connection_get_unix_user (conn, &ulong_val) &&
+      ulong_val <= _DBUS_UINT32_MAX)
+    {
+      if (!_dbus_asv_add_uint32 (&array_iter, "UnixUserID", ulong_val))
+        goto oom;
+    }
+
+  if (!_dbus_asv_close (&reply_iter, &array_iter))
+    goto oom;
+
+  if (! bus_transaction_send_from_driver (transaction, connection, reply))
+    {
+      /* this time we don't want to close the iterator again, so just
+       * get rid of the message */
+      dbus_message_unref (reply);
+      reply = NULL;
+      goto oom;
+    }
+
+  return TRUE;
+
+ oom:
+  BUS_SET_OOM (error);
+
+ failed:
+  _DBUS_ASSERT_ERROR_IS_SET (error);
+
+  if (reply)
+    {
+      _dbus_asv_abandon (&reply_iter, &array_iter);
+      dbus_message_unref (reply);
+    }
+
+  return FALSE;
+}
+
+static dbus_bool_t
 bus_driver_handle_reload_config (DBusConnection *connection,
 				 BusTransaction *transaction,
 				 DBusMessage    *message,
@@ -1703,6 +1778,8 @@ static const MessageHandler dbus_message_handlers[] = {
     "",
     DBUS_TYPE_STRING_AS_STRING,
     bus_driver_handle_get_id },
+  { "GetConnectionCredentials", "s", "a{sv}",
+    bus_driver_handle_get_connection_credentials },
   { NULL, NULL, NULL, NULL }
 };
 
