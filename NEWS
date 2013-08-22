@@ -15,11 +15,18 @@ Build-time configuration changes:
 
 Enhancements:
 
+• D-Bus Specification 0.22
+  · Document GetAdtAuditSessionData() and
+    GetConnectionSELinuxSecurityContext() (fd.o #54445, Simon)
+  · Fix example .service file (fd.o #66481, Chengwei Yang)
+
 • Be thread-safe by default on all platforms, even if
   dbus_threads_init_default() has not been called. For compatibility with
   older libdbus, library users should continue to call
   dbus_threads_init_default(): it is harmless to do so.
   (fd.o #54972, Simon McVittie)
+
+• Add GetConnectionCredentials() method (fd.o #54445, Simon)
 
 Fixes:
 
@@ -39,6 +46,11 @@ Fixes:
 
 • fix a regression test on platforms with strict alignment (fd.o #67279,
   Colin Walters)
+
+• Avoid calling function parameters "interface" since certain Windows headers
+  have a namespace-polluting macro of that name (fd.o #66493, Ivan Romanov)
+
+• Assorted Doxygen fixes (fd.o #65755, Chengwei Yang)
 
 • Unix-specific:
   · dbus-run-session: compile on FreeBSD (fd.o #66197, Chengwei Yang)
