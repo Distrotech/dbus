@@ -885,13 +885,7 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   /* The message signature has already been checked for us,
    * so let's just assert it's right.
    */
-#ifndef DBUS_DISABLE_ASSERT
-    {
-      int msg_type = dbus_message_iter_get_arg_type (&iter);
-
-      _dbus_assert (msg_type == DBUS_TYPE_ARRAY);
-    }
-#endif
+  _dbus_assert (dbus_message_iter_get_arg_type (&iter) == DBUS_TYPE_ARRAY);
 
   dbus_message_iter_recurse (&iter, &dict_iter);
 
@@ -2008,13 +2002,8 @@ bus_driver_handle_message (DBusConnection *connection,
   _dbus_verbose ("Driver got a method call: %s\n", name);
 
   /* security checks should have kept this from getting here */
-#ifndef DBUS_DISABLE_ASSERT
-    {
-      const char *sender = dbus_message_get_sender (message);
-
-      _dbus_assert (sender != NULL || strcmp (name, "Hello") == 0);
-    }
-#endif
+  _dbus_assert (dbus_message_get_sender (message) != NULL ||
+                strcmp (name, "Hello") == 0);
 
   for (ih = interface_handlers; ih->name != NULL; ih++)
     {

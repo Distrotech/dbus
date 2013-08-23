@@ -335,14 +335,11 @@ reallocate_for_length (DBusRealString *real,
    * disable asserts to profile, you don't get this destroyer
    * of profiles.
    */
-#ifdef DBUS_DISABLE_ASSERT
-#else
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
+#if defined (DBUS_ENABLE_EMBEDDED_TESTS) && !defined (DBUS_DISABLE_ASSERT)
   new_allocated = 0; /* ensure a realloc every time so that we go
                       * through all malloc failure codepaths
                       */
-#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
-#endif /* !DBUS_DISABLE_ASSERT */
+#endif
 
   /* But be sure we always alloc at least space for the new length */
   new_allocated = MAX (new_allocated,
