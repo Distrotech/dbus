@@ -3661,8 +3661,8 @@
       <programlisting>
         &lt;!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
          "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd"&gt;
-        &lt;node name="/org/freedesktop/sample_object"&gt;
-          &lt;interface name="org.freedesktop.SampleInterface"&gt;
+        &lt;node name="/com/example/sample_object"&gt;
+          &lt;interface name="com.example.SampleInterface"&gt;
             &lt;method name="Frobate"&gt;
               &lt;arg name="foo" type="i" direction="in"/&gt;
               &lt;arg name="bar" type="s" direction="out"/&gt;
@@ -3822,7 +3822,7 @@
         unique-for-the-lifetime-of-the-bus name automatically assigned.
         Applications may request additional names for a connection. Additional
         names are usually "well-known names" such as
-        "org.freedesktop.TextEditor". When a name is bound to a connection,
+        "com.example.TextEditor". When a name is bound to a connection,
         that connection is said to <firstterm>own</firstterm> the name.
       </para>
       <para>
@@ -3844,7 +3844,7 @@
 
       <para>
         This feature causes the right thing to happen if you start two text
-        editors for example; the first one may request "org.freedesktop.TextEditor", 
+        editors for example; the first one may request "com.example.TextEditor",
         and the second will be queued as a possible owner of that name. When 
         the first exits, the second will take over.
       </para>
@@ -4618,9 +4618,9 @@
       <para>
         With D-Bus, starting a service is normally done by name. That is,
         applications ask the message bus to start some program that will own a
-        well-known name, such as <literal>org.freedesktop.TextEditor</literal>.
-        This implies a contract documented along with the name 
-        <literal>org.freedesktop.TextEditor</literal> for which objects 
+        well-known name, such as <literal>com.example.TextEditor</literal>.
+        This implies a contract documented along with the name
+        <literal>com.example.TextEditor</literal> for which object
         the owner of that name will provide, and what interfaces those 
         objects will have.
       </para>
@@ -4659,8 +4659,8 @@
 	  <programlisting>
             # Sample service description file
             [D-BUS Service]
-            Name=org.freedesktop.ConfigurationDatabase
-            Exec=/usr/libexec/gconfd-2
+            Name=com.example.ConfigurationDatabase
+            Exec=/usr/bin/sample-configd
           </programlisting>
 	</figure>
       </para>
@@ -6040,9 +6040,9 @@
           A service is an executable that can be launched by the bus daemon.
           Services normally guarantee some particular features, for example they
           may guarantee that they will request a specific name such as
-          "org.freedesktop.Screensaver", have a singleton object
-          "/org/freedesktop/Application", and that object will implement the
-          interface "org.freedesktop.ScreensaverControl".
+          "com.example.Screensaver", have a singleton object
+	  "/com/example/Application", and that object will implement the
+          interface "com.example.Screensaver.Control".
         </para>
       </glossdef>
     </glossentry>
