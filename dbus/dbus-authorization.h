@@ -9,7 +9,8 @@ typedef struct DBusAuthorization DBusAuthorization;
 DBusAuthorization *_dbus_authorization_new (void);
 void _dbus_authorization_set_connection (DBusAuthorization *self,
     DBusConnection *connection);
-void _dbus_authorization_free (DBusAuthorization *self);
+DBusAuthorization * _dbus_authorization_ref (DBusAuthorization *self);
+void _dbus_authorization_unref (DBusAuthorization *self);
 void _dbus_authorization_set_unix_authorization_callback (DBusAuthorization *self,
     DBusAllowUnixUserFunction function, void *data,
     DBusFreeFunction free_data_function, void **old_data,

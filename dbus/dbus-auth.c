@@ -153,6 +153,7 @@ typedef struct
  */
 struct DBusAuth
 {
+  int refcount;           /**< reference count */
   const char *side;       /**< Client or server */
 
   DBusString incoming;    /**< Incoming data buffer */
@@ -344,6 +345,8 @@ _dbus_auth_new (int size)
   auth = dbus_malloc0 (size);
   if (auth == NULL)
     return NULL;
+  
+  auth->refcount = 1;
   
   auth->keyring = NULL;
   auth->cookie_id = -1;
@@ -2259,7 +2262,7 @@ process_command (DBusAuth *auth)
  */
 DBusAuth*
 _dbus_auth_server_new (const DBusString *guid,
-                       DBusAuthorization *authorization)
+    DBusAuthorization *authorization)
 {
   DBusAuth *auth;
   DBusAuthServer *server_auth;
@@ -2287,7 +2290,7 @@ _dbus_auth_server_new (const DBusString *guid,
   server_auth = DBUS_AUTH_SERVER (auth);
 
   server_auth->guid = guid_copy;
-  server_auth->authorization = authorization;
+  server_auth->authorization = _dbus_authorization_ref (authorization);
 
   /* perhaps this should be per-mechanism with a lower
    * max
@@ -2330,7 +2333,7 @@ _dbus_auth_client_new (void)
    * mechanism */
   if (!send_auth (auth, &all_mechanisms[0]))
     {
-      _dbus_auth_free (auth);
+      _dbus_auth_unref (auth);
       return NULL;
     }
   
@@ -2338,45 +2341,67 @@ _dbus_auth_client_new (void)
 }
 
 /**
- * Free memory allocated for an auth object.
+ * Increments the refcount of an auth object.
+ *
+ * @param auth the auth conversation
+ * @returns the auth conversation
+ */
+DBusAuth *
+_dbus_auth_ref (DBusAuth *auth)
+{
+  _dbus_assert (auth != NULL);
+  
+  auth->refcount += 1;
+  
+  return auth;
+}
+
+/**
+ * Decrements the refcount of an auth object.
  *
  * @param auth the auth conversation
  */
 void
-_dbus_auth_free (DBusAuth *auth)
+_dbus_auth_unref (DBusAuth *auth)
 {
   _dbus_assert (auth != NULL);
+  _dbus_assert (auth->refcount > 0);
 
-  shutdown_mech (auth);
-
-  if (DBUS_AUTH_IS_CLIENT (auth))
+  auth->refcount -= 1;
+  if (auth->refcount == 0)
     {
-      _dbus_string_free (& DBUS_AUTH_CLIENT (auth)->guid_from_server);
-      _dbus_list_clear (& DBUS_AUTH_CLIENT (auth)->mechs_to_try);
+      shutdown_mech (auth);
+
+      if (DBUS_AUTH_IS_CLIENT (auth))
+        {
+          _dbus_string_free (& DBUS_AUTH_CLIENT (auth)->guid_from_server);
+          _dbus_list_clear (& DBUS_AUTH_CLIENT (auth)->mechs_to_try);
+        }
+      else
+        {
+          _dbus_assert (DBUS_AUTH_IS_SERVER (auth));
+
+          _dbus_string_free (& DBUS_AUTH_SERVER (auth)->guid);
+          _dbus_authorization_unref (DBUS_AUTH_SERVER (auth)->authorization);
+        }
+
+      if (auth->keyring)
+        _dbus_keyring_unref (auth->keyring);
+
+      _dbus_string_free (&auth->context);
+      _dbus_string_free (&auth->challenge);
+      _dbus_string_free (&auth->identity);
+      _dbus_string_free (&auth->incoming);
+      _dbus_string_free (&auth->outgoing);
+
+      dbus_free_string_array (auth->allowed_mechs);
+
+      _dbus_credentials_unref (auth->credentials);
+      _dbus_credentials_unref (auth->authenticated_identity);
+      _dbus_credentials_unref (auth->desired_identity);
+      
+      dbus_free (auth);
     }
-  else
-    {
-      _dbus_assert (DBUS_AUTH_IS_SERVER (auth));
-
-      _dbus_string_free (& DBUS_AUTH_SERVER (auth)->guid);
-    }
-
-  if (auth->keyring)
-    _dbus_keyring_unref (auth->keyring);
-
-  _dbus_string_free (&auth->context);
-  _dbus_string_free (&auth->challenge);
-  _dbus_string_free (&auth->identity);
-  _dbus_string_free (&auth->incoming);
-  _dbus_string_free (&auth->outgoing);
-
-  dbus_free_string_array (auth->allowed_mechs);
-
-  _dbus_credentials_unref (auth->credentials);
-  _dbus_credentials_unref (auth->authenticated_identity);
-  _dbus_credentials_unref (auth->desired_identity);
-
-  dbus_free (auth);
 }
 
 /**

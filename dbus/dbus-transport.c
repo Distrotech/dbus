@@ -134,7 +134,7 @@ _dbus_transport_init_base (DBusTransport             *transport,
   if (auth == NULL)
     {
       if (authorization != NULL)
-        _dbus_authorization_free (authorization);
+        _dbus_authorization_unref (authorization);
       _dbus_message_loader_unref (loader);
       return FALSE;
     }
@@ -142,9 +142,9 @@ _dbus_transport_init_base (DBusTransport             *transport,
   counter = _dbus_counter_new ();
   if (counter == NULL)
     {
-      _dbus_auth_free (auth);
+      _dbus_auth_unref (auth);
       if (authorization != NULL)
-        _dbus_authorization_free (authorization);
+        _dbus_authorization_unref (authorization);
       _dbus_message_loader_unref (loader);
       return FALSE;
     }  
@@ -153,9 +153,9 @@ _dbus_transport_init_base (DBusTransport             *transport,
   if (creds == NULL)
     {
       _dbus_counter_unref (counter);
-      _dbus_auth_free (auth);
+      _dbus_auth_unref (auth);
       if (authorization != NULL)
-        _dbus_authorization_free (authorization);
+        _dbus_authorization_unref (authorization);
       _dbus_message_loader_unref (loader);
       return FALSE;
     }
@@ -173,9 +173,9 @@ _dbus_transport_init_base (DBusTransport             *transport,
         {
           _dbus_credentials_unref (creds);
           _dbus_counter_unref (counter);
-          _dbus_auth_free (auth);
+          _dbus_auth_unref (auth);
           if (authorization != NULL)
-            _dbus_authorization_free (authorization);
+            _dbus_authorization_unref (authorization);
           _dbus_message_loader_unref (loader);
           return FALSE;
         }
@@ -237,9 +237,9 @@ _dbus_transport_finalize_base (DBusTransport *transport)
     _dbus_transport_disconnect (transport);
 
   _dbus_message_loader_unref (transport->loader);
-  _dbus_auth_free (transport->auth);
+  _dbus_auth_unref (transport->auth);
   if (transport->authorization)
-    _dbus_authorization_free (transport->authorization);
+    _dbus_authorization_unref (transport->authorization);
   _dbus_counter_set_notify (transport->live_messages,
                             0, 0, NULL, NULL);
   _dbus_counter_unref (transport->live_messages);

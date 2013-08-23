@@ -5,6 +5,8 @@
 #include "dbus-connection-internal.h"
 
 struct DBusAuthorization {
+  int refcount;
+
   DBusConnection *connection;
 
   /* Authorization functions, used as callback by SASL (implemented by
@@ -24,31 +26,58 @@ struct DBusAuthorization {
 DBusAuthorization *
 _dbus_authorization_new (void)
 {
-  /* it returns the allocated memory or NULL in case of OOM */
-  return dbus_malloc0 (sizeof (DBusAuthorization));
+  DBusAuthorization *ret;
+
+  ret = dbus_malloc0 (sizeof (DBusAuthorization));
+  if (ret == NULL)
+    {
+      _dbus_verbose ("OOM\n");
+      return NULL; /* OOM */
+    }
+
+  ret->refcount = 1;
+
+  return ret;
 }
 
-void
-_dbus_authorization_free (DBusAuthorization *self)
+DBusAuthorization *
+_dbus_authorization_ref (DBusAuthorization *self)
 {
   _dbus_assert (self != NULL);
 
-  if (self->unix_data && self->unix_data_free)
-    {
-      _dbus_verbose ("freeing unix authorization callback data\n");
-      (*self->unix_data_free) (self->unix_data);
-      self->unix_data = NULL;
-    }
+  self->refcount += 1;
 
-  if (self->windows_data && self->windows_data_free)
-    {
-      _dbus_verbose ("freeing windows authorization callback data\n");
-      (*self->windows_data_free) (self->windows_data);
-      self->windows_data = NULL;
-    }
+  return self;
+}
 
-  _dbus_verbose ("freeing memory for %p\n", self);
-  dbus_free (self);
+void
+_dbus_authorization_unref (DBusAuthorization *self)
+{
+  _dbus_assert (self != NULL);
+  _dbus_assert (self->refcount > 0);
+
+  self->refcount -= 1;
+
+  if (self->refcount == 0)
+    {
+      _dbus_verbose ("last reference, finalizing\n");
+
+      if (self->unix_data && self->unix_data_free)
+        {
+          _dbus_verbose ("freeing unix authorization callback data\n");
+          (*self->unix_data_free) (self->unix_data);
+          self->unix_data = NULL;
+        }
+
+      if (self->windows_data && self->windows_data_free)
+        {
+          _dbus_verbose ("freeing windows authorization callback data\n");
+          (*self->windows_data_free) (self->windows_data);
+          self->windows_data = NULL;
+        }
+
+      dbus_free (self);
+    }
 }
 
 /* Called by transport's set_connection with the connection locked */
@@ -56,7 +85,6 @@ void
 _dbus_authorization_set_connection (DBusAuthorization *self,
                                 DBusConnection *connection)
 {
-  _dbus_assert (self != NULL);
   _dbus_assert (connection != NULL);
   _dbus_assert (self->connection == NULL);
 
@@ -87,8 +115,6 @@ _dbus_authorization_set_unix_authorization_callback (DBusAuthorization          
                                         void                     **old_data,
                                         DBusFreeFunction          *old_free_data_function)
 {
-  _dbus_assert (self != NULL);
-
   *old_data = self->unix_data;
   *old_free_data_function = self->unix_data_free;
 
@@ -122,8 +148,6 @@ _dbus_authorization_set_windows_authorization_callback (DBusAuthorization       
                                            void                      **old_data,
                                            DBusFreeFunction           *old_free_data_function)
 {
-  _dbus_assert (self != NULL);
-
   *old_data = self->windows_data;
   *old_free_data_function = self->windows_data_free;
 
@@ -142,7 +166,6 @@ auth_via_unix_authorization_callback (DBusAuthorization *self,
 
   /* Dropping the lock here probably isn't that safe. */
 
-  _dbus_assert (self != NULL);
   _dbus_assert (auth_identity != NULL);
 
   uid = _dbus_credentials_get_unix_uid (auth_identity);
@@ -180,7 +203,6 @@ auth_via_windows_authorization_callback (DBusAuthorization *self,
 
   /* Dropping the lock here probably isn't that safe. */
 
-  _dbus_assert (self != NULL);
   _dbus_assert (auth_identity != NULL);
 
   windows_sid = _dbus_strdup (_dbus_credentials_get_windows_sid (auth_identity));
@@ -221,7 +243,6 @@ auth_via_default_rules (DBusAuthorization *self,
   DBusCredentials *our_identity;
   dbus_bool_t allow;
 
-  _dbus_assert (self != NULL);
   _dbus_assert (auth_identity != NULL);
 
   /* By default, connection is allowed if the client is 1) root or 2)
@@ -278,8 +299,6 @@ _dbus_authorization_do_authorization (DBusAuthorization *self,
 {
   dbus_bool_t allow;
 
-  _dbus_assert (self != NULL);
-
   /* maybe-FIXME: at this point we *should* have a connection set unless we
    * are in some test case, but we assert its presence only in some if's
    * branches since default_rules does not need one and is used in a test case
@@ -321,7 +340,5 @@ void
 _dbus_authorization_set_allow_anonymous (DBusAuthorization *self,
                                      dbus_bool_t value)
 {
-  _dbus_assert (self != NULL);
-
   self->allow_anonymous = value != FALSE;
 }
