@@ -398,8 +398,8 @@ _dbus_auth_script_run (const DBusString *filename)
           
           _dbus_credentials_unref (creds);
         }
-      else if (_dbus_string_starts_with_c_str (&line, "SERVER") ||
-               _dbus_string_starts_with_c_str (&line, "SERVER_ANONYMOUS"))
+      else if (_dbus_string_starts_with_c_str (&line,
+                                               "SERVER"))
         {
           DBusCredentials *creds;
           DBusAuthorization *authorization;
@@ -417,11 +417,6 @@ _dbus_auth_script_run (const DBusString *filename)
               _dbus_warn ("no memory to create DBusAuthorization\n");
               goto out;
             }
-          /* if we are testing an anonymous server, we need to enable
-           * anonymous authorization, or the mech will REJECT */
-          if (_dbus_string_starts_with_c_str (&line, "SERVER_ANONYMOUS"))
-            _dbus_authorization_set_allow_anonymous (authorization, TRUE);
-
           auth = _dbus_auth_server_new (&guid, authorization);
           /* DBusAuth owns it, or finalized on OOM */
           _dbus_authorization_unref (authorization);

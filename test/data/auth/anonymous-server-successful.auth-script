@@ -1,7 +1,6 @@
 ## this tests the server side in a successful auth of type ANONYMOUS 
 
-## Act as a server that accepts anonymous authorization
-SERVER_ANONYMOUS
+SERVER
 ## verify that prior to doing anything, we haven't authed as anyone
 EXPECT_HAVE_NO_CREDENTIALS
 SEND 'AUTH ANONYMOUS 442d42757320312e312e31'
