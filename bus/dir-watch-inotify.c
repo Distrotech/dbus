@@ -59,32 +59,30 @@ _handle_inotify_watch (DBusWatch *passed_watch, unsigned int flags, void *data)
   char buffer[INOTIFY_BUF_LEN];
   ssize_t ret = 0;
   int i = 0;
-  pid_t pid;
-  dbus_bool_t have_change = FALSE;
 
   ret = read (inotify_fd, buffer, INOTIFY_BUF_LEN);
   if (ret < 0)
     _dbus_verbose ("Error reading inotify event: '%s'\n", _dbus_strerror(errno));
   else if (!ret)
     _dbus_verbose ("Error reading inotify event: buffer too small\n");
+  else
+    {
+      _dbus_verbose ("Sending SIGHUP signal on reception of %ld inotify event(s)\n", (long) ret);
+      (void) kill (_dbus_getpid(), SIGHUP);
+    }
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   while (i < ret)
     {
       struct inotify_event *ev;
-      pid = _dbus_getpid ();
 
       ev = (struct inotify_event *) &buffer[i];
       i += INOTIFY_EVENT_SIZE + ev->len;
-#ifdef DBUS_ENABLE_VERBOSE_MODE
       if (ev->len)
         _dbus_verbose ("event name: '%s'\n", ev->name);
       _dbus_verbose ("inotify event: wd=%d mask=%u cookie=%u len=%u\n", ev->wd, ev->mask, ev->cookie, ev->len);
-#endif
-      _dbus_verbose ("Sending SIGHUP signal on reception of a inotify event\n");
-      have_change = TRUE;
     }
-  if (have_change)
-    (void) kill (pid, SIGHUP);
+#endif
 
   return TRUE;
 }
