@@ -79,26 +79,19 @@ struct DBusPendingCall
   unsigned int timeout_added : 1;                 /**< Have added the timeout */
 };
 
-#ifdef DBUS_ENABLE_VERBOSE_MODE
 static void
 _dbus_pending_call_trace_ref (DBusPendingCall *pending_call,
     int old_refcount,
     int new_refcount,
     const char *why)
 {
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   static int enabled = -1;
 
   _dbus_trace_ref ("DBusPendingCall", pending_call, old_refcount,
       new_refcount, why, "DBUS_PENDING_CALL_TRACE", &enabled);
-}
-#else
-#define _dbus_pending_call_trace_ref(p, o, n, w) \
-  do \
-  {\
-    (void) (o); \
-    (void) (n); \
-  } while (0)
 #endif
+}
 
 static dbus_int32_t notify_user_data_slot = -1;
 

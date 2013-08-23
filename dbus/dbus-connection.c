@@ -203,26 +203,19 @@
  * @{
  */
 
-#ifdef DBUS_ENABLE_VERBOSE_MODE
 static void
 _dbus_connection_trace_ref (DBusConnection *connection,
     int old_refcount,
     int new_refcount,
     const char *why)
 {
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   static int enabled = -1;
 
   _dbus_trace_ref ("DBusConnection", connection, old_refcount, new_refcount,
       why, "DBUS_CONNECTION_TRACE", &enabled);
-}
-#else
-#define _dbus_connection_trace_ref(c,o,n,w) \
-  do \
-  {\
-    (void) (o); \
-    (void) (n); \
-  } while (0)
 #endif
+}
 
 /**
  * Internal struct representing a message filter function 

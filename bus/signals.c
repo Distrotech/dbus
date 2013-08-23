@@ -1980,12 +1980,10 @@ get_recipients_from_list (DBusList       **rules,
               if (!_dbus_list_append (recipients_p, rule->matches_go_to))
                 return FALSE;
             }
-#ifdef DBUS_ENABLE_VERBOSE_MODE
           else
             {
               _dbus_verbose ("Connection already receiving this message, so not adding again\n");
             }
-#endif /* DBUS_ENABLE_VERBOSE_MODE */
         }
 
       link = _dbus_list_get_next_link (rules, link);
