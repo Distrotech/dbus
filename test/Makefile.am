@@ -103,7 +103,7 @@ installable_tests = \
 	shell-test \
 	test-printf \
 	$(NULL)
-installable_manual_tests += \
+installable_manual_tests = \
 	$(NULL)
 
 if DBUS_WITH_GLIB
