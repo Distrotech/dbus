@@ -699,13 +699,11 @@ dbus_server_ref (DBusServer *server)
 
   _dbus_return_val_if_fail (server != NULL, NULL);
 
-  /* can't get the refcount without a side-effect */
   old_refcount = _dbus_atomic_inc (&server->refcount);
 
 #ifndef DBUS_DISABLE_CHECKS
   if (_DBUS_UNLIKELY (old_refcount <= 0))
     {
-      /* undo side-effect first */
       _dbus_atomic_dec (&server->refcount);
       _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,
                                _DBUS_FUNCTION_NAME, "old_refcount > 0",
@@ -736,13 +734,18 @@ dbus_server_unref (DBusServer *server)
 
   _dbus_return_if_fail (server != NULL);
 
-  /* can't get the refcount without a side-effect */
   old_refcount = _dbus_atomic_dec (&server->refcount);
 
 #ifndef DBUS_DISABLE_CHECKS
   if (_DBUS_UNLIKELY (old_refcount <= 0))
     {
-      /* undo side-effect first */
+      /* undo side-effect first
+       * please do not try to simplify the code here by using
+       * _dbus_atomic_get(), why we don't use it is
+       * because it issues another atomic operation even though
+       * DBUS_DISABLE_CHECKS defined.
+       * Bug: https://bugs.freedesktop.org/show_bug.cgi?id=68303
+       */
       _dbus_atomic_inc (&server->refcount);
       _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,
                                _DBUS_FUNCTION_NAME, "old_refcount > 0",
