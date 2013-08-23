@@ -103,6 +103,8 @@ installable_tests = \
 	shell-test \
 	test-printf \
 	$(NULL)
+installable_manual_tests += \
+	$(NULL)
 
 if DBUS_WITH_GLIB
 installable_tests += \
@@ -115,6 +117,9 @@ installable_tests += \
 	test-relay \
 	test-syntax \
 	test-syslog \
+	$(NULL)
+installable_manual_tests += \
+	manual-authz \
 	$(NULL)
 endif DBUS_WITH_GLIB
 
@@ -131,6 +136,11 @@ TESTS_ENVIRONMENT = \
 	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
 	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
 	$(NULL)
+
+manual_authz_SOURCES = manual-authz.c
+manual_authz_LDADD = $(top_builddir)/dbus/libdbus-1.la \
+    $(GLIB_LIBS) \
+    $(DBUS_GLIB_LIBS)
 
 test_corrupt_SOURCES = corrupt.c
 test_corrupt_LDADD = $(top_builddir)/dbus/libdbus-1.la \
@@ -173,9 +183,9 @@ TESTS += $(installable_tests)
 installcheck_tests += $(installable_tests)
 
 if DBUS_ENABLE_INSTALLED_TESTS
-  testexec_PROGRAMS += $(installable_tests)
+  testexec_PROGRAMS += $(installable_tests) $(installable_manual_tests)
 else !DBUS_ENABLE_INSTALLED_TESTS
-  noinst_PROGRAMS += $(installable_tests)
+  noinst_PROGRAMS += $(installable_tests) $(installable_manual_tests)
 endif !DBUS_ENABLE_INSTALLED_TESTS
 
 endif DBUS_ENABLE_MODULAR_TESTS
