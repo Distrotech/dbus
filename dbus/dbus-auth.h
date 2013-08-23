@@ -45,8 +45,7 @@ typedef enum
 DBusAuth*     _dbus_auth_server_new          (const DBusString       *guid,
                                               DBusAuthorization      *authorization);
 DBusAuth*     _dbus_auth_client_new          (void);
-DBusAuth*     _dbus_auth_ref                 (DBusAuth               *auth);
-void          _dbus_auth_unref               (DBusAuth               *auth);
+void          _dbus_auth_free                (DBusAuth               *auth);
 dbus_bool_t   _dbus_auth_set_mechanisms      (DBusAuth               *auth,
                                               const char            **mechanisms);
 DBusAuthState _dbus_auth_do_work             (DBusAuth               *auth);

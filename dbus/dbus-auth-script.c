@@ -250,6 +250,7 @@ _dbus_auth_script_run (const DBusString *filename)
   dbus_bool_t retval;
   int line_no;
   DBusAuth *auth;
+  DBusAuthorization *authorization;
   DBusString from_auth;
   DBusAuthState state;
   DBusString context;
@@ -257,6 +258,7 @@ _dbus_auth_script_run (const DBusString *filename)
   
   retval = FALSE;
   auth = NULL;
+  authorization = NULL;
 
   _dbus_string_init_const (&guid, "5fa01f4202cd837709a3274ca0df9d00");
   _dbus_string_init_const (&context, "org_freedesktop_test");
@@ -374,24 +376,16 @@ _dbus_auth_script_run (const DBusString *filename)
               goto out;
             }
 
-          /* test ref/unref */
-          _dbus_auth_ref (auth);
-          _dbus_auth_unref (auth);
-
           creds = _dbus_credentials_new_from_current_process ();
           if (creds == NULL)
             {
               _dbus_warn ("no memory for credentials\n");
-              _dbus_auth_unref (auth);
-              auth = NULL;
               goto out;
             }
               
           if (!_dbus_auth_set_credentials (auth, creds))
             {
               _dbus_warn ("no memory for setting credentials\n");
-              _dbus_auth_unref (auth);
-              auth = NULL;
               _dbus_credentials_unref (creds);
               goto out;
             }
@@ -402,7 +396,6 @@ _dbus_auth_script_run (const DBusString *filename)
                _dbus_string_starts_with_c_str (&line, "SERVER_ANONYMOUS"))
         {
           DBusCredentials *creds;
-          DBusAuthorization *authorization;
           
           if (auth != NULL)
             {
@@ -423,32 +416,22 @@ _dbus_auth_script_run (const DBusString *filename)
             _dbus_authorization_set_allow_anonymous (authorization, TRUE);
 
           auth = _dbus_auth_server_new (&guid, authorization);
-          /* DBusAuth owns it, or finalized on OOM */
-          _dbus_authorization_unref (authorization);
           if (auth == NULL)
             {
               _dbus_warn ("no memory to create DBusAuth\n");
               goto out;
             }
 
-          /* test ref/unref */
-          _dbus_auth_ref (auth);
-          _dbus_auth_unref (auth);
-
           creds = _dbus_credentials_new_from_current_process ();
           if (creds == NULL)
             {
               _dbus_warn ("no memory for credentials\n");
-              _dbus_auth_unref (auth);
-              auth = NULL;
               goto out;
             }
               
           if (!_dbus_auth_set_credentials (auth, creds))
             {
               _dbus_warn ("no memory for setting credentials\n");
-              _dbus_auth_unref (auth);
-              auth = NULL;
               _dbus_credentials_unref (creds);
               goto out;
             }
@@ -806,7 +789,9 @@ _dbus_auth_script_run (const DBusString *filename)
   
  out:
   if (auth)
-    _dbus_auth_unref (auth);
+    _dbus_auth_free (auth);
+  if (authorization)
+    _dbus_authorization_free (authorization);
 
   _dbus_string_free (&file);
   _dbus_string_free (&line);
