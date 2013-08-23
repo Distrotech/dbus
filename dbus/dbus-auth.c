@@ -1128,8 +1128,8 @@ handle_server_data_external_mech (DBusAuth         *auth,
         }
       else
         {
-          _dbus_verbose ("%s: authenticated identity not authorized by server\n",
-                         DBUS_AUTH_NAME (auth));
+          _dbus_verbose ("%s: desired identity does not match server identity: "
+              "not authorized\n", DBUS_AUTH_NAME (auth));
           return send_rejected (auth);
         }
 
