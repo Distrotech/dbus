@@ -68,7 +68,7 @@ _handle_inotify_watch (DBusWatch *passed_watch, unsigned int flags, void *data)
   else
     {
       _dbus_verbose ("Sending SIGHUP signal on reception of %ld inotify event(s)\n", (long) ret);
-      (void) kill (_dbus_getpid(), SIGHUP);
+      (void) kill (_dbus_getpid (), SIGHUP);
     }
 
 #ifdef DBUS_ENABLE_VERBOSE_MODE
