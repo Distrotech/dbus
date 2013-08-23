@@ -5413,11 +5413,6 @@ dbus_connection_set_windows_user_function (DBusConnection              *connecti
  * such as ANONYMOUS that supports anonymous auth must be included in
  * the list of available mechanisms for anonymous login to work.
  *
- * Note that the mechanism might reject the connection even if anonymous
- * authentication has been enabled if dbus_connection_set_unix_user_function()
- * or dbus_connection_set_windows_user_function() have been used to set a
- * specific authorization callback.
- *
  * This setting also changes the default rule for connections
  * authorized as a user; normally, if a connection authorizes as
  * a user identity, it is permitted if the user identity is
