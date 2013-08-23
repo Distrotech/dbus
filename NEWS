@@ -28,6 +28,9 @@ Enhancements:
 
 • Add GetConnectionCredentials() method (fd.o #54445, Simon)
 
+• New API: dbus_setenv(), a simple wrapper around setenv().
+  Note that this is not thread-safe. (fd.o #39196, Simon)
+
 Fixes:
 
 • Escape addresses containing non-ASCII characters correctly
@@ -53,6 +56,8 @@ Fixes:
 • Assorted Doxygen fixes (fd.o #65755, Chengwei Yang)
 
 • Unix-specific:
+  · dbus-run-session: clear some unwanted environment variables
+    (fd.o #39196, Simon)
   · dbus-run-session: compile on FreeBSD (fd.o #66197, Chengwei Yang)
 
 • Windows-specific:
@@ -100,6 +105,12 @@ Enhancements:
 
 • Improve dbus-send documentation and command-line parsing (fd.o #65424,
   Chengwei Yang)
+
+Unix-specific:
+  · dbus-run-session: experimental new tool to start a temporary D-Bus
+    session, e.g. for regression tests or a text console, replacing
+    certain uses of dbus-launch which weren't really correct
+    (fd.o #39196, Simon)
 
 Other fixes:
 
