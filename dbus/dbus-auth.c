@@ -1124,7 +1124,7 @@ handle_server_data_external_mech (DBusAuth         *auth,
        * re-authorize later, but it will close the connection on fail,
        * we want to REJECT now if possible */
       if (_dbus_authorization_do_authorization (DBUS_AUTH_SERVER (auth)->authorization,
-                                                auth->authenticated_identity))
+                                                auth->authorized_identity))
         {
           if (!send_ok (auth))
             return FALSE;
