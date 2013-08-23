@@ -32,7 +32,6 @@ set (dbusinclude_HEADERS
 set (DBUS_LIB_SOURCES
 	${DBUS_DIR}/dbus-address.c
 	${DBUS_DIR}/dbus-auth.c
-	${DBUS_DIR}/dbus-authorization.c
 	${DBUS_DIR}/dbus-bus.c
 	${DBUS_DIR}/dbus-connection.c
 	${DBUS_DIR}/dbus-credentials.c
@@ -76,7 +75,6 @@ endif(UNIX)
 
 set (DBUS_LIB_HEADERS
 	${DBUS_DIR}/dbus-auth.h
-	${DBUS_DIR}/dbus-authorization.h
 	${DBUS_DIR}/dbus-connection-internal.h
 	${DBUS_DIR}/dbus-credentials.h
 	${DBUS_DIR}/dbus-keyring.h

@@ -27,7 +27,6 @@
 #include <dbus/dbus-errors.h>
 #include <dbus/dbus-transport.h>
 #include <dbus/dbus-message-internal.h>
-#include <dbus/dbus-authorization.h>
 #include <dbus/dbus-auth.h>
 #include <dbus/dbus-resources.h>
 
@@ -89,7 +88,6 @@ struct DBusTransport
   DBusMessageLoader *loader;                  /**< Message-loading buffer. */
 
   DBusAuth *auth;                             /**< Authentication conversation */
-  DBusAuthorization *authorization;           /**< Authorization conversation */
 
   DBusCredentials *credentials;               /**< Credentials of other end read from the socket */  
 
@@ -102,12 +100,23 @@ struct DBusTransport
 
   char *expected_guid;                        /**< GUID we expect the server to have, #NULL on server side or if we don't have an expectation */
   
+  DBusAllowUnixUserFunction unix_user_function; /**< Function for checking whether a user is authorized. */
+  void *unix_user_data;                         /**< Data for unix_user_function */
+  
+  DBusFreeFunction free_unix_user_data;         /**< Function to free unix_user_data */
+
+  DBusAllowWindowsUserFunction windows_user_function; /**< Function for checking whether a user is authorized. */
+  void *windows_user_data;                            /**< Data for windows_user_function */
+  
+  DBusFreeFunction free_windows_user_data;            /**< Function to free windows_user_data */
+  
   unsigned int disconnected : 1;              /**< #TRUE if we are disconnected. */
   unsigned int authenticated : 1;             /**< Cache of auth state; use _dbus_transport_peek_is_authenticated() to query value */
   unsigned int send_credentials_pending : 1;  /**< #TRUE if we need to send credentials */
   unsigned int receive_credentials_pending : 1; /**< #TRUE if we need to receive credentials */
   unsigned int is_server : 1;                 /**< #TRUE if on the server side */
   unsigned int unused_bytes_recovered : 1;    /**< #TRUE if we've recovered unused bytes from auth */
+  unsigned int allow_anonymous : 1;           /**< #TRUE if an anonymous client can connect */
 };
 
 dbus_bool_t _dbus_transport_init_base     (DBusTransport             *transport,
