@@ -30,7 +30,6 @@
 #include "dbus-hash.h"
 #include "dbus-credentials.h"
 #include "dbus-internals.h"
-#include "dbus-authorization.h"
 
 /**
  * @defgroup DBusAuthScript code for running unit test scripts for DBusAuth
@@ -402,7 +401,6 @@ _dbus_auth_script_run (const DBusString *filename)
                                                "SERVER"))
         {
           DBusCredentials *creds;
-          DBusAuthorization *authorization;
           
           if (auth != NULL)
             {
@@ -410,16 +408,7 @@ _dbus_auth_script_run (const DBusString *filename)
               goto out;
             }
 
-          /* empty authorization, it will use default rules */
-          authorization = _dbus_authorization_new ();
-          if (authorization == NULL)
-            {
-              _dbus_warn ("no memory to create DBusAuthorization\n");
-              goto out;
-            }
-          auth = _dbus_auth_server_new (&guid, authorization);
-          /* DBusAuth owns it, or finalized on OOM */
-          _dbus_authorization_unref (authorization);
+          auth = _dbus_auth_server_new (&guid);
           if (auth == NULL)
             {
               _dbus_warn ("no memory to create DBusAuth\n");
