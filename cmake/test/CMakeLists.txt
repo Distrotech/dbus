@@ -71,6 +71,55 @@ target_link_libraries(test-segfault ${DBUS_INTERNAL_LIBRARIES})
 add_executable(test-sleep-forever ${test-sleep-forever_SOURCES})
 target_link_libraries(test-sleep-forever ${DBUS_INTERNAL_LIBRARIES})
 
+
+if(DBUS_WITH_GLIB)
+    message(STATUS "with glib test apps")
+    add_definitions(
+        ${GLIB2_DEFINITIONS}
+        ${GOBJECT_DEFINITIONS}
+        ${DBUSGLIB_DEFINITIONS}
+    )
+    message(STATUS ${GLIB2_INCLUDE_DIR} ${DBUSGLIB_INCLUDE_DIR})
+
+    include_directories(
+        ${GLIB2_INCLUDE_DIR}
+        ${GOBJECT_INCLUDE_DIR}
+        ${DBUSGLIB_INCLUDE_DIR}
+        ${CMAKE_SOURCE_DIR}/../test
+    )
+    set (TEST_LIBRARIES dbus-testutils ${DBUSGLIB_LIBRARIES} ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES})
+
+    add_executable(test-corrupt ${CMAKE_SOURCE_DIR}/../test/corrupt.c)
+    target_link_libraries(test-corrupt ${TEST_LIBRARIES})
+
+    add_executable(test-dbus-daemon ${CMAKE_SOURCE_DIR}/../test/dbus-daemon.c)
+    target_link_libraries(test-dbus-daemon ${TEST_LIBRARIES})
+
+    add_executable(test-dbus-daemon-eavesdrop ${CMAKE_SOURCE_DIR}/../test/dbus-daemon-eavesdrop.c)
+    target_link_libraries(test-dbus-daemon-eavesdrop ${TEST_LIBRARIES})
+
+    add_executable(test-loopback ${CMAKE_SOURCE_DIR}/../test/loopback.c)
+    target_link_libraries(test-loopback ${TEST_LIBRARIES})
+
+    add_executable(test-marshal ${CMAKE_SOURCE_DIR}/../test/marshal.c)
+    target_link_libraries(test-marshal ${TEST_LIBRARIES})
+
+    add_executable(test-refs ${CMAKE_SOURCE_DIR}/../test/internals/refs.c)
+    target_link_libraries(test-refs ${TEST_LIBRARIES})
+
+    add_executable(test-relay ${CMAKE_SOURCE_DIR}/../test/relay.c)
+    target_link_libraries(test-relay ${TEST_LIBRARIES})
+
+    add_executable(test-syntax ${CMAKE_SOURCE_DIR}/../test/syntax.c)
+    target_link_libraries(test-syntax ${TEST_LIBRARIES})
+
+    add_executable(test-syslog ${CMAKE_SOURCE_DIR}/../test/internals/syslog.c)
+    target_link_libraries(test-syslog ${TEST_LIBRARIES})
+
+    add_executable(manual-authz ${CMAKE_SOURCE_DIR}/../test/manual-authz.c)
+    target_link_libraries(manual-authz ${TEST_LIBRARIES})
+endif()
+
 ### keep these in creation order, i.e. uppermost dirs first 
 set (TESTDIRS
     test/data

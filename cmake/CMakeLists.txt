@@ -109,6 +109,12 @@ option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
 find_package(EXPAT)
 find_package(X11)
+find_package(GLib2)
+find_package(GObject)
+find_package(DBusGLib)
+if(GLIB2_FOUND AND GOBJECT_FOUND AND DBUSGLIB_FOUND)
+    option (DBUS_WITH_GLIB "build with glib" ON)
+endif()
 
 # analogous to AC_USE_SYSTEM_EXTENSIONS in configure.ac
 add_definitions(-D_GNU_SOURCE)
@@ -539,6 +545,7 @@ message("        Docbook Generator:        ${DOCBOOK_GENERATOR_NAME}           "
 
 message("        gcc coverage profiling:   ${DBUS_GCOV_ENABLED}                ")
 message("        Building unit tests:      ${DBUS_BUILD_TESTS}                 ")
+message("        Building with GLib:       ${DBUS_WITH_GLIB}                   ")
 message("        Building verbose mode:    ${DBUS_ENABLE_VERBOSE_MODE}         ")
 message("        Building w/o assertions:  ${DBUS_DISABLE_ASSERT}             ")
 message("        Building w/o checks:      ${DBUS_DISABLE_CHECKS}              ")
