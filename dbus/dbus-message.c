@@ -2334,7 +2334,8 @@ dbus_message_iter_get_basic (DBusMessageIter  *iter,
  * @param iter the iterator
  * @returns the number of elements in the array
  */
-int dbus_message_iter_get_element_count (DBusMessageIter* iter)
+int
+dbus_message_iter_get_element_count (DBusMessageIter *iter)
 {
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
   DBusTypeReader array;
