@@ -1611,10 +1611,14 @@ _dbus_message_test (const char *test_data_dir)
   /* Test enumeration of array elements */
   for (i = strlen (basic_types) - 1; i > 0; i--)
     {
+      DBusBasicValue val;
       int some;
       char* signature = _dbus_strdup ("?");
+
       signature[0] = basic_types[i];
       s = "SomeThingToSay";
+      memset (&val, '\0', sizeof (val));
+
       message = dbus_message_new_method_call ("de.ende.test",
         "/de/ende/test", "de.ende.Test", "ArtistName");
       _dbus_assert (message != NULL);
@@ -1626,7 +1630,7 @@ _dbus_message_test (const char *test_data_dir)
           if (basic_types[i] == DBUS_TYPE_STRING)
             dbus_message_iter_append_basic (&array_iter, DBUS_TYPE_STRING, &s);
           else
-            dbus_message_iter_append_basic (&array_iter, basic_types[i], &some);
+            dbus_message_iter_append_basic (&array_iter, basic_types[i], &val);
         }
       dbus_message_iter_close_container (&iter, &array_iter);
       dbus_message_iter_init (message, &iter);
