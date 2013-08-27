@@ -165,7 +165,7 @@ get_pid_from_extended_tcp_table(int peer_port)
     }
   else
     {
-      _dbus_verbose ("unexpected error returned from GetExtendedTcpTable %d\n", errorCode);
+      _dbus_win_warn_win_error ("unexpected error returned from GetExtendedTcpTable", errorCode);
       return 0;
     }
 
@@ -188,7 +188,7 @@ get_pid_from_extended_tcp_table(int peer_port)
     }
 
   dbus_free (tcp_table);
-  _dbus_verbose ("got pid %d\n", (int)result);
+  _dbus_verbose ("got pid %lu\n", result);
   return result;
 }
 
@@ -236,7 +236,7 @@ get_pid_from_tcp_ex_table(int peer_port)
     }
 
   HeapFree (GetProcessHeap(), 0, tcp_table);
-  _dbus_verbose ("got pid %d\n", (int)result);
+  _dbus_verbose ("got pid %lu\n", result);
   return result;
 }
 
@@ -3840,7 +3840,7 @@ _dbus_win_set_error_from_win_error (DBusError *error,
 
 void
 _dbus_win_warn_win_error (const char *message,
-                          int         code)
+                          unsigned long code)
 {
   DBusError error;
 
