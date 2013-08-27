@@ -39,7 +39,7 @@ dbus_res_ldflag = -Wl,$(dbus_res)
 no_undefined = -no-undefined
 export_symbols =
 
-libdbus_1_la_DEPENDENCIES = $(dbus_res)
+EXTRA_libdbus_1_la_DEPENDENCIES = $(dbus_res)
 intllibs =
 
 else
