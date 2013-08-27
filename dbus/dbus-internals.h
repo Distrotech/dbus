@@ -316,9 +316,10 @@ typedef enum
   _DBUS_LOCK_shutdown_funcs,
   _DBUS_LOCK_system_users,
   _DBUS_LOCK_message_cache,
-  /* index 10-11 */
+  /* index 10-12 */
   _DBUS_LOCK_shared_connections,
   _DBUS_LOCK_machine_uuid,
+  _DBUS_LOCK_sysdeps,
 
   _DBUS_N_GLOBAL_LOCKS
 } DBusGlobalLock;

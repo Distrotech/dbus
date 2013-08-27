@@ -2539,11 +2539,17 @@ dbus_bool_t
 bus_activation_service_reload_test (const DBusString *test_data_dir)
 {
   DBusString directory;
+  const char *tmp;
 
   if (!_dbus_string_init (&directory))
     return FALSE;
 
-  if (!_dbus_string_append (&directory, _dbus_get_tmpdir()))
+  tmp = _dbus_get_tmpdir ();
+
+  if (tmp == NULL)
+    return FALSE;
+
+  if (!_dbus_string_append (&directory, tmp))
     return FALSE;
 
   if (!_dbus_string_append (&directory, "/dbus-reload-test-") ||

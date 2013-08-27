@@ -2256,13 +2256,17 @@ _dbus_generate_random_bytes (DBusString *str,
  * Gets the temporary files directory by inspecting the environment variables 
  * TMPDIR, TMP, and TEMP in that order. If none of those are set "/tmp" is returned
  *
- * @returns location of temp directory
+ * @returns location of temp directory, or #NULL if no memory for locking
  */
 const char*
 _dbus_get_tmpdir(void)
 {
+  /* Protected by _DBUS_LOCK_sysdeps */
   static const char* tmpdir = NULL;
   static char buf[1000];
+
+  if (!_DBUS_LOCK (sysdeps))
+    return NULL;
 
   if (tmpdir == NULL)
     {
@@ -2284,6 +2288,8 @@ _dbus_get_tmpdir(void)
 
       tmpdir = buf;
     }
+
+  _DBUS_UNLOCK (sysdeps);
 
   _dbus_assert(tmpdir != NULL);
 

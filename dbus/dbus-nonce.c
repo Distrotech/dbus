@@ -240,6 +240,7 @@ do_noncefile_create (DBusNonceFile *noncefile,
                      dbus_bool_t use_subdir)
 {
     DBusString randomStr;
+    const char *tmp;
 
     _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -257,8 +258,11 @@ do_noncefile_create (DBusNonceFile *noncefile,
         goto on_error;
       }
 
+    tmp = _dbus_get_tmpdir ();
+
     if (!_dbus_string_init (&noncefile->dir)
-        || !_dbus_string_append (&noncefile->dir, _dbus_get_tmpdir()))
+        || tmp == NULL
+        || !_dbus_string_append (&noncefile->dir, tmp))
       {
         dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
         goto on_error;
