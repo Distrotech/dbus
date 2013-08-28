@@ -19,6 +19,14 @@ autoversion(../configure.ac dbus)
 # used by file version info
 set (DBUS_PATCH_VERSION "0")
 
+# set PACKAGE_... variables
+autopackage(
+    dbus
+    ${DBUS_VERSION_STRING}
+    "http://dbus.freedesktop.org"
+    "https://bugs.freedesktop.org/enter_bug.cgi?product=dbus"
+)
+
 include(Macros)
 TIMESTAMP(DBUS_BUILD_TIMESTAMP)
 

@@ -6,6 +6,12 @@
 /* indicate that we are building with cmake */
 #define DBUS_CMAKE 1
 
+@AUTOPACKAGE_CONFIG_H_TEMPLATE@
+
+/*
+ * Variables defined by AC_DEFINE in ../configure.ac
+ * should be placed in this file
+*/
 #cmakedefine HAVE_GNUC_VARARGS 1
 
 #cmakedefine DBUS_CONSOLE_AUTH_DIR "@DBUS_CONSOLE_AUTH_DIR@"
@@ -18,7 +24,6 @@
 #cmakedefine DBUS_SESSION_BUS_CONNECT_ADDRESS  "@DBUS_SESSION_BUS_CONNECT_ADDRESS@"
 #cmakedefine DBUS_MACHINE_UUID_FILE "@DBUS_MACHINE_UUID_FILE@"
 #cmakedefine DBUS_DAEMONDIR "@DBUS_DAEMONDIR@"
-#cmakedefine PACKAGE "@PACKAGE@"
 
 #cmakedefine DBUS_ENABLE_STATS
 
