@@ -4172,6 +4172,8 @@ _dbus_check_setuid (void)
   uid_t ruid, euid, suid; /* Real, effective and saved user ID's */
   gid_t rgid, egid, sgid; /* Real, effective and saved group ID's */
 
+  /* We call into this function from _dbus_threads_init_platform_specific()
+   * to make sure these are initialized before we start threading. */
   static dbus_bool_t check_setuid_initialised;
   static dbus_bool_t is_setuid;
 
