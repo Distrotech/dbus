@@ -1528,3 +1528,207 @@ _dbus_command_for_pid (unsigned long  pid,
   // FIXME
   return FALSE;
 }
+
+/*
+ * replaces the term DBUS_PREFIX in configure_time_path by the
+ * current dbus installation directory. On unix this function is a noop
+ *
+ * @param configure_time_path
+ * @return real path
+ */
+const char *
+_dbus_replace_install_prefix (const char *configure_time_path)
+{
+#ifndef DBUS_PREFIX
+  return configure_time_path;
+#else
+  static char retval[1000];
+  static char runtime_prefix[1000];
+  int len = 1000;
+  int i;
+
+  if (!configure_time_path)
+    return NULL;
+
+  if ((!_dbus_get_install_root(runtime_prefix, len) ||
+       strncmp (configure_time_path, DBUS_PREFIX "/",
+                strlen (DBUS_PREFIX) + 1))) {
+     strcat (retval, configure_time_path);
+     return retval;
+  }
+
+  strcpy (retval, runtime_prefix);
+  strcat (retval, configure_time_path + strlen (DBUS_PREFIX) + 1);
+
+  /* Somehow, in some situations, backslashes get collapsed in the string.
+   * Since windows C library accepts both forward and backslashes as
+   * path separators, convert all backslashes to forward slashes.
+   */
+
+  for(i = 0; retval[i] != '\0'; i++) {
+    if(retval[i] == '\\')
+      retval[i] = '/';
+  }
+  return retval;
+#endif
+}
+
+/**
+ * return the relocated DATADIR
+ *
+ * @returns relocated DATADIR static string
+ */
+
+static const char *
+_dbus_windows_get_datadir (void)
+{
+	return _dbus_replace_install_prefix(DBUS_DATADIR);
+}
+
+#undef DBUS_DATADIR
+#define DBUS_DATADIR _dbus_windows_get_datadir ()
+
+
+#define DBUS_STANDARD_SESSION_SERVICEDIR "/dbus-1/services"
+#define DBUS_STANDARD_SYSTEM_SERVICEDIR "/dbus-1/system-services"
+
+/**
+ * Returns the standard directories for a session bus to look for service
+ * activation files
+ *
+ * On Windows this should be data directories:
+ *
+ * %CommonProgramFiles%/dbus
+ *
+ * and
+ *
+ * relocated DBUS_DATADIR
+ *
+ * @param dirs the directory list we are returning
+ * @returns #FALSE on OOM
+ */
+
+dbus_bool_t
+_dbus_get_standard_session_servicedirs (DBusList **dirs)
+{
+  const char *common_progs;
+  DBusString servicedir_path;
+
+  if (!_dbus_string_init (&servicedir_path))
+    return FALSE;
+
+#ifdef DBUS_WINCE
+  {
+    /* On Windows CE, we adjust datadir dynamically to installation location.  */
+    const char *data_dir = _dbus_getenv ("DBUS_DATADIR");
+
+    if (data_dir != NULL)
+      {
+        if (!_dbus_string_append (&servicedir_path, data_dir))
+          goto oom;
+
+        if (!_dbus_string_append (&servicedir_path, _DBUS_PATH_SEPARATOR))
+          goto oom;
+      }
+  }
+#else
+/*
+ the code for accessing services requires absolute base pathes
+ in case DBUS_DATADIR is relative make it absolute
+*/
+#ifdef DBUS_WIN
+  {
+    DBusString p;
+
+    _dbus_string_init_const (&p, DBUS_DATADIR);
+
+    if (!_dbus_path_is_absolute (&p))
+      {
+        char install_root[1000];
+        if (_dbus_get_install_root (install_root, sizeof(install_root)))
+          if (!_dbus_string_append (&servicedir_path, install_root))
+            goto oom;
+      }
+  }
+#endif
+  if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR))
+    goto oom;
+
+  if (!_dbus_string_append (&servicedir_path, _DBUS_PATH_SEPARATOR))
+    goto oom;
+#endif
+
+  common_progs = _dbus_getenv ("CommonProgramFiles");
+
+  if (common_progs != NULL)
+    {
+      if (!_dbus_string_append (&servicedir_path, common_progs))
+        goto oom;
+
+      if (!_dbus_string_append (&servicedir_path, _DBUS_PATH_SEPARATOR))
+        goto oom;
+    }
+
+  if (!_dbus_split_paths_and_append (&servicedir_path,
+                               DBUS_STANDARD_SESSION_SERVICEDIR,
+                               dirs))
+    goto oom;
+
+  _dbus_string_free (&servicedir_path);
+  return TRUE;
+
+ oom:
+  _dbus_string_free (&servicedir_path);
+  return FALSE;
+}
+
+/**
+ * Returns the standard directories for a system bus to look for service
+ * activation files
+ *
+ * On UNIX this should be the standard xdg freedesktop.org data directories:
+ *
+ * XDG_DATA_DIRS=${XDG_DATA_DIRS-/usr/local/share:/usr/share}
+ *
+ * and
+ *
+ * DBUS_DATADIR
+ *
+ * On Windows there is no system bus and this function can return nothing.
+ *
+ * @param dirs the directory list we are returning
+ * @returns #FALSE on OOM
+ */
+
+dbus_bool_t
+_dbus_get_standard_system_servicedirs (DBusList **dirs)
+{
+  *dirs = NULL;
+  return TRUE;
+}
+
+/**
+ * Append the absolute path of the system.conf file
+ * (there is no system bus on Windows so this can just
+ * return FALSE and print a warning or something)
+ *
+ * @param str the string to append to
+ * @returns #FALSE if no memory
+ */
+dbus_bool_t
+_dbus_append_system_config_file (DBusString *str)
+{
+  return _dbus_get_config_file_name(str, "system.conf");
+}
+
+/**
+ * Append the absolute path of the session.conf file.
+ *
+ * @param str the string to append to
+ * @returns #FALSE if no memory
+ */
+dbus_bool_t
+_dbus_append_session_config_file (DBusString *str)
+{
+  return _dbus_get_config_file_name(str, "session.conf");
+}

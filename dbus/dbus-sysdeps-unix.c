@@ -3572,9 +3572,6 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
   return _dbus_read_uuid_file (&filename, machine_id, FALSE, error);
 }
 
-#define DBUS_UNIX_STANDARD_SESSION_SERVICEDIR "/dbus-1/services"
-#define DBUS_UNIX_STANDARD_SYSTEM_SERVICEDIR "/dbus-1/system-services"
-
 /**
  * quries launchd for a specific env var which holds the socket path.
  * @param socket_path append the socket path to this DBusString
@@ -3723,167 +3720,6 @@ _dbus_lookup_session_address (dbus_bool_t *supported,
   *supported = FALSE;
   return TRUE;
 #endif
-}
-
-/**
- * Returns the standard directories for a session bus to look for service
- * activation files
- *
- * On UNIX this should be the standard xdg freedesktop.org data directories:
- *
- * XDG_DATA_HOME=${XDG_DATA_HOME-$HOME/.local/share}
- * XDG_DATA_DIRS=${XDG_DATA_DIRS-/usr/local/share:/usr/share}
- *
- * and
- *
- * DBUS_DATADIR
- *
- * @param dirs the directory list we are returning
- * @returns #FALSE on OOM
- */
-
-dbus_bool_t
-_dbus_get_standard_session_servicedirs (DBusList **dirs)
-{
-  const char *xdg_data_home;
-  const char *xdg_data_dirs;
-  DBusString servicedir_path;
-
-  if (!_dbus_string_init (&servicedir_path))
-    return FALSE;
-
-  xdg_data_home = _dbus_getenv ("XDG_DATA_HOME");
-  xdg_data_dirs = _dbus_getenv ("XDG_DATA_DIRS");
-
-  if (xdg_data_home != NULL)
-    {
-      if (!_dbus_string_append (&servicedir_path, xdg_data_home))
-        goto oom;
-    }
-  else
-    {
-      const DBusString *homedir;
-      DBusString local_share;
-
-      if (!_dbus_homedir_from_current_process (&homedir))
-        goto oom;
-
-      if (!_dbus_string_append (&servicedir_path, _dbus_string_get_const_data (homedir)))
-        goto oom;
-
-      _dbus_string_init_const (&local_share, "/.local/share");
-      if (!_dbus_concat_dir_and_file (&servicedir_path, &local_share))
-        goto oom;
-    }
-
-  if (!_dbus_string_append (&servicedir_path, ":"))
-    goto oom;
-
-  if (xdg_data_dirs != NULL)
-    {
-      if (!_dbus_string_append (&servicedir_path, xdg_data_dirs))
-        goto oom;
-
-      if (!_dbus_string_append (&servicedir_path, ":"))
-        goto oom;
-    }
-  else
-    {
-      if (!_dbus_string_append (&servicedir_path, "/usr/local/share:/usr/share:"))
-        goto oom;
-    }
-
-  /*
-   * add configured datadir to defaults
-   * this may be the same as an xdg dir
-   * however the config parser should take
-   * care of duplicates
-   */
-  if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR))
-    goto oom;
-
-  if (!_dbus_split_paths_and_append (&servicedir_path,
-                                     DBUS_UNIX_STANDARD_SESSION_SERVICEDIR,
-                                     dirs))
-    goto oom;
-
-  _dbus_string_free (&servicedir_path);
-  return TRUE;
-
- oom:
-  _dbus_string_free (&servicedir_path);
-  return FALSE;
-}
-
-
-/**
- * Returns the standard directories for a system bus to look for service
- * activation files
- *
- * On UNIX this should be the standard xdg freedesktop.org data directories:
- *
- * XDG_DATA_DIRS=${XDG_DATA_DIRS-/usr/local/share:/usr/share}
- *
- * and
- *
- * DBUS_DATADIR
- *
- * On Windows there is no system bus and this function can return nothing.
- *
- * @param dirs the directory list we are returning
- * @returns #FALSE on OOM
- */
-
-dbus_bool_t
-_dbus_get_standard_system_servicedirs (DBusList **dirs)
-{
-  /*
-   * DBUS_DATADIR may be the same as one of the standard directories. However,
-   * the config parser should take care of the duplicates.
-   *
-   * Also, append /lib as counterpart of /usr/share on the root
-   * directory (the root directory does not know /share), in order to
-   * facilitate early boot system bus activation where /usr might not
-   * be available.
-   */
-  static const char standard_search_path[] =
-    "/usr/local/share:"
-    "/usr/share:"
-    DBUS_DATADIR ":"
-    "/lib";
-  DBusString servicedir_path;
-
-  _dbus_string_init_const (&servicedir_path, standard_search_path);
-
-  return _dbus_split_paths_and_append (&servicedir_path,
-                                       DBUS_UNIX_STANDARD_SYSTEM_SERVICEDIR,
-                                       dirs);
-}
-
-/**
- * Append the absolute path of the system.conf file
- * (there is no system bus on Windows so this can just
- * return FALSE and print a warning or something)
- *
- * @param str the string to append to
- * @returns #FALSE if no memory
- */
-dbus_bool_t
-_dbus_append_system_config_file (DBusString *str)
-{
-  return _dbus_string_append (str, DBUS_SYSTEM_CONFIG_FILE);
-}
-
-/**
- * Append the absolute path of the session.conf file.
- *
- * @param str the string to append to
- * @returns #FALSE if no memory
- */
-dbus_bool_t
-_dbus_append_session_config_file (DBusString *str)
-{
-  return _dbus_string_append (str, DBUS_SESSION_CONFIG_FILE);
 }
 
 /**
@@ -4063,20 +3899,6 @@ _dbus_socket_can_pass_unix_fd(int fd) {
   return FALSE;
 
 #endif
-}
-
-
-/*
- * replaces the term DBUS_PREFIX in configure_time_path by the
- * current dbus installation directory. On unix this function is a noop
- *
- * @param configure_time_path
- * @return real path
- */
-const char *
-_dbus_replace_install_prefix (const char *configure_time_path)
-{
-  return configure_time_path;
 }
 
 /**
