@@ -138,9 +138,9 @@ usage (void)
       " [--introspect]"
       " [--address=ADDRESS]"
       " [--nopidfile]"
+      " [--nofork]"
 #ifdef DBUS_UNIX
       " [--fork]"
-      " [--nofork]"
       " [--systemd-activation]"
 #endif
       "\n");
@@ -412,12 +412,12 @@ main (int argc, char **argv)
         {
           introspect ();
         }
-#ifdef DBUS_UNIX
       else if (strcmp (arg, "--nofork") == 0)
         {
           flags &= ~BUS_CONTEXT_FLAG_FORK_ALWAYS;
           flags |= BUS_CONTEXT_FLAG_FORK_NEVER;
         }
+#ifdef DBUS_UNIX
       else if (strcmp (arg, "--fork") == 0)
         {
           flags &= ~BUS_CONTEXT_FLAG_FORK_NEVER;

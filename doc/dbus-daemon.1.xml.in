@@ -89,10 +89,16 @@ with SIGHUP.</para>
 <para>Force the message bus to fork and become a daemon, even if
 the configuration file does not specify that it should.
 In most contexts the configuration file already gets this
-right, though.
-<option>--nofork</option>
-Force the message bus not to fork and become a daemon, even if
-the configuration file specifies that it should.</para>
+right, though. This option is not supported on Windows.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--nofork</option></term>
+  <listitem>
+    <para>Force the message bus not to fork and become a daemon, even if
+      the configuration file specifies that it should. On Windows,
+      the dbus-daemon never forks, so this option is allowed but does
+      nothing.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
