@@ -3463,7 +3463,7 @@ _dbus_get_autolaunch_address (const char *scope,
    * but that's done elsewhere, and if it worked, this function wouldn't
    * be called.) */
   const char *display;
-  static char *argv[6];
+  char *argv[6];
   int i;
   DBusString uuid;
   dbus_bool_t retval;
