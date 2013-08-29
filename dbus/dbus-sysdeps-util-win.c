@@ -65,7 +65,9 @@ _dbus_become_daemon (const DBusString *pidfile,
                      DBusError        *error,
                      dbus_bool_t       keep_umask)
 {
-  return TRUE;
+  dbus_set_error (error, DBUS_ERROR_NOT_SUPPORTED,
+                  "Cannot daemonize on Windows");
+  return FALSE;
 }
 
 /**
