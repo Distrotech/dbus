@@ -332,25 +332,22 @@ _dbus_verbose_init (void)
 */ 
 static char *_dbus_file_path_extract_elements_from_tail(const char *file,int level)
 {
-  static int prefix = -1;
+  int prefix = 0;
+  char *p = (char *)file + strlen(file);
+  int i = 0;
 
-  if (prefix == -1) 
+  for (;p >= file;p--)
     {
-      char *p = (char *)file + strlen(file);
-      int i = 0;
-      prefix = 0;
-      for (;p >= file;p--)
+      if (DBUS_IS_DIR_SEPARATOR(*p))
         {
-          if (DBUS_IS_DIR_SEPARATOR(*p))
+          if (++i >= level)
             {
-              if (++i >= level) 
-                {
-                  prefix = p-file+1;
-                  break;
-                }
-           }
-        }
+              prefix = p-file+1;
+              break;
+            }
+       }
     }
+
   return (char *)file+prefix;
 }
 
