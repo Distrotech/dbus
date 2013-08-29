@@ -3622,6 +3622,8 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
       }
     else
       {
+        /* Not strictly thread-safe, but if we fail at thread-safety here,
+         * the worst that will happen is some extra warnings. */
         static dbus_bool_t already_warned = FALSE;
         if (!already_warned)
           {
