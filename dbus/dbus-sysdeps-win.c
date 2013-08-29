@@ -672,21 +672,26 @@ _dbus_connect_named_pipe (const char     *path,
 
 #endif
 
-
-
-void
+/**
+ * @returns #FALSE if no memory
+ */
+dbus_bool_t
 _dbus_win_startup_winsock (void)
 {
   /* Straight from MSDN, deuglified */
 
+  /* Protected by _DBUS_LOCK_sysdeps */
   static dbus_bool_t beenhere = FALSE;
 
   WORD wVersionRequested;
   WSADATA wsaData;
   int err;
 
+  if (!_DBUS_LOCK (sysdeps))
+    return FALSE;
+
   if (beenhere)
-    return;
+    goto out;
 
   wVersionRequested = MAKEWORD (2, 0);
 
@@ -710,6 +715,10 @@ _dbus_win_startup_winsock (void)
     }
 
   beenhere = TRUE;
+
+out:
+  _DBUS_UNLOCK (sysdeps);
+  return TRUE;
 }
 
 
@@ -1054,7 +1063,11 @@ _dbus_full_duplex_pipe (int        *fd1,
   int len;
   u_long arg;
 
-  _dbus_win_startup_winsock ();
+  if (!_dbus_win_startup_winsock ())
+    {
+      _DBUS_SET_OOM (error);
+      return FALSE;
+    }
 
   temp = socket (AF_INET, SOCK_STREAM, 0);
   if (temp == INVALID_SOCKET)
@@ -1498,7 +1511,11 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  _dbus_win_startup_winsock ();
+  if (!_dbus_win_startup_winsock ())
+    {
+      _DBUS_SET_OOM (error);
+      return -1;
+    }
 
   _DBUS_ZERO (hints);
 
@@ -1643,7 +1660,11 @@ _dbus_listen_tcp_socket (const char     *host,
   *fds_p = NULL;
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  _dbus_win_startup_winsock ();
+  if (!_dbus_win_startup_winsock ())
+    {
+      _DBUS_SET_OOM (error);
+      return -1;
+    }
 
   _DBUS_ZERO (hints);
 
