@@ -29,7 +29,6 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#define DBUS_COMPILATION    /* this test uses libdbus-internal */
 #include <dbus/dbus.h>
 #include <dbus/dbus-connection-internal.h>
 #include <dbus/dbus-mainloop.h>

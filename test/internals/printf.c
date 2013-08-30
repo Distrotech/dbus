@@ -26,7 +26,6 @@
 
 #include <config.h>
 
-#define DBUS_COMPILATION    /* this test uses libdbus-internal */
 #include <dbus/dbus.h>
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-string.h>

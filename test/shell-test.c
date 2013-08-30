@@ -1,7 +1,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define DBUS_COMPILATION
+
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-memory.h>

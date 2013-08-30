@@ -30,7 +30,6 @@
 
 #include <glib.h>
 
-#define DBUS_COMPILATION    /* this test uses libdbus-internal */
 #include <dbus/dbus.h>
 #include <dbus/dbus-sysdeps.h>
 

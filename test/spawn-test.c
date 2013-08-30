@@ -1,10 +1,8 @@
 #include <config.h>
 #include <dbus/dbus.h>
 
-#define DBUS_COMPILATION /* cheat and use dbus-sysdeps */
 #include <dbus/dbus-sysdeps.h>
 #include <dbus/dbus-spawn.h>
-#undef DBUS_COMPILATION
 #include <stdio.h>
 
 static void

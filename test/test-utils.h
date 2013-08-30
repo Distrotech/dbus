@@ -1,14 +1,10 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
-#ifndef DBUS_COMPILATION
-#define DBUS_COMPILATION /* Cheat and use private stuff */
-#endif
 #include <dbus/dbus.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dbus/dbus-mainloop.h>
 #include <dbus/dbus-internals.h>
-#undef DBUS_COMPILATION
 
 dbus_bool_t test_connection_setup                 (DBusLoop       *loop,
                                                    DBusConnection *connection);

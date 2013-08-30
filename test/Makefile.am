@@ -19,6 +19,7 @@ AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 static_cppflags = \
 	$(AM_CPPFLAGS) \
 	-DDBUS_STATIC_BUILD \
+	-DDBUS_COMPILATION \
 	$(NULL)
 
 libdbus_testutils_la_CPPFLAGS = \
