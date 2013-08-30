@@ -959,10 +959,11 @@ bus_selinux_id_table_print (DBusHashTable *service_table)
 /**
  * Print out some AVC statistics.
  */
+#ifdef HAVE_SELINUX
 static void
 bus_avc_print_stats (void)
 {
-#if defined (DBUS_ENABLE_VERBOSE_MODE) && defined (HAVE_SELINUX)
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   struct avc_cache_stats cstats;
 
   if (!selinux_enabled)
@@ -980,9 +981,9 @@ bus_avc_print_stats (void)
   _dbus_verbose ("CAV hits: %d\n", cstats.cav_hits);
   _dbus_verbose ("CAV probes: %d\n", cstats.cav_probes);
   _dbus_verbose ("CAV misses: %d\n", cstats.cav_misses);
-#endif /* DBUS_ENABLE_VERBOSE_MODE && HAVE_SELINUX */
+#endif /* DBUS_ENABLE_VERBOSE_MODE */
 }
-
+#endif /* HAVE_SELINUX */
 
 /**
  * Destroy the AVC before we terminate.
