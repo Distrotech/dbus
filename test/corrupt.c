@@ -246,6 +246,16 @@ test_corrupt (Fixture *f,
       "/org/freedesktop/DBus/Local");
 
   dbus_message_unref (incoming);
+
+  /* Free the DBusConnection before the GSocket, because GSocket is
+   * going to close our fd. GSocket tolerates closing an already-closed
+   * fd, whereas DBusLoop + DBusSocketSetEpoll doesn't. On Unix
+   * we could use dup() but that isn't portable to Windows :-(
+   */
+  dbus_connection_close (f->server_conn);
+  dbus_connection_unref (f->server_conn);
+  f->server_conn = NULL;
+
   g_object_unref (socket);
 }
 
@@ -325,6 +335,12 @@ test_byte_order (Fixture *f,
       "/org/freedesktop/DBus/Local");
 
   dbus_message_unref (message);
+
+  /* Free the DBusConnection before the GSocket, as above. */
+  dbus_connection_close (f->server_conn);
+  dbus_connection_unref (f->server_conn);
+  f->server_conn = NULL;
+
   g_object_unref (socket);
 }
 
