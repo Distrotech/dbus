@@ -409,7 +409,14 @@ setup (Fixture *f,
       config = g_strdup ("--session");
     }
 
-  address = spawn_dbus_daemon (dbus_daemon, config, &f->daemon_pid);
+  if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
+    {
+      address = g_strdup (g_getenv ("DBUS_TEST_DAEMON_ADDRESS"));
+    }
+  else
+    {
+      address = spawn_dbus_daemon (dbus_daemon, config, &f->daemon_pid);
+    }
 
   g_free (dbus_daemon);
   g_free (config);
