@@ -194,6 +194,14 @@ setup (Fixture *f,
 
   if (config != NULL && config->config_file != NULL)
     {
+      if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
+        {
+          g_message ("SKIP: cannot use DBUS_TEST_DAEMON_ADDRESS for "
+              "unusally-configured dbus-daemon");
+          f->skip = TRUE;
+          return;
+        }
+
       if (g_getenv ("DBUS_TEST_DATA") == NULL)
         {
           g_message ("SKIP: set DBUS_TEST_DATA to a directory containing %s",
@@ -227,7 +235,14 @@ setup (Fixture *f,
   if (dbus_daemon == NULL)
     dbus_daemon = g_strdup ("dbus-daemon");
 
-  address = spawn_dbus_daemon (dbus_daemon, arg, &f->daemon_pid);
+  if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
+    {
+      address = g_strdup (g_getenv ("DBUS_TEST_DAEMON_ADDRESS"));
+    }
+  else
+    {
+      address = spawn_dbus_daemon (dbus_daemon, arg, &f->daemon_pid);
+    }
 
   g_free (dbus_daemon);
   g_free (arg);
