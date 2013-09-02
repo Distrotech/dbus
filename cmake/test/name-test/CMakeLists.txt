@@ -2,7 +2,7 @@ if (DBUS_ENABLE_EMBEDDED_TESTS)
 
 set (NAMEtest-DIR ../../../test/name-test)
 
-add_definitions(-DDBUS_COMPILATION)
+add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
 add_executable(test-pending-call-dispatch ${NAMEtest-DIR}/test-pending-call-dispatch.c)
 target_link_libraries(test-pending-call-dispatch ${DBUS_INTERNAL_LIBRARIES})

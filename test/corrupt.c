@@ -30,10 +30,12 @@
 #include <gio/gio.h>
 
 #include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
+
+#include "test-utils.h"
 
 typedef struct {
     DBusError e;
+    TestMainContext *ctx;
 
     DBusServer *server;
     DBusConnection *server_conn;
@@ -72,13 +74,14 @@ new_conn_cb (DBusServer *server,
 
   g_assert (f->server_conn == NULL);
   f->server_conn = dbus_connection_ref (server_conn);
-  dbus_connection_setup_with_g_main (server_conn, NULL);
+  test_connection_setup (f->ctx, server_conn);
 }
 
 static void
 setup (Fixture *f,
     gconstpointer addr)
 {
+  f->ctx = test_main_context_get ();
   dbus_error_init (&f->e);
   g_queue_init (&f->client_messages);
 
@@ -88,7 +91,7 @@ setup (Fixture *f,
 
   dbus_server_set_new_connection_function (f->server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->server, NULL);
+  test_server_setup (f->ctx, f->server);
 }
 
 static void
@@ -103,12 +106,12 @@ test_connect (Fixture *f,
       dbus_server_get_address (f->server), &f->e);
   assert_no_error (&f->e);
   g_assert (f->client_conn != NULL);
-  dbus_connection_setup_with_g_main (f->client_conn, NULL);
+  test_connection_setup (f->ctx, f->client_conn);
 
   while (f->server_conn == NULL)
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   have_mem = dbus_connection_add_filter (f->client_conn,
@@ -137,7 +140,7 @@ test_message (Fixture *f,
   while (g_queue_is_empty (&f->client_messages))
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   g_assert_cmpuint (g_queue_get_length (&f->client_messages), ==, 1);
@@ -229,7 +232,7 @@ test_corrupt (Fixture *f,
   while (g_queue_is_empty (&f->client_messages))
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   incoming = g_queue_pop_head (&f->client_messages);
@@ -318,7 +321,7 @@ test_byte_order (Fixture *f,
   while (g_queue_is_empty (&f->client_messages))
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   message = g_queue_pop_head (&f->client_messages);
@@ -368,6 +371,8 @@ teardown (Fixture *f,
       dbus_server_unref (f->server);
       f->server = NULL;
     }
+
+  test_main_context_unref (f->ctx);
 }
 
 int

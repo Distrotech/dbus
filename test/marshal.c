@@ -30,7 +30,6 @@
 #include <string.h>
 
 #include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 typedef struct {
     DBusError e;

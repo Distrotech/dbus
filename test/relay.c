@@ -29,7 +29,8 @@
 #include <glib.h>
 
 #include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
+
+#include "test-utils.h"
 
 /* This is basically a miniature dbus-daemon. We relay messages from the client
  * on the left to the client on the right.
@@ -43,6 +44,7 @@
  */
 
 typedef struct {
+    TestMainContext *ctx;
     DBusError e;
 
     DBusServer *server;
@@ -113,13 +115,14 @@ new_conn_cb (DBusServer *server,
       f->right_server_conn = dbus_connection_ref (server_conn);
     }
 
-  dbus_connection_setup_with_g_main (server_conn, NULL);
+  test_connection_setup (f->ctx, server_conn);
 }
 
 static void
 setup (Fixture *f,
     gconstpointer data G_GNUC_UNUSED)
 {
+  f->ctx = test_main_context_get ();
   dbus_error_init (&f->e);
   g_queue_init (&f->messages);
 
@@ -129,7 +132,7 @@ setup (Fixture *f,
 
   dbus_server_set_new_connection_function (f->server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->server, NULL);
+  test_server_setup (f->ctx, f->server);
 }
 
 static void
@@ -148,25 +151,25 @@ test_connect (Fixture *f,
   f->left_client_conn = dbus_connection_open_private (address, &f->e);
   assert_no_error (&f->e);
   g_assert (f->left_client_conn != NULL);
-  dbus_connection_setup_with_g_main (f->left_client_conn, NULL);
+  test_connection_setup (f->ctx, f->left_client_conn);
 
   while (f->left_server_conn == NULL)
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   f->right_client_conn = dbus_connection_open_private (address, &f->e);
   assert_no_error (&f->e);
   g_assert (f->right_client_conn != NULL);
-  dbus_connection_setup_with_g_main (f->right_client_conn, NULL);
+  test_connection_setup (f->ctx, f->right_client_conn);
 
   dbus_free (address);
 
   while (f->right_server_conn == NULL)
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   have_mem = dbus_connection_add_filter (f->right_client_conn,
@@ -208,7 +211,7 @@ test_relay (Fixture *f,
   while (g_queue_get_length (&f->messages) < 2)
     {
       g_print (".");
-      g_main_context_iteration (NULL, TRUE);
+      test_main_context_iterate (f->ctx, TRUE);
     }
 
   g_assert_cmpuint (g_queue_get_length (&f->messages), ==, 2);
@@ -237,7 +240,7 @@ test_limit (Fixture *f,
   /* This was an attempt to reproduce fd.o #34393. It didn't work. */
   g_test_bug ("34393");
   dbus_connection_set_max_received_size (f->left_server_conn, 1);
-  g_main_context_iteration (NULL, TRUE);
+  test_main_context_iterate (f->ctx, TRUE);
 
   for (i = 0; i < MANY; i++)
     {
@@ -253,7 +256,7 @@ test_limit (Fixture *f,
     {
       while (g_queue_is_empty (&f->messages))
         {
-          g_main_context_iteration (NULL, TRUE);
+          test_main_context_iterate (f->ctx, TRUE);
         }
 
       while ((incoming = g_queue_pop_head (&f->messages)) != NULL)
@@ -302,6 +305,8 @@ teardown (Fixture *f,
       dbus_server_unref (f->server);
       f->server = NULL;
     }
+
+  test_main_context_unref (f->ctx);
 }
 
 int

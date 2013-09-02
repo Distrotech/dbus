@@ -210,7 +210,8 @@ AC_DEFINE([GLIB_VERSION_MAX_ALLOWED], [GLIB_VERSION_2_32], [Prevent post-2.32 AP
 
 with_glib=yes
 
-if test "x$enable_modular_tests" != xno; then
+AS_IF([test "x$enable_modular_tests" != xno],
+  [
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.24, gio-2.0 >= 2.24],
     [],
     [if test "x$enable_modular_tests" = xyes; then
@@ -219,16 +220,25 @@ if test "x$enable_modular_tests" != xno; then
     else # assumed to be "auto"
       with_glib=no
     fi])
-  # If dbus-gmain.[ch] returned to libdbus then we wouldn't need this
-  PKG_CHECK_MODULES([DBUS_GLIB], [dbus-glib-1],
+  ],
+  [with_glib=no])
+
+# Not required, because we can use internal APIs (but that makes the
+# "installable tests" less useful as integration tests)
+AC_ARG_WITH([dbus_glib],
+  [AS_HELP_STRING([--with-dbus-glib], [Use dbus-glib for regression tests])],
+  [],
+  [with_dbus_glib=auto])
+AS_IF([test "x$with_dbus_glib" != xno],
+  [PKG_CHECK_MODULES([DBUS_GLIB], [dbus-glib-1],
     [],
-    [if test "x$enable_modular_tests" = xyes; then
-      AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires dbus-glib])
-      AC_MSG_ERROR([$DBUS_GLIB_ERRORS])
-    else # assumed to be "auto"
-      with_glib=no
-    fi])
-fi
+    [AS_IF([test "x$with_dbus_glib" = xyes],
+      dnl specifically requested, but not found
+      [AC_MSG_ERROR([$DBUS_GLIB_ERRORS])],
+      dnl else: assumed to be "auto"
+      [with_dbus_glib=no])])])
+AM_CONDITIONAL([DBUS_WITH_DBUS_GLIB], [test "x$with_dbus_glib" != xno])
+
 if test "x$enable_modular_tests" != xno; then
   AC_DEFINE([DBUS_ENABLE_MODULAR_TESTS], [1],
     [Define to build independent test binaries])
@@ -1839,6 +1849,7 @@ echo "
         Building embedded tests:  ${enable_embedded_tests}
         Building modular tests:   ${enable_modular_tests}
             - with GLib:          ${with_glib}
+            - with dbus-glib:     ${with_dbus_glib}
         Building verbose mode:    ${enable_verbose_mode}
         Building assertions:      ${enable_asserts}
         Building checks:          ${enable_checks}

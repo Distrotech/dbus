@@ -478,7 +478,9 @@ set(DBUS_INTERNAL_LIBRARIES dbus-internal)
 # important note: DBUS_INTERNAL_xxxxx_DEFINITIONS must *not* be set when building dbus-1 library
 set (DBUS_INTERNAL_ADD_LIBRARY_OPTIONS STATIC)
 set (DBUS_INTERNAL_LIBRARY_DEFINITIONS "-DDBUS_STATIC_BUILD")
-set (DBUS_INTERNAL_CLIENT_DEFINITIONS "-DDBUS_STATIC_BUILD -DDBUS_COMPILATION")
+# For now, the CMake build system doesn't support replacing the internal
+# main loop with dbus-glib
+set (DBUS_INTERNAL_CLIENT_DEFINITIONS "-DDBUS_STATIC_BUILD -DDBUS_COMPILATION -DDBUS_TEST_USE_INTERNAL")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
 

@@ -3,6 +3,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	-DDBUS_COMPILATION \
 	-DDBUS_STATIC_BUILD \
+	-DDBUS_TEST_USE_INTERNAL \
 	$(NULL)
 
 # if assertions are enabled, improve backtraces
@@ -31,9 +32,9 @@ test_pending_call_timeout_LDADD=$(top_builddir)/dbus/libdbus-internal.la
 test_threads_init_LDADD=$(top_builddir)/dbus/libdbus-internal.la
 test_ids_LDADD=$(top_builddir)/dbus/libdbus-internal.la
 
-test_shutdown_LDADD=../libdbus-testutils.la
-test_privserver_LDADD=../libdbus-testutils.la
-test_privserver_client_LDADD=../libdbus-testutils.la
-test_autolaunch_LDADD=../libdbus-testutils.la
+test_shutdown_LDADD=../libdbus-testutils-internal.la
+test_privserver_LDADD=../libdbus-testutils-internal.la
+test_privserver_client_LDADD=../libdbus-testutils-internal.la
+test_autolaunch_LDADD=../libdbus-testutils-internal.la
 
 endif

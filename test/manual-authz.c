@@ -29,15 +29,17 @@
 #include <glib.h>
 
 #include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 #ifdef G_OS_UNIX
 #include <unistd.h>
 #include <sys/types.h>
 #endif
 
+#include "test-utils.h"
+
 typedef struct {
     DBusError e;
+    TestMainContext *ctx;
 
     DBusServer *normal_server;
     DBusServer *anon_allowed_server;
@@ -212,7 +214,7 @@ new_conn_cb (DBusServer *server,
   Fixture *f = data;
 
   dbus_connection_ref (conn);
-  dbus_connection_setup_with_g_main (conn, NULL);
+  test_connection_setup (f->ctx, conn);
 
   if (!dbus_connection_add_filter (conn, server_message_cb, f, NULL))
     oom ();
@@ -301,7 +303,7 @@ setup (Fixture *f,
   g_assert (f->normal_server != NULL);
   dbus_server_set_new_connection_function (f->normal_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->normal_server, NULL);
+  test_server_setup (f->ctx, f->normal_server);
   connect_addr = dbus_server_get_address (f->normal_server);
   g_message ("Normal server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -311,7 +313,7 @@ setup (Fixture *f,
   g_assert (f->anon_allowed_server != NULL);
   dbus_server_set_new_connection_function (f->anon_allowed_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->anon_allowed_server, NULL);
+  test_server_setup (f->ctx, f->anon_allowed_server);
   connect_addr = dbus_server_get_address (f->anon_allowed_server);
   g_message ("Anonymous-allowed server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -321,7 +323,7 @@ setup (Fixture *f,
   g_assert (f->anon_only_server != NULL);
   dbus_server_set_new_connection_function (f->anon_only_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->anon_only_server, NULL);
+  test_server_setup (f->ctx, f->anon_only_server);
   connect_addr = dbus_server_get_address (f->anon_only_server);
   g_message ("Anonymous-only server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -332,7 +334,7 @@ setup (Fixture *f,
   dbus_server_set_auth_mechanisms (f->anon_mech_only_server, only_anon);
   dbus_server_set_new_connection_function (f->anon_mech_only_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->anon_mech_only_server, NULL);
+  test_server_setup (f->ctx, f->anon_mech_only_server);
   connect_addr = dbus_server_get_address (f->anon_mech_only_server);
   g_message ("Anon mech only server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -343,7 +345,7 @@ setup (Fixture *f,
   dbus_server_set_auth_mechanisms (f->anon_disallowed_server, only_anon);
   dbus_server_set_new_connection_function (f->anon_disallowed_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->anon_disallowed_server, NULL);
+  test_server_setup (f->ctx, f->anon_disallowed_server);
   connect_addr = dbus_server_get_address (f->anon_disallowed_server);
   g_message ("Anonymous-disallowed server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -353,7 +355,7 @@ setup (Fixture *f,
   g_assert (f->permissive_server != NULL);
   dbus_server_set_new_connection_function (f->permissive_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->permissive_server, NULL);
+  test_server_setup (f->ctx, f->permissive_server);
   connect_addr = dbus_server_get_address (f->permissive_server);
   g_message ("Permissive server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -363,7 +365,7 @@ setup (Fixture *f,
   g_assert (f->unhappy_server != NULL);
   dbus_server_set_new_connection_function (f->unhappy_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->unhappy_server, NULL);
+  test_server_setup (f->ctx, f->unhappy_server);
   connect_addr = dbus_server_get_address (f->unhappy_server);
   g_message ("Unhappy server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -373,7 +375,7 @@ setup (Fixture *f,
   g_assert (f->same_uid_server != NULL);
   dbus_server_set_new_connection_function (f->same_uid_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->same_uid_server, NULL);
+  test_server_setup (f->ctx, f->same_uid_server);
   connect_addr = dbus_server_get_address (f->same_uid_server);
   g_message ("Same-UID server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -383,7 +385,7 @@ setup (Fixture *f,
   g_assert (f->same_uid_or_anon_server != NULL);
   dbus_server_set_new_connection_function (f->same_uid_or_anon_server,
       new_conn_cb, f, NULL);
-  dbus_server_setup_with_g_main (f->same_uid_or_anon_server, NULL);
+  test_server_setup (f->ctx, f->same_uid_or_anon_server);
   connect_addr = dbus_server_get_address (f->same_uid_or_anon_server);
   g_message ("Same-UID-or-anon server:\n%s", connect_addr);
   dbus_free (connect_addr);
@@ -393,7 +395,7 @@ int
 main (int argc,
     char **argv)
 {
-  Fixture f = { DBUS_ERROR_INIT };
+  Fixture f = { DBUS_ERROR_INIT, test_main_context_get () };
 
   if (argc >= 2)
     setup (&f, argv[1]);
@@ -401,5 +403,7 @@ main (int argc,
     setup (&f, "tcp:host=127.0.0.1");
 
   for (;;)
-    g_main_context_iteration (NULL, TRUE);
+    test_main_context_iterate (f.ctx, TRUE);
+
+  /* never returns */
 }

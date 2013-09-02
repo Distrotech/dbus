@@ -30,7 +30,6 @@
 #include <glib.h>
 
 #include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 #include <string.h>
 
@@ -41,6 +40,8 @@
 # include <signal.h>
 # include <unistd.h>
 #endif
+
+#include "test-utils.h"
 
 #define SENDER_NAME "test.eavesdrop.sender"
 #define SENDER_PATH "/test/eavesdrop/sender"
@@ -71,6 +72,7 @@ typedef enum {
 } SignalDst;
 
 typedef struct {
+    TestMainContext *ctx;
     DBusError e;
     GError *ge;
 
@@ -160,7 +162,8 @@ spawn_dbus_daemon (gchar *binary,
 }
 
 static DBusConnection *
-connect_to_bus (const gchar *address)
+connect_to_bus (Fixture *f,
+    const gchar *address)
 {
   DBusConnection *conn;
   DBusError error = DBUS_ERROR_INIT;
@@ -175,7 +178,7 @@ connect_to_bus (const gchar *address)
   g_assert (ok);
   g_assert (dbus_bus_get_unique_name (conn) != NULL);
 
-  dbus_connection_setup_with_g_main (conn, NULL);
+  test_connection_setup (f->ctx, conn);
   return conn;
 }
 
@@ -380,6 +383,8 @@ setup (Fixture *f,
   gchar *config;
   gchar *address;
 
+  f->ctx = test_main_context_get ();
+
   f->ge = NULL;
   dbus_error_init (&f->e);
 
@@ -409,12 +414,12 @@ setup (Fixture *f,
   g_free (dbus_daemon);
   g_free (config);
 
-  f->sender = connect_to_bus (address);
+  f->sender = connect_to_bus (f, address);
   dbus_bus_request_name (f->sender, SENDER_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE,
       &(f->e));
-  f->receiver = connect_to_bus (address);
-  f->eavesdropper = connect_to_bus (address);
-  f->politelistener = connect_to_bus (address);
+  f->receiver = connect_to_bus (f, address);
+  f->eavesdropper = connect_to_bus (f, address);
+  f->politelistener = connect_to_bus (f, address);
   add_receiver_filter (f);
   add_politelistener_filter (f);
   add_eavesdropper_filter (f);
@@ -432,7 +437,7 @@ test_eavesdrop_broadcast (Fixture *f,
   while (!f->receiver_got_stopper ||
       !f->politelistener_got_stopper ||
       !f->eavesdropper_got_stopper)
-    g_main_context_iteration (NULL, TRUE);
+    test_main_context_iterate (f->ctx, TRUE);
 
   /* all the three connection can receive a broadcast */
   g_assert_cmpint (f->receiver_dst, ==, BROADCAST);
@@ -452,7 +457,7 @@ test_eavesdrop_unicast_to_sender (Fixture *f,
   while (!f->receiver_got_stopper ||
       !f->politelistener_got_stopper ||
       !f->eavesdropper_got_stopper)
-    g_main_context_iteration (NULL, TRUE);
+    test_main_context_iterate (f->ctx, TRUE);
 
   /* not directed to it and not broadcasted, they cannot receive it */
   g_assert_cmpint (f->receiver_dst, ==, NONE_YET);
@@ -472,7 +477,7 @@ test_eavesdrop_unicast_to_receiver (Fixture *f,
   while (!f->receiver_got_stopper ||
       !f->politelistener_got_stopper ||
       !f->eavesdropper_got_stopper)
-    g_main_context_iteration (NULL, TRUE);
+    test_main_context_iterate (f->ctx, TRUE);
 
   /* direct to him */
   g_assert_cmpint (f->receiver_dst, ==, TO_ME);
@@ -534,6 +539,8 @@ teardown (Fixture *f,
 #endif
 
   g_spawn_close_pid (f->daemon_pid);
+
+  test_main_context_unref (f->ctx);
 }
 
 int

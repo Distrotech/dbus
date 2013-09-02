@@ -29,7 +29,6 @@
 #include <glib.h>
 
 #include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 #include <string.h>
 
@@ -42,8 +41,12 @@
 # include <sys/types.h>
 #endif
 
+#include "test-utils.h"
+
 typedef struct {
     gboolean skip;
+
+    TestMainContext *ctx;
 
     DBusError e;
     GError *ge;
@@ -127,7 +130,8 @@ spawn_dbus_daemon (gchar *binary,
 }
 
 static DBusConnection *
-connect_to_bus (const gchar *address)
+connect_to_bus (Fixture *f,
+    const gchar *address)
 {
   DBusConnection *conn;
   DBusError error = DBUS_ERROR_INIT;
@@ -142,7 +146,7 @@ connect_to_bus (const gchar *address)
   g_assert (ok);
   g_assert (dbus_bus_get_unique_name (conn) != NULL);
 
-  dbus_connection_setup_with_g_main (conn, NULL);
+  test_connection_setup (f->ctx, conn);
   return conn;
 }
 
@@ -184,6 +188,7 @@ setup (Fixture *f,
   gchar *arg;
   gchar *address;
 
+  f->ctx = test_main_context_get ();
   f->ge = NULL;
   dbus_error_init (&f->e);
 
@@ -227,8 +232,8 @@ setup (Fixture *f,
   g_free (dbus_daemon);
   g_free (arg);
 
-  f->left_conn = connect_to_bus (address);
-  f->right_conn = connect_to_bus (address);
+  f->left_conn = connect_to_bus (f, address);
+  f->right_conn = connect_to_bus (f, address);
   g_free (address);
 }
 
@@ -302,7 +307,7 @@ test_echo (Fixture *f,
     }
 
   while (received < count)
-    g_main_context_iteration (NULL, TRUE);
+    test_main_context_iterate (f->ctx, TRUE);
 
   elapsed = g_test_timer_elapsed ();
 
@@ -361,7 +366,7 @@ test_creds (Fixture *f,
     g_error ("OOM");
 
   while (m == NULL)
-    g_main_context_iteration (NULL, TRUE);
+    test_main_context_iterate (f->ctx, TRUE);
 
   g_assert_cmpstr (dbus_message_get_signature (m), ==, "a{sv}");
 
@@ -473,6 +478,8 @@ teardown (Fixture *f,
       g_spawn_close_pid (f->daemon_pid);
       f->daemon_pid = 0;
     }
+
+  test_main_context_unref (f->ctx);
 }
 
 static Config limited_config = {
