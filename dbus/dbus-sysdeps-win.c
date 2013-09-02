@@ -77,6 +77,18 @@ extern BOOL WINAPI ConvertSidToStringSidA (PSID Sid, LPSTR *StringSid);
 #include <ws2tcpip.h>
 #endif
 
+#ifdef HAVE_WSPIAPI_H
+// needed for w2k compatibility (getaddrinfo/freeaddrinfo/getnameinfo)
+# ifdef __GNUC__
+#   ifndef _inline
+#     define _inline
+#   endif
+#   include "wspiapi.h"
+# else
+#   include <wspiapi.h>
+# endif
+#endif // HAVE_WSPIAPI_H
+
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
