@@ -124,9 +124,6 @@
 /* Define to 1 if you have ws2tcpip.h */
 #cmakedefine   HAVE_WS2TCPIP_H
 
-/* Define to 1 if you have wspiapi.h */
-#cmakedefine   HAVE_WSPIAPI_H 1
-
 /* Define to 1 if you have unistd.h */
 #cmakedefine   HAVE_UNISTD_H 1
 
