@@ -39,9 +39,11 @@ libdbus_testutils_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_GLIB_LIBS) \
 	$(NULL)
-testutils_shared_if_possible = libdbus-testutils.la
+testutils_shared_if_possible_cppflags = $(AM_CPPFLAGS)
+testutils_shared_if_possible_libs = libdbus-testutils.la
 else
-testutils_shared_if_possible = libdbus-testutils-internal.la
+testutils_shared_if_possible_cppflags = $(static_cppflags)
+testutils_shared_if_possible_libs = libdbus-testutils-internal.la
 endif
 
 libdbus_testutils_internal_la_CPPFLAGS = \
@@ -160,38 +162,44 @@ TESTS_ENVIRONMENT = \
 	$(NULL)
 
 manual_authz_SOURCES = manual-authz.c
+manual_authz_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 manual_authz_LDADD = \
-    $(testutils_shared_if_possible) \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_corrupt_SOURCES = corrupt.c
+test_corrupt_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_corrupt_LDADD = \
-    $(testutils_shared_if_possible) \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_loopback_SOURCES = loopback.c
+test_loopback_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_loopback_LDADD = \
-    $(testutils_shared_if_possible) \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_relay_SOURCES = relay.c
+test_relay_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_relay_LDADD = \
-    $(testutils_shared_if_possible) \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_dbus_daemon_SOURCES = dbus-daemon.c
+test_dbus_daemon_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_dbus_daemon_LDADD = \
-    $(testutils_shared_if_possible) \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_dbus_daemon_eavesdrop_SOURCES = dbus-daemon-eavesdrop.c
+test_dbus_daemon_eavesdrop_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_dbus_daemon_eavesdrop_LDADD = \
-    $(testutils_shared_if_possible) \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
