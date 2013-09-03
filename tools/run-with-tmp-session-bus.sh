@@ -4,9 +4,12 @@ SCRIPTNAME="$0"
 WRAPPED_SCRIPT="$1"
 shift
 
+CONFIG_FILE=./tmp-session-bus.$$.conf
+
 die ()
 {
     echo "$SCRIPTNAME: $*" >&2
+    rm -f "$CONFIG_FILE"
     exit 1
 }
 
@@ -14,7 +17,6 @@ if test -z "$DBUS_TOP_BUILDDIR" ; then
     die "Must set DBUS_TOP_BUILDDIR"
 fi
 
-CONFIG_FILE=./run-with-tmp-session-bus.conf
 SERVICE_DIR="$DBUS_TOP_BUILDDIR/test/data/valid-service-files"
 ESCAPED_SERVICE_DIR=`echo $SERVICE_DIR | sed -e 's/\//\\\\\\//g'`
 echo "escaped service dir is: $ESCAPED_SERVICE_DIR" >&2
@@ -48,8 +50,13 @@ unset DBUS_SESSION_BUS_PID
 DBUS_USE_TEST_BINARY=1
 export DBUS_USE_TEST_BINARY
 
-exec $DBUS_TOP_BUILDDIR/tools/dbus-run-session \
+$DBUS_TOP_BUILDDIR/tools/dbus-run-session \
     --config-file="$CONFIG_FILE" \
     --dbus-daemon="$DBUS_TOP_BUILDDIR/bus/dbus-daemon" \
     -- \
     "$WRAPPED_SCRIPT" "$@"
+error=$?
+
+# clean up
+rm -f "$CONFIG_FILE"
+exit $error
