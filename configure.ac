@@ -153,7 +153,6 @@ AC_ARG_ENABLE(libaudit,AS_HELP_STRING([--enable-libaudit],[build audit daemon su
 AC_ARG_ENABLE(inotify, AS_HELP_STRING([--enable-inotify],[build with inotify support (linux only)]),enable_inotify=$enableval,enable_inotify=auto)
 AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue support]),enable_kqueue=$enableval,enable_kqueue=auto)
 AC_ARG_ENABLE(console-owner-file, AS_HELP_STRING([--enable-console-owner-file],[enable console owner file]),enable_console_owner_file=$enableval,enable_console_owner_file=auto)
-AC_ARG_ENABLE(userdb-cache, AS_HELP_STRING([--enable-userdb-cache],[build with userdb-cache support]),enable_userdb_cache=$enableval,enable_userdb_cache=yes)
 AC_ARG_ENABLE(launchd, AS_HELP_STRING([--enable-launchd],[build with launchd auto-launch support]),enable_launchd=$enableval,enable_launchd=auto)
 AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[build with systemd at_console support]),enable_systemd=$enableval,enable_systemd=auto)
 
@@ -315,10 +314,6 @@ AH_BOTTOM([
 #ifndef DBUS_DISABLE_CHECKS
 #  define DBUS_ENABLE_CHECKS 1
 #endif])
-
-if test x$enable_userdb_cache = xyes; then
-    AC_DEFINE(DBUS_ENABLE_USERDB_CACHE,1,[Build with caching of user data])
-fi
 
 if test x$enable_compiler_coverage = xyes; then
      ## so that config.h changes when you toggle gcov support
@@ -1864,7 +1859,6 @@ echo "
         Building X11 code:        ${have_x11}
         Building Doxygen docs:    ${enable_doxygen_docs}
         Building XML docs:        ${enable_xml_docs}
-        Building cache support:   ${enable_userdb_cache}
         Building launchd support: ${have_launchd}
         Init scripts style:       ${with_init_scripts}
         Abstract socket names:    ${ac_cv_have_abstract_sockets}

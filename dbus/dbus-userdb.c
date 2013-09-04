@@ -144,7 +144,6 @@ _dbus_user_database_lookup (DBusUserDatabase *db,
         uid = n;
     }
 
-#ifdef DBUS_ENABLE_USERDB_CACHE  
   if (uid != DBUS_UID_UNSET)
     info = _dbus_hash_table_lookup_uintptr (db->users, uid);
   else
@@ -157,9 +156,6 @@ _dbus_user_database_lookup (DBusUserDatabase *db,
       return info;
     }
   else
-#else 
-  if (1)
-#endif
     {
       if (uid != DBUS_UID_UNSET)
 	_dbus_verbose ("No cache for UID "DBUS_UID_FORMAT"\n",
