@@ -397,7 +397,7 @@ which mechanisms are listed is not meaningful.</para>
 </itemizedlist>
 
 <para>Adds a directory to scan for .service files. Directories are
-scanned starting with the last to appear in the config file
+scanned starting with the first to appear in the config file
 (the first .service file found that provides a particular
 service will be used).</para>
 
