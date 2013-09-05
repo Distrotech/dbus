@@ -3,7 +3,7 @@
 Makefile
 Makefile.in
 echo-error-output.tmp
-run-with-tmp-session-bus.conf
+tmp-session-bus.*.conf
 test-ids
 test-names
 test-pending-call-dispatch

@@ -4,13 +4,16 @@ SCRIPTNAME=$0
 WRAPPED_SCRIPT=$1
 shift
 
-die() 
+CONFIG_FILE=./tmp-session-bus.$$.conf
+
+die ()
 {
     if ! test -z "$DBUS_SESSION_BUS_PID" ; then
         echo "killing message bus "$DBUS_SESSION_BUS_PID >&2
         kill -9 $DBUS_SESSION_BUS_PID
     fi
-    echo $SCRIPTNAME: $* >&2
+    echo "$SCRIPTNAME: $*" >&2
+    rm -f "$CONFIG_FILE"
     exit 1
 }
 
@@ -21,7 +24,6 @@ fi
 ## convenient to be able to ctrl+C without leaking the message bus process
 trap 'die "Received SIGINT"' INT
 
-CONFIG_FILE=./run-with-tmp-session-bus.conf
 SERVICE_DIR="$DBUS_TOP_BUILDDIR/test/data/valid-service-files"
 ESCAPED_SERVICE_DIR=`echo $SERVICE_DIR | sed -e 's/\//\\\\\\//g'`
 echo "escaped service dir is: $ESCAPED_SERVICE_DIR" >&2
@@ -73,4 +75,5 @@ sleep 2
 ## be sure it really died 
 kill -9 $DBUS_SESSION_BUS_PID > /dev/null 2>&1 || true
 
+rm -f "$CONFIG_FILE"
 exit 0
