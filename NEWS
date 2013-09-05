@@ -15,6 +15,11 @@ Fixes:
 • Fix a regression test on platforms with strict alignment (fd.o #67279,
   Colin Walters)
 
+• Avoid calling function parameters "interface" since certain Windows headers
+  have a namespace-polluting macro of that name (fd.o #66493, Ivan Romanov)
+
+• Make "make -j check" work (fd.o #68852, Simon McVittie)
+
 D-Bus 1.6.12 (2013-06-13)
 ==
 
