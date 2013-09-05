@@ -15,6 +15,8 @@ Build-time configuration changes:
 
 Dependencies:
 
+• GNU make is now (documented to be) required. (fd.o #48277, Simon McVittie)
+
 • Full test coverage no longer requires dbus-glib, although the tests do not
   exercise the shared library (only a static copy) if dbus-glib is missing.
   (fd.o #68852, Simon McVittie)
