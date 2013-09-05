@@ -13,6 +13,12 @@ Build-time configuration changes:
   assertions. It has been renamed to DBUS_DISABLE_ASSERT to be consistent
   with the Autotools build system. (fd.o #66142, Chengwei Yang)
 
+Dependencies:
+
+• Full test coverage no longer requires dbus-glib, although the tests do not
+  exercise the shared library (only a static copy) if dbus-glib is missing.
+  (fd.o #68852, Simon McVittie)
+
 Enhancements:
 
 • D-Bus Specification 0.22
@@ -30,6 +36,10 @@ Enhancements:
 
 • New API: dbus_setenv(), a simple wrapper around setenv().
   Note that this is not thread-safe. (fd.o #39196, Simon)
+
+• Windows-specific:
+  · "dbus-daemon --nofork" is allowed on Windows again. (fd.o #68852,
+    Simon McVittie)
 
 Fixes:
 
@@ -55,6 +65,11 @@ Fixes:
 
 • Assorted Doxygen fixes (fd.o #65755, Chengwei Yang)
 
+• Various thread-safety improvements to static variables (fd.o #68610,
+  Simon McVittie)
+
+• Make "make -j check" work (fd.o #68852, Simon McVittie)
+
 • Unix-specific:
   · dbus-run-session: clear some unwanted environment variables
     (fd.o #39196, Simon)
@@ -66,6 +81,7 @@ Fixes:
   · Add support for looking up local TCPv4 clients' credentials on
     Windows XP via the undocumented AllocateAndGetTcpExTableFromStack
     function (fd.o #66060, Ralf Habacker)
+  · Fix insufficient dependency-tracking (fd.o #68505, Simon McVittie)
 
 • Internal changes:
   · add DBUS_ENABLE_ASSERT, DBUS_ENABLE_CHECKS for less confusing
