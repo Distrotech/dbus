@@ -1,7 +1,12 @@
-D-Bus 1.6.14 (UNRELEASED)
+D-Bus 1.6.14 (2013-09-05)
 ==
 
+The “Restore Fatigue” release.
+
 Fixes:
+
+• Avoid an infinite busy-loop if a signal interrupts waitpid()
+  (fd.o #68945, Simon McVittie)
 
 • Escape addresses containing non-ASCII characters correctly
   (fd.o #53499, Chengwei Yang)
