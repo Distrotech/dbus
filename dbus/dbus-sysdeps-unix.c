@@ -139,7 +139,7 @@ _dbus_open_socket (int              *fd_p,
   cloexec_done = *fd_p >= 0;
 
   /* Check if kernel seems to be too old to know SOCK_CLOEXEC */
-  if (*fd_p < 0 && errno == EINVAL)
+  if (*fd_p < 0 && (errno == EINVAL || errno == EPROTOTYPE))
 #endif
     {
       *fd_p = socket (domain, type, protocol);
@@ -898,7 +898,7 @@ _dbus_connect_exec (const char     *path,
   retval = socketpair (AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, fds);
   cloexec_done = (retval >= 0);
 
-  if (retval < 0 && (errno == EINVAL))
+  if (retval < 0 && (errno == EINVAL || errno == EPROTOTYPE))
 #endif
     {
       retval = socketpair (AF_UNIX, SOCK_STREAM, 0, fds);
@@ -3066,7 +3066,7 @@ _dbus_full_duplex_pipe (int        *fd1,
   retval = socketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, fds);
   cloexec_done = retval >= 0;
 
-  if (retval < 0 && errno == EINVAL)
+  if (retval < 0 && (errno == EINVAL || errno == EPROTOTYPE))
 #endif
     {
       retval = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
