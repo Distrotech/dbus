@@ -887,16 +887,24 @@ _dbus_connect_exec (const char     *path,
 {
   int fds[2];
   pid_t pid;
+  int retval;
+  dbus_bool_t cloexec_done = 0;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   _dbus_verbose ("connecting to process %s\n", path);
 
-  if (socketpair (AF_UNIX, SOCK_STREAM
 #ifdef SOCK_CLOEXEC
-                  |SOCK_CLOEXEC
+  retval = socketpair (AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, fds);
+  cloexec_done = (retval >= 0);
+
+  if (retval < 0 && (errno == EINVAL))
 #endif
-                  , 0, fds) < 0)
+    {
+      retval = socketpair (AF_UNIX, SOCK_STREAM, 0, fds);
+    }
+
+  if (retval < 0)
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (errno),
@@ -905,8 +913,11 @@ _dbus_connect_exec (const char     *path,
       return -1;
     }
 
-  _dbus_fd_set_close_on_exec (fds[0]);
-  _dbus_fd_set_close_on_exec (fds[1]);
+  if (!cloexec_done)
+    {
+      _dbus_fd_set_close_on_exec (fds[0]);
+      _dbus_fd_set_close_on_exec (fds[1]);
+    }
 
   pid = fork ();
   if (pid < 0)
