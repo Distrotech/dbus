@@ -33,12 +33,10 @@
 #include <sys/wait.h>
 #include <string.h>
 
-#define DBUS_COMPILATION 
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-test.h>
 #include <dbus/dbus-marshal-basic.h>
-#undef DBUS_COMPILATION
 
 static DBusString failure_dir;
 static int total_attempts;
