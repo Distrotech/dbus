@@ -1948,11 +1948,15 @@ _dbus_accept  (int listen_fd)
  retry:
 
 #ifdef HAVE_ACCEPT4
-  /* We assume that if accept4 is available SOCK_CLOEXEC is too */
+  /*
+   * At compile-time, we assume that if accept4() is available in
+   * libc headers, SOCK_CLOEXEC is too. At runtime, it is still
+   * not necessarily true that either is supported by the running kernel.
+   */
   client_fd = accept4 (listen_fd, &addr, &addrlen, SOCK_CLOEXEC);
   cloexec_done = client_fd >= 0;
 
-  if (client_fd < 0 && errno == ENOSYS)
+  if (client_fd < 0 && (errno == ENOSYS || errno == EINVAL))
 #endif
     {
       client_fd = accept (listen_fd, &addr, &addrlen);
