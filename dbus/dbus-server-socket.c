@@ -478,7 +478,10 @@ _dbus_server_new_for_tcp_socket (const char     *host,
   if (server == NULL)
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
-      goto failed_4;
+      if (noncefile != NULL)
+        goto failed_4;
+      else
+        goto failed_2;
     }
 
   _dbus_string_free (&port_str);
