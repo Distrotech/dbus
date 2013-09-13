@@ -3518,7 +3518,12 @@ _dbus_get_autolaunch_address (const char *scope,
     }
 
   i = 0;
-  argv[i] = "dbus-launch";
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
+  if (_dbus_getenv ("DBUS_USE_TEST_BINARY") != NULL)
+    argv[i] = TEST_BUS_LAUNCH_BINARY;
+  else
+#endif
+    argv[i] = DBUS_BINDIR "/dbus-launch";
   ++i;
   argv[i] = "--autolaunch";
   ++i;
@@ -3533,7 +3538,7 @@ _dbus_get_autolaunch_address (const char *scope,
 
   _dbus_assert (i == _DBUS_N_ELEMENTS (argv));
 
-  retval = _read_subprocess_line_argv (DBUS_BINDIR "/dbus-launch",
+  retval = _read_subprocess_line_argv (argv[0],
                                        TRUE,
                                        argv, address, error);
 

@@ -1110,8 +1110,16 @@ main (int argc, char **argv)
  
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
       /* exec from testdir */
-      if (getenv("DBUS_USE_TEST_BINARY") != NULL)
+      if (getenv ("DBUS_USE_TEST_BINARY") != NULL)
         {
+          if (config_file == NULL && getenv ("DBUS_TEST_DATA") != NULL)
+            {
+              ret = asprintf (&config_file, "%s/valid-config-files/session.conf",
+                        getenv ("DBUS_TEST_DATA"));
+            }
+            if (ret == -1 && config_file != NULL)
+              free (config_file);
+
           execl (TEST_BUS_BINARY,
                  TEST_BUS_BINARY,
                  "--fork",
