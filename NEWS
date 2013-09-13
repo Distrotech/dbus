@@ -27,6 +27,9 @@ Enhancements:
   · Document GetAdtAuditSessionData() and
     GetConnectionSELinuxSecurityContext() (fd.o #54445, Simon)
   · Fix example .service file (fd.o #66481, Chengwei Yang)
+  · Don't claim D-Bus is "low-latency" (lower than what?), just
+    give factual statements about it supporting async use
+    (fd.o #65141, Justin Lee)
 
 • Be thread-safe by default on all platforms, even if
   dbus_threads_init_default() has not been called. For compatibility with
