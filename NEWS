@@ -9,6 +9,11 @@ Build-time configuration changes:
   to send SIGHUP to the dbus-daemon when its configuration changes.
   (fd.o #33001, Chengwei Yang)
 
+• Compiling with --disable-userdb-cache is no longer supported;
+  it didn't work since at least 2008, and would lead to an extremely
+  slow dbus-daemon even it worked. (fd.o #15589, #17133, #66947;
+  Chengwei Yang)
+
 • The DBUS_DISABLE_ASSERTS CMake option didn't actually disable most
   assertions. It has been renamed to DBUS_DISABLE_ASSERT to be consistent
   with the Autotools build system. (fd.o #66142, Chengwei Yang)
@@ -96,6 +101,9 @@ Fixes:
   · dbus-run-session: clear some unwanted environment variables
     (fd.o #39196, Simon)
   · dbus-run-session: compile on FreeBSD (fd.o #66197, Chengwei Yang)
+  · Don't fail the autolaunch test if there is no DISPLAY (fd.o #40352, Simon)
+  · Use dbus-launch from the builddir for testing, not the installed copy
+    (fd.o #37849, Chengwei Yang)
 
 • Windows-specific:
   · Remove unavailable command-line options from 'dbus-daemon --help'
