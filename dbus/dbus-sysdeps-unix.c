@@ -1841,6 +1841,21 @@ _dbus_read_credentials_socket  (int              client_fd,
         _dbus_verbose ("Failed to getpeereid() credentials: %s\n", _dbus_strerror (errno));
       }
 #else /* no supported mechanism */
+
+#warning Socket credentials not supported on this Unix OS
+#warning Please tell https://bugs.freedesktop.org/enter_bug.cgi?product=DBus
+
+    /* Please add other operating systems known to support at least one of
+     * the mechanisms above to this list, keeping alphabetical order.
+     * Everything not in this list  is best-effort.
+     */
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__linux__) || \
+    defined(__OpenBSD__) || \
+    defined(__NetBSD__)
+# error Credentials passing not working on this OS is a regression!
+#endif
+
     _dbus_verbose ("Socket credentials not supported on this OS\n");
 #endif
   }
