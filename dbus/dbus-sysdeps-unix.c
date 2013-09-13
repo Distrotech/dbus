@@ -1720,6 +1720,14 @@ _dbus_read_credentials_socket  (int              client_fd,
 
   {
 #ifdef SO_PEERCRED
+    /* Supported by at least Linux and OpenBSD, with minor differences.
+     *
+     * This mechanism passes the process ID through and does not require
+     * the peer's cooperation, so we prefer it over all others. Notably,
+     * Linux also supports SCM_CREDENTIALS, which is similar to FreeBSD
+     * SCM_CREDS; it's implemented in GIO, but we don't use it in dbus at all,
+     * because this is much less fragile.
+     */
 #ifdef __OpenBSD__
     struct sockpeercred cr;
 #else
@@ -1739,12 +1747,41 @@ _dbus_read_credentials_socket  (int              client_fd,
 		       cr_len, (int) sizeof (cr), _dbus_strerror (errno));
       }
 #elif defined(HAVE_CMSGCRED)
+    /* We only check for HAVE_CMSGCRED, but we're really assuming that the
+     * presence of that struct implies SCM_CREDS. Supported by at least
+     * FreeBSD and DragonflyBSD.
+     *
+     * This mechanism requires the peer to help us (it has to send us a
+     * SCM_CREDS message) but it does pass the process ID through,
+     * which makes it better than getpeereid().
+     */
     struct cmsgcred *cred;
 
     cred = (struct cmsgcred *) CMSG_DATA (&cmsg.hdr);
     pid_read = cred->cmcred_pid;
     uid_read = cred->cmcred_euid;
+
+    /* ----------------------------------------------------------------
+     * When adding new mechanisms, please add them above this point
+     * if they support passing the process ID through, or below if not.
+     * ---------------------------------------------------------------- */
+
 #elif defined(HAVE_GETPEEREID)
+    /* getpeereid() originates from D.J. Bernstein and is fairly
+     * widely-supported. According to a web search, it might be present in
+     * any/all of:
+     *
+     * - AIX?
+     * - Blackberry?
+     * - Cygwin
+     * - FreeBSD 4.6+ (but we prefer SCM_CREDS: it carries the pid)
+     * - Mac OS X
+     * - Minix 3.1.8+
+     * - MirBSD?
+     * - NetBSD 5.0+ (but LOCAL_PEEREID would be better: it carries the pid)
+     * - OpenBSD 3.0+ (but we prefer SO_PEERCRED: it carries the pid)
+     * - QNX?
+     */
     uid_t euid;
     gid_t egid;
     if (getpeereid (client_fd, &euid, &egid) == 0)
@@ -1756,6 +1793,9 @@ _dbus_read_credentials_socket  (int              client_fd,
         _dbus_verbose ("Failed to getpeereid() credentials: %s\n", _dbus_strerror (errno));
       }
 #elif defined(HAVE_GETPEERUCRED)
+    /* Supported in at least Solaris >= 10. It should probably be higher
+     * up this list, because it carries the pid and we use this code path
+     * for audit data. */
     ucred_t * ucred = NULL;
     if (getpeerucred (client_fd, &ucred) == 0)
       {
@@ -1799,7 +1839,7 @@ _dbus_read_credentials_socket  (int              client_fd,
       }
     if (ucred != NULL)
       ucred_free (ucred);
-#else /* !SO_PEERCRED && !HAVE_CMSGCRED && !HAVE_GETPEEREID && !HAVE_GETPEERUCRED */
+#else /* no supported mechanism */
     _dbus_verbose ("Socket credentials not supported on this OS\n");
 #endif
   }
