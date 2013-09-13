@@ -8,6 +8,7 @@
 #endif
 
 #include <dbus/dbus.h>
+#include "dbus/dbus-sysdeps.h"
 
 int
 main (int argc, char *argv[])
@@ -22,14 +23,16 @@ main (int argc, char *argv[])
   conn = dbus_bus_get (DBUS_BUS_SESSION, &error);
 
 #ifdef DBUS_ENABLE_X11_AUTOLAUNCH
-  if (dbus_error_is_set (&error))
+  /* If X11 autolaunch was enabled, we expect dbus-launch to have worked. */
+  if (_dbus_getenv ("DISPLAY") != NULL && dbus_error_is_set (&error))
     {
       fprintf (stderr, "*** Failed to autolaunch session bus: %s\n",
                error.message);
       dbus_error_free (&error);
       return 1;
     }
-#else
+#endif
+
   /* We don't necessarily expect it to *work* without X (although it might -
    * for instance on Mac OS it might have used launchd). Just check that the
    * results are consistent. */
@@ -39,7 +42,6 @@ main (int argc, char *argv[])
       fprintf (stderr, "*** Autolaunched session bus, but an error was set!\n");
       return 1;
     }
-#endif
 
   if (!dbus_error_is_set (&error) && conn == NULL)
     {
