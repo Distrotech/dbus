@@ -1761,37 +1761,6 @@ _dbus_read_credentials_socket  (int              client_fd,
     pid_read = cred->cmcred_pid;
     uid_read = cred->cmcred_euid;
 
-    /* ----------------------------------------------------------------
-     * When adding new mechanisms, please add them above this point
-     * if they support passing the process ID through, or below if not.
-     * ---------------------------------------------------------------- */
-
-#elif defined(HAVE_GETPEEREID)
-    /* getpeereid() originates from D.J. Bernstein and is fairly
-     * widely-supported. According to a web search, it might be present in
-     * any/all of:
-     *
-     * - AIX?
-     * - Blackberry?
-     * - Cygwin
-     * - FreeBSD 4.6+ (but we prefer SCM_CREDS: it carries the pid)
-     * - Mac OS X
-     * - Minix 3.1.8+
-     * - MirBSD?
-     * - NetBSD 5.0+ (but LOCAL_PEEREID would be better: it carries the pid)
-     * - OpenBSD 3.0+ (but we prefer SO_PEERCRED: it carries the pid)
-     * - QNX?
-     */
-    uid_t euid;
-    gid_t egid;
-    if (getpeereid (client_fd, &euid, &egid) == 0)
-      {
-        uid_read = euid;
-      }
-    else
-      {
-        _dbus_verbose ("Failed to getpeereid() credentials: %s\n", _dbus_strerror (errno));
-      }
 #elif defined(HAVE_GETPEERUCRED)
     /* Supported in at least Solaris >= 10. It should probably be higher
      * up this list, because it carries the pid and we use this code path
@@ -1839,6 +1808,38 @@ _dbus_read_credentials_socket  (int              client_fd,
       }
     if (ucred != NULL)
       ucred_free (ucred);
+
+    /* ----------------------------------------------------------------
+     * When adding new mechanisms, please add them above this point
+     * if they support passing the process ID through, or below if not.
+     * ---------------------------------------------------------------- */
+
+#elif defined(HAVE_GETPEEREID)
+    /* getpeereid() originates from D.J. Bernstein and is fairly
+     * widely-supported. According to a web search, it might be present in
+     * any/all of:
+     *
+     * - AIX?
+     * - Blackberry?
+     * - Cygwin
+     * - FreeBSD 4.6+ (but we prefer SCM_CREDS: it carries the pid)
+     * - Mac OS X
+     * - Minix 3.1.8+
+     * - MirBSD?
+     * - NetBSD 5.0+ (but LOCAL_PEEREID would be better: it carries the pid)
+     * - OpenBSD 3.0+ (but we prefer SO_PEERCRED: it carries the pid)
+     * - QNX?
+     */
+    uid_t euid;
+    gid_t egid;
+    if (getpeereid (client_fd, &euid, &egid) == 0)
+      {
+        uid_read = euid;
+      }
+    else
+      {
+        _dbus_verbose ("Failed to getpeereid() credentials: %s\n", _dbus_strerror (errno));
+      }
 #else /* no supported mechanism */
     _dbus_verbose ("Socket credentials not supported on this OS\n");
 #endif
