@@ -434,6 +434,185 @@ _dbus_object_tree_register (DBusObjectTree              *tree,
 }
 
 /**
+ * Attempts to unregister the given subtree.  If the subtree is registered,
+ * stores its unregister function and user data for later use and returns
+ * #TRUE.  If subtree is not registered, simply returns #FALSE.  Does not free
+ * subtree or remove it from the object tree.
+ *
+ * @param subtree the subtree to unregister
+ * @param unregister_function_out stores subtree's unregister_function
+ * @param user_data_out stores subtree's user_data
+ * @return #FALSE if the subtree was not registered, #TRUE on success
+ */
+static dbus_bool_t
+unregister_subtree (DBusObjectSubtree                 *subtree,
+                    DBusObjectPathUnregisterFunction  *unregister_function_out,
+                    void                             **user_data_out)
+{
+  _dbus_assert (subtree != NULL);
+  _dbus_assert (unregister_function_out != NULL);
+  _dbus_assert (user_data_out != NULL);
+
+  /* Confirm subtree is registered */
+  if (subtree->message_function != NULL)
+    {
+      subtree->message_function = NULL;
+
+      *unregister_function_out = subtree->unregister_function;
+      *user_data_out = subtree->user_data;
+
+      subtree->unregister_function = NULL;
+      subtree->user_data = NULL;
+
+      return TRUE;
+    }
+  else
+    {
+      /* Assert that this unregistered subtree is either the root node or has
+         children, otherwise we have a dangling path which should never
+         happen */
+      _dbus_assert (subtree->parent == NULL || subtree->n_subtrees > 0);
+
+      /* The subtree is not registered */
+      return FALSE;
+    }
+}
+
+/**
+ * Attempts to remove a child subtree from its parent.  If removal is
+ * successful, also frees the child.  Returns #TRUE on success, #FALSE
+ * otherwise.  A #FALSE return value tells unregister_and_free_path_recurse to
+ * stop attempting to remove ancestors, i.e., that no ancestors of the
+ * specified child are eligible for removal.
+ *
+ * @param parent parent from which to remove child
+ * @param child_index parent->subtrees index of child to remove
+ * @return #TRUE if removal and free succeed, #FALSE otherwise
+ */
+static dbus_bool_t
+attempt_child_removal (DBusObjectSubtree  *parent,
+                       int child_index)
+{
+  /* Candidate for removal */
+  DBusObjectSubtree* candidate;
+
+  _dbus_assert (parent != NULL);
+  _dbus_assert (child_index >= 0 && child_index < parent->n_subtrees);
+
+  candidate = parent->subtrees[child_index];
+  _dbus_assert (candidate != NULL);
+
+  if (candidate->n_subtrees == 0 && candidate->message_function == NULL)
+    {
+      /* The candidate node is childless and is not a registered
+         path, so... */
+
+      /* ... remove it from its parent... */
+      /* Assumes a 0-byte memmove is OK */
+      memmove (&parent->subtrees[child_index],
+               &parent->subtrees[child_index + 1],
+               (parent->n_subtrees - child_index - 1)
+               * sizeof (parent->subtrees[0]));
+      parent->n_subtrees -= 1;
+
+      /* ... and free it */
+      candidate->parent = NULL;
+      _dbus_object_subtree_unref (candidate);
+
+      return TRUE;
+    }
+  return FALSE;
+}
+
+/**
+ * Searches the object tree for a registered subtree node at the given path.
+ * If a registered node is found, it is removed from the tree and freed, and
+ * TRUE is returned.  If a registered subtree node is not found at the given
+ * path, the tree is not modified and FALSE is returned.
+ *
+ * The found node's unregister_function and user_data are returned in the
+ * corresponding _out arguments.  The caller should define these variables and
+ * pass their addresses as arguments.
+ *
+ * Likewise, the caller should define and set to TRUE a boolean variable, then
+ * pass its address as the continue_removal_attempts argument.
+ *
+ * Once a matching registered node is found, removed and freed, the recursive
+ * return path is traversed.  Along the way, eligible ancestor nodes are
+ * removed and freed.  An ancestor node is eligible for removal if and only if
+ * 1) it has no children, i.e., it has become childless and 2) it is not itself
+ * a registered handler.
+ *
+ * For example, suppose /A/B and /A/C are registered paths, and that these are
+ * the only paths in the tree.  If B is removed and freed, C is still reachable
+ * through A, so A cannot be removed and freed.  If C is subsequently removed
+ * and freed, then A becomes a childless node and it becomes eligible for
+ * removal, and will be removed and freed.
+ *
+ * Similarly, suppose /A is a registered path, and /A/B is also a registered
+ * path, and that these are the only paths in the tree.  If B is removed and
+ * freed, then even though A has become childless, it can't be freed because it
+ * refers to a path that is still registered.
+ *
+ * @param subtree subtree from which to start the search, root for initial call
+ * @param path path to subtree (same as _dbus_object_tree_unregister_and_unlock)
+ * @param continue_removal_attempts pointer to a bool, #TRUE for initial call
+ * @param unregister_function_out returns the found node's unregister_function
+ * @param user_data_out returns the found node's user_data
+ * @returns #TRUE if a registered node was found at path, #FALSE otherwise
+ */
+static dbus_bool_t
+unregister_and_free_path_recurse
+(DBusObjectSubtree                 *subtree,
+ const char                       **path,
+ dbus_bool_t                       *continue_removal_attempts,
+ DBusObjectPathUnregisterFunction  *unregister_function_out,
+ void                             **user_data_out)
+{
+  int i, j;
+
+  _dbus_assert (continue_removal_attempts != NULL);
+  _dbus_assert (*continue_removal_attempts);
+  _dbus_assert (unregister_function_out != NULL);
+  _dbus_assert (user_data_out != NULL);
+
+  if (path[0] == NULL)
+    return unregister_subtree (subtree, unregister_function_out, user_data_out);
+
+  i = 0;
+  j = subtree->n_subtrees;
+  while (i < j)
+    {
+      int k, v;
+
+      k = (i + j) / 2;
+      v = strcmp (path[0], subtree->subtrees[k]->name);
+
+      if (v == 0)
+        {
+          dbus_bool_t freed;
+          freed = unregister_and_free_path_recurse (subtree->subtrees[k],
+                                                    &path[1],
+                                                    continue_removal_attempts,
+                                                    unregister_function_out,
+                                                    user_data_out);
+          if (freed && *continue_removal_attempts)
+            *continue_removal_attempts = attempt_child_removal (subtree, k);
+          return freed;
+        }
+      else if (v < 0)
+        {
+          j = k;
+        }
+      else
+        {
+          i = k + 1;
+        }
+    }
+  return FALSE;
+}
+
+/**
  * Unregisters an object subtree that was registered with the
  * same path.
  *
@@ -444,60 +623,36 @@ void
 _dbus_object_tree_unregister_and_unlock (DBusObjectTree          *tree,
                                          const char             **path)
 {
-  int i;
-  DBusObjectSubtree *subtree;
+  dbus_bool_t found_subtree;
+  dbus_bool_t continue_removal_attempts;
   DBusObjectPathUnregisterFunction unregister_function;
   void *user_data;
   DBusConnection *connection;
 
+  _dbus_assert (tree != NULL);
   _dbus_assert (path != NULL);
 
+  continue_removal_attempts = TRUE;
   unregister_function = NULL;
   user_data = NULL;
 
-  subtree = find_subtree (tree, path, &i);
+  found_subtree = unregister_and_free_path_recurse (tree->root,
+                                                    path,
+                                                    &continue_removal_attempts,
+                                                    &unregister_function,
+                                                    &user_data);
 
 #ifndef DBUS_DISABLE_CHECKS
-  if (subtree == NULL)
+  if (found_subtree == FALSE)
     {
       _dbus_warn ("Attempted to unregister path (path[0] = %s path[1] = %s) which isn't registered\n",
                   path[0] ? path[0] : "null",
-                  path[1] ? path[1] : "null");
+                  (path[0] && path[1]) ? path[1] : "null");
       goto unlock;    
     }
 #else
-  _dbus_assert (subtree != NULL);
+  _dbus_assert (found_subtree == TRUE);
 #endif
-
-  _dbus_assert (subtree->parent == NULL ||
-                (i >= 0 && subtree->parent->subtrees[i] == subtree));
-
-  subtree->message_function = NULL;
-
-  unregister_function = subtree->unregister_function;
-  user_data = subtree->user_data;
-
-  subtree->unregister_function = NULL;
-  subtree->user_data = NULL;
-
-  /* If we have no subtrees of our own, remove from
-   * our parent (FIXME could also be more aggressive
-   * and remove our parent if it becomes empty)
-   */
-  if (subtree->parent && subtree->n_subtrees == 0)
-    {
-      /* assumes a 0-byte memmove is OK */
-      memmove (&subtree->parent->subtrees[i],
-               &subtree->parent->subtrees[i+1],
-               (subtree->parent->n_subtrees - i - 1) *
-               sizeof (subtree->parent->subtrees[0]));
-      subtree->parent->n_subtrees -= 1;
-
-      subtree->parent = NULL;
-
-      _dbus_object_subtree_unref (subtree);
-    }
-  subtree = NULL;
 
 unlock:
   connection = tree->connection;
@@ -1508,6 +1663,17 @@ run_decompose_tests (void)
   return TRUE;
 }
 
+static DBusObjectSubtree*
+find_subtree_registered_or_unregistered (DBusObjectTree *tree,
+                                         const char    **path)
+{
+#if VERBOSE_FIND
+  _dbus_verbose ("Looking for exact subtree, registered or unregistered\n");
+#endif
+
+  return find_subtree_recurse (tree->root, path, FALSE, NULL, NULL);
+}
+
 static dbus_bool_t
 object_tree_test_iteration (void *data)
 {
@@ -1520,6 +1686,13 @@ object_tree_test_iteration (void *data)
   const char *path6[] = { "blah", "boof", NULL };
   const char *path7[] = { "blah", "boof", "this", "is", "really", "long", NULL };
   const char *path8[] = { "childless", NULL };
+  const char *path9[] = { "blah", "a", NULL };
+  const char *path10[] = { "blah", "b", NULL };
+  const char *path11[] = { "blah", "c", NULL };
+  const char *path12[] = { "blah", "a", "d", NULL };
+  const char *path13[] = { "blah", "b", "d", NULL };
+  const char *path14[] = { "blah", "c", "d", NULL };
+  DBusObjectPathVTable test_vtable = { NULL, test_message_function, NULL };
   DBusObjectTree *tree;
   TreeTestData tree_test_data[9];
   int i;
@@ -1889,6 +2062,200 @@ object_tree_test_iteration (void *data)
       _dbus_assert (!tree_test_data[i].message_handled);
       ++i;
     }
+
+  /* Test removal of newly-childless unregistered nodes */
+  if (!do_register (tree, path2, TRUE, 2, tree_test_data))
+    goto out;
+
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  /* Test that unregistered parents cannot be freed out from under their
+     children */
+  if (!do_register (tree, path2, TRUE, 2, tree_test_data))
+    goto out;
+
+  _dbus_assert (!find_subtree (tree, path1, NULL));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+#if 0
+  /* This triggers the "Attempted to unregister path ..." warning message */
+  _dbus_object_tree_unregister_and_unlock (tree, path1);
+#endif
+  _dbus_assert (find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree (tree, path1, NULL));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  /* Test that registered parents cannot be freed out from under their
+     children, and that if they are unregistered before their children, they
+     are still freed when their children are unregistered */
+  if (!do_register (tree, path1, TRUE, 1, tree_test_data))
+    goto out;
+  if (!do_register (tree, path2, TRUE, 2, tree_test_data))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path1, NULL));
+  _dbus_assert (find_subtree (tree, path2, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path1);
+  _dbus_assert (!find_subtree (tree, path1, NULL));
+  _dbus_assert (find_subtree (tree, path2, NULL));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree (tree, path1, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (!find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  /* Test with NULL unregister_function and user_data */
+  if (!_dbus_object_tree_register (tree, TRUE, path2,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (_dbus_object_tree_get_user_data_unlocked (tree, path2) == NULL);
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_assert (!find_subtree (tree, path2, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  /* Test freeing a long path */
+  if (!do_register (tree, path3, TRUE, 3, tree_test_data))
+    goto out;
+
+  _dbus_object_tree_unregister_and_unlock (tree, path3);
+  _dbus_assert (!find_subtree (tree, path3, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path3));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path0));
+
+  /* Test freeing multiple children from the same path */
+  if (!do_register (tree, path3, TRUE, 3, tree_test_data))
+    goto out;
+  if (!do_register (tree, path4, TRUE, 4, tree_test_data))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path3, NULL));
+  _dbus_assert (find_subtree (tree, path4, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path3);
+  _dbus_assert (!find_subtree (tree, path3, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path3));
+  _dbus_assert (find_subtree (tree, path4, NULL));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path4));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path1));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path4);
+  _dbus_assert (!find_subtree (tree, path4, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path4));
+  _dbus_assert (!find_subtree (tree, path3, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path3));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path2));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path1));
+
+  /* Test subtree removal */
+  if (!_dbus_object_tree_register (tree, TRUE, path12,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path13,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path13, NULL));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path14,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path14, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path12);
+
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path12));
+  _dbus_assert (find_subtree (tree, path13, NULL));
+  _dbus_assert (find_subtree (tree, path14, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path9));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path12,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path13);
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path13));
+  _dbus_assert (find_subtree (tree, path14, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path10));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  if (!_dbus_object_tree_register (tree, TRUE, path13,
+                                   &test_vtable,
+                                   NULL,
+                                   NULL))
+    goto out;
+
+  _dbus_assert (find_subtree (tree, path13, NULL));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path14);
+
+  _dbus_assert (find_subtree (tree, path12, NULL));
+  _dbus_assert (find_subtree (tree, path13, NULL));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path14));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path11));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path12);
+
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path12));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path9));
+  _dbus_assert (find_subtree_registered_or_unregistered (tree, path5));
+
+  _dbus_object_tree_unregister_and_unlock (tree, path13);
+
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path13));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path10));
+  _dbus_assert (!find_subtree_registered_or_unregistered (tree, path5));
+
+#if 0
+  /* Test attempting to unregister non-existent paths.  These trigger
+     "Attempted to unregister path ..." warning messages */
+  _dbus_object_tree_unregister_and_unlock (tree, path0);
+  _dbus_object_tree_unregister_and_unlock (tree, path1);
+  _dbus_object_tree_unregister_and_unlock (tree, path2);
+  _dbus_object_tree_unregister_and_unlock (tree, path3);
+  _dbus_object_tree_unregister_and_unlock (tree, path4);
+#endif
 
   /* Register it all again, and test dispatch */
   
