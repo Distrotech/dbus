@@ -318,6 +318,37 @@ This may be useful to avoid affecting the behavior of child processes.</para>
 
 <itemizedlist remap='TP'>
 
+  <listitem><para><emphasis remap='I'>&lt;syslog&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, the bus daemon will log to syslog.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;pidfile&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, the bus daemon will write its pid to the specified file.
+The --nopidfile command-line option takes precedence over this setting.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;allow_anonymous&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, connections that authenticated using the ANONYMOUS
+mechanism will be authorized to connect. This option has no practical
+effect unless the ANONYMOUS mechanism has also been enabled using the
+<emphasis remap='I'>&lt;auth&gt;</emphasis> element, described below.</para>
+
+<itemizedlist remap='TP'>
+
   <listitem><para><emphasis remap='I'>&lt;listen&gt;</emphasis></para></listitem>
 
 
