@@ -45,6 +45,13 @@ Enhancements:
 
 Fixes:
 
+• Avoid an infinite busy-loop if a signal interrupts waitpid()
+  (fd.o #68945, Simon McVittie)
+
+• Make dbus_connection_set_route_peer_messages(x, FALSE) behave as
+  documented. Previously, it assumed its second parameter was TRUE.
+  (fd.o #69165, Chengwei Yang)
+
 • Escape addresses containing non-ASCII characters correctly
   (fd.o #53499, Chengwei Yang)
 
@@ -73,6 +80,14 @@ Fixes:
 • Make "make -j check" work (fd.o #68852, Simon McVittie)
 
 • Unix-specific:
+  · If accept4() fails with EINVAL, as it can on older Linux kernels
+    with newer glibc, try accept() instead of going into a busy-loop.
+    (fd.o #69026, Chengwei Yang)
+  · If socket() or socketpair() fails with EINVAL or EPROTOTYPE,
+    for instance on Hurd or older Linux with a new glibc, try without
+    SOCK_CLOEXEC. (fd.o #69073; Pino Toscano, Chengwei Yang)
+  · Fix a file descriptor leak on an error code path.
+    (fd.o #69182, Sviatoslav Chagaev)
   · dbus-run-session: clear some unwanted environment variables
     (fd.o #39196, Simon)
   · dbus-run-session: compile on FreeBSD (fd.o #66197, Chengwei Yang)

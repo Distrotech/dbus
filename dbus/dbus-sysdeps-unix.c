@@ -144,7 +144,7 @@ _dbus_open_socket (int              *fd_p,
   cloexec_done = *fd_p >= 0;
 
   /* Check if kernel seems to be too old to know SOCK_CLOEXEC */
-  if (*fd_p < 0 && errno == EINVAL)
+  if (*fd_p < 0 && (errno == EINVAL || errno == EPROTOTYPE))
 #endif
     {
       *fd_p = socket (domain, type, protocol);
@@ -892,16 +892,24 @@ _dbus_connect_exec (const char     *path,
 {
   int fds[2];
   pid_t pid;
+  int retval;
+  dbus_bool_t cloexec_done = 0;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   _dbus_verbose ("connecting to process %s\n", path);
 
-  if (socketpair (AF_UNIX, SOCK_STREAM
 #ifdef SOCK_CLOEXEC
-                  |SOCK_CLOEXEC
+  retval = socketpair (AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, fds);
+  cloexec_done = (retval >= 0);
+
+  if (retval < 0 && (errno == EINVAL || errno == EPROTOTYPE))
 #endif
-                  , 0, fds) < 0)
+    {
+      retval = socketpair (AF_UNIX, SOCK_STREAM, 0, fds);
+    }
+
+  if (retval < 0)
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (errno),
@@ -910,8 +918,11 @@ _dbus_connect_exec (const char     *path,
       return -1;
     }
 
-  _dbus_fd_set_close_on_exec (fds[0]);
-  _dbus_fd_set_close_on_exec (fds[1]);
+  if (!cloexec_done)
+    {
+      _dbus_fd_set_close_on_exec (fds[0]);
+      _dbus_fd_set_close_on_exec (fds[1]);
+    }
 
   pid = fork ();
   if (pid < 0)
@@ -1942,11 +1953,15 @@ _dbus_accept  (int listen_fd)
  retry:
 
 #ifdef HAVE_ACCEPT4
-  /* We assume that if accept4 is available SOCK_CLOEXEC is too */
+  /*
+   * At compile-time, we assume that if accept4() is available in
+   * libc headers, SOCK_CLOEXEC is too. At runtime, it is still
+   * not necessarily true that either is supported by the running kernel.
+   */
   client_fd = accept4 (listen_fd, &addr, &addrlen, SOCK_CLOEXEC);
   cloexec_done = client_fd >= 0;
 
-  if (client_fd < 0 && errno == ENOSYS)
+  if (client_fd < 0 && (errno == ENOSYS || errno == EINVAL))
 #endif
     {
       client_fd = accept (listen_fd, &addr, &addrlen);
@@ -3070,7 +3085,7 @@ _dbus_full_duplex_pipe (int        *fd1,
   retval = socketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, fds);
   cloexec_done = retval >= 0;
 
-  if (retval < 0 && errno == EINVAL)
+  if (retval < 0 && (errno == EINVAL || errno == EPROTOTYPE))
 #endif
     {
       retval = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);

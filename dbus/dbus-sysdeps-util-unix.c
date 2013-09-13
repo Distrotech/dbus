@@ -1157,6 +1157,7 @@ _dbus_command_for_pid (unsigned long  pid,
                       "Failed to read from \"%s\": %s",
                       _dbus_string_get_const_data (&path),
                       _dbus_strerror (errno));      
+      _dbus_close (fd, NULL);
       goto fail;
     }
   

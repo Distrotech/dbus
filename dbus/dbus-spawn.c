@@ -308,15 +308,18 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
           if (ret == 0)
             kill (sitter->sitter_pid, SIGKILL);
 
-        again:
           if (ret == 0)
-            ret = waitpid (sitter->sitter_pid, &status, 0);
+            {
+              do
+                {
+                  ret = waitpid (sitter->sitter_pid, &status, 0);
+                }
+              while (_DBUS_UNLIKELY (ret < 0 && errno == EINTR));
+            }
 
           if (ret < 0)
             {
-              if (errno == EINTR)
-                goto again;
-              else if (errno == ECHILD)
+              if (errno == ECHILD)
                 _dbus_warn ("Babysitter process not available to be reaped; should not happen\n");
               else
                 _dbus_warn ("Unexpected error %d in waitpid() for babysitter: %s\n",
