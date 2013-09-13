@@ -1307,9 +1307,15 @@ check_get_connection_unix_process_id (BusContext     *context,
 #endif
       else
         {
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+          defined(__linux__) || \
+          defined(__OpenBSD__)
           warn_unexpected (connection, message, "not this error");
 
           goto out;
+#else
+          _dbus_verbose ("does not support GetConnectionUnixProcessID but perhaps that's OK?\n");
+#endif
         }
     }
   else
