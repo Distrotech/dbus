@@ -55,6 +55,8 @@ Fixes:
 • Escape addresses containing non-ASCII characters correctly
   (fd.o #53499, Chengwei Yang)
 
+• Document <servicedir> search order correctly (fd.o #66994, Chengwei Yang)
+
 • Don't crash on "dbus-send --session / x.y.z" which regressed in 1.7.4.
   (fd.o #65923, Chengwei Yang)
 
@@ -106,7 +108,7 @@ Fixes:
   · improve verbose-mode output (fd.o #63047, Colin Walters)
   · consolidate Autotools and CMake build (fd.o #64875, Ralf Habacker)
   · fix various unused variables, unusual build configurations
-    etc. (fd.o #65712, #65990, #66005, #66257; Chengwei Yang)
+    etc. (fd.o #65712, #65990, #66005, #66257, #69165; Chengwei Yang)
 
 D-Bus 1.7.4 (2013-06-13)
 ==
