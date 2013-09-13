@@ -393,7 +393,7 @@ _dbus_mem_pool_dealloc (DBusMemPool *pool,
       
       freed = element;
       /* used for internal mempool administration */
-      VALGRIND_MAKE_MEM_UNDEFINED (freed, sizeof (freed));
+      VALGRIND_MAKE_MEM_UNDEFINED (freed, sizeof (*freed));
 
       freed->next = pool->free_elements;
       pool->free_elements = freed;
