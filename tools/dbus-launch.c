@@ -222,6 +222,26 @@ xstrdup (const char *str)
   return copy;
 }
 
+static char *
+concat2 (const char *a,
+    const char *b)
+{
+  size_t la, lb;
+  char *ret;
+
+  la = strlen (a);
+  lb = strlen (b);
+
+  ret = malloc (la + lb + 1);
+
+  if (ret == NULL)
+    return NULL;
+
+  memcpy (ret, a, la);
+  memcpy (ret + la, b, lb + 1);
+  return ret;
+}
+
 typedef enum
 {
   READ_STATUS_OK,    /**< Read succeeded */
@@ -1114,11 +1134,15 @@ main (int argc, char **argv)
         {
           if (config_file == NULL && getenv ("DBUS_TEST_DATA") != NULL)
             {
-              ret = asprintf (&config_file, "%s/valid-config-files/session.conf",
-                        getenv ("DBUS_TEST_DATA"));
+              config_file = concat2 (getenv ("DBUS_TEST_DATA"),
+                  "/valid-config-files/session.conf");
+
+              if (config_file == NULL)
+                {
+                  fprintf (stderr, "Out of memory\n");
+                  exit (1);
+                }
             }
-            if (ret == -1 && config_file != NULL)
-              free (config_file);
 
           execl (TEST_BUS_BINARY,
                  TEST_BUS_BINARY,
