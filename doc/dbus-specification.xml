@@ -1688,12 +1688,16 @@
         <para>
           A method call message is required to have a <literal>MEMBER</literal> header field
           indicating the name of the method. Optionally, the message has an
-          <literal>INTERFACE</literal> field giving the interface the method is a part of. In the
-          absence of an <literal>INTERFACE</literal> field, if two interfaces on the same object have
-          a method with the same name, it is undefined which of the two methods
-          will be invoked. Implementations may also choose to return an error in
-          this ambiguous case. However, if a method name is unique
-          implementations must not require an interface field.
+          <literal>INTERFACE</literal> field giving the interface the method is a part of.
+          Including the <literal>INTERFACE</literal> in all method call
+          messages is strongly recommended.
+        </para>
+        <para>
+          In the absence of an <literal>INTERFACE</literal> field, if two
+          or more interfaces on the same object have a method with the same
+          name, it is undefined which of those methods will be invoked.
+          Implementations may choose to either return an error, or deliver the
+          message as though it had an arbitrary one of those interfaces.
         </para>
         <para>
           Method call messages also include a <literal>PATH</literal> field
