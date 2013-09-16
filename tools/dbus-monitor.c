@@ -310,7 +310,7 @@ main (int argc, char *argv[])
           filters = (char **) realloc (filters, numFilters * sizeof (char *));
           if (filters == NULL)
             oom ("adding a new filter slot");
-          filters[j] = (char *) malloc (filter_len * sizeof (char *));
+          filters[j] = (char *) malloc (filter_len);
           if (filters[j] == NULL)
             oom ("adding a new filter");
           snprintf (filters[j], filter_len, "%s,%s", EAVESDROPPING_RULE, arg);
