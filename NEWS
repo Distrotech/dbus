@@ -9,6 +9,9 @@ Fixes:
   documented. Previously, it assumed its second parameter was TRUE.
   (fd.o #69165, Chengwei Yang)
 
+• Fix a NULL pointer dereference on an unlikely error path
+  (fd.o #69327, Sviatoslav Chagaev)
+
 • Unix-specific:
   · If accept4() fails with EINVAL, as it can on older Linux kernels
     with newer glibc, try accept() instead of going into a busy-loop.
@@ -18,6 +21,8 @@ Fixes:
     SOCK_CLOEXEC. (fd.o #69073; Pino Toscano, Chengwei Yang)
   · Fix a file descriptor leak on an error code path.
     (fd.o #69182, Sviatoslav Chagaev)
+  · Fix compilation if writev() is unavailable (fd.o #69409,
+    Vasiliy Balyasnyy)
 
 D-Bus 1.6.14 (2013-09-05)
 ==
