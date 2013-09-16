@@ -736,7 +736,7 @@ _dbus_write_two (int               fd,
   }
 #else /* HAVE_WRITEV */
   {
-    int ret1;
+    int ret1, ret2;
 
     ret1 = _dbus_write (fd, buffer1, start1, len1);
     if (ret1 == len1 && buffer2 != NULL)
