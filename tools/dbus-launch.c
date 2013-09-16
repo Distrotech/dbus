@@ -1154,8 +1154,9 @@ main (int argc, char **argv)
                  NULL); 
 
           fprintf (stderr,
-                   "Failed to execute test message bus daemon %s: %s. Will try again with the system path.\n",
+                   "Failed to execute test message bus daemon %s: %s.\n",
                    TEST_BUS_BINARY, strerror (errno));
+          exit (1);
         }
  #endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
