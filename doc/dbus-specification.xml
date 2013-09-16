@@ -1700,6 +1700,15 @@
           message as though it had an arbitrary one of those interfaces.
         </para>
         <para>
+          In some situations (such as the well-known system bus), messages
+          are filtered through an access-control list external to the
+          remote object implementation. If that filter rejects certain
+          messages by matching their interface, or accepts only messages
+          to specific interfaces, it must also reject messages that have no
+          <literal>INTERFACE</literal>: otherwise, malicious
+          applications could use this to bypass the filter.
+        </para>
+        <para>
           Method call messages also include a <literal>PATH</literal> field
           indicating the object to invoke the method on. If the call is passing
           through a message bus, the message will also have a
