@@ -654,7 +654,7 @@ _dbus_loop_iterate (DBusLoop     *loop,
     timeout = MIN (timeout, _dbus_get_oom_wait ());
 
 #if MAINLOOP_SPEW
-  _dbus_verbose ("  polling on %d descriptors timeout %ld\n", n_fds, timeout);
+  _dbus_verbose ("  polling on %d descriptors timeout %ld\n", _DBUS_N_ELEMENTS (ready_fds), timeout);
 #endif
 
   n_ready = _dbus_socket_set_poll (loop->socket_set, ready_fds,
