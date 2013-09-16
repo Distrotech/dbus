@@ -18,6 +18,21 @@ Build-time configuration changes:
   assertions. It has been renamed to DBUS_DISABLE_ASSERT to be consistent
   with the Autotools build system. (fd.o #66142, Chengwei Yang)
 
+• Fix a NULL pointer dereference on an unlikely error path
+  (fd.o #69327, Sviatoslav Chagaev)
+
+• Unix-specific:
+  · If accept4() fails with EINVAL, as it can on older Linux kernels
+    with newer glibc, try accept() instead of going into a busy-loop.
+    (fd.o #69026, Chengwei Yang)
+  · If socket() or socketpair() fails with EINVAL or EPROTOTYPE,
+    for instance on Hurd or older Linux with a new glibc, try without
+    SOCK_CLOEXEC. (fd.o #69073; Pino Toscano, Chengwei Yang)
+  · Fix a file descriptor leak on an error code path.
+    (fd.o #69182, Sviatoslav Chagaev)
+  · Fix compilation if writev() is unavailable (fd.o #69409,
+    Vasiliy Balyasnyy)
+
 Dependencies:
 
 • GNU make is now (documented to be) required. (fd.o #48277, Simon McVittie)
