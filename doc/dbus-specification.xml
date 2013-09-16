@@ -4639,6 +4639,19 @@
       </para>
 
       <para>
+        On the well-known system bus, the name of a service description file
+        must be its well-known name plus <literal>.service</literal>,
+        for instance
+        <literal>com.example.ConfigurationDatabase.service</literal>.
+      </para>
+
+      <para>
+        On the well-known session bus, services should follow the same
+        service description file naming convention as on the system bus,
+        but for backwards compatibility they are not required to do so.
+      </para>
+
+      <para>
         [FIXME the file format should be much better specified than "similar to
         .desktop entries" esp. since desktop entries are already
         badly-specified. ;-)]
