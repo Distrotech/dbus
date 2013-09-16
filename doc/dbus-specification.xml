@@ -4662,6 +4662,11 @@
           <listitem><para>Comment format</para></listitem>
         </itemizedlist>
 
+        Service description files must contain a
+        <literal>D-BUS Service</literal> group with at least the keys
+        <literal>Name</literal> (the well-known name of the service)
+        and <literal>Exec</literal> (the command to be executed).
+
         <figure>
 	  <title>Example service description file</title>
 	  <programlisting>
@@ -4672,6 +4677,14 @@
           </programlisting>
 	</figure>
       </para>
+
+      <para>
+        Additionally, service description files for the well-known system
+        bus on Unix must contain a <literal>User</literal> key, whose value
+        is the name of a user account (e.g. <literal>root</literal>).
+        The system service will be run as that user.
+      </para>
+
       <para>
         When an application asks to start a service by name, the bus daemon tries to
         find a service that will own that name. It then tries to spawn the
