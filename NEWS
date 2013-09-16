@@ -20,6 +20,9 @@ Build-time configuration changes:
 
 Dependencies:
 
+• Platforms with no 64-bit integer type are no longer supported.
+  (fd.o #65429, Simon McVittie)
+
 • GNU make is now (documented to be) required. (fd.o #48277, Simon McVittie)
 
 • Full test coverage no longer requires dbus-glib, although the tests do not
@@ -55,6 +58,9 @@ Fixes:
 
 • Avoid an infinite busy-loop if a signal interrupts waitpid()
   (fd.o #68945, Simon McVittie)
+
+• Clean up memory for parent nodes when objects are unexported
+  (fd.o #60176, Thomas Fitzsimmons)
 
 • Make dbus_connection_set_route_peer_messages(x, FALSE) behave as
   documented. Previously, it assumed its second parameter was TRUE.
@@ -92,6 +98,12 @@ Fixes:
 • Fix a NULL pointer dereference on an unlikely error path
   (fd.o #69327, Sviatoslav Chagaev)
 
+• Improve valgrind memory pool tracking (fd.o #69326,
+  Sviatoslav Chagaev)
+
+• Don't over-allocate memory in dbus-monitor (fd.o #69329,
+  Sviatoslav Chagaev)
+
 • Unix-specific:
   · If accept4() fails with EINVAL, as it can on older Linux kernels
     with newer glibc, try accept() instead of going into a busy-loop.
@@ -117,6 +129,8 @@ Fixes:
     Windows XP via the undocumented AllocateAndGetTcpExTableFromStack
     function (fd.o #66060, Ralf Habacker)
   · Fix insufficient dependency-tracking (fd.o #68505, Simon McVittie)
+  · Don't include wspiapi.h, fixing a compiler warning (fd.o #68852,
+    Simon McVittie)
 
 • Internal changes:
   · add DBUS_ENABLE_ASSERT, DBUS_ENABLE_CHECKS for less confusing
@@ -124,7 +138,8 @@ Fixes:
   · improve verbose-mode output (fd.o #63047, Colin Walters)
   · consolidate Autotools and CMake build (fd.o #64875, Ralf Habacker)
   · fix various unused variables, unusual build configurations
-    etc. (fd.o #65712, #65990, #66005, #66257, #69165; Chengwei Yang)
+    etc. (fd.o #65712, #65990, #66005, #66257, #69165, #69410;
+    Chengwei Yang, Vasiliy Balyasnyy)
 
 D-Bus 1.7.4 (2013-06-13)
 ==
