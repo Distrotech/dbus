@@ -1572,13 +1572,19 @@ write_credentials_byte (int             server_fd,
                            |MSG_NOSIGNAL
 #endif
                            );
-#else
-  bytes_written = send (server_fd, buf, 1, 0
+
+  /* If we HAVE_CMSGCRED, the OS still might not let us sendmsg()
+   * with a SOL_SOCKET/SCM_CREDS message - for instance, FreeBSD
+   * only allows that on AF_UNIX. Try just doing a send() instead. */
+  if (bytes_written < 0 && errno == EINVAL)
+#endif
+    {
+      bytes_written = send (server_fd, buf, 1, 0
 #if HAVE_DECL_MSG_NOSIGNAL
-                        |MSG_NOSIGNAL
+                            |MSG_NOSIGNAL
 #endif
-                        );
-#endif
+                            );
+    }
 
   if (bytes_written < 0 && errno == EINTR)
     goto again;
