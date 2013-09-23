@@ -121,6 +121,9 @@ Fixes:
     (fd.o #37849, Chengwei Yang)
   · Fix compilation if writev() is unavailable (fd.o #69409,
     Vasiliy Balyasnyy)
+  · Remove broken support for LOCAL_CREDS credentials passing, and
+    document where each credential-passing scheme is used (fd.o #60340,
+    Simon McVittie)
 
 • Windows-specific:
   · Remove unavailable command-line options from 'dbus-daemon --help'
