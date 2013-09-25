@@ -124,6 +124,8 @@ Fixes:
   · Remove broken support for LOCAL_CREDS credentials passing, and
     document where each credential-passing scheme is used (fd.o #60340,
     Simon McVittie)
+  · Make autogen.sh work on *BSD by not assuming GNU coreutils functionality
+    (fd.o #35881, #69787; Chengwei Yang)
 
 • Windows-specific:
   · Remove unavailable command-line options from 'dbus-daemon --help'
