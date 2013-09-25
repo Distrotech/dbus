@@ -15,7 +15,7 @@ DIE=0
 
 if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
     echo "Activating pre-commit hook."
-    cp -av .git/hooks/pre-commit.sample .git/hooks/pre-commit
+    cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
     chmod +x .git/hooks/pre-commit
 fi
 
