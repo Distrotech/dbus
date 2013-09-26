@@ -106,6 +106,9 @@ monitor_filter_func (DBusConnection     *connection,
 
 #ifdef __APPLE__
 #define PROFILE_TIMED_FORMAT "%s\t%lu\t%d"
+#elif defined(__NetBSD__)
+#include <inttypes.h>
+#define PROFILE_TIMED_FORMAT "%s\t%" PRId64 "\t%d"
 #else
 #define PROFILE_TIMED_FORMAT "%s\t%lu\t%lu"
 #endif

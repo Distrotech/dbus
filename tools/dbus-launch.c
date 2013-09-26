@@ -132,7 +132,7 @@ read_machine_uuid_if_needed (void)
     goto out;
 
   /* rstrip the read uuid */
-  while (len > 31 && isspace(uuid[len - 1]))
+  while (len > 31 && isspace((int) uuid[len - 1]))
     len--;
 
   if (len != 32)
