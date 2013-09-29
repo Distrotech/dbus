@@ -1785,10 +1785,13 @@ make_and_run_test_nodes (void)
   start_next_test ("All values in one big toplevel %d iteration\n", 1);
   {
     TestTypeNode *nodes[N_VALUES];
+    TestTypeNode *node;
 
     i = 0;
-    while ((nodes[i] = value_generator (&i)))
-      ;
+    while ((node = value_generator (&i)))
+      {
+        nodes[i - 1] = node;
+      }
 
     run_test_nodes (nodes, N_VALUES);
 
