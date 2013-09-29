@@ -800,7 +800,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
                                     va_list          var_args)
 {
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
-  int spec_type, msg_type, i;
+  int spec_type, msg_type, i, j;
   dbus_bool_t retval;
 
   _dbus_assert (_dbus_message_iter_check (real));
@@ -936,30 +936,30 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
               /* Now go through and dup each string */
               _dbus_type_reader_recurse (&real->u.reader, &array);
 
-              i = 0;
-              while (i < n_elements)
+              j = 0;
+              while (j < n_elements)
                 {
                   const char *s;
                   _dbus_type_reader_read_basic (&array,
                                                 (void *) &s);
                   
-                  str_array[i] = _dbus_strdup (s);
-                  if (str_array[i] == NULL)
+                  str_array[j] = _dbus_strdup (s);
+                  if (str_array[j] == NULL)
                     {
                       dbus_free_string_array (str_array);
                       _DBUS_SET_OOM (error);
                       goto out;
                     }
                   
-                  ++i;
+                  ++j;
                   
                   if (!_dbus_type_reader_next (&array))
-                    _dbus_assert (i == n_elements);
+                    _dbus_assert (j == n_elements);
                 }
 
               _dbus_assert (_dbus_type_reader_get_current_type (&array) == DBUS_TYPE_INVALID);
-              _dbus_assert (i == n_elements);
-              _dbus_assert (str_array[i] == NULL);
+              _dbus_assert (j == n_elements);
+              _dbus_assert (str_array[j] == NULL);
 
               *str_array_p = str_array;
               *n_elements_p = n_elements;
@@ -986,7 +986,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
       if (!_dbus_type_reader_next (&real->u.reader) && spec_type != DBUS_TYPE_INVALID)
         {
           dbus_set_error (error, DBUS_ERROR_INVALID_ARGS,
-                          "Message has only %d arguments, but more were expected", i);
+                          "Message has only %d arguments, but more were expected", i + 1);
           goto out;
         }
 
