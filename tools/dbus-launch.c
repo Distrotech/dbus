@@ -1129,35 +1129,39 @@ main (int argc, char **argv)
       verbose ("Calling exec()\n");
  
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
-      /* exec from testdir */
-      if (getenv ("DBUS_USE_TEST_BINARY") != NULL)
-        {
-          if (config_file == NULL && getenv ("DBUS_TEST_DATA") != NULL)
-            {
-              config_file = concat2 (getenv ("DBUS_TEST_DATA"),
-                  "/valid-config-files/session.conf");
+      {
+        const char *test_daemon;
+        /* exec from testdir */
+        if (getenv ("DBUS_USE_TEST_BINARY") != NULL &&
+            (test_daemon = getenv ("DBUS_TEST_DAEMON")) != NULL)
+          {
+            if (config_file == NULL && getenv ("DBUS_TEST_DATA") != NULL)
+              {
+                config_file = concat2 (getenv ("DBUS_TEST_DATA"),
+                    "/valid-config-files/session.conf");
 
-              if (config_file == NULL)
-                {
-                  fprintf (stderr, "Out of memory\n");
-                  exit (1);
-                }
-            }
+                if (config_file == NULL)
+                  {
+                    fprintf (stderr, "Out of memory\n");
+                    exit (1);
+                  }
+              }
 
-          execl (TEST_BUS_BINARY,
-                 TEST_BUS_BINARY,
-                 "--fork",
-                 "--print-pid", write_pid_fd_as_string,
-                 "--print-address", write_address_fd_as_string,
-                 config_file ? "--config-file" : "--session",
-                 config_file, /* has to be last in this varargs list */
-                 NULL); 
+            execl (test_daemon,
+                   test_daemon,
+                   "--fork",
+                   "--print-pid", write_pid_fd_as_string,
+                   "--print-address", write_address_fd_as_string,
+                   config_file ? "--config-file" : "--session",
+                   config_file, /* has to be last in this varargs list */
+                   NULL);
 
-          fprintf (stderr,
-                   "Failed to execute test message bus daemon %s: %s.\n",
-                   TEST_BUS_BINARY, strerror (errno));
-          exit (1);
-        }
+            fprintf (stderr,
+                     "Failed to execute test message bus daemon %s: %s.\n",
+                     test_daemon, strerror (errno));
+            exit (1);
+          }
+      }
  #endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
       execl (DBUS_DAEMONDIR"/dbus-daemon",

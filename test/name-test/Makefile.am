@@ -18,6 +18,7 @@ TESTS_ENVIRONMENT = \
         DBUS_TOP_SRCDIR=@abs_top_srcdir@ \
         PYTHON=@PYTHON@ \
         DBUS_TEST_DATA=@abs_top_builddir@/test/data \
+        DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
         $(NULL)
 TESTS=run-test.sh run-test-systemserver.sh
 else

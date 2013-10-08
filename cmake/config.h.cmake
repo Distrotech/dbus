@@ -33,9 +33,6 @@
 #define DBUS_TEST_EXEC "@DBUS_TEST_EXEC@"
 #define DBUS_EXEEXT "@EXEEXT@"
 
-/* Full path to test file test/test-exit in builddir */
-#define TEST_BUS_BINARY          "@TEST_BUS_BINARY@"
-
 /* Some dbus features */
 #cmakedefine DBUS_ENABLE_ANSI 1
 #cmakedefine DBUS_ENABLE_VERBOSE_MODE 1

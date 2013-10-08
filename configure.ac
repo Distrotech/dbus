@@ -1617,10 +1617,6 @@ AC_DEFINE_UNQUOTED([DBUS_TEST_EXEC], ["$DBUS_TEST_EXEC"],
 AC_DEFINE_UNQUOTED([DBUS_EXEEXT], ["$EXEEXT"],
                    [Extension for executables, typically empty or .exe])
 
-AC_DEFINE_UNQUOTED(TEST_BUS_BINARY, ["$DBUS_PWD/bus/dbus-daemon$EXEEXT"],
-                   [Full path to the daemon in the builddir])
-AC_SUBST(TEST_BUS_BINARY)
-
 AC_DEFINE_UNQUOTED(TEST_BUS_LAUNCH_BINARY, ["$DBUS_PWD/tools/dbus-launch$EXEEXT"],
                    [Full path to the dbus-launch in the builddir])
 
