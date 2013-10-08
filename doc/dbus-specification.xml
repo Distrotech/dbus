@@ -4689,9 +4689,28 @@
         When an application asks to start a service by name, the bus daemon tries to
         find a service that will own that name. It then tries to spawn the
         executable associated with it. If this fails, it will report an
-        error. [FIXME what happens if two .service files offer the same service;
-        what kind of error is reported, should we have a way for the client to
-        choose one?]
+        error.
+      </para>
+
+      <para>
+        On the well-known system bus, it is not possible for two .service files
+        in the same directory to offer the same service, because they are
+        constrained to have names that match the service name.
+      </para>
+
+      <para>
+        On the well-known session bus, if two .service files in the same
+        directory offer the same service name, the result is undefined.
+        Distributors should avoid this situation, for instance by naming
+        session services' .service files according to their service name.
+      </para>
+
+      <para>
+        If two .service files in different directories offer the same
+        service name, the one in the higher-priority directory is used:
+        for instance, on the system bus, .service files in
+        /usr/local/share/dbus-1/system-services take precedence over those
+        in /usr/share/dbus-1/system-services.
       </para>
       <para>
         The executable launched will have the environment variable
