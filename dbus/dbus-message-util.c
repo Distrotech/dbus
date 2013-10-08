@@ -493,7 +493,7 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
       _dbus_message_loader_get_buffer (loader, &buffer);
       _dbus_string_append_byte (buffer,
                                 _dbus_string_get_byte (data, i));
-      _dbus_message_loader_return_buffer (loader, buffer, 1);
+      _dbus_message_loader_return_buffer (loader, buffer);
     }
 
   if (!check_loader_results (loader, expected_validity))
@@ -512,7 +512,7 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
     _dbus_message_loader_get_buffer (loader, &buffer);
     _dbus_string_copy (data, 0, buffer,
                        _dbus_string_get_length (buffer));
-    _dbus_message_loader_return_buffer (loader, buffer, 1);
+    _dbus_message_loader_return_buffer (loader, buffer);
   }
 
   if (!check_loader_results (loader, expected_validity))
@@ -536,7 +536,7 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
       if ((i+1) < len)
         _dbus_string_append_byte (buffer,
                                   _dbus_string_get_byte (data, i+1));
-      _dbus_message_loader_return_buffer (loader, buffer, 1);
+      _dbus_message_loader_return_buffer (loader, buffer);
     }
 
   if (!check_loader_results (loader, expected_validity))
@@ -1327,7 +1327,7 @@ _dbus_message_test (const char *test_data_dir)
 
       _dbus_message_loader_get_buffer (loader, &buffer);
       _dbus_string_append_byte (buffer, data[i]);
-      _dbus_message_loader_return_buffer (loader, buffer, 1);
+      _dbus_message_loader_return_buffer (loader, buffer);
     }
 
   /* Write the body data one byte at a time */
@@ -1338,7 +1338,7 @@ _dbus_message_test (const char *test_data_dir)
 
       _dbus_message_loader_get_buffer (loader, &buffer);
       _dbus_string_append_byte (buffer, data[i]);
-      _dbus_message_loader_return_buffer (loader, buffer, 1);
+      _dbus_message_loader_return_buffer (loader, buffer);
     }
 
 #ifdef HAVE_UNIX_FD_PASSING

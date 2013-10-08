@@ -70,8 +70,7 @@ void               _dbus_message_loader_unref                 (DBusMessageLoader
 void               _dbus_message_loader_get_buffer            (DBusMessageLoader  *loader,
                                                                DBusString        **buffer);
 void               _dbus_message_loader_return_buffer         (DBusMessageLoader  *loader,
-                                                               DBusString         *buffer,
-                                                               int                 bytes_read);
+                                                               DBusString         *buffer);
 
 dbus_bool_t        _dbus_message_loader_get_unix_fds          (DBusMessageLoader  *loader,
                                                                int               **fds,

@@ -1045,9 +1045,7 @@ recover_unused_bytes (DBusTransport *transport)
                      orig_len);
       
       _dbus_message_loader_return_buffer (transport->loader,
-                                          buffer,
-                                          _dbus_string_get_length (buffer) -
-                                          orig_len);
+                                          buffer);
 
       _dbus_auth_delete_unused_bytes (transport->auth);
       
@@ -1077,9 +1075,7 @@ recover_unused_bytes (DBusTransport *transport)
                      orig_len);
       
       _dbus_message_loader_return_buffer (transport->loader,
-                                          buffer,
-                                          _dbus_string_get_length (buffer) -
-                                          orig_len);
+                                          buffer);
 
       if (succeeded)
         _dbus_auth_delete_unused_bytes (transport->auth);

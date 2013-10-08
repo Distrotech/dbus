@@ -3912,12 +3912,10 @@ _dbus_message_loader_get_buffer (DBusMessageLoader  *loader,
  *
  * @param loader the loader.
  * @param buffer the buffer.
- * @param bytes_read number of bytes that were read into the buffer.
  */
 void
 _dbus_message_loader_return_buffer (DBusMessageLoader  *loader,
-                                    DBusString         *buffer,
-                                    int                 bytes_read)
+                                    DBusString         *buffer)
 {
   _dbus_assert (loader->buffer_outstanding);
   _dbus_assert (buffer == &loader->data);
@@ -4694,7 +4692,7 @@ dbus_message_demarshal (const char *str,
 
   _dbus_message_loader_get_buffer (loader, &buffer);
   _dbus_string_append_len (buffer, str, len);
-  _dbus_message_loader_return_buffer (loader, buffer, len);
+  _dbus_message_loader_return_buffer (loader, buffer);
 
   if (!_dbus_message_loader_queue_messages (loader))
     goto fail_oom;

@@ -748,29 +748,23 @@ do_reading (DBusTransport *transport)
       
       if (bytes_read > 0)
         {
-          int orig_len;
-          
           _dbus_message_loader_get_buffer (transport->loader,
                                            &buffer);
 
-          orig_len = _dbus_string_get_length (buffer);
-          
           if (!_dbus_auth_decode_data (transport->auth,
                                        &socket_transport->encoded_incoming,
                                        buffer))
             {
               _dbus_verbose ("Out of memory decoding incoming data\n");
               _dbus_message_loader_return_buffer (transport->loader,
-                                              buffer,
-                                              _dbus_string_get_length (buffer) - orig_len);
+                                              buffer);
 
               oom = TRUE;
               goto out;
             }
 
           _dbus_message_loader_return_buffer (transport->loader,
-                                              buffer,
-                                              _dbus_string_get_length (buffer) - orig_len);
+                                              buffer);
 
           _dbus_string_set_length (&socket_transport->encoded_incoming, 0);
           _dbus_string_compact (&socket_transport->encoded_incoming, 2048);
@@ -789,7 +783,7 @@ do_reading (DBusTransport *transport)
           if (!_dbus_message_loader_get_unix_fds(transport->loader, &fds, &n_fds))
             {
               _dbus_verbose ("Out of memory reading file descriptors\n");
-              _dbus_message_loader_return_buffer (transport->loader, buffer, 0);
+              _dbus_message_loader_return_buffer (transport->loader, buffer);
               oom = TRUE;
               goto out;
             }
@@ -812,8 +806,7 @@ do_reading (DBusTransport *transport)
         }
 
       _dbus_message_loader_return_buffer (transport->loader,
-                                          buffer,
-                                          bytes_read < 0 ? 0 : bytes_read);
+                                          buffer);
     }
   
   if (bytes_read < 0)
