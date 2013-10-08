@@ -18,6 +18,10 @@ Build-time configuration changes:
   assertions. It has been renamed to DBUS_DISABLE_ASSERT to be consistent
   with the Autotools build system. (fd.o #66142, Chengwei Yang)
 
+• --with-valgrind=auto enables Valgrind instrumentation if and only if
+  valgrind headers are available. The default is still --with-valgrind=no.
+  (fd.o #56925, Simon McVittie)
+
 Dependencies:
 
 • Platforms with no 64-bit integer type are no longer supported.
@@ -38,6 +42,8 @@ Enhancements:
   · Don't claim D-Bus is "low-latency" (lower than what?), just
     give factual statements about it supporting async use
     (fd.o #65141, Justin Lee)
+  · Document the contents of .service files, and the fact that
+    system services' filenames are constrained (fd.o #66608, Simon)
 
 • Be thread-safe by default on all platforms, even if
   dbus_threads_init_default() has not been called. For compatibility with
@@ -126,6 +132,8 @@ Fixes:
     Simon McVittie)
   · Make autogen.sh work on *BSD by not assuming GNU coreutils functionality
     (fd.o #35881, #69787; Chengwei Yang)
+  · dbus-monitor: be portable to NetBSD (fd.o #69842, Chengwei Yang)
+  · dbus-launch: stop using non-portable asprintf (fd.o #37849, Simon)
 
 • Windows-specific:
   · Remove unavailable command-line options from 'dbus-daemon --help'
