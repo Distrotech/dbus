@@ -3,7 +3,7 @@
 <busconfig>
   <!-- Our well-known bus type, don't change this -->
   <type>session</type>
-  <listen>unix:tmpdir=/tmp</listen>
+  <listen>@TEST_LISTEN@</listen>
 
   <policy context="default">
     <!-- Allow everything to be sent -->
