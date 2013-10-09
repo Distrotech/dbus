@@ -1,5 +1,7 @@
-D-Bus 1.7.6 (UNRELEASED)
+D-Bus 1.7.6 (2013-10-09)
 ==
+
+The “CSI Shrewsbury” release.
 
 Build-time configuration changes:
 

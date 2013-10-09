@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.22</releaseinfo>
-    <date>(not yet released)</date>
+    <date>2013-10-09</date>
     <authorgroup>
       <author>
 	<firstname>Havoc</firstname>
@@ -73,9 +73,12 @@
    <revhistory>
      <revision>
        <revnumber>0.22</revnumber>
-       <date>not yet released (<ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink>)</date>
+       <date>2013-10-09</date>
        <authorinitials></authorinitials>
-       <revremark></revremark>
+       <revremark>add GetConnectionCredentials, document
+        GetAtdAuditSessionData, document GetConnectionSELinuxSecurityContext,
+        document and correct .service file syntax and naming
+      </revremark>
      </revision>
      <revision>
        <revnumber>0.21</revnumber>
