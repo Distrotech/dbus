@@ -367,26 +367,45 @@ main (int argc, char *argv[])
 
   if (numFilters)
     {
+      size_t offset = 0;
       for (i = 0; i < j; i++)
         {
-          dbus_bus_add_match (connection, filters[i], &error);
-          if (dbus_error_is_set (&error))
+          dbus_bus_add_match (connection, filters[i] + offset, &error);
+          if (dbus_error_is_set (&error) && i == 0 && offset == 0)
+            {
+              /* We might be talking to a pre-1.5.6 dbus-daemon
+              * which wouldn't understand eavesdrop=true.
+              * If this works, carry on with offset > 0
+              * on the remaining iterations. */
+              offset = strlen (EAVESDROPPING_RULE) + 1;
+              dbus_error_free (&error);
+              dbus_bus_add_match (connection, filters[i] + offset, &error);
+            }
+
+	  if (dbus_error_is_set (&error))
             {
               fprintf (stderr, "Failed to setup match \"%s\": %s\n",
                        filters[i], error.message);
               dbus_error_free (&error);
               exit (1);
             }
-	  free(filters[i]);
+          free(filters[i]);
         }
     }
   else
     {
       dbus_bus_add_match (connection,
-		          EAVESDROPPING_RULE,
-		          &error);
+                          EAVESDROPPING_RULE,
+                          &error);
       if (dbus_error_is_set (&error))
-        goto lose;
+        {
+          dbus_error_free (&error);
+          dbus_bus_add_match (connection,
+                              "",
+                              &error);
+          if (dbus_error_is_set (&error))
+            goto lose;
+        }
     }
 
   if (!dbus_connection_add_filter (connection, filter_func, NULL, NULL)) {
