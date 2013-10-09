@@ -1289,6 +1289,10 @@ handle_servicehelper_exit_error (int        exit_code,
 {
   switch (exit_code)
     {
+    case BUS_SPAWN_EXIT_CODE_CONFIG_INVALID:
+      dbus_set_error (error, DBUS_ERROR_SPAWN_CONFIG_INVALID,
+		      "Invalid configuration (missing or empty <user>?)");
+      break;
     case BUS_SPAWN_EXIT_CODE_NO_MEMORY:
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
                       "Launcher could not run (out of memory)");
@@ -1325,6 +1329,7 @@ handle_servicehelper_exit_error (int        exit_code,
       dbus_set_error (error, DBUS_ERROR_SPAWN_CHILD_SIGNALED,
                       "Launched child was signaled, it probably crashed");
       break;
+    case BUS_SPAWN_EXIT_CODE_GENERIC_FAILURE:
     default:
       dbus_set_error (error, DBUS_ERROR_SPAWN_CHILD_EXITED,
                       "Launch helper exited with unknown return code %i", exit_code);

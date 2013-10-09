@@ -45,6 +45,9 @@ convert_error_to_exit_code (DBusError *error)
     return BUS_SPAWN_EXIT_CODE_SETUP_FAILED;
 
   if (dbus_error_has_name (error, DBUS_ERROR_SPAWN_SERVICE_INVALID))
+    return BUS_SPAWN_EXIT_CODE_NAME_INVALID;
+
+  if (dbus_error_has_name (error, DBUS_ERROR_SPAWN_SERVICE_NOT_FOUND))
     return BUS_SPAWN_EXIT_CODE_SERVICE_NOT_FOUND;
 
   if (dbus_error_has_name (error, DBUS_ERROR_SPAWN_PERMISSIONS_INVALID))
@@ -65,7 +68,7 @@ convert_error_to_exit_code (DBusError *error)
   /* should we assert? */
   fprintf(stderr, "%s: %s\n", error->name, error->message);
   
-  return BUS_SPAWN_EXIT_CODE_SETUP_FAILED;
+  return BUS_SPAWN_EXIT_CODE_GENERIC_FAILURE;
 }
 
 int
