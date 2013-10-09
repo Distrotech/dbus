@@ -34,7 +34,6 @@
 #define DBUS_SERVICE_NAME     "Name"
 #define DBUS_SERVICE_EXEC     "Exec"
 #define DBUS_SERVICE_USER     "User"
-#define DBUS_SERVICE_GROUP    "Group"
 #define DBUS_SERVICE_SYSTEMD_SERVICE "SystemdService"
 
 typedef struct BusDesktopFile BusDesktopFile;
