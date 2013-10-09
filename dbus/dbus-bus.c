@@ -294,12 +294,6 @@ init_connections_unlocked (void)
        * the above code will work right
        */
       
-      if (!dbus_setenv ("DBUS_ACTIVATION_ADDRESS", NULL))
-        return FALSE;
-
-      if (!dbus_setenv ("DBUS_ACTIVATION_BUS_TYPE", NULL))
-        return FALSE;
-      
       if (!_dbus_register_shutdown_func (addresses_shutdown_func,
                                          NULL))
         return FALSE;
