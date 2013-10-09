@@ -43,7 +43,8 @@ Enhancements:
     give factual statements about it supporting async use
     (fd.o #65141, Justin Lee)
   · Document the contents of .service files, and the fact that
-    system services' filenames are constrained (fd.o #66608, Simon)
+    system services' filenames are constrained
+    (fd.o #66608; Simon McVittie, Chengwei Yang)
 
 • Be thread-safe by default on all platforms, even if
   dbus_threads_init_default() has not been called. For compatibility with
@@ -55,6 +56,12 @@ Enhancements:
 
 • New API: dbus_setenv(), a simple wrapper around setenv().
   Note that this is not thread-safe. (fd.o #39196, Simon)
+
+• Add dbus-send --peer=ADDRESS (connect to a given peer-to-peer connection,
+  like --address=ADDRESS in previous versions) and dbus-send --bus=ADDRESS
+  (connect to a given bus, like dbus-monitor --address=ADDRESS).
+  dbus-send --address still exists for backwards compatibility,
+  but is no longer documented. (fd.o #48816, Andrey Mazo)
 
 • Windows-specific:
   · "dbus-daemon --nofork" is allowed on Windows again. (fd.o #68852,
@@ -110,6 +117,9 @@ Fixes:
 • Don't over-allocate memory in dbus-monitor (fd.o #69329,
   Sviatoslav Chagaev)
 
+• dbus-monitor can monitor dbus-daemon < 1.5.6 again
+  (fd.o #66107, Chengwei Yang)
+
 • Unix-specific:
   · If accept4() fails with EINVAL, as it can on older Linux kernels
     with newer glibc, try accept() instead of going into a busy-loop.
@@ -133,7 +143,9 @@ Fixes:
   · Make autogen.sh work on *BSD by not assuming GNU coreutils functionality
     (fd.o #35881, #69787; Chengwei Yang)
   · dbus-monitor: be portable to NetBSD (fd.o #69842, Chengwei Yang)
-  · dbus-launch: stop using non-portable asprintf (fd.o #37849, Simon)
+  · dbus-launch: stop using non-portable asprintf (fd.o #37849, Simon)
+  · Improve error reporting from the setuid activation helper (fd.o #66728,
+    Chengwei Yang)
 
 • Windows-specific:
   · Remove unavailable command-line options from 'dbus-daemon --help'
@@ -151,7 +163,7 @@ Fixes:
   · improve verbose-mode output (fd.o #63047, Colin Walters)
   · consolidate Autotools and CMake build (fd.o #64875, Ralf Habacker)
   · fix various unused variables, unusual build configurations
-    etc. (fd.o #65712, #65990, #66005, #66257, #69165, #69410;
+    etc. (fd.o #65712, #65990, #66005, #66257, #69165, #69410, #70218;
     Chengwei Yang, Vasiliy Balyasnyy)
 
 D-Bus 1.7.4 (2013-06-13)
