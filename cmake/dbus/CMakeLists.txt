@@ -297,10 +297,7 @@ else(WIN32)
 endif(WIN32)
 
 if (DBUS_ENABLE_EMBEDDED_TESTS)
-	set (TESTS_ENVIRONMENT "DBUS_TEST_DATA=${CMAKE_SOURCE_DIR}/test/data DBUS_TEST_HOMEDIR=${CMAKE_BUILD_DIR}/dbus")
-	ADD_EXECUTABLE(dbus-test ${CMAKE_SOURCE_DIR}/../dbus/dbus-test-main.c)
-	target_link_libraries(dbus-test ${DBUS_INTERNAL_LIBRARIES})
-	add_test(dbus-test ${EXECUTABLE_OUTPUT_PATH}/dbus-test ${CMAKE_SOURCE_DIR}/../test/data)
+	add_test_executable(dbus-test ${CMAKE_SOURCE_DIR}/../dbus/dbus-test-main.c ${DBUS_INTERNAL_LIBRARIES})
 	set_target_properties(dbus-test PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 ENDIF (DBUS_ENABLE_EMBEDDED_TESTS)
 

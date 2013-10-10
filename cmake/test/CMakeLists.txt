@@ -47,31 +47,15 @@ set (test-sleep-forever_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-sleep-forever.c
 )
 
-add_executable(test-service ${test-service_SOURCES})
-target_link_libraries(test-service dbus-testutils)
-
-add_executable(test-names ${test-names_SOURCES})
-target_link_libraries(test-names dbus-testutils)
-
-add_executable(shell-test ${shell-test_SOURCES})
-target_link_libraries(shell-test ${DBUS_INTERNAL_LIBRARIES})
-ADD_TEST(shell-test ${EXECUTABLE_OUTPUT_PATH}/shell-test${EXEEXT})
-
-add_executable(test-shell-service ${test-shell-service_SOURCES})
-target_link_libraries(test-shell-service dbus-testutils)
-
-add_executable(spawn-test ${spawn-test_SOURCES})
-target_link_libraries(spawn-test ${DBUS_INTERNAL_LIBRARIES})
-
-add_executable(test-exit ${test-exit_SOURCES})
-target_link_libraries(test-exit ${DBUS_INTERNAL_LIBRARIES})
-
-add_executable(test-segfault ${test-segfault_SOURCES})
-target_link_libraries(test-segfault ${DBUS_INTERNAL_LIBRARIES})
-
-add_executable(test-sleep-forever ${test-sleep-forever_SOURCES})
-target_link_libraries(test-sleep-forever ${DBUS_INTERNAL_LIBRARIES})
-
+add_helper_executable(test-service ${test-service_SOURCES} dbus-testutils)
+add_helper_executable(test-names ${test-names_SOURCES} dbus-testutils)
+add_test_executable(shell-test ${shell-test_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_test_executable(test-printf ${CMAKE_SOURCE_DIR}/../test/internals/printf.c dbus-testutils)
+add_helper_executable(test-shell-service ${test-shell-service_SOURCES} dbus-testutils)
+add_helper_executable(spawn-test ${spawn-test_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_helper_executable(test-exit ${test-exit_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_helper_executable(test-segfault ${test-segfault_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_helper_executable(test-sleep-forever ${test-sleep-forever_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 
 if(DBUS_WITH_GLIB)
     message(STATUS "with glib test apps")
@@ -84,37 +68,18 @@ if(DBUS_WITH_GLIB)
         ${GOBJECT_INCLUDE_DIR}
         ${CMAKE_SOURCE_DIR}/../test
     )
-    set (TEST_LIBRARIES dbus-testutils ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES})
+    set(TEST_LIBRARIES ${DBUS_INTERNAL_LIBRARIES} dbus-testutils ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES})
 
-    add_executable(test-corrupt ${CMAKE_SOURCE_DIR}/../test/corrupt.c)
-    target_link_libraries(test-corrupt ${TEST_LIBRARIES})
-
-    add_executable(test-dbus-daemon ${CMAKE_SOURCE_DIR}/../test/dbus-daemon.c)
-    target_link_libraries(test-dbus-daemon ${TEST_LIBRARIES})
-
-    add_executable(test-dbus-daemon-eavesdrop ${CMAKE_SOURCE_DIR}/../test/dbus-daemon-eavesdrop.c)
-    target_link_libraries(test-dbus-daemon-eavesdrop ${TEST_LIBRARIES})
-
-    add_executable(test-loopback ${CMAKE_SOURCE_DIR}/../test/loopback.c)
-    target_link_libraries(test-loopback ${TEST_LIBRARIES})
-
-    add_executable(test-marshal ${CMAKE_SOURCE_DIR}/../test/marshal.c)
-    target_link_libraries(test-marshal ${TEST_LIBRARIES})
-
-    add_executable(test-refs ${CMAKE_SOURCE_DIR}/../test/internals/refs.c)
-    target_link_libraries(test-refs ${TEST_LIBRARIES})
-
-    add_executable(test-relay ${CMAKE_SOURCE_DIR}/../test/relay.c)
-    target_link_libraries(test-relay ${TEST_LIBRARIES})
-
-    add_executable(test-syntax ${CMAKE_SOURCE_DIR}/../test/syntax.c)
-    target_link_libraries(test-syntax ${TEST_LIBRARIES})
-
-    add_executable(test-syslog ${CMAKE_SOURCE_DIR}/../test/internals/syslog.c)
-    target_link_libraries(test-syslog ${TEST_LIBRARIES})
-
-    add_executable(manual-authz ${CMAKE_SOURCE_DIR}/../test/manual-authz.c)
-    target_link_libraries(manual-authz ${TEST_LIBRARIES})
+    add_test_executable(test-corrupt ${CMAKE_SOURCE_DIR}/../test/corrupt.c ${TEST_LIBRARIES})
+    add_test_executable(test-dbus-daemon ${CMAKE_SOURCE_DIR}/../test/dbus-daemon.c ${TEST_LIBRARIES})
+    add_test_executable(test-dbus-daemon-eavesdrop ${CMAKE_SOURCE_DIR}/../test/dbus-daemon-eavesdrop.c ${TEST_LIBRARIES})
+    add_test_executable(test-loopback ${CMAKE_SOURCE_DIR}/../test/loopback.c ${TEST_LIBRARIES})
+    add_test_executable(test-marshal ${CMAKE_SOURCE_DIR}/../test/marshal.c ${TEST_LIBRARIES})
+    add_test_executable(test-refs ${CMAKE_SOURCE_DIR}/../test/internals/refs.c ${TEST_LIBRARIES})
+    add_test_executable(test-relay ${CMAKE_SOURCE_DIR}/../test/relay.c ${TEST_LIBRARIES})
+    add_test_executable(test-syntax ${CMAKE_SOURCE_DIR}/../test/syntax.c ${TEST_LIBRARIES})
+    add_test_executable(test-syslog ${CMAKE_SOURCE_DIR}/../test/internals/syslog.c ${TEST_LIBRARIES})
+    add_helper_executable(manual-authz ${CMAKE_SOURCE_DIR}/../test/manual-authz.c ${TEST_LIBRARIES})
 endif()
 
 ### keep these in creation order, i.e. uppermost dirs first 

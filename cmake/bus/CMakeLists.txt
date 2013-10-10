@@ -106,10 +106,9 @@ if (DBUS_SERVICE)
 endif (DBUS_SERVICE)
 
 if (DBUS_ENABLE_EMBEDDED_TESTS)
-	add_executable(bus-test ${BUS_SOURCES} ${BUS_DIR}/test-main.c)
-	target_link_libraries(bus-test ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
+	set(SOURCES ${BUS_SOURCES} ${BUS_DIR}/test-main.c)
+	add_test_executable(bus-test "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
 	set_target_properties(bus-test PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
-	add_test(bus-test ${EXECUTABLE_OUTPUT_PATH}/bus-test ${CMAKE_BINARY_DIR}/test/data)
 endif (DBUS_ENABLE_EMBEDDED_TESTS)
 
 if(MSVC)
@@ -146,11 +145,9 @@ if(NOT WIN32)
    set_target_properties(dbus-daemon-launch-helper-test PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST")
    target_link_libraries(dbus-daemon-launch-helper-test ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
    
-   add_executable(bus-test-launch-helper ${LAUNCH_HELPER_SOURCES}  ${BUS_DIR}/test-launch-helper.c)
+   set (SOURCES ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/test-launch-helper.c)
+   add_test_executable(bus-test-launch-helper "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
    set_target_properties(bus-test-launch-helper PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST -DACTIVATION_LAUNCHER_DO_OOM")
-   target_link_libraries(bus-test-launch-helper ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
-   add_test(bus-test-launch-helper ${EXECUTABLE_OUTPUT_PATH}/bus-test-launch-helper )
-
 endif(NOT WIN32)
 
 #### Init scripts fun
