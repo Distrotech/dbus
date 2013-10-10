@@ -246,7 +246,7 @@ in_data = \
 	data/valid-config-files-system/debug-allow-all-pass.conf.in \
 	data/valid-config-files/debug-allow-all-sha1.conf.in \
 	data/valid-config-files/debug-allow-all.conf.in \
-	data/valid-config-files/incoming-limit.conf \
+	data/valid-config-files/incoming-limit.conf.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service.in \
