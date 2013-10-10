@@ -246,6 +246,7 @@ in_data = \
 	data/valid-config-files-system/debug-allow-all-pass.conf.in \
 	data/valid-config-files/debug-allow-all-sha1.conf.in \
 	data/valid-config-files/debug-allow-all.conf.in \
+	data/valid-config-files/incoming-limit.conf \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service.in \
@@ -317,7 +318,6 @@ static_data = \
 	data/valid-config-files/basic.conf \
 	data/valid-config-files/basic.d/basic.conf \
 	data/valid-config-files/entities.conf \
-	data/valid-config-files/incoming-limit.conf \
 	data/valid-config-files/many-rules.conf \
 	data/valid-config-files/system.d/test.conf \
 	data/valid-messages/array-of-array-of-uint32.message \
