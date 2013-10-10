@@ -353,9 +353,8 @@ endif(X11_FOUND)
 
 # test binary names
 if (WIN32)
-	# Automake calls this EXEEXT, and CMake doesn't have a standard name
-	# for it; follow Automake's naming convention so we can share .in files
-	set (EXEEXT ".exe")
+    # follow Automake's naming convention so we can share .in files
+    set (EXEEXT ${CMAKE_EXECUTABLE_SUFFIX})
 endif(WIN32)
 
 if (MSVC_IDE)
