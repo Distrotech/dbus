@@ -51,6 +51,7 @@ static void
 test_syslog (Fixture *f,
     gconstpointer data)
 {
+#ifndef G_OS_WIN32
   if (g_test_trap_fork (0, 0))
     {
       _dbus_init_system_log (FALSE);
@@ -73,7 +74,7 @@ test_syslog (Fixture *f,
 
   g_test_trap_assert_passed ();
   g_test_trap_assert_stderr ("*" MESSAGE "42\n*" MESSAGE "666\n*");
-
+#endif
   /* manual test (this is the best we can do on Windows) */
   _dbus_init_system_log (FALSE);
   _dbus_system_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
