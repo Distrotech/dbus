@@ -982,15 +982,16 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
         }
 #endif
 
+      /* how many arguments already handled */
+      i++;
+
       spec_type = va_arg (var_args, int);
       if (!_dbus_type_reader_next (&real->u.reader) && spec_type != DBUS_TYPE_INVALID)
         {
           dbus_set_error (error, DBUS_ERROR_INVALID_ARGS,
-                          "Message has only %d arguments, but more were expected", i + 1);
+                          "Message has only %d arguments, but more were expected", i);
           goto out;
         }
-
-      i++;
     }
 
   retval = TRUE;
