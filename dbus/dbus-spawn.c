@@ -38,6 +38,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-journal.h>
+#endif
 
 extern char **environ;
 
@@ -1197,6 +1200,10 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
   int child_err_report_pipe[2] = { -1, -1 };
   int babysitter_pipe[2] = { -1, -1 };
   pid_t pid;
+#ifdef HAVE_SYSTEMD
+  int fd_out = -1;
+  int fd_err = -1;
+#endif
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
   _dbus_assert (argv[0] != NULL);
@@ -1283,7 +1290,13 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
     }
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-  
+
+#ifdef HAVE_SYSTEMD
+  /* this may fail, but not critical */
+  fd_out = sd_journal_stream_fd (sitter->log_name, LOG_INFO, FALSE);
+  fd_err = sd_journal_stream_fd (sitter->log_name, LOG_WARNING, FALSE);
+#endif
+
   pid = fork ();
   
   if (pid < 0)
@@ -1323,6 +1336,15 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
            */
           signal (SIGPIPE, SIG_IGN);
 
+#ifdef HAVE_SYSTEMD
+	  /* log to systemd journal */
+	  if (fd_out >= 0)
+            dup2 (fd_out, STDOUT_FILENO);
+	  if (fd_err >= 0)
+            dup2 (fd_err, STDERR_FILENO);
+          close_and_invalidate (&fd_out);
+          close_and_invalidate (&fd_err);
+#endif
 	  do_exec (child_err_report_pipe[WRITE_END],
 		   argv,
 		   env,
@@ -1331,6 +1353,10 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
 	}
       else
 	{
+#ifdef HAVE_SYSTEMD
+          close_and_invalidate (&fd_out);
+          close_and_invalidate (&fd_err);
+#endif
           babysit (grandchild_pid, babysitter_pipe[1]);
           _dbus_assert_not_reached ("Got to code after babysit()");
 	}
@@ -1340,6 +1366,10 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
       /* Close the uncared-about ends of the pipes */
       close_and_invalidate (&child_err_report_pipe[WRITE_END]);
       close_and_invalidate (&babysitter_pipe[1]);
+#ifdef HAVE_SYSTEMD
+      close_and_invalidate (&fd_out);
+      close_and_invalidate (&fd_err);
+#endif
 
       sitter->socket_to_babysitter = babysitter_pipe[0];
       babysitter_pipe[0] = -1;
@@ -1369,6 +1399,10 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
   close_and_invalidate (&child_err_report_pipe[WRITE_END]);
   close_and_invalidate (&babysitter_pipe[0]);
   close_and_invalidate (&babysitter_pipe[1]);
+#ifdef HAVE_SYSTEMD
+  close_and_invalidate (&fd_out);
+  close_and_invalidate (&fd_err);
+#endif
 
   if (sitter != NULL)
     _dbus_babysitter_unref (sitter);

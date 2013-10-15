@@ -1143,7 +1143,7 @@ if test x$enable_systemd = xno ; then
     have_systemd=no;
 else
     PKG_CHECK_MODULES(SYSTEMD,
-        [libsystemd-login >= 32, libsystemd-daemon >= 32],
+        [libsystemd-login >= 32, libsystemd-daemon >= 32, libsystemd-journal >= 32],
         have_systemd=yes,
         have_systemd=no)
 fi
