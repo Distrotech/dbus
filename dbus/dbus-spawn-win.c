@@ -68,7 +68,7 @@ struct DBusBabysitter
     HANDLE end_sync_event;
 #endif
 
-    char *executable;
+    char *log_name;
     DBusSpawnChildSetupFunc child_setup;
     void *user_data;
 
@@ -258,7 +258,7 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
         }
 #endif
 
-      dbus_free (sitter->executable);
+      dbus_free (sitter->log_name);
 
       dbus_free (sitter);
     }
@@ -337,7 +337,7 @@ _dbus_babysitter_set_child_exit_error (DBusBabysitter *sitter,
       char *emsg = _dbus_win_error_string (sitter->spawn_errno);
       dbus_set_error (error, DBUS_ERROR_SPAWN_EXEC_FAILED,
                       "Failed to execute program %s: %s",
-                      sitter->executable, emsg);
+                      sitter->log_name, emsg);
       _dbus_win_free_error_string (emsg);
     }
   else if (sitter->have_child_status)
@@ -345,14 +345,14 @@ _dbus_babysitter_set_child_exit_error (DBusBabysitter *sitter,
       PING();
       dbus_set_error (error, DBUS_ERROR_SPAWN_CHILD_EXITED,
                       "Process %s exited with status %d",
-                      sitter->executable, sitter->child_status);
+                      sitter->log_name, sitter->child_status);
     }
   else
     {
       PING();
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Process %s exited, status unknown",
-                      sitter->executable);
+                      sitter->log_name);
     }
   PING();
 }
@@ -593,10 +593,10 @@ babysitter (void *parameter)
       (*sitter->child_setup) (sitter->user_data);
     }
 
-  _dbus_verbose ("babysitter: spawning %s\n", sitter->executable);
+  _dbus_verbose ("babysitter: spawning %s\n", sitter->log_name);
 
   PING();
-  sitter->child_handle = spawn_program (sitter->executable,
+  sitter->child_handle = spawn_program (sitter->log_name,
 					sitter->argv, sitter->envp);
 
   PING();
@@ -642,6 +642,7 @@ babysitter (void *parameter)
 
 dbus_bool_t
 _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
+                                   const char                *log_name,
                                    char                     **argv,
                                    char                     **envp,
                                    DBusSpawnChildSetupFunc    child_setup,
@@ -653,6 +654,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
   DWORD sitter_thread_id;
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+  _dbus_assert (argv[0] != NULL);
 
   *sitter_p = NULL;
 
@@ -667,8 +669,17 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
   sitter->child_setup = child_setup;
   sitter->user_data = user_data;
 
-  sitter->executable = _dbus_strdup (argv[0]);
-  if (sitter->executable == NULL)
+  sitter->log_name = _dbus_strdup (log_name);
+  if (sitter->log_name == NULL && log_name != NULL)
+    {
+      _DBUS_SET_OOM (error);
+      goto out0;
+    }
+
+  if (sitter->log_name == NULL)
+    sitter->log_name = _dbus_strdup (argv[0]);
+
+  if (sitter->log_name == NULL)
     {
       _DBUS_SET_OOM (error);
       goto out0;
@@ -804,7 +815,7 @@ check_spawn_nonexistent (void *data)
   /*** Test launching nonexistent binary */
 
   argv[0] = "/this/does/not/exist/32542sdgafgafdg";
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_nonexistent", argv, NULL,
                                          NULL, NULL,
                                          &error))
     {
@@ -857,7 +868,7 @@ check_spawn_segfault (void *data)
       return TRUE;
     }
 
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_segfault", argv, NULL,
                                          NULL, NULL,
                                          &error))
     {
@@ -912,7 +923,7 @@ check_spawn_exit (void *data)
       return TRUE;
     }
 
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_exit", argv, NULL,
                                          NULL, NULL,
                                          &error))
     {
@@ -967,7 +978,7 @@ check_spawn_and_kill (void *data)
       return TRUE;
     }
 
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv, NULL,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_and_kill", argv, NULL,
                                          NULL, NULL,
                                          &error))
     {

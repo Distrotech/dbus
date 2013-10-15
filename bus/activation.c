@@ -2104,7 +2104,9 @@ bus_activation_activate_service (BusActivation  *activation,
 
   dbus_error_init (&tmp_error);
 
-  if (!_dbus_spawn_async_with_babysitter (&pending_activation->babysitter, argv,
+  if (!_dbus_spawn_async_with_babysitter (&pending_activation->babysitter,
+                                          service_name,
+                                          argv,
                                           envp,
                                           NULL, activation,
                                           &tmp_error))

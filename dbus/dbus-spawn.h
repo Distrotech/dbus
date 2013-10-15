@@ -39,6 +39,7 @@ typedef void (* DBusBabysitterFinishedFunc) (DBusBabysitter *sitter,
                                              void           *user_data);
 
 dbus_bool_t _dbus_spawn_async_with_babysitter     (DBusBabysitter           **sitter_p,
+                                                   const char                *log_name,
                                                    char                     **argv,
                                                    char                     **env,
                                                    DBusSpawnChildSetupFunc    child_setup,

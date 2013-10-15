@@ -234,7 +234,8 @@ struct DBusBabysitter
 {
   int refcount; /**< Reference count */
 
-  char *executable; /**< executable name to use in error messages */
+  char *log_name; /**< the name under which to log messages about this
+		    process being spawned */
   
   int socket_to_babysitter; /**< Connection to the babysitter process */
   int error_pipe_from_child; /**< Connection to the process that does the exec() */
@@ -388,7 +389,7 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
       if (sitter->watches)
         _dbus_watch_list_free (sitter->watches);
 
-      dbus_free (sitter->executable);
+      dbus_free (sitter->log_name);
       
       dbus_free (sitter);
     }
@@ -743,34 +744,34 @@ _dbus_babysitter_set_child_exit_error (DBusBabysitter *sitter,
     {
       dbus_set_error (error, DBUS_ERROR_SPAWN_EXEC_FAILED,
                       "Failed to execute program %s: %s",
-                      sitter->executable, _dbus_strerror (sitter->errnum));
+                      sitter->log_name, _dbus_strerror (sitter->errnum));
     }
   else if (sitter->have_fork_errnum)
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
                       "Failed to fork a new process %s: %s",
-                      sitter->executable, _dbus_strerror (sitter->errnum));
+                      sitter->log_name, _dbus_strerror (sitter->errnum));
     }
   else if (sitter->have_child_status)
     {
       if (WIFEXITED (sitter->status))
         dbus_set_error (error, DBUS_ERROR_SPAWN_CHILD_EXITED,
                         "Process %s exited with status %d",
-                        sitter->executable, WEXITSTATUS (sitter->status));
+                        sitter->log_name, WEXITSTATUS (sitter->status));
       else if (WIFSIGNALED (sitter->status))
         dbus_set_error (error, DBUS_ERROR_SPAWN_CHILD_SIGNALED,
                         "Process %s received signal %d",
-                        sitter->executable, WTERMSIG (sitter->status));
+                        sitter->log_name, WTERMSIG (sitter->status));
       else
         dbus_set_error (error, DBUS_ERROR_FAILED,
                         "Process %s exited abnormally",
-                        sitter->executable);
+                        sitter->log_name);
     }
   else
     {
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Process %s exited, reason unknown",
-                      sitter->executable);
+                      sitter->log_name);
     }
 }
 
@@ -1165,8 +1166,7 @@ babysit (pid_t grandchild_pid,
 }
 
 /**
- * Spawns a new process. The executable name and argv[0]
- * are the same, both are provided in argv[0]. The child_setup
+ * Spawns a new process. The child_setup
  * function is passed the given user_data and is run in the child
  * just before calling exec().
  *
@@ -1176,6 +1176,7 @@ babysit (pid_t grandchild_pid,
  * If sitter_p is #NULL, no babysitter is kept.
  *
  * @param sitter_p return location for babysitter or #NULL
+ * @log_name the name under which to log messages about this process being spawned
  * @param argv the executable and arguments
  * @param env the environment, or #NULL to copy the parent's
  * @param child_setup function to call in child pre-exec()
@@ -1185,6 +1186,7 @@ babysit (pid_t grandchild_pid,
  */
 dbus_bool_t
 _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
+                                   const char               *log_name,
                                    char                    **argv,
                                    char                    **env,
                                    DBusSpawnChildSetupFunc   child_setup,
@@ -1197,6 +1199,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
   pid_t pid;
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+  _dbus_assert (argv[0] != NULL);
 
   if (sitter_p != NULL)
     *sitter_p = NULL;
@@ -1210,8 +1213,17 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
       return FALSE;
     }
 
-  sitter->executable = _dbus_strdup (argv[0]);
-  if (sitter->executable == NULL)
+  sitter->log_name = _dbus_strdup (log_name);
+  if (sitter->log_name == NULL && log_name != NULL)
+    {
+      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+      goto cleanup_and_fail;
+    }
+
+  if (sitter->log_name == NULL)
+    sitter->log_name = _dbus_strdup (argv[0]);
+
+  if (sitter->log_name == NULL)
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       goto cleanup_and_fail;
@@ -1418,7 +1430,7 @@ check_spawn_nonexistent (void *data)
   /*** Test launching nonexistent binary */
   
   argv[0] = "/this/does/not/exist/32542sdgafgafdg";
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_nonexistent", argv,
                                          NULL, NULL, NULL,
                                          &error))
     {
@@ -1467,7 +1479,7 @@ check_spawn_segfault (void *data)
       return TRUE;
     }
 
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_segfault", argv,
                                          NULL, NULL, NULL,
                                          &error))
     {
@@ -1518,7 +1530,7 @@ check_spawn_exit (void *data)
       return TRUE;
     }
 
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_exit", argv,
                                          NULL, NULL, NULL,
                                          &error))
     {
@@ -1569,7 +1581,7 @@ check_spawn_and_kill (void *data)
       return TRUE;
     }
 
-  if (_dbus_spawn_async_with_babysitter (&sitter, argv,
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_and_kill", argv,
                                          NULL, NULL, NULL,
                                          &error))
     {
