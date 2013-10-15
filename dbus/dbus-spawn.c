@@ -1339,6 +1339,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
            */
           signal (SIGPIPE, SIG_IGN);
 
+          close_and_invalidate (&babysitter_pipe[1]);
 #ifdef HAVE_SYSTEMD
 	  /* log to systemd journal if possible */
 	  if (fd_out >= 0)
@@ -1356,6 +1357,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
 	}
       else
 	{
+          close_and_invalidate (&child_err_report_pipe[WRITE_END]);
 #ifdef HAVE_SYSTEMD
           close_and_invalidate (&fd_out);
           close_and_invalidate (&fd_err);
