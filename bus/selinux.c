@@ -1043,9 +1043,15 @@ _dbus_change_to_daemon_user  (const char    *user,
   if (_dbus_geteuid () == 0)
     {
       int rc;
+      int have_audit_write;
 
+      have_audit_write = capng_have_capability (CAPNG_PERMITTED, CAP_AUDIT_WRITE);
       capng_clear (CAPNG_SELECT_BOTH);
-      if (capng_have_capability (CAPNG_PERMITTED, CAP_AUDIT_WRITE))
+      /* Only attempt to retain CAP_AUDIT_WRITE if we had it when
+       * starting.  See:
+       * https://bugs.freedesktop.org/show_bug.cgi?id=49062#c9
+       */
+      if (have_audit_write)
         capng_update (CAPNG_ADD, CAPNG_EFFECTIVE | CAPNG_PERMITTED,
                       CAP_AUDIT_WRITE);
       rc = capng_change_id (uid, gid, CAPNG_DROP_SUPP_GRP);
