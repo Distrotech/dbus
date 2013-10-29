@@ -991,6 +991,161 @@ verify_test_message (DBusMessage *message)
     _dbus_assert_not_reached ("Didn't reach end of arguments");
 }
 
+static void
+verify_test_message_args_ignored (DBusMessage *message)
+{
+  DBusMessageIter iter;
+  DBusError error = DBUS_ERROR_INIT;
+  dbus_uint32_t our_uint;
+  DBusInitialFDs *initial_fds;
+
+  initial_fds = _dbus_check_fdleaks_enter ();
+
+  /* parse with empty signature: "" */
+  dbus_message_iter_init (message, &iter);
+  if (!dbus_message_iter_get_args (&iter, &error,
+                                   DBUS_TYPE_INVALID))
+    {
+      _dbus_warn ("error: %s - %s\n", error.name,
+                     (error.message != NULL) ? error.message : "no message");
+    }
+  else
+    {
+      _dbus_assert (!dbus_error_is_set (&error));
+      _dbus_verbose ("arguments ignored.\n");
+    }
+
+  /* parse with shorter signature: "u" */
+  dbus_message_iter_init (message, &iter);
+  if (!dbus_message_iter_get_args (&iter, &error,
+                                   DBUS_TYPE_UINT32, &our_uint,
+                                   DBUS_TYPE_INVALID))
+    {
+      _dbus_warn ("error: %s - %s\n", error.name,
+                     (error.message != NULL) ? error.message : "no message");
+    }
+  else
+    {
+      _dbus_assert (!dbus_error_is_set (&error));
+      _dbus_verbose ("arguments ignored.\n");
+    }
+
+  _dbus_check_fdleaks_leave (initial_fds);
+}
+
+static void
+verify_test_message_memleak (DBusMessage *message)
+{
+  DBusMessageIter iter;
+  DBusError error = DBUS_ERROR_INIT;
+  dbus_uint32_t our_uint1;
+  dbus_uint32_t our_uint2;
+  dbus_uint32_t our_uint3;
+  char **our_string_array1;
+  int our_string_array_len1;
+  char **our_string_array2;
+  int our_string_array_len2;
+  int our_unix_fd1;
+  int our_unix_fd2;
+  DBusInitialFDs *initial_fds;
+
+  initial_fds = _dbus_check_fdleaks_enter ();
+
+  /* parse with wrong signature: "uashuu" */
+  dbus_error_free (&error);
+  dbus_message_iter_init (message, &iter);
+  if (!dbus_message_iter_get_args (&iter, &error,
+                                   DBUS_TYPE_UINT32, &our_uint1,
+                                   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
+                                   &our_string_array1, &our_string_array_len1,
+#ifdef HAVE_UNIX_FD_PASSING
+                                   DBUS_TYPE_UNIX_FD, &our_unix_fd1,
+#endif
+                                   DBUS_TYPE_UINT32, &our_uint2,
+                                   DBUS_TYPE_UINT32, &our_uint3,
+                                   DBUS_TYPE_INVALID))
+    {
+      _dbus_verbose ("expected error: %s - %s\n", error.name,
+                     (error.message != NULL) ? error.message : "no message");
+      /* ensure array of string and unix fd not leaked */
+      _dbus_assert (our_string_array1 == NULL);
+#ifdef HAVE_UNIX_FD_PASSING
+      _dbus_assert (our_unix_fd1 == -1);
+#endif
+    }
+  else
+    {
+      _dbus_warn ("error: parse with wrong signature: 'uashuu'.\n");
+    }
+
+  /* parse with wrong signature: "uashuashu" */
+  dbus_message_iter_init (message, &iter);
+  dbus_error_free (&error);
+  if (!dbus_message_iter_get_args (&iter, &error,
+                                   DBUS_TYPE_UINT32, &our_uint1,
+                                   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
+                                   &our_string_array1, &our_string_array_len1,
+#ifdef HAVE_UNIX_FD_PASSING
+                                   DBUS_TYPE_UNIX_FD, &our_unix_fd1,
+#endif
+                                   DBUS_TYPE_UINT32, &our_uint2,
+                                   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
+                                   &our_string_array2, &our_string_array_len2,
+#ifdef HAVE_UNIX_FD_PASSING
+                                   DBUS_TYPE_UNIX_FD, &our_unix_fd2,
+#endif
+                                   DBUS_TYPE_UINT32, &our_uint3,
+                                   DBUS_TYPE_INVALID))
+    {
+      _dbus_verbose ("expected error: %s - %s\n", error.name,
+                     (error.message != NULL) ? error.message : "no message");
+      /* ensure array of string and unix fd not leaked */
+      _dbus_assert (our_string_array1 == NULL);
+      _dbus_assert (our_string_array2 == NULL);
+#ifdef HAVE_UNIX_FD_PASSING
+      _dbus_assert (our_unix_fd1 == -1);
+      _dbus_assert (our_unix_fd2 == -1);
+#endif
+    }
+  else
+    {
+      _dbus_warn ("error: parse with wrong signature: 'uashuashu'.\n");
+    }
+
+  /* parse with correct signature: "uashuash" */
+  dbus_message_iter_init (message, &iter);
+  dbus_error_free (&error);
+  if (!dbus_message_iter_get_args (&iter, &error,
+                                   DBUS_TYPE_UINT32, &our_uint1,
+                                   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
+                                   &our_string_array1, &our_string_array_len1,
+#ifdef HAVE_UNIX_FD_PASSING
+                                   DBUS_TYPE_UNIX_FD, &our_unix_fd1,
+#endif
+                                   DBUS_TYPE_UINT32, &our_uint2,
+                                   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
+                                   &our_string_array2, &our_string_array_len2,
+#ifdef HAVE_UNIX_FD_PASSING
+                                   DBUS_TYPE_UNIX_FD, &our_unix_fd2,
+#endif
+                                   DBUS_TYPE_INVALID))
+    {
+      _dbus_warn ("error: %s - %s\n", error.name,
+                  (error.message != NULL) ? error.message : "no message");
+      _dbus_assert_not_reached ("Could not get arguments");
+    }
+  else
+    {
+      dbus_free_string_array (our_string_array1);
+      dbus_free_string_array (our_string_array2);
+#ifdef HAVE_UNIX_FD_PASSING
+      _dbus_close (our_unix_fd1, &error);
+      _dbus_close (our_unix_fd2, &error);
+#endif
+    }
+  _dbus_check_fdleaks_leave (initial_fds);
+}
+
 /**
  * @ingroup DBusMessageInternals
  * Unit test for DBusMessage.
@@ -1020,7 +1175,9 @@ _dbus_message_test (const char *test_data_dir)
   const dbus_uint64_t *v_ARRAY_UINT64 = our_uint64_array;
   const dbus_int64_t *v_ARRAY_INT64 = our_int64_array;
   const char *our_string_array[] = { "Foo", "bar", "", "woo woo woo woo" };
+  const char *our_string_array1[] = { "foo", "Bar", "", "Woo woo Woo woo" };
   const char **v_ARRAY_STRING = our_string_array;
+  const char **v1_ARRAY_STRING = our_string_array1;
   const double our_double_array[] = { 0.1234, 9876.54321, -300.0 };
   const double *v_ARRAY_DOUBLE = our_double_array;
   const unsigned char our_byte_array[] = { 'a', 'b', 'c', 234 };
@@ -1035,6 +1192,7 @@ _dbus_message_test (const char *test_data_dir)
   dbus_uint16_t v_UINT16;
   dbus_int32_t v_INT32;
   dbus_uint32_t v_UINT32;
+  dbus_uint32_t v1_UINT32;
   dbus_int64_t v_INT64;
   dbus_uint64_t v_UINT64;
   unsigned char v_BYTE;
@@ -1043,6 +1201,7 @@ _dbus_message_test (const char *test_data_dir)
   DBusMessageIter iter, array_iter, struct_iter;
 #ifdef HAVE_UNIX_FD_PASSING
   int v_UNIX_FD;
+  int v1_UNIX_FD;
 #endif
   char **decomposed;
   DBusInitialFDs *initial_fds;
@@ -1194,6 +1353,7 @@ _dbus_message_test (const char *test_data_dir)
   v2_BYTE = 24;
 #ifdef HAVE_UNIX_FD_PASSING
   v_UNIX_FD = 1;
+  v1_UNIX_FD = 2;
 #endif
 
   dbus_message_append_args (message,
@@ -1460,6 +1620,51 @@ _dbus_message_test (const char *test_data_dir)
 
   dbus_message_iter_abandon_container (&array_iter, &struct_iter);
   dbus_message_iter_abandon_container (&array_iter, &iter);
+
+  dbus_message_unref (message);
+
+  /* Check we should not leak array of string or unix fd, fd.o#21259 */
+  message = dbus_message_new_method_call ("org.freedesktop.DBus.TestService",
+                                          "/org/freedesktop/TestPath",
+                                          "Foo.TestInterface",
+                                          "Method");
+
+  /* signature "uashuash" */
+  dbus_message_append_args (message,
+                            DBUS_TYPE_UINT32, &v_UINT32,
+                            DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &v_ARRAY_STRING,
+                            _DBUS_N_ELEMENTS (our_string_array),
+#ifdef HAVE_UNIX_FD_PASSING
+                            DBUS_TYPE_UNIX_FD, &v_UNIX_FD,
+#endif
+                            DBUS_TYPE_UINT32, &v1_UINT32,
+                            DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &v1_ARRAY_STRING,
+                            _DBUS_N_ELEMENTS (our_string_array1),
+#ifdef HAVE_UNIX_FD_PASSING
+                            DBUS_TYPE_UNIX_FD, &v1_UNIX_FD,
+#endif
+
+                            DBUS_TYPE_INVALID);
+
+  i = 0;
+  sig[i++] = DBUS_TYPE_UINT32;
+  sig[i++] = DBUS_TYPE_ARRAY;
+  sig[i++] = DBUS_TYPE_STRING;
+#ifdef HAVE_UNIX_FD_PASSING
+  sig[i++] = DBUS_TYPE_UNIX_FD;
+#endif
+  sig[i++] = DBUS_TYPE_UINT32;
+  sig[i++] = DBUS_TYPE_ARRAY;
+  sig[i++] = DBUS_TYPE_STRING;
+#ifdef HAVE_UNIX_FD_PASSING
+  sig[i++] = DBUS_TYPE_UNIX_FD;
+#endif
+  sig[i++] = DBUS_TYPE_INVALID;
+
+  _dbus_assert (i < (int) _DBUS_N_ELEMENTS (sig));
+
+  verify_test_message_args_ignored (message);
+  verify_test_message_memleak (message);
 
   dbus_message_unref (message);
 
