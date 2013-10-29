@@ -784,8 +784,6 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
  * dbus_message_get_args() is the place to go for complete
  * documentation.
  *
- * @todo This may leak memory and file descriptors if parsing fails. See #21259
- *
  * @see dbus_message_get_args
  * @param iter the message iter
  * @param error error to be filled in
@@ -802,6 +800,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
   DBusMessageRealIter *real = (DBusMessageRealIter *)iter;
   int spec_type, msg_type, i, j;
   dbus_bool_t retval;
+  va_list copy_args;
 
   _dbus_assert (_dbus_message_iter_check (real));
 
@@ -810,12 +809,17 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
   spec_type = first_arg_type;
   i = 0;
 
+  /* copy var_args first, then we can do another iteration over it to
+   * free memory and close unix fds if parse failed at some point.
+   */
+  va_copy (copy_args, var_args);
+
   while (spec_type != DBUS_TYPE_INVALID)
     {
       msg_type = dbus_message_iter_get_arg_type (iter);
 
       if (msg_type != spec_type)
-	{
+        {
           dbus_set_error (error, DBUS_ERROR_INVALID_ARGS,
                           "Argument %d is specified to be of type \"%s\", but "
                           "is actually of type \"%s\"\n", i,
@@ -823,7 +827,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
                           _dbus_type_to_string (msg_type));
 
           goto out;
-	}
+        }
 
       if (spec_type == DBUS_TYPE_UNIX_FD)
         {
@@ -997,7 +1001,66 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
   retval = TRUE;
 
  out:
+  /* there may memory or unix fd leak in the above iteration if parse failed.
+   * so we have another iteration over copy_args to free memory and close
+   * unix fds.
+   */
+  if (!retval)
+    {
+      spec_type = first_arg_type;
+      j = 0;
 
+      while (j < i)
+        {
+          if (spec_type == DBUS_TYPE_UNIX_FD)
+            {
+#ifdef HAVE_UNIX_FD_PASSING
+              int *pfd;
+
+              pfd = va_arg (copy_args, int *);
+              _dbus_assert(pfd);
+              if (*pfd >= 0)
+                {
+                  _dbus_close (*pfd, NULL);
+                  *pfd = -1;
+                }
+#endif
+            }
+          else if (dbus_type_is_basic (spec_type))
+            {
+              /* move the index forward */
+              va_arg (copy_args, DBusBasicValue *);
+            }
+          else if (spec_type == DBUS_TYPE_ARRAY)
+            {
+              int spec_element_type;
+
+              spec_element_type = va_arg (copy_args, int);
+              if (dbus_type_is_fixed (spec_element_type))
+                {
+                  /* move the index forward */
+                  va_arg (copy_args, const DBusBasicValue **);
+                  va_arg (copy_args, int *);
+                }
+              else if (_DBUS_TYPE_IS_STRINGLIKE (spec_element_type))
+                {
+                  char ***str_array_p;
+
+                  str_array_p = va_arg (copy_args, char ***);
+                  /* move the index forward */
+                  va_arg (copy_args, int *);
+                  _dbus_assert (str_array_p != NULL);
+                  dbus_free_string_array (*str_array_p);
+                  *str_array_p = NULL;
+                }
+            }
+
+          spec_type = va_arg (copy_args, int);
+          j++;
+        }
+    }
+
+  va_end (copy_args);
   return retval;
 }
 
