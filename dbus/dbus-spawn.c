@@ -174,6 +174,48 @@ read_pid (int        fd,
  * and the grandchild. The grandchild is our spawned process. The intermediate
  * child is a babysitter process; it keeps track of when the grandchild
  * exits/crashes, and reaps the grandchild.
+ *
+ * We automatically reap the babysitter process, killing it if necessary,
+ * when the DBusBabysitter's refcount goes to zero.
+ *
+ * Processes:
+ *
+ * main process
+ * | fork() A
+ * \- babysitter
+ *    | fork () B
+ *    \- grandchild     --> exec -->    spawned process
+ *
+ * IPC:
+ *                  child_err_report_pipe
+ *          /-----------<---------<--------------\
+ *          |                                    ^
+ *          v                                    |
+ * main process           babysitter          grandchild
+ *          ^                 ^
+ *          v                 v
+ *          \-------<->-------/
+ *            babysitter_pipe
+ *
+ * child_err_report_pipe is genuinely a pipe.
+ * The READ_END (also called error_pipe_from_child) is used in the main
+ * process. The WRITE_END (also called child_err_report_fd) is used in
+ * the grandchild process.
+ *
+ * On failure, the grandchild process sends CHILD_EXEC_FAILED + errno.
+ * On success, the pipe just closes (because it's close-on-exec) without
+ * sending any bytes.
+ *
+ * babysitter_pipe is mis-named: it's really a bidirectional socketpair.
+ * The [0] end (also called socket_to_babysitter) is used in the main
+ * process, the [1] end (also called parent_pipe) is used in the babysitter.
+ *
+ * If the fork() labelled B in the diagram above fails, the babysitter sends
+ * CHILD_FORK_FAILED + errno.
+ * On success, the babysitter sends CHILD_PID + the grandchild's pid.
+ * On SIGCHLD, the babysitter sends CHILD_EXITED + the exit status.
+ * The main process doesn't explicitly send anything, but when it exits,
+ * the babysitter gets POLLHUP or POLLERR.
  */
 
 /* Messages from children to parents */
