@@ -1,7 +1,10 @@
 D-Bus 1.7.8 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• path_namespace='/' in match rules incorrectly matched nothing; it
+  now matches everything. (fd.o #70799, Simon McVittie)
 
 D-Bus 1.7.6 (2013-10-09)
 ==
