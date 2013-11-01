@@ -1,5 +1,12 @@
-D-Bus 1.6.18 (UNRELEASED)
+D-Bus 1.6.18 (2013-11-01)
 ==
+
+The “sunflower plains” release.
+
+Fixes:
+
+• path_namespace='/' in match rules incorrectly matched nothing; it
+  now matches everything. (fd.o #70799, Simon McVittie)
 
 D-Bus 1.6.16 (2013-10-08)
 ==
