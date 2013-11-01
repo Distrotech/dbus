@@ -61,7 +61,6 @@ signal_handler (int sig)
 {
   switch (sig)
     {
-#ifdef SIGHUP
     case SIGHUP:
       {
         DBusString str;
@@ -94,7 +93,6 @@ signal_handler (int sig)
           }
       }
       break;
-#endif
 
     case SIGTERM:
       {
@@ -642,9 +640,7 @@ main (int argc, char **argv)
    * no point in trying to make the handler portable to non-Unix. */
 
   _dbus_set_signal_handler (SIGTERM, signal_handler);
-#ifdef SIGHUP
   _dbus_set_signal_handler (SIGHUP, signal_handler);
-#endif
 #endif /* DBUS_UNIX */
 
   _dbus_verbose ("We are on D-Bus...\n");
