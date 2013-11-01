@@ -1292,7 +1292,10 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
 #ifdef HAVE_SYSTEMD
-  /* this may fail, but not critical */
+  /* This may fail, but it's not critical.
+   * In particular, if we were compiled with journald support but are now
+   * running on a non-systemd system, this is going to fail, so we
+   * have to cope gracefully. */
   fd_out = sd_journal_stream_fd (sitter->log_name, LOG_INFO, FALSE);
   fd_err = sd_journal_stream_fd (sitter->log_name, LOG_WARNING, FALSE);
 #endif
@@ -1337,7 +1340,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
           signal (SIGPIPE, SIG_IGN);
 
 #ifdef HAVE_SYSTEMD
-	  /* log to systemd journal */
+	  /* log to systemd journal if possible */
 	  if (fd_out >= 0)
             dup2 (fd_out, STDOUT_FILENO);
 	  if (fd_err >= 0)
