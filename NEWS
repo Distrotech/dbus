@@ -1,7 +1,31 @@
-D-Bus 1.7.8 (UNRELEASED)
+D-Bus 1.7.8 (2013-11-01)
 ==
 
+The “extreme hills” release.
+
+Dependencies:
+
+• If systemd support is enabled, libsystemd-journal is now required.
+
+Enhancements:
+
+• When activating a non-systemd service under systemd, annotate its
+  stdout/stderr with its bus name in the Journal. Known limitation:
+  because the socket is opened before forking, the process will still be
+  logged as if it had dbus-daemon's process ID and user ID.
+  (fd.o #68559, Chengwei Yang)
+
+• Document more configuration elements in dbus-daemon(1)
+  (fd.o #69125, Chengwei Yang)
+
 Fixes:
+
+• Don't leak string arrays or fds if dbus_message_iter_get_args_valist()
+  unpacks them and then encounters an error (fd.o #21259, Chengwei Yang)
+
+• If compiled with libaudit, retain CAP_AUDIT_WRITE so we can write
+  disallowed method calls to the audit log, fixing a regression in 1.7.6
+  (fd.o #49062, Colin Walters)
 
 • path_namespace='/' in match rules incorrectly matched nothing; it
   now matches everything. (fd.o #70799, Simon McVittie)
