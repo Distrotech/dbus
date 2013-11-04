@@ -1,6 +1,10 @@
 D-Bus 1.7.10 (UNRELEASED)
 ==
 
+Fixes:
+
+• fix undefined behaviour in a regression test (fd.o #69924, DreamNik)
+
 D-Bus 1.7.8 (2013-11-01)
 ==
 
