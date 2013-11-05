@@ -44,8 +44,6 @@
 #include <syslog.h>
 #include <selinux/selinux.h>
 #include <selinux/avc.h>
-#include <selinux/av_permissions.h>
-#include <selinux/flask.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -314,8 +312,27 @@ bus_selinux_pre_init (void)
 #endif
 }
 
+/*
+ * Private Flask definitions; the order of these constants must
+ * exactly match that of the structure array below!
+ */
+/* security dbus class constants */
+#define SECCLASS_DBUS       1
+
+/* dbus's per access vector constants */
+#define DBUS__ACQUIRE_SVC   1
+#define DBUS__SEND_MSG      2
+
+#ifdef HAVE_SELINUX
+static struct security_class_mapping dbus_map[] = {
+  { "dbus", { "acquire_svc", "send_msg", NULL } },
+  { NULL }
+};
+#endif /* HAVE_SELINUX */
+
 /**
- * Initialize the user space access vector cache (AVC) for D-Bus and set up
+ * Establish dynamic object class and permission mapping and
+ * initialize the user space access vector cache (AVC) for D-Bus and set up
  * logging callbacks.
  */
 dbus_bool_t
@@ -333,6 +350,13 @@ bus_selinux_full_init (void)
     }
 
   _dbus_verbose ("SELinux is enabled in this kernel.\n");
+
+  if (selinux_set_mapping (dbus_map) < 0)
+    {
+      _dbus_warn ("Failed to set up security class mapping (selinux_set_mapping():%s).\n",
+                   strerror (errno));
+      return FALSE; 
+    }
 
   avc_entry_ref_init (&aeref);
   if (avc_init ("avc", &mem_cb, &log_cb, &thread_cb, &lock_cb) < 0)
