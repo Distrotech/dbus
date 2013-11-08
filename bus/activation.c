@@ -2179,7 +2179,7 @@ bus_activation_list_services (BusActivation *activation,
 
  error:
   for (j = 0; j < i; j++)
-    dbus_free (retval[i]);
+    dbus_free (retval[j]);
   dbus_free (retval);
 
   return FALSE;
