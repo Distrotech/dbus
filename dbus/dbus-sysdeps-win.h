@@ -27,7 +27,7 @@
 #define DBUS_SYSDEPS_WIN_H
 
 extern void *_dbus_win_get_dll_hmodule (void);
-#define _WINSOCKAPI_
+#define WIN32_LEAN_AND_MEAN
 
 #include "dbus-hash.h"
 #include "dbus-string.h"
