@@ -81,6 +81,11 @@ extern BOOL WINAPI ConvertSidToStringSidA (PSID Sid, LPSTR *StringSid);
 #define O_BINARY 0
 #endif
 
+#ifndef PROCESS_QUERY_LIMITED_INFORMATION
+/* MinGW32 < 4 does not define this value in its headers */
+#define PROCESS_QUERY_LIMITED_INFORMATION (0x1000)
+#endif
+
 typedef int socklen_t;
 
 
