@@ -55,8 +55,7 @@ void          _dbus_auth_bytes_sent          (DBusAuth               *auth,
 void          _dbus_auth_get_buffer          (DBusAuth               *auth,
                                               DBusString            **buffer);
 void          _dbus_auth_return_buffer       (DBusAuth               *auth,
-                                              DBusString             *buffer,
-                                              int                     bytes_read);
+                                              DBusString             *buffer);
 void          _dbus_auth_get_unused_bytes    (DBusAuth               *auth,
                                               const DBusString      **str);
 void          _dbus_auth_delete_unused_bytes (DBusAuth               *auth);

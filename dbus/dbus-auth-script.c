@@ -584,11 +584,11 @@ _dbus_auth_script_run (const DBusString *filename)
               {
                 _dbus_warn ("not enough memory to call bytes_received, or can't add bytes to auth object already in end state\n");
                 _dbus_string_free (&to_send);
-                _dbus_auth_return_buffer (auth, buffer, 0);
+                _dbus_auth_return_buffer (auth, buffer);
                 goto out;
               }
 
-            _dbus_auth_return_buffer (auth, buffer, _dbus_string_get_length (&to_send));
+            _dbus_auth_return_buffer (auth, buffer);
           }
           
           _dbus_string_free (&to_send);

@@ -255,8 +255,7 @@ read_data_into_auth (DBusTransport *transport,
   bytes_read = _dbus_read_socket (socket_transport->fd,
                                   buffer, socket_transport->max_bytes_read_per_iteration);
 
-  _dbus_auth_return_buffer (transport->auth, buffer,
-                            bytes_read > 0 ? bytes_read : 0);
+  _dbus_auth_return_buffer (transport->auth, buffer);
 
   if (bytes_read > 0)
     {

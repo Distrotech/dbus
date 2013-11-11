@@ -2533,12 +2533,10 @@ _dbus_auth_get_buffer (DBusAuth     *auth,
  *
  * @param auth the auth conversation
  * @param buffer the buffer being returned
- * @param bytes_read number of new bytes added
  */
 void
 _dbus_auth_return_buffer (DBusAuth               *auth,
-                          DBusString             *buffer,
-                          int                     bytes_read)
+                          DBusString             *buffer)
 {
   _dbus_assert (buffer == &auth->incoming);
   _dbus_assert (auth->buffer_outstanding);
