@@ -3,6 +3,9 @@ D-Bus 1.6.19 (UNRELEASED)
 
 Fixes:
 
+• don't leak memory on out-of-memory while listing activatable or
+  active services (fd.o #71526, Radoslaw Pajak)
+
 • fix undefined behaviour in a regression test (fd.o #69924, DreamNik)
 
 D-Bus 1.6.18 (2013-11-01)
