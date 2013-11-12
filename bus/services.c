@@ -368,7 +368,7 @@ bus_registry_list_services (BusRegistry *registry,
   
  error:
   for (j = 0; j < i; j++)
-    dbus_free (retval[i]);
+    dbus_free (retval[j]);
   dbus_free (retval);
 
   return FALSE;

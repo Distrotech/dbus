@@ -3,6 +3,9 @@ D-Bus 1.7.10 (UNRELEASED)
 
 Fixes:
 
+• don't leak memory on out-of-memory while listing activatable or
+  active services (fd.o #71526, Radoslaw Pajak)
+
 • fix undefined behaviour in a regression test (fd.o #69924, DreamNik)
 
 • on SELinux systems, don't assume that SECCLASS_DBUS, DBUS__ACQUIRE_SVC
