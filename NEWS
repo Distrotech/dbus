@@ -5,6 +5,10 @@ Fixes:
 
 • fix undefined behaviour in a regression test (fd.o #69924, DreamNik)
 
+• on SELinux systems, don't assume that SECCLASS_DBUS, DBUS__ACQUIRE_SVC
+  and DBUS__SEND_MSG are numerically equal to their values in the
+  reference policy (fd.o #88719, osmond sun)
+
 D-Bus 1.7.8 (2013-11-01)
 ==
 
