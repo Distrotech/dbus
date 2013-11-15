@@ -856,7 +856,7 @@ _dbus_register_shutdown_func_unlocked (DBusShutdownFunction  func,
  * can be useful to free these internal data structures.
  *
  * dbus_shutdown() does NOT free memory that was returned
- * to the application. It only returns libdbus-internal
+ * to the application. It only frees libdbus-internal
  * data structures.
  *
  * You MUST free all memory and release all reference counts
