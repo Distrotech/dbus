@@ -1179,7 +1179,7 @@ babysit (pid_t grandchild_pid,
  * If sitter_p is #NULL, no babysitter is kept.
  *
  * @param sitter_p return location for babysitter or #NULL
- * @log_name the name under which to log messages about this process being spawned
+ * @param log_name the name under which to log messages about this process being spawned
  * @param argv the executable and arguments
  * @param env the environment, or #NULL to copy the parent's
  * @param child_setup function to call in child pre-exec()
