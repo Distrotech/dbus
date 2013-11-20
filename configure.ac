@@ -1497,7 +1497,7 @@ AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service
 if test "x$with_systemdsystemunitdir" != xno; then
    AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
-AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
+AM_CONDITIONAL(HAVE_SYSTEMD, [test "x$have_systemd" != "xno" -a -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
 ##### Set up location for system bus socket
 if ! test -z "$with_system_socket"; then
