@@ -4050,6 +4050,7 @@ _dbus_append_address_from_socket (int         fd,
   } socket;
   char hostip[INET6_ADDRSTRLEN];
   int size = sizeof (socket);
+  DBusString path_str;
 
   if (getsockname (fd, &socket.sa, &size))
     goto err;
@@ -4059,26 +4060,32 @@ _dbus_append_address_from_socket (int         fd,
     case AF_UNIX:
       if (socket.un.sun_path[0]=='\0')
         {
-          if (_dbus_string_append_printf (address, "unix:abstract=%s", &(socket.un.sun_path[1])))
+          _dbus_string_init_const (&path_str, &(socket.un.sun_path[1]));
+          if (_dbus_string_append (address, "unix:abstract=") &&
+              _dbus_address_append_escaped (address, &path_str))
             return TRUE;
         }
       else
         {
-          if (_dbus_string_append_printf (address, "unix:path=%s", socket.un.sun_path))
+          _dbus_string_init_const (&path_str, socket.un.sun_path);
+          if (_dbus_string_append (address, "unix:path=") &&
+              _dbus_address_append_escaped (address, &path_str))
             return TRUE;
         }
       break;
     case AF_INET:
       if (inet_ntop (AF_INET, &socket.ipv4.sin_addr, hostip, sizeof (hostip)))
         if (_dbus_string_append_printf (address, "tcp:family=ipv4,host=%s,port=%u",
-                   hostip, ntohs (socket.ipv4.sin_port)))
+                                        hostip, ntohs (socket.ipv4.sin_port)))
           return TRUE;
       break;
 #ifdef AF_INET6
     case AF_INET6:
+      _dbus_string_init_const (&path_str, hostip);
       if (inet_ntop (AF_INET6, &socket.ipv6.sin6_addr, hostip, sizeof (hostip)))
-        if (_dbus_string_append_printf (address, "tcp:family=ipv6,host=%s,port=%u",
-                   hostip, ntohs (socket.ipv6.sin6_port)))
+        if (_dbus_string_append_printf (address, "tcp:family=ipv6,port=%u,host=",
+                                        ntohs (socket.ipv6.sin6_port)) &&
+            _dbus_address_append_escaped (address, &path_str))
           return TRUE;
       break;
 #endif
