@@ -894,8 +894,6 @@ fi
 # unix:path=/foo or unix:abstract=/foo
 AC_SUBST(DBUS_PATH_OR_ABSTRACT)
 
-PKG_PROG_PKG_CONFIG
-
 #### Sort out XML library
 
 AC_CHECK_LIB(expat, XML_ParserCreate_MM,
