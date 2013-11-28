@@ -133,7 +133,7 @@ bus_dispatch_matches (BusTransaction *transaction,
     }
 
   /* Now dispatch to others who look interested in this message */
-  connections = bus_transaction_get_connections (transaction);
+  connections = bus_context_get_connections (context);
   dbus_error_init (&tmp_error);
   matchmaker = bus_context_get_matchmaker (context);
 

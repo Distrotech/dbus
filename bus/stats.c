@@ -48,7 +48,7 @@ bus_stats_handle_get_stats (DBusConnection *connection,
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  connections = bus_transaction_get_connections (transaction);
+  connections = bus_context_get_connections (transaction->context);
 
   reply = _dbus_asv_new_method_return (message, &iter, &arr_iter);
 

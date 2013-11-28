@@ -2026,12 +2026,6 @@ bus_transaction_get_context (BusTransaction  *transaction)
   return transaction->context;
 }
 
-BusConnections*
-bus_transaction_get_connections (BusTransaction  *transaction)
-{
-  return bus_context_get_connections (transaction->context);
-}
-
 dbus_bool_t
 bus_transaction_send_from_driver (BusTransaction *transaction,
                                   DBusConnection *connection,
