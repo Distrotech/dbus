@@ -73,12 +73,12 @@ _handle_kqueue_watch (DBusWatch *watch, unsigned int flags, void *data)
     {
       kq = -1;
       if (watch != NULL)
-	{
-	  _dbus_loop_remove_watch (loop, watch);
+        {
+          _dbus_loop_remove_watch (loop, watch);
           _dbus_watch_invalidate (watch);
           _dbus_watch_unref (watch);
-	  watch = NULL;
-	}
+          watch = NULL;
+        }
       pid = getpid ();
       _dbus_verbose ("Sending SIGHUP signal since kqueue has been closed\n");
       (void) kill (pid, SIGHUP);
@@ -99,32 +99,32 @@ _init_kqueue (BusContext *context)
       if (kq < 0)
         {
           _dbus_warn ("Cannot create kqueue; error '%s'\n", _dbus_strerror (errno));
-	  goto out;
-	}
+          goto out;
+        }
 
-        loop = bus_context_get_loop (context);
+      loop = bus_context_get_loop (context);
 
-        watch = _dbus_watch_new (kq, DBUS_WATCH_READABLE, TRUE,
-                                 _handle_kqueue_watch, NULL, NULL);
+      watch = _dbus_watch_new (kq, DBUS_WATCH_READABLE, TRUE,
+                               _handle_kqueue_watch, NULL, NULL);
 
-	if (watch == NULL)
-          {
-            _dbus_warn ("Unable to create kqueue watch\n");
-	    close (kq);
-	    kq = -1;
-	    goto out;
-	  }
+      if (watch == NULL)
+        {
+          _dbus_warn ("Unable to create kqueue watch\n");
+          close (kq);
+          kq = -1;
+          goto out;
+        }
 
-	if (!_dbus_loop_add_watch (loop, watch))
-          {
-            _dbus_warn ("Unable to add reload watch to main loop");
-	    _dbus_watch_invalidate (watch);
-	    _dbus_watch_unref (watch);
-	    watch = NULL;
-	    close (kq);
-	    kq = -1;
-            goto out;
-	  }
+      if (!_dbus_loop_add_watch (loop, watch))
+        {
+          _dbus_warn ("Unable to add reload watch to main loop");
+          _dbus_watch_invalidate (watch);
+          _dbus_watch_unref (watch);
+          watch = NULL;
+          close (kq);
+          kq = -1;
+          goto out;
+        }
     }
 
   ret = 1;
@@ -169,12 +169,12 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
           if (dirs[j] && strcmp (new_dirs[i], dirs[j]) == 0)
             {
               new_fds[i] = fds[j];
-	      new_dirs[i] = dirs[j];
-	      fds[j] = -1;
-	      dirs[j] = NULL;
-	      break;
-	    }
-	}
+              new_dirs[i] = dirs[j];
+              fds[j] = -1;
+              dirs[j] = NULL;
+              break;
+            }
+        }
     }
 
   /* Any directory we find in "fds" with a nonzero fd must
@@ -185,10 +185,10 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
       if (fds[j] != -1)
         {
           close (fds[j]);
-	  dbus_free (dirs[j]);
-	  fds[j] = -1;
-	  dirs[j] = NULL;
-	}
+          dbus_free (dirs[j]);
+          fds[j] = -1;
+          dirs[j] = NULL;
+        }
     }
 
   for (i = 0; new_dirs[i]; i++)
@@ -196,8 +196,8 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
       if (new_fds[i] == -1)
         {
           /* FIXME - less lame error handling for failing to add a watch;
-	   * we may need to sleep.
-	   */
+           * we may need to sleep.
+           */
           fd = open (new_dirs[i], O_RDONLY);
           if (fd < 0)
             {
@@ -223,18 +223,18 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
               goto out;
             }
 
-	  new_fds[i] = fd;
-	  new_dirs[i] = _dbus_strdup (new_dirs[i]);
-	  if (!new_dirs[i])
+          new_fds[i] = fd;
+          new_dirs[i] = _dbus_strdup (new_dirs[i]);
+          if (!new_dirs[i])
             {
               /* FIXME have less lame handling for OOM, we just silently fail to
-	       * watch.  (In reality though, the whole OOM handling in dbus is
-	       * stupid but we won't go into that in this comment =) )
-	       */
+               * watch.  (In reality though, the whole OOM handling in dbus is
+               * stupid but we won't go into that in this comment =) )
+               */
               close (fd);
-	      new_fds[i] = -1;
-	    }
-	}
+              new_fds[i] = -1;
+            }
+        }
     }
 
   num_fds = i;
