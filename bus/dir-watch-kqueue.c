@@ -259,7 +259,7 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
           /* FIXME - less lame error handling for failing to add a watch;
            * we may need to sleep.
            */
-          fd = open (new_dirs[i], O_RDONLY);
+          fd = open (new_dirs[i], O_RDONLY | O_CLOEXEC);
           if (fd < 0)
             {
               if (errno != ENOENT)
