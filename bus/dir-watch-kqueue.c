@@ -87,11 +87,49 @@ _handle_kqueue_watch (DBusWatch *watch, unsigned int flags, void *data)
   return TRUE;
 }
 
+static void _shutdown_kqueue (void *data)
+{
+  int i;
+
+  if (kq < 0)
+    return;
+
+  for (i = 0; i < MAX_DIRS_TO_WATCH; i++)
+    {
+      if (fds[i] >= 0)
+        {
+          close (fds[i]);
+          fds[i] = -1;
+        }
+      if (dirs[i] != NULL)
+        {
+          /* dbus_free() is necessary to pass memleak check */
+          dbus_free (dirs[i]);
+          dirs[i] = NULL;
+        }
+    }
+
+  if (loop)
+    {
+      _dbus_loop_remove_watch (loop, watch);
+      _dbus_loop_unref (loop);
+      loop = NULL;
+    }
+
+  if (watch)
+    {
+      _dbus_watch_invalidate (watch);
+      _dbus_watch_unref (watch);
+      watch = NULL;
+    }
+
+    close (kq);
+    kq = -1;
+}
+
 static int
 _init_kqueue (BusContext *context)
 {
-  int ret = 0;
-
   if (kq < 0)
     {
 
@@ -103,6 +141,7 @@ _init_kqueue (BusContext *context)
         }
 
       loop = bus_context_get_loop (context);
+      _dbus_loop_ref (loop);
 
       watch = _dbus_watch_new (kq, DBUS_WATCH_READABLE, TRUE,
                                _handle_kqueue_watch, NULL, NULL);
@@ -110,27 +149,49 @@ _init_kqueue (BusContext *context)
       if (watch == NULL)
         {
           _dbus_warn ("Unable to create kqueue watch\n");
-          close (kq);
-          kq = -1;
-          goto out;
+          goto out1;
         }
 
       if (!_dbus_loop_add_watch (loop, watch))
         {
           _dbus_warn ("Unable to add reload watch to main loop");
-          _dbus_watch_invalidate (watch);
-          _dbus_watch_unref (watch);
-          watch = NULL;
-          close (kq);
-          kq = -1;
-          goto out;
+          goto out2;
+        }
+
+      if (!_dbus_register_shutdown_func (_shutdown_kqueue, NULL))
+        {
+          _dbus_warn ("Unable to register shutdown function");
+          goto out3;
         }
     }
 
-  ret = 1;
+  return 1;
+
+out3:
+  _dbus_loop_remove_watch (loop, watch);
+
+out2:
+  if (watch)
+    {
+      _dbus_watch_invalidate (watch);
+      _dbus_watch_unref (watch);
+      watch = NULL;
+    }
+
+out1:
+  if (kq >= 0)
+    {
+      close (kq);
+      kq = -1;
+    }
+  if (loop)
+    {
+      _dbus_loop_unref (loop);
+      loop = NULL;
+    }
 
 out:
-  return ret;
+  return 0;
 }
 
 void
