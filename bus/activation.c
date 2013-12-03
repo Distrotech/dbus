@@ -1044,7 +1044,7 @@ restore_pending (void *data)
 }
 
 static void
-free_pending_restore_data (void *data)
+free_restore_pending_data (void *data)
 {
   RestorePendingData *d = data;
 
@@ -1074,9 +1074,9 @@ add_restore_pending_to_transaction (BusTransaction       *transaction,
 
   if (d->hash_entry == NULL ||
       !bus_transaction_add_cancel_hook (transaction, restore_pending, d,
-                                        free_pending_restore_data))
+                                        free_restore_pending_data))
     {
-      free_pending_restore_data (d);
+      free_restore_pending_data (d);
       return FALSE;
     }
 
