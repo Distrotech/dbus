@@ -113,7 +113,15 @@ _dbus_read_nonce (const DBusString *fname, DBusString *nonce, DBusError* error)
 
   fp = fopen (_dbus_string_get_const_data (fname), "rb");
   if (!fp)
-    return FALSE;
+    {
+      dbus_set_error (error,
+		      _dbus_error_from_system_errno (),
+		      "Failed to open %s for read: %s",
+		      _dbus_string_get_const_data (fname),
+		      _dbus_strerror_from_errno ());
+      return FALSE;
+    }
+
   nread = fread (buffer, 1, sizeof buffer - 1, fp);
   fclose (fp);
   if (!nread)
