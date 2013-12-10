@@ -3180,7 +3180,18 @@
            <row>
             <entry>host</entry>
             <entry>(string)</entry>
-            <entry>dns name or ip address</entry>
+            <entry>DNS name or IP address</entry>
+          </row>
+          <row>
+           <entry>bind</entry>
+           <entry>(string)</entry>
+           <entry>Used in a listenable address to configure the interface
+            on which the server will listen: either the IP address of one of
+            the local machine's interfaces (most commonly <literal>127.0.0.1
+            </literal>), or a DNS name that resolves to one of those IP
+            addresses, or '*' to listen on all interfaces simultaneously.
+            If not specified, the default is the same value as "host".
+           </entry>
           </row>
           <row>
            <entry>port</entry>
@@ -3256,7 +3267,13 @@
            <row>
             <entry>host</entry>
             <entry>(string)</entry>
-            <entry>dns name or ip address</entry>
+            <entry>DNS name or IP address</entry>
+          </row>
+          <row>
+           <entry>bind</entry>
+           <entry>(string)</entry>
+           <entry>The same as for tcp: addresses
+           </entry>
           </row>
           <row>
            <entry>port</entry>
