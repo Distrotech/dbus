@@ -392,12 +392,13 @@ DBUS_SESSION_BUS_ADDRESS is set.</para>
 <para>Example: &lt;listen&gt;tcp:host=localhost,port=0&lt;/listen&gt;</para>
 
 
-<para>tcp addresses also allow a bind=hostname option, which will override
-the host option specifying what address to bind to, without changing
-the address reported by the bus. The bind option can also take a
-special name '*' to cause the bus to listen on all local address
-(INADDR_ANY). The specified host should be a valid name of the local
-machine or weird stuff will happen.</para>
+<para>tcp/nonce-tcp addresses also allow a bind=hostname option,
+used in a listenable address to configure the interface on which
+the server will listen: either the hostname is the IP address of
+one of the local machine's interfaces (most commonly 127.0.0.1),
+or a DNS name that resolves to one of those IP addresses, or '*'
+to listen on all interfaces simultaneously.  If not specified,
+the default is the same value as "host".</para>
 
 
 <para>Example: &lt;listen&gt;tcp:host=localhost,bind=*,port=0&lt;/listen&gt;</para>
