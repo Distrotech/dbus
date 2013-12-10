@@ -1435,6 +1435,42 @@ fail:
   return FALSE;
 }
 
+dbus_bool_t
+bus_connections_reload_policy (BusConnections *connections,
+                               DBusError      *error)
+{
+  BusConnectionData *d;
+  DBusConnection *connection;
+  DBusList *link;
+
+  _dbus_assert (connections != NULL);
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  for (link = _dbus_list_get_first_link (&(connections->completed));
+       link;
+       link = _dbus_list_get_next_link (&(connections->completed), link))
+    {
+      connection = link->data;
+      d = BUS_CONNECTION_DATA (connection);
+      _dbus_assert (d != NULL);
+      _dbus_assert (d->policy != NULL);
+
+      bus_client_policy_unref (d->policy);
+      d->policy = bus_context_create_client_policy (connections->context,
+                                                    connection,
+                                                    error);
+      if (d->policy == NULL)
+        {
+          _dbus_verbose ("Failed to create security policy for connection %p\n",
+                      connection);
+          _DBUS_ASSERT_ERROR_IS_SET (error);
+          return FALSE;
+        }
+    }
+
+  return TRUE;
+}
+
 const char *
 bus_connection_get_name (DBusConnection *connection)
 {

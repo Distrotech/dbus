@@ -45,6 +45,8 @@ void            bus_connections_foreach_active    (BusConnections               
                                                    void                         *data);
 BusContext*     bus_connections_get_context       (BusConnections               *connections);
 void            bus_connections_increment_stamp   (BusConnections               *connections);
+dbus_bool_t     bus_connections_reload_policy     (BusConnections               *connections,
+                                                   DBusError                    *error);
 BusContext*     bus_connection_get_context        (DBusConnection               *connection);
 BusConnections* bus_connection_get_connections    (DBusConnection               *connection);
 BusRegistry*    bus_connection_get_registry       (DBusConnection               *connection);
