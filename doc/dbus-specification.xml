@@ -3950,7 +3950,7 @@
            </row>
            <row>
              <entry>org.freedesktop.DBus.Property.EmitsChangedSignal</entry>
-             <entry>true,invalidates,false</entry>
+             <entry>true,invalidates,const,false</entry>
              <entry>
                <para>
                  If set to <literal>false</literal>, the
@@ -3958,6 +3958,12 @@
                  signal, see <xref
                  linkend="standard-interfaces-properties"/> is not
                  guaranteed to be emitted if the property changes.
+               </para>
+               <para>
+                 If set to <literal>const</literal> the property never
+                 changes value during the lifetime of the object it
+                 belongs to, and hence the signal is never emitted for
+                 it.
                </para>
                <para>
                  If set to <literal>invalidates</literal> the signal
@@ -3974,6 +3980,17 @@
                  element does not specify the annotation. Otherwise it
                  defaults to the value specified in the enclosing
                  interface element.
+               </para>
+               <para>
+                 This annotation is intended to be used by code
+                 generators to implement client-side caching of
+                 property values. For all properties for which the
+                 annotation is set to <literal>const</literal>,
+                 <literal>invalidates</literal> or
+                 <literal>true</literal> the client may
+                 unconditionally cache the values as the properties
+                 don't change or notifications are generated for them
+                 if they do.
                </para>
              </entry>
            </row>
