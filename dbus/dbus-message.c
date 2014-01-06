@@ -812,7 +812,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
   /* copy var_args first, then we can do another iteration over it to
    * free memory and close unix fds if parse failed at some point.
    */
-  va_copy (copy_args, var_args);
+  DBUS_VA_COPY (copy_args, var_args);
 
   while (spec_type != DBUS_TYPE_INVALID)
     {
