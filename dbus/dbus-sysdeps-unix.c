@@ -80,7 +80,9 @@
 #include <bsm/adt.h>
 #endif
 
-#include "sd-daemon.h"
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
 
 #if !DBUS_USE_SYNC
 #include <pthread.h>
@@ -1122,6 +1124,7 @@ int
 _dbus_listen_systemd_sockets (int       **fds,
                               DBusError *error)
 {
+#ifdef HAVE_SYSTEMD
   int r, n;
   unsigned fd;
   int *new_fds;
@@ -1197,6 +1200,11 @@ _dbus_listen_systemd_sockets (int       **fds,
 
   dbus_free (new_fds);
   return -1;
+#else
+  dbus_set_error_const (error, DBUS_ERROR_NOT_SUPPORTED,
+                        "dbus was compiled without systemd support");
+  return -1;
+#endif
 }
 
 /**

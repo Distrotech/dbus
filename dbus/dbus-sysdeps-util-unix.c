@@ -58,7 +58,9 @@
 #include <sys/syslimits.h>
 #endif
 
-#include "sd-daemon.h"
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0

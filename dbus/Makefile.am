@@ -12,10 +12,6 @@ AM_CPPFLAGS = \
 	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\" \
 	$(NULL)
 
-# On Linux with glibc 2.17, sd-daemon.c support for POSIX message queues
-# results in an otherwise unnecessary dependency on librt. Disable it.
-AM_CPPFLAGS += -DSD_DAEMON_DISABLE_MQ
-
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
@@ -108,8 +104,7 @@ DBUS_SHARED_arch_sources = 			\
 	dbus-transport-unix.h			\
 	dbus-userdb.c				\
 	dbus-userdb.h 				\
-	sd-daemon.c                             \
-	sd-daemon.h
+	$(NULL)
 
 DBUS_UTIL_arch_sources = 			\
 	dbus-sysdeps-util-unix.c		\
@@ -295,7 +290,7 @@ libdbus_internal_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	-DDBUS_STATIC_BUILD \
 	$(NULL)
-libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS) $(SYSTEMD_LIBS)
+libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS)
 
 if DBUS_WIN
 # This must be a separate convenience library, otherwise libtool notices
@@ -323,7 +318,3 @@ test_dbus_LDADD = libdbus-internal.la
 ## mop up the gcov files
 clean-local:
 	/bin/rm *.bb *.bbg *.da *.gcov .libs/*.da .libs/*.bbg || true
-
-update-systemd:
-	curl http://cgit.freedesktop.org/systemd/systemd/plain/src/libsystemd-daemon/sd-daemon.c > $(srcdir)/sd-daemon.c
-	curl http://cgit.freedesktop.org/systemd/systemd/plain/src/systemd/sd-daemon.h > $(srcdir)/sd-daemon.h
