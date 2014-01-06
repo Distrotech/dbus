@@ -1712,16 +1712,6 @@ _dbus_read_credentials_socket  (int              client_fd,
       return FALSE;
     }
 
-#if defined(HAVE_CMSGCRED)
-  if (cmsg.hdr.cmsg_len < CMSG_LEN (sizeof (struct cmsgcred))
-		  || cmsg.hdr.cmsg_type != SCM_CREDS)
-    {
-      dbus_set_error (error, DBUS_ERROR_FAILED,
-                      "Message from recvmsg() was not SCM_CREDS");
-      return FALSE;
-    }
-#endif
-
   _dbus_verbose ("read credentials byte\n");
 
   {
@@ -1762,10 +1752,22 @@ _dbus_read_credentials_socket  (int              client_fd,
      * which makes it better than getpeereid().
      */
     struct cmsgcred *cred;
+    struct cmsghdr *cmsgp;
 
-    cred = (struct cmsgcred *) CMSG_DATA (&cmsg.hdr);
-    pid_read = cred->cmcred_pid;
-    uid_read = cred->cmcred_euid;
+    for (cmsgp = CMSG_FIRSTHDR (&msg);
+         cmsgp != NULL;
+         cmsgp = CMSG_NXTHDR (&msg, cmsgp))
+      {
+        if (cmsgp->cmsg_type == SCM_CREDS &&
+            cmsgp->cmsg_level == SOL_SOCKET &&
+            cmsgp->cmsg_len >= CMSG_LEN (sizeof (struct cmsgcred)))
+          {
+            cred = (struct cmsgcred *) CMSG_DATA (cmsgp);
+            pid_read = cred->cmcred_pid;
+            uid_read = cred->cmcred_euid;
+            break;
+          }
+      }
 
 #elif defined(HAVE_GETPEERUCRED)
     /* Supported in at least Solaris >= 10. It should probably be higher
