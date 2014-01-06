@@ -1,10 +1,28 @@
-D-Bus 1.7.10 (UNRELEASED)
+D-Bus 1.7.10 (2014-01-06)
 ==
+
+The “weighted companion cube” release.
+
+This is a release candidate for D-Bus 1.8.
 
 D-Bus Specification 0.23:
 
 • don't require messages with no INTERFACE to be dispatched
   (fd.o #68597, Simon McVittie)
+
+• document "tcp:bind=..." and "nonce-tcp:bind=..." (fd.o #72301,
+  Chengwei Yang)
+
+• define "listenable" and "connectable" addresses, and discuss
+  the difference (fd.o #61303, Simon McVittie)
+
+Enhancements:
+
+• support printing Unix file descriptors in dbus-send, dbus-monitor
+  (fd.o #70592, Robert Ancell)
+
+• don't install systemd units if --disable-systemd is given
+  (fd.o #71818, Chengwei Yang)
 
 Fixes:
 
@@ -22,8 +40,29 @@ Fixes:
 • define PROCESS_QUERY_LIMITED_INFORMATION if missing from MinGW < 4 headers
   (fd.o #71366, Matt Fischer)
 
-• support printing Unix file descriptors in dbus-send, dbus-monitor
-  (fd.o #70592, Robert Ancell)
+• define WIN32_LEAN_AND_MEAN to avoid conflicts between winsock.h and
+  winsock2.h (fd.o #71405, Matt Fischer)
+
+• do not return failure from _dbus_read_nonce() with no error set,
+  preventing a potential crash (fd.o #72298, Chengwei Yang)
+
+• on BSD systems, avoid some O(1)-per-process memory and fd leaks in kqueue,
+  preventing test failures (fd.o #69332, fd.o #72213; Chengwei Yang)
+
+• fix warning spam on Hurd by not trying to set SO_REUSEADDR on Unix sockets,
+  which doesn't do anything anyway on at least Linux and FreeBSD
+  (fd.o #69492, Simon McVittie)
+
+• fix use of TCP sockets on FreeBSD and Hurd by tolerating EINVAL from
+  sendmsg() with SCM_CREDS (retrying with plain send()), and looking
+  for credentials more correctly (fd.o #69492, Simon McVittie)
+
+• ensure that tests run with a temporary XDG_RUNTIME_DIR to avoid
+  getting mixed up in XDG/systemd "user sessions" (fd.o #61301,
+  Simon McVittie)
+
+• refresh cached policy rules for existing connections when bus
+  configuration changes (fd.o #39463, Chengwei Yang)
 
 D-Bus 1.7.8 (2013-11-01)
 ==
