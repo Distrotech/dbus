@@ -61,6 +61,7 @@ extern BOOL WINAPI ConvertStringSidToSidA (LPCSTR  StringSid, PSID *Sid);
 extern BOOL WINAPI ConvertSidToStringSidA (PSID Sid, LPSTR *StringSid);
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <string.h>
 #if HAVE_ERRNO_H
