@@ -156,7 +156,6 @@ installcheck_environment = \
 
 TESTS_ENVIRONMENT = \
 	XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
-	DBUS_BLOCK_ON_ABORT=1 \
 	DBUS_FATAL_WARNINGS=1 \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
 	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
