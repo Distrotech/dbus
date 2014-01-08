@@ -1,6 +1,8 @@
 
 add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
+set(DBUS_SESSION_BUS_LISTEN_ADDRESS ${TEST_LISTEN})
+
 add_library(dbus-testutils STATIC
     ${CMAKE_SOURCE_DIR}/../test/test-utils.h
     ${CMAKE_SOURCE_DIR}/../test/test-utils.c
@@ -184,12 +186,13 @@ ENDFOREACH(FILE_TYPE)
 MESSAGE(STATUS "Copying generated bus config files to test directory")
 set (OUTDIR ${CMAKE_BINARY_DIR}/test/data/valid-config-files)
 
-FILE(GLOB FILES "${CMAKE_BINARY_DIR}/bus/*.conf" )
+FILE(GLOB FILES "${CMAKE_SOURCE_DIR}/../bus/*.conf.in" )
 FILE(MAKE_DIRECTORY ${OUTDIR})
 FOREACH(FILE ${FILES})
     GET_FILENAME_COMPONENT(FILENAME ${FILE} NAME)
+    STRING(REGEX REPLACE "\\.in$" "" FILENAME ${FILENAME})
     SET (TARGET ${OUTDIR}/${FILENAME})
-    configure_file(${FILE} ${TARGET} COPYONLY)
+    configure_file(${FILE} ${TARGET} @ONLY)
     IF (CONFIG_VERBOSE)
         MESSAGE("FROM: ${FILE}\nTO: ${TARGET}\n")
     ENDIF (CONFIG_VERBOSE)
