@@ -32,6 +32,7 @@
 // test binaries
 #define DBUS_TEST_EXEC "@DBUS_TEST_EXEC@"
 #define DBUS_EXEEXT "@EXEEXT@"
+#cmakedefine TEST_BUS_LAUNCH_BINARY "@TEST_BUS_LAUNCH_BINARY@"
 
 /* Some dbus features */
 #cmakedefine DBUS_ENABLE_ANSI 1

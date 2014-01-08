@@ -194,7 +194,3 @@ FOREACH(FILE ${FILES})
         MESSAGE("FROM: ${FILE}\nTO: ${TARGET}\n")
     ENDIF (CONFIG_VERBOSE)
 ENDFOREACH(FILE)
-
-# todo: for installation the TEST_..._BINARY variables must reflect the 
-#       installation dir or has to be defined relative
-#
