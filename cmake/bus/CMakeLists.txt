@@ -1,5 +1,3 @@
-project(bus)
-
 add_definitions(-DDBUS_COMPILATION)
 
 SET(EFENCE "")

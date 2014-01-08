@@ -1,4 +1,3 @@
-project(test)
 
 add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
