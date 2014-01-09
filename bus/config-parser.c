@@ -318,6 +318,9 @@ merge_included (BusConfigParser *parser,
   if (included->keep_umask)
     parser->keep_umask = TRUE;
 
+  if (included->allow_anonymous)
+    parser->allow_anonymous = TRUE;
+
   if (included->pidfile != NULL)
     {
       dbus_free (parser->pidfile);
