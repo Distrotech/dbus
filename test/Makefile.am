@@ -100,8 +100,9 @@ test_names_LDADD = libdbus-testutils-internal.la
 ## break_loader_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 test_shell_service_CPPFLAGS = $(static_cppflags)
 test_shell_service_LDADD = libdbus-testutils-internal.la
-shell_test_CPPFLAGS = $(static_cppflags)
-shell_test_LDADD = libdbus-testutils-internal.la
+test_shell_SOURCES = shell-test.c
+test_shell_CPPFLAGS = $(static_cppflags)
+test_shell_LDADD = libdbus-testutils-internal.la
 spawn_test_CPPFLAGS = $(static_cppflags)
 spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
@@ -124,7 +125,7 @@ testexecdir = $(libdir)/dbus-1.0/test
 testexec_PROGRAMS =
 
 installable_tests = \
-	shell-test \
+	test-shell \
 	test-printf \
 	$(NULL)
 installable_manual_tests = \

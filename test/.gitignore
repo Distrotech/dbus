@@ -21,7 +21,7 @@ test-segfault
 test-service
 test-sleep-forever
 decode-gcov
-shell-test
+test-shell
 test-shell-service
 test-names
 test-loopback

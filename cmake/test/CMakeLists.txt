@@ -27,7 +27,7 @@ set (test-shell-service_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-shell-service.c
 )
 
-set (shell-test_SOURCES
+set (test-shell_SOURCES
         ${CMAKE_SOURCE_DIR}/../test/shell-test.c
 )
 
@@ -49,7 +49,7 @@ set (test-sleep-forever_SOURCES
 
 add_helper_executable(test-service ${test-service_SOURCES} dbus-testutils)
 add_helper_executable(test-names ${test-names_SOURCES} dbus-testutils)
-add_test_executable(shell-test ${shell-test_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_test_executable(test-shell ${test-shell_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_test_executable(test-printf ${CMAKE_SOURCE_DIR}/../test/internals/printf.c dbus-testutils)
 add_helper_executable(test-shell-service ${test-shell-service_SOURCES} dbus-testutils)
 add_helper_executable(spawn-test ${spawn-test_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
@@ -164,7 +164,7 @@ FOREACH(FILE ${FILES})
 ENDFOREACH(FILE)
 
 add_custom_target(check
-    COMMAND ctest -R shell-test
+    COMMAND ctest -R test-shell
     COMMAND ctest -R test-printf
     COMMAND ctest -R test-corrupt
     COMMAND ctest -R test-dbus-daemon
