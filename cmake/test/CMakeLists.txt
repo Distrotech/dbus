@@ -164,15 +164,5 @@ FOREACH(FILE ${FILES})
 ENDFOREACH(FILE)
 
 add_custom_target(check
-    COMMAND ctest -R test-shell
-    COMMAND ctest -R test-printf
-    COMMAND ctest -R test-corrupt
-    COMMAND ctest -R test-dbus-daemon
-    COMMAND ctest -R test-dbus-daemon-eavesdrop
-    COMMAND ctest -R test-loopback
-    COMMAND ctest -R test-marshal
-    COMMAND ctest -R test-refs
-    COMMAND ctest -R test-relay
-    COMMAND ctest -R test-syntax
-    COMMAND ctest -R test-syslog
+    COMMAND ctest -R ^test-.*
 )
