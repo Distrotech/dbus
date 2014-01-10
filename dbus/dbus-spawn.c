@@ -39,6 +39,9 @@
 #include <errno.h>
 #endif
 #ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#endif
 #include <systemd/sd-journal.h>
 #endif
 
