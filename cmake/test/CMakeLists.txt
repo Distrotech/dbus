@@ -197,3 +197,17 @@ FOREACH(FILE ${FILES})
         MESSAGE("FROM: ${FILE}\nTO: ${TARGET}\n")
     ENDIF (CONFIG_VERBOSE)
 ENDFOREACH(FILE)
+
+add_custom_target(check
+    COMMAND ctest -R shell-test
+    COMMAND ctest -R test-printf
+    COMMAND ctest -R test-corrupt
+    COMMAND ctest -R test-dbus-daemon
+    COMMAND ctest -R test-dbus-daemon-eavesdrop
+    COMMAND ctest -R test-loopback
+    COMMAND ctest -R test-marshal
+    COMMAND ctest -R test-refs
+    COMMAND ctest -R test-relay
+    COMMAND ctest -R test-syntax
+    COMMAND ctest -R test-syslog
+)
