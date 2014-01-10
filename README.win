@@ -19,9 +19,7 @@ and mingw-w64|32 are known to work.
 Building
 --------
 DBus can be built on windows using automake or cmake. See the
-file README for more information.
-Special cmake build instructions can be found in cmake/readme-cmake.txt
-
+file INSTALL for more information.
 
 windbus and dbus4win Ports
 --------------------------
