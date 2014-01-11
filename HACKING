@@ -267,7 +267,7 @@ Tests
 These are the test programs that are built if dbus is compiled using
 --enable-tests.
 
-dbus/dbus-test
+dbus/test-dbus
 This is the main unit test program that tests all aspects of the D-Bus
 client library.
 

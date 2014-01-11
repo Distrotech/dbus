@@ -312,13 +312,13 @@ noinst_PROGRAMS =
 
 if DBUS_ENABLE_EMBEDDED_TESTS
 # We can't actually run this til we've reached test/
-noinst_PROGRAMS += dbus-test
+noinst_PROGRAMS += test-dbus
 endif
 
-dbus_test_SOURCES=				\
+test_dbus_SOURCES=				\
 	dbus-test-main.c
 
-dbus_test_LDADD = libdbus-internal.la
+test_dbus_LDADD = libdbus-internal.la
 
 ## mop up the gcov files
 clean-local:

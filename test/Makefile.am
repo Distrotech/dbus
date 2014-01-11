@@ -76,7 +76,7 @@ TEST_BINARIES = \
 TESTS = \
 	../bus/bus-test$(EXEEXT) \
 	../bus/bus-test-system$(EXEEXT) \
-	../dbus/dbus-test$(EXEEXT) \
+	../dbus/test-dbus$(EXEEXT) \
 	$(NULL)
 
 if DBUS_UNIX

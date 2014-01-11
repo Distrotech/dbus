@@ -31,10 +31,10 @@ updated with windows specific stuff.
 Tests
 -----
  - dbus library check
-    bin\dbus-test.exe <build-root>\test\data
+    bin\test-dbus.exe <build-root>\test\data
 
  - bus daemon check
-    bin\bus-test.exe <build-root>\test\data
+    bin\test-bus.exe <build-root>\test\data
 
  - check available names
     bin\test_names.exe

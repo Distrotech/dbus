@@ -4,7 +4,7 @@ Makefile
 Makefile.in
 *.lo
 *.la
-dbus-test
+test-dbus
 *.bb
 *.bbg
 *.gcov

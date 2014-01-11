@@ -48,7 +48,7 @@
   <sect1 id="client-library">
     <title>Testing the D-Bus client library</title>
     <para>
-      The tests for the client library consist of the dbus-test
+      The tests for the client library consist of the test-dbus
       program which is a unit test for all aspects of the client
       library. Whenever a bug in the client library is found and
       fixed, a test is added to make sure that the bug won't occur again.
@@ -58,7 +58,7 @@
       <para>
       The D-Bus client library consists of some data structures that
       are used internally; a linked list class, a hashtable class and
-      a string class. All aspects of those are tested by dbus-test.
+      a string class. All aspects of those are tested by test-dbus.
       </para>
     </sect2>
     <sect2 id="message-loader">
@@ -104,7 +104,7 @@
         the D-Bus Reference Manual.
       </para>
       <para>
-        The message test part of dbus-test is using the message
+        The message test part of test-dbus is using the message
         builder to build different kinds of messages, both valid,
         invalid, and invalid ones, to make sure that the loader won't
         crash or leak memory of any of those, and that the loader
