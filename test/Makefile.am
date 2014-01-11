@@ -61,7 +61,7 @@ if DBUS_ENABLE_EMBEDDED_TESTS
 ## break-loader removed for now
 ## these binaries are used in tests but are not themselves tests
 TEST_BINARIES = \
-	spawn-test \
+	test-spawn \
 	test-exit \
 	test-names \
 	test-segfault \
@@ -103,8 +103,9 @@ test_shell_service_LDADD = libdbus-testutils-internal.la
 test_shell_SOURCES = shell-test.c
 test_shell_CPPFLAGS = $(static_cppflags)
 test_shell_LDADD = libdbus-testutils-internal.la
-spawn_test_CPPFLAGS = $(static_cppflags)
-spawn_test_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+test_spawn_SOURCES = spawn-test.c
+test_spawn_CPPFLAGS = $(static_cppflags)
+test_spawn_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 test_printf_SOURCES = internals/printf.c
 test_printf_CPPFLAGS = $(static_cppflags)

@@ -14,7 +14,7 @@ unbase64
 *.da
 *.gcov
 break-loader
-spawn-test
+test-spawn
 test-corrupt
 test-exit
 test-segfault

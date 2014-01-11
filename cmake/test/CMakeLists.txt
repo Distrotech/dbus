@@ -31,7 +31,7 @@ set (test-shell_SOURCES
         ${CMAKE_SOURCE_DIR}/../test/shell-test.c
 )
 
-set (spawn-test_SOURCES
+set (test-spawn_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/spawn-test.c
 )
 
@@ -52,7 +52,7 @@ add_helper_executable(test-names ${test-names_SOURCES} dbus-testutils)
 add_test_executable(test-shell ${test-shell_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_test_executable(test-printf ${CMAKE_SOURCE_DIR}/../test/internals/printf.c dbus-testutils)
 add_helper_executable(test-shell-service ${test-shell-service_SOURCES} dbus-testutils)
-add_helper_executable(spawn-test ${spawn-test_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_helper_executable(test-spawn ${test-spawn_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_helper_executable(test-exit ${test-exit_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_helper_executable(test-segfault ${test-segfault_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_helper_executable(test-sleep-forever ${test-sleep-forever_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
