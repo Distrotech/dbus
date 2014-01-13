@@ -7,7 +7,7 @@ Makefile.in
 *.o
 echo-server
 echo-client
-bus-test
+test-bus
 unbase64
 *.bb
 *.bbg

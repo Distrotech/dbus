@@ -74,7 +74,7 @@ TEST_BINARIES = \
 ## order, but we don't want to run them til we arrive in this directory,
 ## since they depend on stuff from this directory
 TESTS = \
-	../bus/bus-test$(EXEEXT) \
+	../bus/test-bus$(EXEEXT) \
 	../bus/bus-test-system$(EXEEXT) \
 	../dbus/test-dbus$(EXEEXT) \
 	$(NULL)

@@ -107,8 +107,8 @@ endif (DBUS_SERVICE)
 
 if (DBUS_ENABLE_EMBEDDED_TESTS)
 	set(SOURCES ${BUS_SOURCES} ${BUS_DIR}/test-main.c)
-	add_test_executable(bus-test "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
-	set_target_properties(bus-test PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
+	add_test_executable(test-bus "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
+	set_target_properties(test-bus PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 endif (DBUS_ENABLE_EMBEDDED_TESTS)
 
 if(MSVC)

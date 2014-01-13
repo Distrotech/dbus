@@ -169,7 +169,7 @@ if DBUS_ENABLE_EMBEDDED_TESTS
 ## even when not doing "make check"
 
 # run as a test by test/Makefile.am
-noinst_PROGRAMS += bus-test bus-test-system
+noinst_PROGRAMS += test-bus bus-test-system
 
 if DBUS_UNIX
 # run as a test by test/Makefile.am
@@ -192,11 +192,11 @@ bus_test_system_SOURCES=			\
 
 bus_test_system_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
 
-bus_test_SOURCES=				\
+test_bus_SOURCES=				\
 	$(BUS_SOURCES)				\
 	test-main.c
 
-bus_test_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
+test_bus_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
 
 ## mop up the gcov files
 clean-local:

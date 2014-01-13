@@ -13,7 +13,7 @@ dbus-daemon-launch-helper-test
 *.bbg
 *.da
 *.gcov
-bus-test
+test-bus
 rc.messagebus
 messagebus
 messagebus-config

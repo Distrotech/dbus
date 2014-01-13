@@ -170,10 +170,10 @@
         a socket.
       </para>
     </sect2>
-    <sect2 id="bus-test">
-      <title>The bus-test program</title>
+    <sect2 id="test-bus">
+      <title>The test-bus program</title>
       <para>
-        The bus-test program is a program that is used to test various
+        The test-bus program is a program that is used to test various
         parts of the D-Bus bus daemon; robustness and that it conforms
         to the specifications.
       </para>
@@ -185,7 +185,7 @@
         testing easier.
       </para>
       <para>
-        The bus-test program should test all major features of the
+        The test-bus program should test all major features of the
         bus, such as service registration, notification when things
         occurs and message matching.
       </para>
