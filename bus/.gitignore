@@ -20,7 +20,7 @@ messagebus-config
 session.conf
 system.conf
 bus-test-launch-helper
-bus-test-system
+test-bus-system
 dbus.service
 dbus.socket
 org.freedesktop.dbus-session.plist

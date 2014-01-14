@@ -75,7 +75,7 @@ TEST_BINARIES = \
 ## since they depend on stuff from this directory
 TESTS = \
 	../bus/test-bus$(EXEEXT) \
-	../bus/bus-test-system$(EXEEXT) \
+	../bus/test-bus-system$(EXEEXT) \
 	../dbus/test-dbus$(EXEEXT) \
 	$(NULL)
 

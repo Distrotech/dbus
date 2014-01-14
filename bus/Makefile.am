@@ -169,7 +169,7 @@ if DBUS_ENABLE_EMBEDDED_TESTS
 ## even when not doing "make check"
 
 # run as a test by test/Makefile.am
-noinst_PROGRAMS += test-bus bus-test-system
+noinst_PROGRAMS += test-bus test-bus-system
 
 if DBUS_UNIX
 # run as a test by test/Makefile.am
@@ -180,7 +180,7 @@ endif DBUS_UNIX
 
 endif DBUS_ENABLE_EMBEDDED_TESTS
 
-bus_test_system_SOURCES=			\
+test_bus_system_SOURCES=			\
 	$(XML_SOURCES)				\
 	config-parser-common.c			\
 	config-parser-common.h			\
@@ -190,7 +190,7 @@ bus_test_system_SOURCES=			\
 	utils.h					\
 	test-system.c
 
-bus_test_system_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
+test_bus_system_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
 
 test_bus_SOURCES=				\
 	$(BUS_SOURCES)				\
