@@ -90,7 +90,7 @@ find_program(DOXYGEN doxygen)
 find_program(XMLTO xmlto)
 
 if(MSVC)
-   SET(DBUS_VA_COPY_FUNC "_DBUS_VA_COPY_ASSIGN";)
+   SET(DBUS_VA_COPY_FUNC "_DBUS_VA_COPY_ASSIGN")
 else(MSVC)
 write_file("${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/cmake_try_compile.c" "#include <stdarg.h>
 	#include <stdlib.h>
