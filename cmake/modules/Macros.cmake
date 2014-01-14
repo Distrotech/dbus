@@ -1,3 +1,29 @@
+if(DBUS_BUILD_TESTS AND CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+        find_file(WINE_EXECUTABLE
+            NAMES wine
+            PATHS /usr/bin /usr/local/bin
+            NO_CMAKE_FIND_ROOT_PATH
+        )
+        find_file(HAVE_BINFMT_WINE_SUPPORT
+            NAMES DOSWin wine Wine windows Windows
+            PATHS /proc/sys/fs/binfmt_misc
+            NO_SYSTEM_PATH NO_CMAKE_FIND_ROOT_PATH
+        )
+        if(WINE_EXECUTABLE AND HAVE_BINFMT_WINE_SUPPORT)
+            list(APPEND FOOTNOTES "NOTE: The requirements to run cross compiled applications on your host system are achieved. You may run 'make check'.")
+        endif()
+        if(NOT WINE_EXECUTABLE)
+            list(APPEND FOOTNOTES "NOTE: You may install the Windows emulator 'wine' to be able to run cross compiled test applications.")
+        endif()
+        if(NOT HAVE_BINFMT_WINE_SUPPORT)
+            list(APPEND FOOTNOTES "NOTE: You may activate binfmt_misc support for wine to be able to run cross compiled test applications.")
+        endif()
+    else()
+        list(APPEND FOOTNOTES "NOTE: You will not be able to run cross compiled applications on your host system.")
+    endif()
+endif()
+
 MACRO(TIMESTAMP RESULT)
     if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
         EXECUTE_PROCESS(COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE DATE)

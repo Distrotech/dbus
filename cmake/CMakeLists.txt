@@ -597,6 +597,11 @@ endif(NOT DBUS_DISABLE_ASSERT)
 if (DBUS_DISABLE_CHECKS)
     message("NOTE: building without checks for arguments passed to public API makes it harder to debug apps using D-BUS, but will slightly decrease D-BUS library size and _very_ slightly improve performance.")
 endif(DBUS_DISABLE_CHECKS)
+
+foreach(_note ${FOOTNOTES})
+    message(${_note})
+endforeach()
+
 MESSAGE(" ")
 
 INCLUDE(modules/CPackInstallConfig.cmake)
