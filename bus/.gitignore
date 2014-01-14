@@ -19,7 +19,7 @@ messagebus
 messagebus-config
 session.conf
 system.conf
-bus-test-launch-helper
+test-bus-launch-helper
 test-bus-system
 dbus.service
 dbus.socket

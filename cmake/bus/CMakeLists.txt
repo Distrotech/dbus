@@ -146,8 +146,8 @@ if(NOT WIN32)
    target_link_libraries(dbus-daemon-launch-helper-test ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
    
    set (SOURCES ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/test-launch-helper.c)
-   add_test_executable(bus-test-launch-helper "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
-   set_target_properties(bus-test-launch-helper PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST -DACTIVATION_LAUNCHER_DO_OOM")
+   add_test_executable(test-bus-launch-helper "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
+   set_target_properties(test-bus-launch-helper PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST -DACTIVATION_LAUNCHER_DO_OOM")
 endif(NOT WIN32)
 
 #### Init scripts fun

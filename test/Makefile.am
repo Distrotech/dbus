@@ -80,7 +80,7 @@ TESTS = \
 	$(NULL)
 
 if DBUS_UNIX
-TESTS += ../bus/bus-test-launch-helper$(EXEEXT)
+TESTS += ../bus/test-bus-launch-helper$(EXEEXT)
 endif
 
 else !DBUS_ENABLE_EMBEDDED_TESTS
