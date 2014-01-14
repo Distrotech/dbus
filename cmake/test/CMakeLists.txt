@@ -172,7 +172,3 @@ FOREACH(FILE ${FILES})
         MESSAGE("FROM: ${FILE}\nTO: ${TARGET}\n")
     ENDIF (CONFIG_VERBOSE)
 ENDFOREACH(FILE)
-
-add_custom_target(check
-    COMMAND ctest -R ^test-.*
-)

@@ -496,6 +496,9 @@ add_subdirectory( dbus )
 add_subdirectory( bus )
 if (DBUS_BUILD_TESTS)
 	add_subdirectory( test )
+	add_custom_target(check
+		COMMAND ctest -R ^test-.*
+	)
 endif (DBUS_BUILD_TESTS)
 add_subdirectory( tools )
 add_subdirectory( doc )
