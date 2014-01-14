@@ -1,6 +1,36 @@
 D-Bus 1.7.12 (UNRELEASED)
 ==
 
+Enhancements:
+
+• Enhance the CMake build system to check for GLib and compile/run
+  a subset of the regression tests (fd.o #41252, Ralf Habacker)
+
+Fixes:
+
+• don't rely on va_copy(), use DBUS_VA_COPY() wrapper (fd.o #72840,
+  Ralf Habacker)
+
+• fix compilation of systemd journal support on older systemd versions where
+  sd-journal.h doesn't include syslog.h (fd.o #73455, Ralf Habacker)
+
+• fix compilation on older MSVC versions by including stdlib.h
+  (fd.o #73455, Ralf Habacker)
+
+• Allow <allow_anonymous/> to appear in an included configuration file
+  (fd.o #73475, Matt Hoosier)
+
+Test behaviour changes:
+
+• If the tests crash with an assertion failure, they no longer default to
+  blocking for a debugger to be attached. Set DBUS_BLOCK_ON_ABORT in the
+  environment if you want the old behaviour.
+
+• To improve debuggability, the dbus-daemon and dbus-daemon-eavesdrop tests
+  can be run with an external dbus-daemon by setting
+  DBUS_TEST_DAEMON_ADDRESS in the environment. Test-cases that require
+  an unusually-configured dbus-daemon are skipped.
+
 D-Bus 1.7.10 (2014-01-06)
 ==
 
