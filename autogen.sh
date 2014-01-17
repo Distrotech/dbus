@@ -48,7 +48,7 @@ fi
 }
 
 LIBTOOLIZE=`which libtoolize`
-if ! test -f $LIBTOOLIZE; then
+if ! test -f "$LIBTOOLIZE"; then
 	LIBTOOLIZE=`which glibtoolize`
 fi
 
