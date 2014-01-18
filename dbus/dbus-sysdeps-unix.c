@@ -3494,6 +3494,7 @@ _dbus_get_autolaunch_address (const char *scope,
    * but that's done elsewhere, and if it worked, this function wouldn't
    * be called.) */
   const char *display;
+  char *progpath;
   char *argv[6];
   int i;
   DBusString uuid;
@@ -3533,13 +3534,19 @@ _dbus_get_autolaunch_address (const char *scope,
       goto out;
     }
 
-  i = 0;
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
   if (_dbus_getenv ("DBUS_USE_TEST_BINARY") != NULL)
-    argv[i] = TEST_BUS_LAUNCH_BINARY;
+    progpath = TEST_BUS_LAUNCH_BINARY;
   else
 #endif
-    argv[i] = DBUS_BINDIR "/dbus-launch";
+    progpath = DBUS_BINDIR "/dbus-launch";
+  /*
+   * argv[0] is always dbus-launch, that's the name what we'll
+   * get from /proc, or ps(1), regardless what the progpath is,
+   * see fd.o#69716
+   */
+  i = 0;
+  argv[i] = "dbus-launch";
   ++i;
   argv[i] = "--autolaunch";
   ++i;
@@ -3554,7 +3561,7 @@ _dbus_get_autolaunch_address (const char *scope,
 
   _dbus_assert (i == _DBUS_N_ELEMENTS (argv));
 
-  retval = _read_subprocess_line_argv (argv[0],
+  retval = _read_subprocess_line_argv (progpath,
                                        TRUE,
                                        argv, address, error);
 
