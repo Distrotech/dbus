@@ -1,12 +1,42 @@
-D-Bus 1.7.12 (UNRELEASED)
+D-Bus 1.8.0 (2014-01-20)
 ==
 
-Enhancements:
+The “Wolverine distrusts my printer” release.
+
+This starts a new stable branch. The 1.6.x branch is now considered to be
+outdated, and will only receive fixes for serious bugs such as security
+flaws. The 1.4.x and 1.2.x branches no longer have upstream support and
+are unlikely to get any more releases, but if distributors still need to
+support them, please share security patches via upstream.
+
+Summary of changes since 1.6.x:
+
+• libdbus always behaves as if dbus_threads_init_default() had been called
+  (thread-safety by default)
+• new dbus-run-session tool, replacing certain misuses of dbus-launch
+• dbus-monitor can talk to outdated versions of dbus-daemon again
+• new org.freedesktop.DBus.GetConnectionCredentials method
+• GetConnectionUnixProcessID also works correctly on Windows, returning
+  the Windows process ID
+• GetConnectionWindowsSID returns the correct SID on Windows
+• expat is required, libxml2 can no longer be used as a substitute
+• the userDB cache is required, and cannot be disabled
+• a 64-bit integer type (either int, long, long long or _int64) is required
+• better systemd-journald integration on Linux
+• fixed long-standing fd and array leaks when failing to parse a message
+• fixed referenced-but-never-freed parent nodes (effectively memory leaks)
+  when using certain object-path allocation patterns, notably in Avahi
+• better defaults for Windows support
+• better CMake support
+• better portability to mingw32, FreeBSD, NetBSD, QNX and Hurd
+• the source language for the man pages is now Docbook XML
+
+Enhancements since 1.7.10:
 
 • Enhance the CMake build system to check for GLib and compile/run
-  a subset of the regression tests (fd.o #41252, Ralf Habacker)
+  a subset of the regression tests (fd.o #41252, #73495; Ralf Habacker)
 
-Fixes:
+Fixes since 1.7.10:
 
 • don't rely on va_copy(), use DBUS_VA_COPY() wrapper (fd.o #72840,
   Ralf Habacker)
@@ -20,7 +50,7 @@ Fixes:
 • Allow <allow_anonymous/> to appear in an included configuration file
   (fd.o #73475, Matt Hoosier)
 
-Test behaviour changes:
+Test behaviour changes since 1.7.10:
 
 • If the tests crash with an assertion failure, they no longer default to
   blocking for a debugger to be attached. Set DBUS_BLOCK_ON_ABORT in the
