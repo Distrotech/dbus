@@ -1067,7 +1067,7 @@ _dbus_listen_unix_socket (const char     *path,
       if (path_len > _DBUS_MAX_SUN_PATH_LENGTH)
         {
           dbus_set_error (error, DBUS_ERROR_BAD_ADDRESS,
-                      "Abstract socket name too long\n");
+                      "Socket name too long\n");
           _dbus_close (listen_fd, NULL);
           return -1;
 	}
