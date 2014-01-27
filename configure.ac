@@ -99,6 +99,9 @@ esac
 # Special defines for certain platforms
 if test "$dbus_win" = yes; then
     AC_DEFINE(DBUS_WIN,1,[Defined if we run on a W32 API based system])
+    # Yes, on Windows it really does work like this.
+    # http://support.microsoft.com/kb/111855
+    AC_DEFINE(FD_SETSIZE,8192,[The maximum number of connections that can be handled at once])
     BUILD_TIMESTAMP=`date --iso-8601=minutes`
     AC_SUBST(BUILD_TIMESTAMP)
     # Assume DBUS_VERSION is always three numbers

@@ -107,6 +107,10 @@ option (DBUS_DISABLE_ASSERT "Disable assertion checking" OFF)
 
 option (DBUS_ENABLE_STATS "enable bus daemon usage statistics" OFF)
 
+if(WIN32)
+    set(FD_SETSIZE "8192" CACHE STRING "The maximum number of connections that can be handled at once")
+endif()
+
 find_package(EXPAT)
 find_package(X11)
 find_package(GLib2)

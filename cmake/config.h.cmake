@@ -196,6 +196,8 @@
 /* Define to 1 if you have struct cmsgred */
 #cmakedefine    HAVE_CMSGCRED 1
 
+#cmakedefine FD_SETSIZE @FD_SETSIZE@
+
 // system type defines
 #if defined(_WIN32) || defined(_WIN64) || defined (_WIN32_WCE)
 # define DBUS_WIN
