@@ -136,7 +136,6 @@ if(VCS)
 endif(VCS)
 
 if(WIN32)
-	set(CMAKE_DEBUG_POSTFIX "d")
 	if(MSVC)
 		# controll folders in msvc projects
 		include(ProjectSourceGroup)

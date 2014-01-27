@@ -261,13 +261,29 @@ add_library(dbus-1 SHARED
 			${libdbus_SOURCES}
 			${libdbus_HEADERS}
 )
+if(DBUS_LIBRARY_REVISION)
+    math(EXPR DBUS_LIBRARY_MAJOR "${DBUS_LIBRARY_CURRENT} - ${DBUS_LIBRARY_AGE}")
+endif()
+
 if(WIN32)
+    if(DBUS_LIBRARY_REVISION)
+        get_target_property(LEGACY_FILE_NAME dbus-1 LOCATION)
+        set_target_properties(dbus-1 PROPERTIES SUFFIX "-${DBUS_LIBRARY_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        add_custom_command(TARGET dbus-1 POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:dbus-1>" "${LEGACY_FILE_NAME}"
+            COMMENT "Create non versioned dbus-1 library for legacy applications"
+        )
+        install(FILES ${LEGACY_FILE_NAME} DESTINATION bin)
+    endif()
     if(WINCE)
         target_link_libraries(dbus-1 ws2)
     else(WINCE)
         target_link_libraries(dbus-1 ws2_32 advapi32 netapi32 iphlpapi)
     endif(WINCE)
 else(WIN32)
+    if(DBUS_LIBRARY_REVISION)
+        set_target_properties(dbus-1 PROPERTIES VERSION ${DBUS_LIBRARY_MAJOR}.${DBUS_LIBRARY_AGE}.${DBUS_LIBRARY_REVISION} SOVERSION ${DBUS_LIBRARY_MAJOR})
+    endif()
     target_link_libraries(dbus-1 ${CMAKE_THREAD_LIBS_INIT} rt)
 endif(WIN32)
 

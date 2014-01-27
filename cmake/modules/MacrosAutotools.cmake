@@ -10,6 +10,9 @@
 #   ${prefix}_MAJOR_VERSION
 #   ${prefix}_MINOR_VERSION
 #   ${prefix}_MICRO_VERSION
+#   ${prefix}_LIBRARY_AGE
+#   ${prefix}_LIBRARY_REVISION
+#   ${prefix}_LIBRARY_CURRENT
 # 
 macro(autoversion config prefix)
 	file (READ ${config} _configure_ac)
@@ -19,7 +22,9 @@ macro(autoversion config prefix)
 	string (REGEX REPLACE ".*${prefix}_micro_version], .([0-9]+).*" "\\1" ${prefix_upper}_MICRO_VERSION ${_configure_ac})
 	set (${prefix_upper}_VERSION ${${prefix_upper}_MAJOR_VERSION}.${${prefix_upper}_MINOR_VERSION}.${${prefix_upper}_MICRO_VERSION})
 	set (${prefix_upper}_VERSION_STRING "${${prefix_upper}_VERSION}")
-
+	string (REGEX REPLACE ".*LT_AGE=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_AGE ${_configure_ac})
+	string (REGEX REPLACE ".*LT_CURRENT=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_CURRENT ${_configure_ac})
+	string (REGEX REPLACE ".*LT_REVISION=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_REVISION ${_configure_ac})
 endmacro()
 
 #
