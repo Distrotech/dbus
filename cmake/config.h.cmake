@@ -248,4 +248,8 @@
 #define inline __inline
 #endif
 
+#ifdef DBUS_WIN
+#define FD_SETSIZE @FD_SETSIZE@
+#endif
+
 #endif  // _DBUS_CONFIG_H
