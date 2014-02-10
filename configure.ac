@@ -156,6 +156,10 @@ AC_ARG_ENABLE([ducktype-docs],
               [enable_ducktype_docs=$enableval], [enable_ducktype_docs=auto])
 AC_ARG_ENABLE(abstract-sockets, AS_HELP_STRING([--enable-abstract-sockets],[use abstract socket namespace (linux only)]),enable_abstract_sockets=$enableval,enable_abstract_sockets=auto)
 AC_ARG_ENABLE(selinux, AS_HELP_STRING([--enable-selinux],[build with SELinux support]),enable_selinux=$enableval,enable_selinux=auto)
+AC_ARG_ENABLE([apparmor],
+  [AS_HELP_STRING([--enable-apparmor], [build with AppArmor support])],
+  [enable_apparmor=$enableval],
+  [enable_apparmor=auto])
 AC_ARG_ENABLE(libaudit,AS_HELP_STRING([--enable-libaudit],[build audit daemon support for SELinux]),enable_libaudit=$enableval,enable_libaudit=auto)
 AC_ARG_ENABLE(inotify, AS_HELP_STRING([--enable-inotify],[build with inotify support (linux only)]),enable_inotify=$enableval,enable_inotify=auto)
 AC_ARG_ENABLE(kqueue, AS_HELP_STRING([--enable-kqueue],[build with kqueue support]),enable_kqueue=$enableval,enable_kqueue=auto)
@@ -1045,6 +1049,22 @@ else
     SELINUX_LIBS=
 fi
 
+# AppArmor detection
+AS_IF([test x$enable_apparmor = xno],
+  [have_apparmor=no],
+  [
+  PKG_CHECK_MODULES([APPARMOR], [libapparmor >= 2.8.95],
+                    [have_apparmor=yes], [have_apparmor=no])
+
+  AS_IF([test x$enable_apparmor = xauto && test x$have_apparmor = xno],
+        [AC_MSG_WARN([Sufficiently new AppArmor library not found])])
+  AS_IF([test x$enable_apparmor != xauto && test x$have_apparmor = xno],
+        [AC_MSG_ERROR([AppArmor explicitly required, and AppArmor library not found])])
+  ])
+
+AS_IF([test x$have_apparmor = xyes],
+      [AC_DEFINE([HAVE_APPARMOR], [1], [AppArmor Support])])
+
 # inotify checks
 if test x$enable_inotify = xno ; then
     have_inotify=no;
@@ -1870,6 +1890,7 @@ echo "
         Building checks:          ${enable_checks}
         Building bus stats API:   ${enable_stats}
         Building SELinux support: ${have_selinux}
+        Building AppArmor support: ${have_apparmor}
         Building inotify support: ${have_inotify}
         Building kqueue support:  ${have_kqueue}
         Building systemd support: ${have_systemd}
