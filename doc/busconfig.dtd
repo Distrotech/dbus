@@ -11,7 +11,8 @@
                      include |
                      policy |
                      limit |
-                     selinux)*>
+                     selinux |
+                     apparmor)*>
 
 <!ELEMENT user (#PCDATA)>
 <!ELEMENT listen (#PCDATA)>
@@ -63,3 +64,7 @@
 <!ATTLIST associate
           own CDATA #REQUIRED
           context CDATA #REQUIRED>
+
+<!ELEMENT apparmor EMPTY>
+<!ATTLIST apparmor
+          mode (required|enabled|disabled) "enabled">
