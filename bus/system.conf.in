@@ -97,6 +97,9 @@
            send_interface="org.freedesktop.DBus.Debug.Stats"/>
   </policy>
 
+  <!-- Enable AppArmor mediation when it is available -->
+  <apparmor mode="enabled"/>
+
   <!-- Config files are placed here that among other things, punch 
        holes in the above policy for specific services. -->
   <includedir>system.d</includedir>

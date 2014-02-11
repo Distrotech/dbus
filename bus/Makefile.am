@@ -4,6 +4,7 @@ dbus_daemon_execdir = $(DBUS_DAEMONDIR)
 DBUS_BUS_LIBS = \
 	$(XML_LIBS) \
 	$(SELINUX_LIBS) \
+	$(APPARMOR_LIBS) \
 	$(THREAD_LIBS) \
 	$(ADT_LIBS) \
 	$(NETWORK_libs) \
@@ -70,6 +71,8 @@ BUS_SOURCES=					\
 	activation.c				\
 	activation.h				\
 	activation-exit-codes.h			\
+	apparmor.c				\
+	apparmor.h				\
 	bus.c					\
 	bus.h					\
 	config-parser.c				\

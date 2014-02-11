@@ -49,7 +49,8 @@ typedef enum
   ELEMENT_STANDARD_SYSTEM_SERVICEDIRS,
   ELEMENT_KEEP_UMASK,
   ELEMENT_SYSLOG,
-  ELEMENT_ALLOW_ANONYMOUS
+  ELEMENT_ALLOW_ANONYMOUS,
+  ELEMENT_APPARMOR
 } ElementType;
 
 ElementType bus_config_parser_element_name_to_type (const char *element_name);

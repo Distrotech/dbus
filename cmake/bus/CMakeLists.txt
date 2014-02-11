@@ -37,6 +37,8 @@ endif (DBUS_BUS_ENABLE_INOTIFY)
 set (BUS_SOURCES 
 	${BUS_DIR}/activation.c				
 	${BUS_DIR}/activation.h				
+	${BUS_DIR}/apparmor.c
+	${BUS_DIR}/apparmor.h
 	${BUS_DIR}/bus.c					
 	${BUS_DIR}/bus.h					
 	${BUS_DIR}/config-parser.c				

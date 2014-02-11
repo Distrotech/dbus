@@ -25,6 +25,9 @@
     <allow own="*"/>
   </policy>
 
+  <!-- Enable AppArmor mediation when it is available -->
+  <apparmor mode="enabled"/>
+
   <!-- Config files are placed here that among other things, 
        further restrict the above policy for specific services. -->
   <includedir>session.d</includedir>

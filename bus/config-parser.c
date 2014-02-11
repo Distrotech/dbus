@@ -28,6 +28,7 @@
 #include "utils.h"
 #include "policy.h"
 #include "selinux.h"
+#include "apparmor.h"
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-misc.h>
@@ -1136,6 +1137,27 @@ start_busconfig_child (BusConfigParser   *parser,
 
       return TRUE;
     }
+  else if (element_type == ELEMENT_APPARMOR)
+    {
+      Element *e;
+      const char *mode;
+
+      if ((e = push_element (parser, ELEMENT_APPARMOR)) == NULL)
+        {
+          BUS_SET_OOM (error);
+          return FALSE;
+        }
+
+      if (!locate_attributes (parser, "apparmor",
+                              attribute_names,
+                              attribute_values,
+                              error,
+                              "mode", &mode,
+                              NULL))
+        return FALSE;
+
+      return bus_apparmor_set_mode_from_config (mode, error);
+    }
   else
     {
       dbus_set_error (error, DBUS_ERROR_FAILED,
@@ -2074,6 +2096,7 @@ bus_config_parser_end_element (BusConfigParser   *parser,
     case ELEMENT_STANDARD_SESSION_SERVICEDIRS:
     case ELEMENT_STANDARD_SYSTEM_SERVICEDIRS:
     case ELEMENT_ALLOW_ANONYMOUS:
+    case ELEMENT_APPARMOR:
       break;
     }
 
@@ -2373,6 +2396,7 @@ bus_config_parser_content (BusConfigParser   *parser,
     case ELEMENT_ALLOW_ANONYMOUS:
     case ELEMENT_SELINUX:
     case ELEMENT_ASSOCIATE:
+    case ELEMENT_APPARMOR:
       if (all_whitespace (content))
         return TRUE;
       else
