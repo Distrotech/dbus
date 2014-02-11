@@ -809,6 +809,31 @@ Right now the default will be the security context of the bus itself.</para>
 <para>If two &lt;associate&gt; elements specify the same name, the element
 appearing later in the configuration file will be used.</para>
 
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;apparmor&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>The &lt;apparmor&gt; element is used to configure AppArmor mediation on
+the bus. It can contain one attribute that specifies the mediation mode:</para>
+
+<literallayout remap='.nf'>
+   &lt;apparmor mode="(enabled|disabled|required)"/&gt;
+</literallayout> <!-- .fi -->
+
+<para>The default mode is "enabled". In "enabled" mode, AppArmor mediation
+will be performed if AppArmor support is available in the kernel. If it is not
+available, dbus-daemon will start but AppArmor mediation will not occur. In
+"disabled" mode, AppArmor mediation is disabled. In "required" mode, AppArmor
+mediation will be enabled if AppArmor support is available, otherwise
+dbus-daemon will refuse to start.</para>
+
+<para>The AppArmor mediation mode of the bus cannot be changed after the bus
+starts. Modifying the mode in the configuration file and sending a SIGHUP
+signal to the daemon has no effect on the mediation mode.</para>
+
 </refsect1>
 
 <refsect1 id='selinux'><title>SELinux</title>
@@ -873,6 +898,37 @@ class "dbus" and requested permission "acquire_svc".</para>
 If a name has no security context associated in the
 configuration file, the security context of the bus daemon
 itself will be used.</para>
+
+</refsect1>
+
+<refsect1 id='apparmor'><title>AppArmor</title>
+<para>The AppArmor confinement context is stored when applications connect to
+the bus. The confinement context consists of a label and a confinement mode.
+When a security decision is required, the daemon uses the confinement context
+to query the AppArmor policy to determine if the action should be allowed or
+denied and if the action should be audited.</para>
+
+<para>The daemon performs AppArmor security checks in three places.</para>
+
+<para>First, any time a message is routed from one connection to another
+connection, the bus daemon will check permissions with the label of the first
+connection as source, label and/or connection name of the second connection as
+target, along with the bus name, the path name, the interface name, and the
+member name. Reply messages, such as method_return and error messages, are
+implicitly allowed if they are in response to a message that has already been
+allowed.</para>
+
+<para>Second, any time a connection asks to own a name, the bus daemon will
+check permissions with the label of the connection as source, the requested
+name as target, along with the bus name.</para>
+
+<para>Third, any time a connection attempts to eavesdrop, the bus daemon will
+check permissions with the label of the connection as the source, along with
+the bus name.</para>
+
+<para>AppArmor rules for bus mediation are not stored in the bus configuration
+files. They are stored in the application's AppArmor profile. Please see
+<emphasis remap='I'>apparmor.d(5)</emphasis> for more details.</para>
 
 </refsect1>
 
