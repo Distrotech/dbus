@@ -39,6 +39,7 @@
 #include <unistd.h>     /* for write() and STDERR_FILENO */
 #endif
 #include "selinux.h"
+#include "apparmor.h"
 
 static BusContext *context;
 
@@ -614,6 +615,12 @@ main (int argc, char **argv)
       exit (1);
     }
 
+  if (!bus_apparmor_pre_init ())
+    {
+      _dbus_warn ("AppArmor pre-initialization failed: out of memory\n");
+      exit (1);
+    }
+
   dbus_error_init (&error);
   context = bus_context_new (&config_file, flags,
                              &print_addr_pipe, &print_pid_pipe,
@@ -649,6 +656,7 @@ main (int argc, char **argv)
   bus_context_shutdown (context);
   bus_context_unref (context);
   bus_selinux_shutdown ();
+  bus_apparmor_shutdown ();
 
   return 0;
 }

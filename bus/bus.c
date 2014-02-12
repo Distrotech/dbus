@@ -34,6 +34,7 @@
 #include "config-parser.h"
 #include "signals.h"
 #include "selinux.h"
+#include "apparmor.h"
 #include "dir-watch.h"
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-hash.h>
@@ -933,6 +934,20 @@ bus_context_new (const DBusString *config_file,
       bus_context_log (context, DBUS_SYSTEM_LOG_FATAL, "SELinux enabled but D-Bus initialization failed; check system log\n");
     }
 
+  if (!bus_apparmor_full_init (error))
+    {
+      _DBUS_ASSERT_ERROR_IS_SET (error);
+      goto failed;
+    }
+
+  if (bus_apparmor_enabled ())
+    {
+      /* Only print AppArmor mediation message when syslog support is enabled */
+      if (context->syslog)
+        bus_context_log (context, DBUS_SYSTEM_LOG_INFO,
+                         "AppArmor D-Bus mediation is enabled\n");
+    }
+
   if (!process_config_postinit (context, parser, error))
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
@@ -959,6 +974,9 @@ bus_context_new (const DBusString *config_file,
 #ifdef HAVE_SELINUX
       /* FIXME - why not just put this in full_init() below? */
       bus_selinux_audit_init ();
+#endif
+#ifdef HAVE_APPARMOR
+      bus_apparmor_audit_init ();
 #endif
     }
 
