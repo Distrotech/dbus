@@ -64,6 +64,67 @@ static AppArmorConfigMode apparmor_config_mode = APPARMOR_ENABLED;
 static int audit_fd = -1;
 #endif
 
+struct BusAppArmorConfinement
+{
+  int refcount; /* Reference count */
+
+  char *context; /* AppArmor confinement context (label) */
+  const char *mode; /* AppArmor confinement mode (freed by freeing *context) */
+};
+
+typedef struct BusAppArmorConfinement BusAppArmorConfinement;
+
+static BusAppArmorConfinement *bus_con = NULL;
+
+/**
+ * Callers of this function give up ownership of the *context and *mode
+ * pointers.
+ *
+ * Additionally, the responsibility of freeing *context and *mode becomes the
+ * responsibility of the bus_apparmor_confinement_unref() function. However, it
+ * does not free *mode because libapparmor's aa_getcon(), and libapparmor's
+ * other related functions, allocate a single buffer for *context and *mode and
+ * then separate the two char arrays with a NUL char. See the aa_getcon(2) man
+ * page for more details.
+ */
+static BusAppArmorConfinement*
+bus_apparmor_confinement_new (char *context, const char *mode)
+{
+  BusAppArmorConfinement *confinement;
+
+  confinement = dbus_new0 (BusAppArmorConfinement, 1);
+  if (confinement != NULL)
+    {
+      confinement->refcount = 1;
+      confinement->context = context;
+      confinement->mode = mode;
+    }
+
+  return confinement;
+}
+
+static void
+bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
+{
+  if (!apparmor_enabled)
+    return;
+
+  _dbus_assert (confinement != NULL);
+  _dbus_assert (confinement->refcount > 0);
+
+  confinement->refcount -= 1;
+
+  if (confinement->refcount == 0)
+    {
+      /**
+       * Do not free confinement->mode, as libapparmor does a single malloc for
+       * both confinement->context and confinement->mode.
+       */
+      free (confinement->context);
+      dbus_free (confinement);
+    }
+}
+
 void
 bus_apparmor_audit_init (void)
 {
@@ -203,6 +264,8 @@ dbus_bool_t
 bus_apparmor_full_init (DBusError *error)
 {
 #ifdef HAVE_APPARMOR
+  char *context, *mode;
+
   if (apparmor_enabled)
     {
       if (apparmor_config_mode == APPARMOR_DISABLED)
@@ -210,13 +273,32 @@ bus_apparmor_full_init (DBusError *error)
           apparmor_enabled = FALSE;
           return TRUE;
         }
+
+      if (bus_con == NULL)
+        {
+          if (aa_getcon (&context, &mode) == -1)
+            {
+              dbus_set_error (error, DBUS_ERROR_FAILED,
+                              "Error getting AppArmor context of bus: %s",
+                              _dbus_strerror (errno));
+              return FALSE;
+            }
+
+          bus_con = bus_apparmor_confinement_new (context, mode);
+          if (bus_con == NULL)
+            {
+              BUS_SET_OOM (error);
+              free (context);
+              return FALSE;
+            }
+        }
     }
   else
     {
       if (apparmor_config_mode == APPARMOR_REQUIRED)
         {
           dbus_set_error (error, DBUS_ERROR_FAILED,
-                          "AppArmor mediation required but not present\n");
+                          "AppArmor mediation required but not present");
           return FALSE;
         }
       else if (apparmor_config_mode == APPARMOR_ENABLED)
@@ -237,6 +319,9 @@ bus_apparmor_shutdown (void)
     return;
 
   _dbus_verbose ("AppArmor shutdown\n");
+
+  bus_apparmor_confinement_unref (bus_con);
+  bus_con = NULL;
 
 #ifdef HAVE_LIBAUDIT
   audit_close (audit_fd);
