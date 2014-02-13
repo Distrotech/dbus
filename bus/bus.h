@@ -38,6 +38,7 @@ typedef struct BusClientPolicy  BusClientPolicy;
 typedef struct BusPolicyRule    BusPolicyRule;
 typedef struct BusRegistry      BusRegistry;
 typedef struct BusSELinuxID     BusSELinuxID;
+typedef struct BusAppArmorConfinement BusAppArmorConfinement;
 typedef struct BusService       BusService;
 typedef struct BusOwner		BusOwner;
 typedef struct BusTransaction   BusTransaction;

@@ -30,6 +30,7 @@
 #include "signals.h"
 #include "expirelist.h"
 #include "selinux.h"
+#include "apparmor.h"
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-timeout.h>
@@ -99,6 +100,7 @@ typedef struct
 
   char *cached_loginfo_string;
   BusSELinuxID *selinux_id;
+  BusAppArmorConfinement *apparmor_confinement;
 
   long connection_tv_sec;  /**< Time when we connected (seconds component) */
   long connection_tv_usec; /**< Time when we connected (microsec component) */
@@ -439,6 +441,9 @@ free_connection_data (void *data)
 
   if (d->selinux_id)
     bus_selinux_id_unref (d->selinux_id);
+
+  if (d->apparmor_confinement)
+    bus_apparmor_confinement_unref (d->apparmor_confinement);
   
   dbus_free (d->cached_loginfo_string);
   
@@ -714,6 +719,19 @@ bus_connections_setup_connection (BusConnections *connections,
       goto out;
     }
 
+  d->apparmor_confinement = bus_apparmor_init_connection_confinement (connection,
+                                                                      &error);
+  if (dbus_error_is_set (&error))
+    {
+      /* This is a bit bogus because we pretend all errors
+       * are OOM; this is done because we know that in bus.c
+       * an OOM error disconnects the connection, which is
+       * the same thing we want on any other error.
+       */
+      dbus_error_free (&error);
+      goto out;
+    }
+
   if (!dbus_connection_set_watch_functions (connection,
                                             add_connection_watch,
                                             remove_connection_watch,
@@ -801,6 +819,10 @@ bus_connections_setup_connection (BusConnections *connections,
       if (d->selinux_id)
         bus_selinux_id_unref (d->selinux_id);
       d->selinux_id = NULL;
+
+      if (d->apparmor_confinement)
+        bus_apparmor_confinement_unref (d->apparmor_confinement);
+      d->apparmor_confinement = NULL;
       
       if (!dbus_connection_set_watch_functions (connection,
                                                 NULL, NULL, NULL,

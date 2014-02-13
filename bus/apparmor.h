@@ -27,6 +27,7 @@
 #define BUS_APPARMOR_H
 
 #include <dbus/dbus.h>
+#include "bus.h"
 
 void bus_apparmor_audit_init (void);
 dbus_bool_t bus_apparmor_pre_init (void);
@@ -35,5 +36,9 @@ dbus_bool_t bus_apparmor_set_mode_from_config (const char *mode,
 dbus_bool_t bus_apparmor_full_init (DBusError *error);
 void bus_apparmor_shutdown (void);
 dbus_bool_t bus_apparmor_enabled (void);
+
+void bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement);
+BusAppArmorConfinement* bus_apparmor_init_connection_confinement (DBusConnection *connection,
+                                                                  DBusError      *error);
 
 #endif /* BUS_APPARMOR_H */

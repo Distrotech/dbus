@@ -48,6 +48,8 @@
 #include <syslog.h>
 #endif /* HAVE_LIBAUDIT */
 
+#include "utils.h"
+
 /* Store the value telling us if AppArmor D-Bus mediation is enabled. */
 static dbus_bool_t apparmor_enabled = FALSE;
 
@@ -71,8 +73,6 @@ struct BusAppArmorConfinement
   char *context; /* AppArmor confinement context (label) */
   const char *mode; /* AppArmor confinement mode (freed by freeing *context) */
 };
-
-typedef struct BusAppArmorConfinement BusAppArmorConfinement;
 
 static BusAppArmorConfinement *bus_con = NULL;
 
@@ -103,9 +103,10 @@ bus_apparmor_confinement_new (char *context, const char *mode)
   return confinement;
 }
 
-static void
+void
 bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
 {
+#ifdef HAVE_APPARMOR
   if (!apparmor_enabled)
     return;
 
@@ -123,6 +124,7 @@ bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
       free (confinement->context);
       dbus_free (confinement);
     }
+#endif
 }
 
 void
@@ -338,4 +340,50 @@ bus_apparmor_enabled (void)
 #else
   return FALSE;
 #endif
+}
+
+BusAppArmorConfinement*
+bus_apparmor_init_connection_confinement (DBusConnection *connection,
+                                          DBusError      *error)
+{
+#ifdef HAVE_APPARMOR
+  BusAppArmorConfinement *confinement;
+  char *context, *mode;
+  int fd;
+
+  if (!apparmor_enabled)
+    return NULL;
+
+  _dbus_assert (connection != NULL);
+
+  if (!dbus_connection_get_socket (connection, &fd))
+    {
+      dbus_set_error (error, DBUS_ERROR_FAILED,
+                      "Failed to get socket file descriptor of connection");
+      return NULL;
+    }
+
+  if (aa_getpeercon (fd, &context, &mode) == -1)
+    {
+      if (errno == ENOMEM)
+        BUS_SET_OOM (error);
+      else
+        dbus_set_error (error, _dbus_error_from_errno (errno),
+                        "Failed to get AppArmor confinement information of socket peer: %s",
+                        _dbus_strerror (errno));
+      return NULL;
+    }
+
+  confinement = bus_apparmor_confinement_new (context, mode);
+  if (confinement == NULL)
+    {
+      BUS_SET_OOM (error);
+      free (context);
+      return NULL;
+    }
+
+  return confinement;
+#else
+  return NULL;
+#endif /* HAVE_APPARMOR */
 }
