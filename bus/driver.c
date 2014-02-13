@@ -24,6 +24,7 @@
 
 #include <config.h>
 #include "activation.h"
+#include "apparmor.h"
 #include "connection.h"
 #include "driver.h"
 #include "dispatch.h"
@@ -1110,9 +1111,10 @@ bus_driver_handle_add_match (DBusConnection *connection,
                              DBusError      *error)
 {
   BusMatchRule *rule;
-  const char *text;
+  const char *text, *bustype;
   DBusString str;
   BusMatchmaker *matchmaker;
+  BusContext *context;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1143,6 +1145,12 @@ bus_driver_handle_add_match (DBusConnection *connection,
 
   rule = bus_match_rule_parse (connection, &str, error);
   if (rule == NULL)
+    goto failed;
+
+  context = bus_transaction_get_context (transaction);
+  bustype = context ? bus_context_get_type (context) : NULL;
+  if (bus_match_rule_get_client_is_eavesdropping (rule) &&
+      !bus_apparmor_allows_eavesdropping (connection, bustype, error))
     goto failed;
 
   matchmaker = bus_connection_get_matchmaker (connection);

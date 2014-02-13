@@ -411,6 +411,15 @@ bus_match_rule_set_client_is_eavesdropping (BusMatchRule *rule,
 }
 
 dbus_bool_t
+bus_match_rule_get_client_is_eavesdropping (BusMatchRule *rule)
+{
+  if (rule->flags & BUS_MATCH_CLIENT_IS_EAVESDROPPING)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+dbus_bool_t
 bus_match_rule_set_path (BusMatchRule *rule,
                          const char   *path,
                          dbus_bool_t   is_namespace)

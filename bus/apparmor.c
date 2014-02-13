@@ -357,6 +357,12 @@ build_message_query (DBusString *query,
          query_append (query, member);
 }
 
+static dbus_bool_t
+build_eavesdrop_query (DBusString *query, const char *con, const char *bustype)
+{
+  return build_common_query (query, con, bustype);
+}
+
 static void
 set_error_from_query_errno (DBusError *error, int error_number)
 {
@@ -1001,6 +1007,117 @@ bus_apparmor_allows_send (DBusConnection     *sender,
     BUS_SET_OOM (error);
   src_allow = FALSE;
   dst_allow = FALSE;
+  goto out;
+
+#else
+  return TRUE;
+#endif /* HAVE_APPARMOR */
+}
+
+/**
+ * Check if Apparmor security controls allow the connection to eavesdrop on
+ * other connections.
+ *
+ * @param connection the connection attempting to eavesdrop.
+ * @param bustype name of the bus
+ * @param error the reason for failure when FALSE is returned
+ * @returns TRUE if eavesdropping is permitted
+ */
+dbus_bool_t
+bus_apparmor_allows_eavesdropping (DBusConnection     *connection,
+                                   const char         *bustype,
+                                   DBusError          *error)
+{
+#ifdef HAVE_APPARMOR
+  BusAppArmorConfinement *con = NULL;
+  DBusString qstr, auxdata;
+  dbus_bool_t allow = FALSE, audit = TRUE;
+  dbus_bool_t free_auxdata = FALSE;
+  unsigned long pid;
+  int res, serrno = 0;
+
+  if (!apparmor_enabled)
+    return TRUE;
+
+  con = bus_connection_dup_apparmor_confinement (connection);
+
+  if (is_unconfined (con->context, con->mode))
+    {
+      allow = TRUE;
+      audit = FALSE;
+      goto out;
+    }
+
+  if (!_dbus_string_init (&qstr))
+    goto oom;
+
+  if (!build_eavesdrop_query (&qstr, con->context, bustype))
+    {
+      _dbus_string_free (&qstr);
+      goto oom;
+    }
+
+  res = aa_query_label (AA_DBUS_EAVESDROP,
+                        _dbus_string_get_data (&qstr),
+                        _dbus_string_get_length (&qstr),
+                        &allow, &audit);
+  _dbus_string_free (&qstr);
+  if (res == -1)
+    {
+      serrno = errno;
+      set_error_from_query_errno (error, serrno);
+      goto audit;
+    }
+
+  /* Don't fail operations on profiles in complain mode */
+  if (modestr_is_complain (con->mode))
+    allow = TRUE;
+
+  if (!allow)
+    dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+                    "Connection \"%s\" is not allowed to eavesdrop due to "
+                    "AppArmor policy",
+                    bus_connection_is_active (connection) ?
+                    bus_connection_get_name (connection) : "(inactive)");
+
+  if (!audit)
+    goto out;
+
+ audit:
+  if (!_dbus_string_init (&auxdata))
+    goto oom;
+  free_auxdata = TRUE;
+
+  if (!_dbus_append_pair_str (&auxdata, "bus", bustype ? bustype : "unknown"))
+    goto oom;
+
+  if (serrno && !_dbus_append_pair_str (&auxdata, "info", strerror (serrno)))
+    goto oom;
+
+  if (!_dbus_append_pair_str (&auxdata, "mask", "eavesdrop"))
+    goto oom;
+
+  if (connection && dbus_connection_get_unix_process_id (connection, &pid) &&
+      !_dbus_append_pair_uint (&auxdata, "pid", pid))
+    goto oom;
+
+  if (con->context && !_dbus_append_pair_str (&auxdata, "profile", con->context))
+    goto oom;
+
+  log_message (allow, "eavesdrop", &auxdata);
+
+ out:
+  if (con != NULL)
+    bus_apparmor_confinement_unref (con);
+  if (free_auxdata)
+    _dbus_string_free (&auxdata);
+
+  return allow;
+
+ oom:
+  if (error != NULL && !dbus_error_is_set (error))
+    BUS_SET_OOM (error);
+  allow = FALSE;
   goto out;
 
 #else

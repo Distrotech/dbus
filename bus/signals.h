@@ -73,6 +73,8 @@ dbus_bool_t bus_match_rule_set_arg          (BusMatchRule     *rule,
 void bus_match_rule_set_client_is_eavesdropping (BusMatchRule     *rule,
                                                  dbus_bool_t is_eavesdropping);
 
+dbus_bool_t bus_match_rule_get_client_is_eavesdropping (BusMatchRule *rule);
+
 BusMatchRule* bus_match_rule_parse (DBusConnection   *matches_go_to,
                                     const DBusString *rule_text,
                                     DBusError        *error);
