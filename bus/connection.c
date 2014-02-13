@@ -1223,6 +1223,19 @@ bus_connection_get_selinux_id (DBusConnection *connection)
   return d->selinux_id;
 }
 
+BusAppArmorConfinement*
+bus_connection_dup_apparmor_confinement (DBusConnection *connection)
+{
+  BusConnectionData *d;
+
+  d = BUS_CONNECTION_DATA (connection);
+
+  _dbus_assert (d != NULL);
+
+  bus_apparmor_confinement_ref (d->apparmor_confinement);
+  return d->apparmor_confinement;
+}
+
 /**
  * Checks whether the connection is registered with the message bus.
  *

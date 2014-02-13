@@ -39,15 +39,15 @@
 #include <sys/apparmor.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #ifdef HAVE_LIBAUDIT
 #include <cap-ng.h>
 #include <libaudit.h>
-#else
-#include <syslog.h>
 #endif /* HAVE_LIBAUDIT */
 
+#include "connection.h"
 #include "utils.h"
 
 /* Store the value telling us if AppArmor D-Bus mediation is enabled. */
@@ -198,6 +198,154 @@ out:
 
   return retval;
 }
+
+static dbus_bool_t
+modestr_is_complain (const char *mode)
+{
+  if (mode && strcmp (mode, "complain") == 0)
+    return TRUE;
+  return FALSE;
+}
+
+static void
+log_message (dbus_bool_t allow, const char *op, DBusString *data)
+{
+  const char *mstr;
+
+  if (allow)
+    mstr = "ALLOWED";
+  else
+    mstr = "DENIED";
+
+#ifdef HAVE_LIBAUDIT
+  if (audit_fd >= 0)
+  {
+    DBusString avc;
+
+    capng_get_caps_process ();
+    if (!capng_have_capability (CAPNG_EFFECTIVE, CAP_AUDIT_WRITE))
+      goto syslog;
+
+    if (!_dbus_string_init (&avc))
+      goto syslog;
+
+    if (!_dbus_string_append_printf (&avc,
+          "apparmor=\"%s\" operation=\"dbus_%s\" %s\n",
+          mstr, op, _dbus_string_get_const_data (data)))
+      {
+        _dbus_string_free (&avc);
+        goto syslog;
+      }
+
+    /* FIXME: need to change this to show real user */
+    audit_log_user_avc_message (audit_fd, AUDIT_USER_AVC,
+                                _dbus_string_get_const_data (&avc),
+                                NULL, NULL, NULL, getuid ());
+    _dbus_string_free (&avc);
+    return;
+  }
+
+syslog:
+#endif /* HAVE_LIBAUDIT */
+
+  syslog (LOG_USER | LOG_NOTICE, "apparmor=\"%s\" operation=\"dbus_%s\" %s\n",
+          mstr, op, _dbus_string_get_const_data (data));
+}
+
+static dbus_bool_t
+_dbus_append_pair_uint (DBusString *auxdata, const char *name,
+                       unsigned long value)
+{
+  return _dbus_string_append (auxdata, " ") &&
+         _dbus_string_append (auxdata, name) &&
+         _dbus_string_append (auxdata, "=") &&
+         _dbus_string_append_uint (auxdata, value);
+}
+
+static dbus_bool_t
+_dbus_append_pair_str (DBusString *auxdata, const char *name, const char *value)
+{
+  return _dbus_string_append (auxdata, " ") &&
+         _dbus_string_append (auxdata, name) &&
+         _dbus_string_append (auxdata, "=\"") &&
+         _dbus_string_append (auxdata, value) &&
+         _dbus_string_append (auxdata, "\"");
+}
+
+static dbus_bool_t
+_dbus_append_mask (DBusString *auxdata, uint32_t mask)
+{
+  const char *mask_str;
+
+  /* Only one permission bit can be set */
+  if (mask == AA_DBUS_SEND)
+    mask_str = "send";
+  else if (mask == AA_DBUS_RECEIVE)
+    mask_str = "receive";
+  else if (mask == AA_DBUS_BIND)
+    mask_str = "bind";
+  else
+    return FALSE;
+
+  return _dbus_append_pair_str (auxdata, "mask", mask_str);
+}
+
+static dbus_bool_t
+is_unconfined (const char *con, const char *mode)
+{
+  /* treat con == NULL as confined as it is going to result in a denial */
+  if ((!mode && con && strcmp (con, "unconfined") == 0) ||
+      strcmp (mode, "unconfined") == 0)
+    {
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static dbus_bool_t
+query_append (DBusString *query, const char *buffer)
+{
+  if (!_dbus_string_append_byte (query, '\0'))
+    return FALSE;
+
+  if (buffer && !_dbus_string_append (query, buffer))
+    return FALSE;
+
+  return TRUE;
+}
+
+static dbus_bool_t
+build_common_query (DBusString *query, const char *con, const char *bustype)
+{
+  /**
+   * libapparmor's aa_query_label() function scribbles over the first
+   * AA_QUERY_CMD_LABEL_SIZE bytes of the query string with a private value.
+   */
+  return _dbus_string_insert_bytes (query, 0, AA_QUERY_CMD_LABEL_SIZE, 0) &&
+         _dbus_string_append (query, con) &&
+         _dbus_string_append_byte (query, '\0') &&
+         _dbus_string_append_byte (query, AA_CLASS_DBUS) &&
+         _dbus_string_append (query, bustype ? bustype : "");
+}
+
+static dbus_bool_t
+build_service_query (DBusString *query,
+                     const char *con,
+                     const char *bustype,
+                     const char *name)
+{
+  return build_common_query (query, con, bustype) &&
+         query_append (query, name);
+}
+
+static void
+set_error_from_query_errno (DBusError *error, int error_number)
+{
+  dbus_set_error (error, _dbus_error_from_errno (error_number),
+                  "Failed to query AppArmor policy: %s",
+                  _dbus_strerror (error_number));
+}
 #endif /* HAVE_APPARMOR */
 
 /**
@@ -342,6 +490,20 @@ bus_apparmor_enabled (void)
 #endif
 }
 
+void
+bus_apparmor_confinement_ref (BusAppArmorConfinement *confinement)
+{
+#ifdef HAVE_APPARMOR
+  if (!apparmor_enabled)
+    return;
+
+  _dbus_assert (confinement != NULL);
+  _dbus_assert (confinement->refcount > 0);
+
+  confinement->refcount += 1;
+#endif /* HAVE_APPARMOR */
+}
+
 BusAppArmorConfinement*
 bus_apparmor_init_connection_confinement (DBusConnection *connection,
                                           DBusError      *error)
@@ -385,5 +547,124 @@ bus_apparmor_init_connection_confinement (DBusConnection *connection,
   return confinement;
 #else
   return NULL;
+#endif /* HAVE_APPARMOR */
+}
+
+/**
+ * Returns true if the given connection can acquire a service,
+ * using the tasks security context
+ *
+ * @param connection connection that wants to own the service
+ * @param bustype name of the bus
+ * @param service_name the name of the service to acquire
+ * @param error the reason for failure when FALSE is returned
+ * @returns TRUE if acquire is permitted
+ */
+dbus_bool_t
+bus_apparmor_allows_acquire_service (DBusConnection     *connection,
+                                     const char         *bustype,
+                                     const char         *service_name,
+                                     DBusError          *error)
+{
+
+#ifdef HAVE_APPARMOR
+  BusAppArmorConfinement *con = NULL;
+  DBusString qstr, auxdata;
+  dbus_bool_t free_auxdata = FALSE;
+  dbus_bool_t allow = FALSE, audit = TRUE;
+  unsigned long pid;
+  int res, serrno = 0;
+
+  if (!apparmor_enabled)
+    return TRUE;
+
+  _dbus_assert (connection != NULL);
+
+  con = bus_connection_dup_apparmor_confinement (connection);
+
+  if (is_unconfined (con->context, con->mode))
+    {
+      allow = TRUE;
+      audit = FALSE;
+      goto out;
+    }
+
+  if (!_dbus_string_init (&qstr))
+    goto oom;
+
+  if (!build_service_query (&qstr, con->context, bustype, service_name))
+    {
+      _dbus_string_free (&qstr);
+      goto oom;
+    }
+
+  res = aa_query_label (AA_DBUS_BIND,
+                        _dbus_string_get_data (&qstr),
+                        _dbus_string_get_length (&qstr),
+                        &allow, &audit);
+  _dbus_string_free (&qstr);
+  if (res == -1)
+    {
+      serrno = errno;
+      set_error_from_query_errno (error, serrno);
+      goto audit;
+    }
+
+  /* Don't fail operations on profiles in complain mode */
+  if (modestr_is_complain (con->mode))
+      allow = TRUE;
+
+  if (!allow)
+    dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+                    "Connection \"%s\" is not allowed to own the service "
+                    "\"%s\" due to AppArmor policy",
+                    bus_connection_is_active (connection) ?
+                     bus_connection_get_name (connection) : "(inactive)",
+                    service_name);
+
+  if (!audit)
+    goto out;
+
+ audit:
+  if (!_dbus_string_init (&auxdata))
+    goto oom;
+  free_auxdata = TRUE;
+
+  if (!_dbus_append_pair_str (&auxdata, "bus", bustype ? bustype : "unknown"))
+    goto oom;
+
+  if (!_dbus_append_pair_str (&auxdata, "name", service_name))
+    goto oom;
+
+  if (serrno && !_dbus_append_pair_str (&auxdata, "info", strerror (serrno)))
+    goto oom;
+
+  if (!_dbus_append_mask (&auxdata, AA_DBUS_BIND))
+    goto oom;
+
+  if (connection && dbus_connection_get_unix_process_id (connection, &pid) &&
+      !_dbus_append_pair_uint (&auxdata, "pid", pid))
+    goto oom;
+
+  if (con->context && !_dbus_append_pair_str (&auxdata, "profile", con->context))
+    goto oom;
+
+  log_message (allow, "bind", &auxdata);
+
+ out:
+  if (con != NULL)
+    bus_apparmor_confinement_unref (con);
+  if (free_auxdata)
+    _dbus_string_free (&auxdata);
+  return allow;
+
+ oom:
+  if (error != NULL && !dbus_error_is_set (error))
+    BUS_SET_OOM (error);
+  allow = FALSE;
+  goto out;
+
+#else
+  return TRUE;
 #endif /* HAVE_APPARMOR */
 }

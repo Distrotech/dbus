@@ -38,7 +38,13 @@ void bus_apparmor_shutdown (void);
 dbus_bool_t bus_apparmor_enabled (void);
 
 void bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement);
+void bus_apparmor_confinement_ref (BusAppArmorConfinement *confinement);
 BusAppArmorConfinement* bus_apparmor_init_connection_confinement (DBusConnection *connection,
                                                                   DBusError      *error);
+
+dbus_bool_t bus_apparmor_allows_acquire_service (DBusConnection *connection,
+                                                 const char     *bustype,
+                                                 const char     *service_name,
+                                                 DBusError      *error);
 
 #endif /* BUS_APPARMOR_H */
