@@ -339,12 +339,66 @@ build_service_query (DBusString *query,
          query_append (query, name);
 }
 
+static dbus_bool_t
+build_message_query (DBusString *query,
+                     const char *src_con,
+                     const char *bustype,
+                     const char *name,
+                     const char *dst_con,
+                     const char *path,
+                     const char *interface,
+                     const char *member)
+{
+  return build_common_query (query, src_con, bustype) &&
+         query_append (query, name) &&
+         query_append (query, dst_con) &&
+         query_append (query, path) &&
+         query_append (query, interface) &&
+         query_append (query, member);
+}
+
 static void
 set_error_from_query_errno (DBusError *error, int error_number)
 {
   dbus_set_error (error, _dbus_error_from_errno (error_number),
                   "Failed to query AppArmor policy: %s",
                   _dbus_strerror (error_number));
+}
+
+static void
+set_error_from_denied_message (DBusError      *error,
+                               DBusConnection *sender,
+                               DBusConnection *proposed_recipient,
+                               dbus_bool_t     requested_reply,
+                               const char     *msgtype,
+                               const char     *path,
+                               const char     *interface,
+                               const char     *member,
+                               const char     *error_name,
+                               const char     *destination)
+{
+  const char *proposed_recipient_loginfo;
+  const char *unset = "(unset)";
+
+  proposed_recipient_loginfo = proposed_recipient ?
+                               bus_connection_get_loginfo (proposed_recipient) :
+                               "bus";
+
+  dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+                  "An AppArmor policy prevents this sender from sending this "
+                  "message to this recipient; type=\"%s\", "
+                  "sender=\"%s\" (%s) interface=\"%s\" member=\"%s\" "
+                  "error name=\"%s\" requested_reply=\"%d\" "
+                  "destination=\"%s\" (%s)",
+                  msgtype,
+                  bus_connection_get_name (sender),
+                  bus_connection_get_loginfo (sender),
+                  interface ? interface : unset,
+                  member ? member : unset,
+                  error_name ? error_name : unset,
+                  requested_reply,
+                  destination,
+                  proposed_recipient_loginfo);
 }
 #endif /* HAVE_APPARMOR */
 
@@ -662,6 +716,291 @@ bus_apparmor_allows_acquire_service (DBusConnection     *connection,
   if (error != NULL && !dbus_error_is_set (error))
     BUS_SET_OOM (error);
   allow = FALSE;
+  goto out;
+
+#else
+  return TRUE;
+#endif /* HAVE_APPARMOR */
+}
+
+/**
+ * Check if Apparmor security controls allow the message to be sent to a
+ * particular connection based on the security context of the sender and
+ * that of the receiver. The destination connection need not be the
+ * addressed recipient, it could be an "eavesdropper"
+ *
+ * @param sender the sender of the message.
+ * @param proposed_recipient the connection the message is to be sent to.
+ * @param requested_reply TRUE if the message is a reply requested by
+ *                        proposed_recipient
+ * @param bustype name of the bus
+ * @param msgtype message type (DBUS_MESSAGE_TYPE_METHOD_CALL, etc.)
+ * @param path object path the message should be sent to
+ * @param interface the type of the object instance
+ * @param member the member of the object
+ * @param error_name the name of the error if the message type is error
+ * @param destination name that the message should be sent to
+ * @param source name that the message should be sent from
+ * @param error the reason for failure when FALSE is returned
+ * @returns TRUE if the message is permitted
+ */
+dbus_bool_t
+bus_apparmor_allows_send (DBusConnection     *sender,
+                          DBusConnection     *proposed_recipient,
+                          dbus_bool_t         requested_reply,
+                          const char         *bustype,
+                          int                 msgtype,
+                          const char         *path,
+                          const char         *interface,
+                          const char         *member,
+                          const char         *error_name,
+                          const char         *destination,
+                          const char         *source,
+                          DBusError          *error)
+{
+#ifdef HAVE_APPARMOR
+  BusAppArmorConfinement *src_con = NULL, *dst_con = NULL;
+  DBusString qstr, auxdata;
+  dbus_bool_t src_allow = FALSE, dst_allow = FALSE;
+  dbus_bool_t src_audit = TRUE, dst_audit = TRUE;
+  dbus_bool_t free_auxdata = FALSE;
+  unsigned long pid;
+  int len, res, src_errno = 0, dst_errno = 0;
+  uint32_t src_perm = AA_DBUS_SEND, dst_perm = AA_DBUS_RECEIVE;
+  const char *msgtypestr = dbus_message_type_to_string(msgtype);
+
+  if (!apparmor_enabled)
+    return TRUE;
+
+  _dbus_assert (sender != NULL);
+
+  src_con = bus_connection_dup_apparmor_confinement (sender);
+
+  if (proposed_recipient)
+    {
+      dst_con = bus_connection_dup_apparmor_confinement (proposed_recipient);
+    }
+  else
+    {
+      dst_con = bus_con;
+      bus_apparmor_confinement_ref (dst_con);
+    }
+
+  /* map reply messages to initial send and receive permission. That is
+   * permission to receive a message from X grants permission to reply to X.
+   * And permission to send a message to Y grants permission to receive a reply
+   * from Y. Note that this only applies to requested replies. Unrequested
+   * replies still require a policy query.
+   */
+  if (requested_reply)
+    {
+      /* ignore requested reply messages and let dbus reply mapping handle them
+       * as the send was already allowed
+       */
+      src_allow = TRUE;
+      dst_allow = TRUE;
+      goto out;
+    }
+
+  if (is_unconfined (src_con->context, src_con->mode))
+    {
+      src_allow = TRUE;
+      src_audit = FALSE;
+    }
+  else
+    {
+      if (!_dbus_string_init (&qstr))
+        goto oom;
+
+      if (!build_message_query (&qstr, src_con->context, bustype, destination,
+                                dst_con->context, path, interface, member))
+        {
+          _dbus_string_free (&qstr);
+          goto oom;
+        }
+
+      res = aa_query_label (src_perm,
+                            _dbus_string_get_data (&qstr),
+                            _dbus_string_get_length (&qstr),
+                            &src_allow, &src_audit);
+      _dbus_string_free (&qstr);
+      if (res == -1)
+        {
+          src_errno = errno;
+          set_error_from_query_errno (error, src_errno);
+          goto audit;
+        }
+    }
+
+  if (is_unconfined (dst_con->context, dst_con->mode))
+    {
+      dst_allow = TRUE;
+      dst_audit = FALSE;
+    }
+  else
+    {
+      if (!_dbus_string_init (&qstr))
+        goto oom;
+
+      if (!build_message_query (&qstr, dst_con->context, bustype, source,
+                                src_con->context, path, interface, member))
+        {
+          _dbus_string_free (&qstr);
+          goto oom;
+        }
+
+      res = aa_query_label (dst_perm,
+                            _dbus_string_get_data (&qstr),
+                            _dbus_string_get_length (&qstr),
+                            &dst_allow, &dst_audit);
+      _dbus_string_free (&qstr);
+      if (res == -1)
+        {
+          dst_errno = errno;
+          set_error_from_query_errno (error, dst_errno);
+          goto audit;
+        }
+    }
+
+  /* Don't fail operations on profiles in complain mode */
+  if (modestr_is_complain (src_con->mode))
+    src_allow = TRUE;
+  if (modestr_is_complain (dst_con->mode))
+    dst_allow = TRUE;
+
+  if (!src_allow || !dst_allow)
+    set_error_from_denied_message (error,
+                                   sender,
+                                   proposed_recipient,
+                                   requested_reply,
+                                   msgtypestr,
+                                   path,
+                                   interface,
+                                   member,
+                                   error_name,
+                                   destination);
+
+  /* Don't audit the message if one of the following conditions is true:
+   *   1) The AppArmor query indicates that auditing should not happen.
+   *   2) The message is a reply type. Reply message are not audited because
+   *      the AppArmor policy language does not have the notion of a reply
+   *      message. Unrequested replies will be silently discarded if the sender
+   *      does not have permission to send to the receiver or if the receiver
+   *      does not have permission to receive from the sender.
+   */
+  if ((!src_audit && !dst_audit) ||
+      (msgtype == DBUS_MESSAGE_TYPE_METHOD_RETURN ||
+       msgtype == DBUS_MESSAGE_TYPE_ERROR))
+    goto out;
+
+ audit:
+  if (!_dbus_string_init (&auxdata))
+    goto oom;
+  free_auxdata = TRUE;
+
+  if (!_dbus_append_pair_str (&auxdata, "bus", bustype ? bustype : "unknown"))
+    goto oom;
+
+  if (path && !_dbus_append_pair_str (&auxdata, "path", path))
+    goto oom;
+
+  if (interface && !_dbus_append_pair_str (&auxdata, "interface", interface))
+    goto oom;
+
+  if (member && !_dbus_append_pair_str (&auxdata, "member", member))
+    goto oom;
+
+  if (error_name && !_dbus_append_pair_str (&auxdata, "error_name", error_name))
+    goto oom;
+
+  len = _dbus_string_get_length (&auxdata);
+
+  if (src_audit)
+    {
+      if (!_dbus_append_mask (&auxdata, src_perm))
+        goto oom;
+
+      if (destination && !_dbus_append_pair_str (&auxdata, "name", destination))
+        goto oom;
+
+      if (sender && dbus_connection_get_unix_process_id (sender, &pid) &&
+          !_dbus_append_pair_uint (&auxdata, "pid", pid))
+        goto oom;
+
+      if (src_con->context &&
+          !_dbus_append_pair_str (&auxdata, "profile", src_con->context))
+        goto oom;
+
+      if (proposed_recipient &&
+          dbus_connection_get_unix_process_id (proposed_recipient, &pid) &&
+          !_dbus_append_pair_uint (&auxdata, "peer_pid", pid))
+        goto oom;
+
+      if (dst_con->context &&
+          !_dbus_append_pair_str (&auxdata, "peer_profile", dst_con->context))
+        goto oom;
+
+      if (src_errno && !_dbus_append_pair_str (&auxdata, "info", strerror (src_errno)))
+        goto oom;
+
+      if (dst_errno &&
+          !_dbus_append_pair_str (&auxdata, "peer_info", strerror (dst_errno)))
+        goto oom;
+
+      log_message (src_allow, msgtypestr, &auxdata);
+    }
+  if (dst_audit)
+    {
+      _dbus_string_set_length (&auxdata, len);
+
+      if (source && !_dbus_append_pair_str (&auxdata, "name", source))
+        goto oom;
+
+      if (!_dbus_append_mask (&auxdata, dst_perm))
+        goto oom;
+
+      if (proposed_recipient &&
+          dbus_connection_get_unix_process_id (proposed_recipient, &pid) &&
+          !_dbus_append_pair_uint (&auxdata, "pid", pid))
+        goto oom;
+
+      if (dst_con->context &&
+          !_dbus_append_pair_str (&auxdata, "profile", dst_con->context))
+        goto oom;
+
+      if (sender && dbus_connection_get_unix_process_id (sender, &pid) &&
+          !_dbus_append_pair_uint (&auxdata, "peer_pid", pid))
+        goto oom;
+
+      if (src_con->context &&
+          !_dbus_append_pair_str (&auxdata, "peer_profile", src_con->context))
+        goto oom;
+
+      if (dst_errno && !_dbus_append_pair_str (&auxdata, "info", strerror (dst_errno)))
+        goto oom;
+
+      if (src_errno &&
+          !_dbus_append_pair_str (&auxdata, "peer_info", strerror (src_errno)))
+        goto oom;
+
+      log_message (dst_allow, msgtypestr, &auxdata);
+    }
+
+ out:
+  if (src_con != NULL)
+    bus_apparmor_confinement_unref (src_con);
+  if (dst_con != NULL)
+    bus_apparmor_confinement_unref (dst_con);
+  if (free_auxdata)
+    _dbus_string_free (&auxdata);
+
+  return src_allow && dst_allow;
+
+ oom:
+  if (error != NULL && !dbus_error_is_set (error))
+    BUS_SET_OOM (error);
+  src_allow = FALSE;
+  dst_allow = FALSE;
   goto out;
 
 #else

@@ -46,5 +46,17 @@ dbus_bool_t bus_apparmor_allows_acquire_service (DBusConnection *connection,
                                                  const char     *bustype,
                                                  const char     *service_name,
                                                  DBusError      *error);
+dbus_bool_t bus_apparmor_allows_send (DBusConnection     *sender,
+                                      DBusConnection     *proposed_recipient,
+                                      dbus_bool_t         requested_reply,
+                                      const char         *bustype,
+                                      int                 msgtype,
+                                      const char         *path,
+                                      const char         *interface,
+                                      const char         *member,
+                                      const char         *error_name,
+                                      const char         *destination,
+                                      const char         *source,
+                                      DBusError          *error);
 
 #endif /* BUS_APPARMOR_H */

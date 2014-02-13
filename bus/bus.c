@@ -1521,7 +1521,7 @@ bus_context_check_security_policy (BusContext     *context,
                                    DBusMessage    *message,
                                    DBusError      *error)
 {
-  const char *dest;
+  const char *src, *dest;
   BusClientPolicy *sender_policy;
   BusClientPolicy *recipient_policy;
   dbus_int32_t toggles;
@@ -1530,6 +1530,7 @@ bus_context_check_security_policy (BusContext     *context,
   dbus_bool_t requested_reply;
 
   type = dbus_message_get_type (message);
+  src = dbus_message_get_sender (message);
   dest = dbus_message_get_destination (message);
 
   /* dispatch.c was supposed to ensure these invariants */
@@ -1618,6 +1619,22 @@ bus_context_check_security_policy (BusContext     *context,
 
           return FALSE;
         }
+
+      /* next verify AppArmor access controls.  If allowed then
+       * go on with the standard checks.
+       */
+      if (!bus_apparmor_allows_send (sender, proposed_recipient,
+                                     requested_reply,
+                                     bus_context_get_type (context),
+                                     dbus_message_get_type (message),
+                                     dbus_message_get_path (message),
+                                     dbus_message_get_interface (message),
+                                     dbus_message_get_member (message),
+                                     dbus_message_get_error_name (message),
+                                     dest ? dest : DBUS_SERVICE_DBUS,
+                                     src ? src : DBUS_SERVICE_DBUS,
+                                     error))
+        return FALSE;
 
       if (!bus_connection_is_active (sender))
         {
