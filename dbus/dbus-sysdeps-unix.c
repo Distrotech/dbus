@@ -53,6 +53,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <netdb.h>
 #include <grp.h>
 #include <arpa/inet.h>
@@ -1395,7 +1396,7 @@ _dbus_listen_tcp_socket (const char     *host,
   tmp = ai;
   while (tmp)
     {
-      int fd = -1, *newlisten_fd;
+      int fd = -1, *newlisten_fd, tcp_nodelay_on;
       if (!_dbus_open_socket (&fd, tmp->ai_family, SOCK_STREAM, 0, error))
         {
           _DBUS_ASSERT_ERROR_IS_SET(error);
@@ -1407,6 +1408,15 @@ _dbus_listen_tcp_socket (const char     *host,
       if (setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr))==-1)
         {
           _dbus_warn ("Failed to set socket option \"%s:%s\": %s",
+                      host ? host : "*", port, _dbus_strerror (errno));
+        }
+
+      /* Nagle's algorithm imposes a huge delay on the initial messages
+         going over TCP. */
+      tcp_nodelay_on = 1;
+      if (setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &tcp_nodelay_on, sizeof (tcp_nodelay_on)) == -1)
+        {
+          _dbus_warn ("Failed to set TCP_NODELAY socket option \"%s:%s\": %s",
                       host ? host : "*", port, _dbus_strerror (errno));
         }
 
