@@ -1,16 +1,40 @@
 D-Bus 1.9.0 (UNRELEASED)
 ==
 
+Requirements:
+
+• Support for the systemd: (LISTEN_FDS) pseudo-transport on Linux now
+  requires the sd-daemon shared library, dropping the embedded convenience
+  copy (fd.o #71818, Simon)
+
+Build-time configuration changes:
+
+• The CMake build system now builds the same shared library name as Autotools
+  on at least Linux and Windows:
+  - on Linux (and perhaps other Unix platforms), it previously built
+    libdbus-1.so, but now builds libdbus-1.so.3.* with development
+    symlink libdbus-1.so and SONAME/symlink libdbus-1.so.3
+  - on Windows, it previously built either libdbus-1.dll (release) or
+    libdbus-1d.dll (debug), but now builds libdbus-1-3.dll, copied to
+    libdbus-1.dll for compatibility with older applications.
+  (fd.o #74117, Ralf Habacker)
+
 Enhancements:
 
 • in the CMake build system, add some hints for Linux users cross-compiling
   Windows D-Bus binaries to be able to run tests under Wine
   (fd.o #41252, Ralf Habacker)
 
+• on Unix platforms, disable Nagle's algorithm on TCP connections to improve
+  initial latency (fd.o #75544, Matt Hoosier)
+
 Fixes:
 
 • on Windows, allow up to 8K connections to the dbus-daemon, instead of the
   previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
+
+• fix an incorrect error message if a Unix socket path is too long
+  (fd.o #73887, Antoine Jacoutot)
 
 D-Bus 1.8.0 (2014-01-20)
 ==
