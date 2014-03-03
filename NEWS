@@ -1,7 +1,16 @@
 D-Bus 1.8.2 (UNRELEASED)
 ==
 
-…
+Enhancements:
+
+• in the CMake build system, add some hints for Linux users cross-compiling
+  Windows D-Bus binaries to be able to run tests under Wine
+  (fd.o #41252, Ralf Habacker)
+
+Fixes:
+
+• on Windows, allow up to 8K connections to the dbus-daemon, instead of the
+  previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
 
 D-Bus 1.8.0 (2014-01-20)
 ==
