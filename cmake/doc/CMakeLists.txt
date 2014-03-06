@@ -20,6 +20,8 @@ find_program(MEINPROC4_EXECUTABLE meinproc4)
 
 find_program(XMLTO_EXECUTABLE xmlto)
 
+find_program(CYGPATH_EXECUTABLE cygpath)
+
 if (MEINPROC4_EXECUTABLE OR XMLTO_EXECUTABLE)
   OPTION(DBUS_ENABLE_XML_DOCS "build XML  documentation (requires xmlto or meinproc4)" ON)
   ADD_CUSTOM_TARGET(xmldoc ALL)
@@ -71,6 +73,19 @@ macro (DOCBOOK _sources _format)
 		)
 	  endif ()
 	  if (XMLTO_EXECUTABLE)
+		    if (MSYS)
+			if (CYGPATH_EXECUTABLE)
+			    execute_process(
+				COMMAND cygpath ${_infile}
+				OUTPUT_VARIABLE _infile)
+			else ()
+			    execute_process(COMMAND dirname ${_infile}  OUTPUT_VARIABLE _path)
+			    string(STRIP ${_path} _path)
+			    execute_process(COMMAND sh -c "cd ${_path}; pwd -W" OUTPUT_VARIABLE _path)
+			    string(STRIP ${_path} _path)
+			    set(_infile "${_path}/${_name}")
+			endif(CYGPATH_EXECUTABLE)
+		    endif (MSYS)
 		    ADD_CUSTOM_COMMAND(
 			OUTPUT ${_outfile}
 			COMMAND ${XMLTO_EXECUTABLE} -vv ${_format} ${_infile}
