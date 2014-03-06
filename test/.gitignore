@@ -28,3 +28,9 @@ test-loopback
 test-relay
 test-dbus-daemon
 test-marshal
+manual-authz
+test-dbus-daemon-eavesdrop
+test-printf
+test-refs
+test-syntax
+test-syslog

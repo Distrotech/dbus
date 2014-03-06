@@ -9,6 +9,7 @@ dbus-monitor
 dbus-cleanup-sockets
 dbus-launch
 dbus-uuidgen
+dbus-run-session
 *.bb
 *.bbg
 *.gcov
