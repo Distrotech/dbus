@@ -151,6 +151,8 @@ spawn_dbus_daemon (gchar *binary,
 
       if (newline != NULL)
         {
+          if ((newline > address->str) && ('\r' == newline[-1]))
+            newline -= 1;
           g_string_truncate (address, newline - address->str);
           break;
         }
