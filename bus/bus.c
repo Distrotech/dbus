@@ -1562,30 +1562,6 @@ bus_context_check_security_policy (BusContext     *context,
 
   if (sender != NULL)
     {
-      /* First verify the SELinux access controls.  If allowed then
-       * go on with the standard checks.
-       */
-      if (!bus_selinux_allows_send (sender, proposed_recipient,
-				    dbus_message_type_to_string (dbus_message_get_type (message)),
-				    dbus_message_get_interface (message),
-				    dbus_message_get_member (message),
-				    dbus_message_get_error_name (message),
-				    dest ? dest : DBUS_SERVICE_DBUS, error))
-        {
-          if (error != NULL && !dbus_error_is_set (error))
-            {
-              /* don't syslog this, just set the error: avc_has_perm should
-               * have already written to either the audit log or syslog */
-              complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
-                  "An SELinux policy prevents this sender from sending this "
-                  "message to this recipient",
-                  0, message, sender, proposed_recipient, FALSE, FALSE, error);
-              _dbus_verbose ("SELinux security check denying send to service\n");
-            }
-
-          return FALSE;
-        }
-
       if (bus_connection_is_active (sender))
         {
           sender_policy = bus_connection_get_policy (sender);
@@ -1615,6 +1591,35 @@ bus_context_check_security_policy (BusContext     *context,
             }
         }
       else
+        {
+          sender_policy = NULL;
+        }
+
+      /* First verify the SELinux access controls.  If allowed then
+       * go on with the standard checks.
+       */
+      if (!bus_selinux_allows_send (sender, proposed_recipient,
+				    dbus_message_type_to_string (dbus_message_get_type (message)),
+				    dbus_message_get_interface (message),
+				    dbus_message_get_member (message),
+				    dbus_message_get_error_name (message),
+				    dest ? dest : DBUS_SERVICE_DBUS, error))
+        {
+          if (error != NULL && !dbus_error_is_set (error))
+            {
+              /* don't syslog this, just set the error: avc_has_perm should
+               * have already written to either the audit log or syslog */
+              complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
+                  "An SELinux policy prevents this sender from sending this "
+                  "message to this recipient",
+                  0, message, sender, proposed_recipient, FALSE, FALSE, error);
+              _dbus_verbose ("SELinux security check denying send to service\n");
+            }
+
+          return FALSE;
+        }
+
+      if (!bus_connection_is_active (sender))
         {
           /* Policy for inactive connections is that they can only send
            * the hello message to the bus driver
