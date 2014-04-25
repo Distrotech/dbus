@@ -361,6 +361,10 @@ dbus_bool_t _dbus_read_uuid_file (const DBusString *filename,
                                   dbus_bool_t       create_if_not_found,
                                   DBusError        *error);
 
+dbus_bool_t _dbus_write_uuid_file (const DBusString *filename,
+                                   const DBusGUID   *uuid,
+                                   DBusError        *error);
+
 dbus_bool_t _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str);
 
 #define _DBUS_PASTE2(a, b) a ## b
