@@ -3579,7 +3579,7 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
 
   _dbus_string_init_const (&filename, DBUS_MACHINE_UUID_FILE);
 
-  b = _dbus_read_uuid_file (&filename, machine_id, create_if_not_found, error);
+  b = _dbus_read_uuid_file (&filename, machine_id, FALSE, error);
   if (b)
     return TRUE;
 
@@ -3587,7 +3587,26 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
 
   /* Fallback to the system machine ID */
   _dbus_string_init_const (&filename, "/etc/machine-id");
-  return _dbus_read_uuid_file (&filename, machine_id, FALSE, error);
+  b = _dbus_read_uuid_file (&filename, machine_id, FALSE, error);
+
+  if (b)
+    {
+      /* try to copy it to the DBUS_MACHINE_UUID_FILE, but do not
+       * complain if that isn't possible for whatever reason */
+      _dbus_string_init_const (&filename, DBUS_MACHINE_UUID_FILE);
+      _dbus_write_uuid_file (&filename, machine_id, NULL);
+
+      return TRUE;
+    }
+
+  if (!create_if_not_found)
+    return FALSE;
+
+  /* if none found, try to make a new one */
+  dbus_error_free (error);
+  _dbus_string_init_const (&filename, DBUS_MACHINE_UUID_FILE);
+  _dbus_generate_uuid (machine_id);
+  return _dbus_write_uuid_file (&filename, machine_id, error);
 }
 
 /**
