@@ -42,6 +42,9 @@ Fixes:
 • fix an incorrect error message if a Unix socket path is too long
   (fd.o #73887, Antoine Jacoutot)
 
+• in an MSYS/Cygwin environment, pass Unix-style filenames to xmlto,
+  fixing documentation generation (fd.o #75860, Руслан Ижбулатов)
+
 D-Bus 1.8.0 (2014-01-20)
 ==
 
