@@ -45,6 +45,9 @@ Fixes:
 • in an MSYS/Cygwin environment, pass Unix-style filenames to xmlto,
   fixing documentation generation (fd.o #75860, Руслан Ижбулатов)
 
+• in Unix with X11, avoid giving dbus-launch a misleading argv[0]
+  in ps(1) (fd.o #69716, Chengwei Yang)
+
 D-Bus 1.8.0 (2014-01-20)
 ==
 
