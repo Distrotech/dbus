@@ -745,10 +745,18 @@ _dbus_read_uuid_file_without_creating (const DBusString *filename,
   return FALSE;
 }
 
-static dbus_bool_t
-_dbus_create_uuid_file_exclusively (const DBusString *filename,
-                                    DBusGUID         *uuid,
-                                    DBusError        *error)
+/**
+ * Write the give UUID to a file.
+ *
+ * @param filename the file to write
+ * @param uuid the UUID to save
+ * @param error used to raise an error
+ * @returns #FALSE on error
+ */
+dbus_bool_t
+_dbus_write_uuid_file (const DBusString *filename,
+                       const DBusGUID   *uuid,
+                       DBusError        *error)
 {
   DBusString encoded;
 
@@ -757,8 +765,6 @@ _dbus_create_uuid_file_exclusively (const DBusString *filename,
       _DBUS_SET_OOM (error);
       return FALSE;
     }
-
-  _dbus_generate_uuid (uuid);
   
   if (!_dbus_uuid_encode (uuid, &encoded))
     {
@@ -825,7 +831,8 @@ _dbus_read_uuid_file (const DBusString *filename,
   else
     {
       dbus_error_free (&read_error);
-      return _dbus_create_uuid_file_exclusively (filename, uuid, error);
+      _dbus_generate_uuid (uuid);
+      return _dbus_write_uuid_file (filename, uuid, error);
     }
 }
 
