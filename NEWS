@@ -7,7 +7,13 @@ Enhancements:
   Windows D-Bus binaries to be able to run tests under Wine
   (fd.o #41252, Ralf Habacker)
 
+• add Documentation key to dbus.service (fd.o #77447, Cameron Norman)
+
 Fixes:
+
+• in "dbus-uuidgen --ensure", try to copy systemd's /etc/machine-id
+  to /var/lib/dbus/machine-id instead of generating an entirely new ID
+  (fd.o #77941, Simon McVittie)
 
 • on Windows, allow up to 8K connections to the dbus-daemon, instead of the
   previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
