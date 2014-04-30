@@ -15,6 +15,9 @@ Fixes:
   to /var/lib/dbus/machine-id instead of generating an entirely new ID
   (fd.o #77941, Simon McVittie)
 
+• if dbus-launch receives an X error very quickly, do not kill
+  unrelated processes (fd.o #74698, Роман Донченко)
+
 • on Windows, allow up to 8K connections to the dbus-daemon, instead of the
   previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
 
