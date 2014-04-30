@@ -1,5 +1,7 @@
-D-Bus 1.8.2 (UNRELEASED)
+D-Bus 1.8.2 (2014-04-30)
 ==
+
+The “nobody wants red” release.
 
 Enhancements:
 
@@ -20,6 +22,9 @@ Fixes:
 
 • on Windows, allow up to 8K connections to the dbus-daemon, instead of the
   previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
+
+• cope with \r\n newlines in regression tests, since on Windows,
+  dbus-daemon.exe uses text mode (fd.o #75863, Руслан Ижбулатов)
 
 D-Bus 1.8.0 (2014-01-20)
 ==
