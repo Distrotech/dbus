@@ -406,6 +406,9 @@ static pid_t bus_pid_to_kill = -1;
 static void
 kill_bus(void)
 {
+  if (bus_pid_to_kill <= 0)
+    return;
+
   verbose ("Killing message bus and exiting babysitter\n");
   kill (bus_pid_to_kill, SIGTERM);
   sleep (3);
@@ -1275,6 +1278,10 @@ main (int argc, char **argv)
 
       bus_pid = val;
 
+      /* Have to initialize bus_pid_to_kill ASAP, so that the
+         X error callback can kill it if an error happens. */
+      bus_pid_to_kill = bus_pid;
+
       close (bus_pid_to_launcher_pipe[READ_END]);
 
 #ifdef DBUS_ENABLE_X11_AUTOLAUNCH
@@ -1291,7 +1298,6 @@ main (int argc, char **argv)
                 {
                   char *address = NULL;
                   /* another window got added. Return its address */
-                  bus_pid_to_kill = bus_pid;
                   if (x11_get_address (&address, &bus_pid, &wid)
                        && address != NULL)
                     {
