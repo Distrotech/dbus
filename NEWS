@@ -21,23 +21,10 @@ Build-time configuration changes:
 
 Enhancements:
 
-• in the CMake build system, add some hints for Linux users cross-compiling
-  Windows D-Bus binaries to be able to run tests under Wine
-  (fd.o #41252, Ralf Habacker)
-
 • on Unix platforms, disable Nagle's algorithm on TCP connections to improve
   initial latency (fd.o #75544, Matt Hoosier)
 
-• add Documentation key to dbus.service (fd.o #77447, Cameron Norman)
-
 Fixes:
-
-• in "dbus-uuidgen --ensure", try to copy systemd's /etc/machine-id
-  to /var/lib/dbus/machine-id instead of generating an entirely new ID
-  (fd.o #77941, Simon McVittie)
-
-• on Windows, allow up to 8K connections to the dbus-daemon, instead of the
-  previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
 
 • fix an incorrect error message if a Unix socket path is too long
   (fd.o #73887, Antoine Jacoutot)
@@ -47,6 +34,34 @@ Fixes:
 
 • in Unix with X11, avoid giving dbus-launch a misleading argv[0]
   in ps(1) (fd.o #69716, Chengwei Yang)
+
+D-Bus 1.8.2 (2014-04-30)
+==
+
+The “nobody wants red” release.
+
+Enhancements:
+
+• in the CMake build system, add some hints for Linux users cross-compiling
+  Windows D-Bus binaries to be able to run tests under Wine
+  (fd.o #41252, Ralf Habacker)
+
+• add Documentation key to dbus.service (fd.o #77447, Cameron Norman)
+
+Fixes:
+
+• in "dbus-uuidgen --ensure", try to copy systemd's /etc/machine-id
+  to /var/lib/dbus/machine-id instead of generating an entirely new ID
+  (fd.o #77941, Simon McVittie)
+
+• if dbus-launch receives an X error very quickly, do not kill
+  unrelated processes (fd.o #74698, Роман Донченко)
+
+• on Windows, allow up to 8K connections to the dbus-daemon, instead of the
+  previous 64 (fd.o #71297; Cristian Onet, Ralf Habacker)
+
+• cope with \r\n newlines in regression tests, since on Windows,
+  dbus-daemon.exe uses text mode (fd.o #75863, Руслан Ижбулатов)
 
 D-Bus 1.8.0 (2014-01-20)
 ==
