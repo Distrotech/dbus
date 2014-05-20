@@ -1106,14 +1106,11 @@ bus_activation_service_created (BusActivation  *activation,
 dbus_bool_t
 bus_activation_send_pending_auto_activation_messages (BusActivation  *activation,
                                                       BusService     *service,
-                                                      BusTransaction *transaction,
-                                                      DBusError      *error)
+                                                      BusTransaction *transaction)
 {
   BusPendingActivation *pending_activation;
   DBusList *link;
 
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-  
   /* Check if it's a pending activation */
   pending_activation = _dbus_hash_table_lookup_string (activation->pending_activations,
                                                        bus_service_get_name (service));
@@ -1130,15 +1127,32 @@ bus_activation_send_pending_auto_activation_messages (BusActivation  *activation
       if (entry->auto_activation && dbus_connection_get_is_connected (entry->connection))
         {
           DBusConnection *addressed_recipient;
-          
+          DBusError error;
+
+          dbus_error_init (&error);
+
           addressed_recipient = bus_service_get_primary_owners_connection (service);
 
           /* Resume dispatching where we left off in bus_dispatch() */
           if (!bus_dispatch_matches (transaction,
                                      entry->connection,
                                      addressed_recipient,
-                                     entry->activation_message, error))
-            goto error;
+                                     entry->activation_message, &error))
+            {
+              /* If permission is denied, we just want to return the error
+               * to the original method invoker; in particular, we don't
+               * want to make the RequestName call fail with that error
+               * (see fd.o #78979, CVE-2014-3477). */
+              if (!bus_transaction_send_error_reply (transaction, entry->connection,
+                                                     &error, entry->activation_message))
+                {
+                  bus_connection_send_oom_error (entry->connection,
+                                                 entry->activation_message);
+                }
+
+              link = next;
+              continue;
+            }
         }
 
       link = next;
@@ -1147,7 +1161,6 @@ bus_activation_send_pending_auto_activation_messages (BusActivation  *activation
   if (!add_restore_pending_to_transaction (transaction, pending_activation))
     {
       _dbus_verbose ("Could not add cancel hook to transaction to revert removing pending activation\n");
-      BUS_SET_OOM (error);
       goto error;
     }
   

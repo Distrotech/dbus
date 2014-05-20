@@ -590,8 +590,9 @@ bus_registry_acquire_service (BusRegistry      *registry,
   activation = bus_context_get_activation (registry->context);
   retval = bus_activation_send_pending_auto_activation_messages (activation,
 								 service,
-								 transaction,
-								 error);
+								 transaction);
+  if (!retval)
+    BUS_SET_OOM (error);
   
  out:
   return retval;

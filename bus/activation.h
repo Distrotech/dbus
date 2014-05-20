@@ -60,8 +60,7 @@ dbus_bool_t    bus_activation_list_services    (BusActivation     *registry,
 
 dbus_bool_t    bus_activation_send_pending_auto_activation_messages (BusActivation     *activation,
 								     BusService        *service,
-								     BusTransaction    *transaction,
-								     DBusError         *error);
+								     BusTransaction    *transaction);
 
 
 
