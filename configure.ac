@@ -666,7 +666,10 @@ AC_CHECK_HEADERS(sys/resource.h)
 
 AC_CHECK_HEADERS(dirent.h)
 
-AC_CHECK_HEADERS(execinfo.h, [AC_CHECK_FUNCS(backtrace)])
+AC_CHECK_HEADERS([execinfo.h],
+	[AC_SEARCH_LIBS([backtrace], [execinfo],
+		[AC_DEFINE([HAVE_BACKTRACE], [1],
+			[Define to 1 if you have backtrace().])])])
 
 AC_CHECK_HEADERS(errno.h)
 
