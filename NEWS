@@ -1,5 +1,13 @@
-D-Bus 1.8.3 (UNRELEASED)
+D-Bus 1.8.4 (2014-06-10)
 ==
+
+Security fix:
+
+• Alban Crequy at Collabora Ltd. discovered and fixed a denial-of-service
+  flaw in dbus-daemon, part of the reference implementation of D-Bus.
+  Additionally, in highly unusual environments the same flaw could lead to
+  a side channel between processes that should not be able to communicate.
+  (CVE-2014-3477, fd.o #78979)
 
 D-Bus 1.8.2 (2014-04-30)
 ==
