@@ -202,6 +202,9 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
   DBusList *link;
   int i, j, fd;
   struct kevent ev;
+#ifdef O_CLOEXEC
+  dbus_bool_t cloexec_done = 0;
+#endif
 
   if (!_init_kqueue (context))
     goto out;
@@ -259,7 +262,15 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
           /* FIXME - less lame error handling for failing to add a watch;
            * we may need to sleep.
            */
+#ifdef O_CLOEXEC
           fd = open (new_dirs[i], O_RDONLY | O_CLOEXEC);
+          cloexec_done = (fd >= 0);
+
+          if (fd < 0 && errno == EINVAL)
+#endif
+            {
+              fd = open (new_dirs[i], O_RDONLY);
+            }
           if (fd < 0)
             {
               if (errno != ENOENT)
@@ -273,6 +284,12 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
                   new_dirs[i] = NULL;
                   continue;
                 }
+            }
+#ifdef O_CLOEXEC
+          if (!cloexec_done)
+#endif
+            {
+              _dbus_fd_set_close_on_exec (fd);
             }
 
           EV_SET (&ev, fd, EVFILT_VNODE, EV_ADD | EV_ENABLE | EV_CLEAR,
