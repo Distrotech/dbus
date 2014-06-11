@@ -45,6 +45,10 @@ Fixes:
 • avoid calling poll() with timeout < -1, which is considered invalid
   on FreeBSD and NetBSD (fd.o #78480, Jaap Boender)
 
+• be portable to BSD-derived platforms where O_CLOEXEC is unavailable in libc
+  (like Mac OS X 10.6), or available in libc but unsupported by the kernel
+  (fd.o #77032; rmvsxop, OBATA Akio, Patrick Welche)
+
 D-Bus 1.8.4 (2014-06-10)
 ==
 
