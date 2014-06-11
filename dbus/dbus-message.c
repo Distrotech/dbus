@@ -4204,7 +4204,7 @@ load_message (DBusMessageLoader *loader,
 
       message->n_unix_fds_allocated = message->n_unix_fds = n_unix_fds;
       loader->n_unix_fds -= n_unix_fds;
-      memmove(loader->unix_fds + n_unix_fds, loader->unix_fds, loader->n_unix_fds);
+      memmove (loader->unix_fds, loader->unix_fds + n_unix_fds, loader->n_unix_fds * sizeof (loader->unix_fds[0]));
     }
   else
     message->unix_fds = NULL;
