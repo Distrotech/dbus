@@ -536,7 +536,7 @@ kill_bus_when_session_ends (void)
   if (tty_fd < 0 && x_fd < 0)
     {
       fprintf (stderr, "No terminal on standard input and no X display; cannot attach message bus to session lifetime\n");
-      exit (1);
+      kill_bus_and_exit (1);
     }
   
   while (TRUE)
