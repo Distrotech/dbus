@@ -2573,6 +2573,11 @@ _dbus_poll (DBusPollFD *fds,
       _DBUS_STRUCT_OFFSET (DBusPollFD, revents) ==
       _DBUS_STRUCT_OFFSET (struct pollfd, revents))
     {
+      if (timeout_milliseconds < -1)
+        {
+          timeout_milliseconds = -1;
+        }
+
       return poll ((struct pollfd*) fds,
                    n_fds,
                    timeout_milliseconds);
