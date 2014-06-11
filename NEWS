@@ -29,6 +29,10 @@ Enhancements:
 
 Fixes:
 
+• When dbus-launch --exit-with-session starts a dbus-daemon but then cannot
+  attach to a session, kill the dbus-daemon as intended
+  (fd.o #74698, Роман Донченко)
+
 • fix an incorrect error message if a Unix socket path is too long
   (fd.o #73887, Antoine Jacoutot)
 
