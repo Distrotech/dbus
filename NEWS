@@ -24,6 +24,9 @@ Enhancements:
 • on Unix platforms, disable Nagle's algorithm on TCP connections to improve
   initial latency (fd.o #75544, Matt Hoosier)
 
+• use backtrace() if it is in -lexecinfo instead of libc, as on NetBSD
+  (fd.o #69702, Patrick Welche)
+
 Fixes:
 
 • fix an incorrect error message if a Unix socket path is too long
@@ -34,6 +37,9 @@ Fixes:
 
 • in Unix with X11, avoid giving dbus-launch a misleading argv[0]
   in ps(1) (fd.o #69716, Chengwei Yang)
+
+• avoid calling poll() with timeout < -1, which is considered invalid
+  on FreeBSD and NetBSD (fd.o #78480, Jaap Boender)
 
 D-Bus 1.8.4 (2014-06-10)
 ==
