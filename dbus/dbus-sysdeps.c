@@ -760,6 +760,20 @@ _dbus_get_is_errno_epipe (void)
 }
 
 /**
+ * See if errno is ETOOMANYREFS
+ * @returns #TRUE if errno == ETOOMANYREFS
+ */
+dbus_bool_t
+_dbus_get_is_errno_etoomanyrefs (void)
+{
+#ifdef ETOOMANYREFS
+  return errno == ETOOMANYREFS;
+#else
+  return FALSE;
+#endif
+}
+
+/**
  * Get error message from errno
  * @returns _dbus_strerror(errno)
  */

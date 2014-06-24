@@ -646,12 +646,44 @@ do_writing (DBusTransport *transport)
         {
           /* EINTR already handled for us */
           
-          /* For some discussion of why we also ignore EPIPE here, see
+          /* If the other end closed the socket with close() or shutdown(), we
+           * receive EPIPE here but we must not close the socket yet: there
+           * might still be some data to read. See:
            * http://lists.freedesktop.org/archives/dbus/2008-March/009526.html
            */
           
           if (_dbus_get_is_errno_eagain_or_ewouldblock () || _dbus_get_is_errno_epipe ())
             goto out;
+
+          /* Since Linux commit 25888e (from 2.6.37-rc4, Nov 2010), sendmsg()
+           * on Unix sockets returns -1 errno=ETOOMANYREFS when the passfd
+           * mechanism (SCM_RIGHTS) is used recursively with a recursion level
+           * of maximum 4. The kernel does not have an API to check whether
+           * the passed fds can be forwarded and it can change asynchronously.
+           * See:
+           * https://bugs.freedesktop.org/show_bug.cgi?id=80163
+           */
+
+          else if (_dbus_get_is_errno_etoomanyrefs ())
+            {
+              /* We only send fds in the first byte of the message.
+               * ETOOMANYREFS cannot happen after.
+               */
+              _dbus_assert (socket_transport->message_bytes_written == 0);
+
+              _dbus_verbose (" discard message of %d bytes due to ETOOMANYREFS\n",
+                             total_bytes_to_write);
+
+              socket_transport->message_bytes_written = 0;
+              _dbus_string_set_length (&socket_transport->encoded_outgoing, 0);
+              _dbus_string_compact (&socket_transport->encoded_outgoing, 2048);
+
+              /* The message was not actually sent but it needs to be removed
+               * from the outgoing queue
+               */
+              _dbus_connection_message_sent_unlocked (transport->connection,
+                                                      message);
+            }
           else
             {
               _dbus_verbose ("Error writing to remote app: %s\n",
