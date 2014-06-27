@@ -352,6 +352,13 @@ print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)
 	    int fd;
 	    dbus_message_iter_get_basic (iter, &fd);
 	    printf ("unix fd %d\n", fd);
+
+            /* dbus_message_iter_get_basic() duplicated the fd, we need to
+             * close it after use. The original fd will be closed when the
+             * DBusMessage is released.
+             */
+            close (fd);
+
 	    break;
 	  }
 
