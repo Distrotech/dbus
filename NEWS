@@ -1,7 +1,20 @@
-D-Bus 1.6.22 (UNRELEASED)
+D-Bus 1.6.22 (2014-06-02)
 ==
 
-...
+Security fixes backported from 1.8.6:
+
+• On Linux ≥ 2.6.37-rc4, if sendmsg() fails with ETOOMANYREFS, silently drop
+  the message. This prevents an attack in which a malicious client can
+  make dbus-daemon disconnect a system service, which is a local
+  denial of service.
+  (fd.o #80163, CVE-2014-3532; Alban Crequy)
+
+• Track remaining Unix file descriptors correctly when more than one
+  message in quick succession contains fds. This prevents another attack
+  in which a malicious client can make dbus-daemon disconnect a system
+  service.
+  (fd.o #79694, fd.o #80469, CVE-2014-3533; Alejandro Martínez Suárez,
+  Simon McVittie, Alban Crequy)
 
 D-Bus 1.6.20 (2014-06-10)
 ==
