@@ -118,7 +118,7 @@ bus_match_rule_unref (BusMatchRule *rule)
     }
 }
 
-#ifdef DBUS_ENABLE_VERBOSE_MODE
+#if defined(DBUS_ENABLE_VERBOSE_MODE) || defined(DBUS_ENABLE_STATS)
 /* Note this function does not do escaping, so it's only
  * good for debug spew at the moment
  */
@@ -279,7 +279,7 @@ match_rule_to_string (BusMatchRule *rule)
     return s;
   }
 }
-#endif /* DBUS_ENABLE_VERBOSE_MODE */
+#endif /* defined(DBUS_ENABLE_VERBOSE_MODE) || defined(DBUS_ENABLE_STATS) */
 
 dbus_bool_t
 bus_match_rule_set_message_type (BusMatchRule *rule,
@@ -1140,6 +1140,74 @@ struct BusMatchmaker
    */
   RulePool rules_by_type[DBUS_NUM_MESSAGE_TYPES];
 };
+
+#ifdef DBUS_ENABLE_STATS
+dbus_bool_t
+bus_match_rule_dump (BusMatchmaker *matchmaker,
+                     DBusConnection *conn_filter,
+                     DBusMessageIter *arr_iter)
+{
+  int i;
+
+  for (i = 0 ; i < DBUS_NUM_MESSAGE_TYPES ; i++)
+    {
+      DBusHashIter iter;
+      DBusList **list;
+      DBusList *link;
+
+      _dbus_hash_iter_init (matchmaker->rules_by_type[i].rules_by_iface, &iter);
+      while (_dbus_hash_iter_next (&iter))
+        {
+          list =  _dbus_hash_iter_get_value (&iter);
+          for (link = _dbus_list_get_first_link (list);
+               link != NULL;
+               link = _dbus_list_get_next_link (list, link))
+            {
+              BusMatchRule *rule = link->data;
+
+              if (rule->matches_go_to == conn_filter)
+                {
+                  char *s = match_rule_to_string (rule);
+
+                  if (s == NULL)
+                    return FALSE;
+
+                  if (!dbus_message_iter_append_basic (arr_iter, DBUS_TYPE_STRING, &s))
+                    {
+                      dbus_free (s);
+                      return FALSE;
+                    }
+                  dbus_free (s);
+                }
+            }
+        }
+      list = &matchmaker->rules_by_type[i].rules_without_iface;
+      for (link = _dbus_list_get_first_link (list);
+           link != NULL;
+           link = _dbus_list_get_next_link (list, link))
+        {
+          BusMatchRule *rule = link->data;
+
+          if (rule->matches_go_to == conn_filter)
+            {
+              char *s = match_rule_to_string (rule);
+
+              if (s == NULL)
+                return FALSE;
+
+              if (!dbus_message_iter_append_basic (arr_iter, DBUS_TYPE_STRING, &s))
+                {
+                  dbus_free (s);
+                  return FALSE;
+                }
+              dbus_free (s);
+            }
+        }
+    }
+
+  return TRUE;
+}
+#endif
 
 static void
 rule_list_free (DBusList **rules)

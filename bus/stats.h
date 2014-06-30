@@ -35,4 +35,9 @@ dbus_bool_t bus_stats_handle_get_connection_stats (DBusConnection *connection,
                                                    DBusMessage    *message,
                                                    DBusError      *error);
 
+dbus_bool_t bus_stats_handle_get_all_match_rules (DBusConnection *caller_connection,
+                                                  BusTransaction *transaction,
+                                                  DBusMessage    *message,
+                                                  DBusError      *error);
+
 #endif /* multiple-inclusion guard */

@@ -77,6 +77,12 @@ BusMatchRule* bus_match_rule_parse (DBusConnection   *matches_go_to,
                                     const DBusString *rule_text,
                                     DBusError        *error);
 
+#ifdef DBUS_ENABLE_STATS
+dbus_bool_t bus_match_rule_dump (BusMatchmaker *matchmaker,
+                                 DBusConnection *conn_filter,
+                                 DBusMessageIter *arr_iter);
+#endif
+
 BusMatchmaker* bus_matchmaker_new   (void);
 BusMatchmaker* bus_matchmaker_ref   (BusMatchmaker *matchmaker);
 void           bus_matchmaker_unref (BusMatchmaker *matchmaker);

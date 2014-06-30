@@ -1789,6 +1789,7 @@ static const MessageHandler introspectable_message_handlers[] = {
 static const MessageHandler stats_message_handlers[] = {
   { "GetStats", "", "a{sv}", bus_stats_handle_get_stats },
   { "GetConnectionStats", "s", "a{sv}", bus_stats_handle_get_connection_stats },
+  { "GetAllMatchRules", "", "a{sas}", bus_stats_handle_get_all_match_rules },
   { NULL, NULL, NULL, NULL }
 };
 #endif

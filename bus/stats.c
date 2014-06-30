@@ -30,6 +30,7 @@
 
 #include "connection.h"
 #include "services.h"
+#include "signals.h"
 #include "utils.h"
 
 #ifdef DBUS_ENABLE_STATS
@@ -212,6 +213,122 @@ bus_stats_handle_get_connection_stats (DBusConnection *caller_connection,
 oom:
   if (reply != NULL)
     dbus_message_unref (reply);
+
+  BUS_SET_OOM (error);
+  return FALSE;
+}
+
+
+dbus_bool_t
+bus_stats_handle_get_all_match_rules (DBusConnection *caller_connection,
+                                      BusTransaction *transaction,
+                                      DBusMessage    *message,
+                                      DBusError      *error)
+{
+  BusContext *context;
+  DBusString bus_name_str;
+  DBusMessage *reply = NULL;
+  DBusMessageIter iter, hash_iter, entry_iter, arr_iter;
+  BusRegistry *registry;
+  char **services = NULL;
+  int services_len;
+  DBusConnection *conn_filter = NULL;
+  BusMatchmaker *matchmaker;
+  int i;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  registry = bus_connection_get_registry (caller_connection);
+  context = bus_transaction_get_context (transaction);
+  matchmaker = bus_context_get_matchmaker (context);
+
+  if (!bus_registry_list_services (registry, &services, &services_len))
+    return FALSE;
+
+  reply = dbus_message_new_method_return (message);
+  if (reply == NULL)
+    goto oom;
+
+  dbus_message_iter_init_append (reply, &iter);
+
+  if (!dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY, "{sas}",
+                                         &hash_iter))
+    goto oom;
+
+  for (i = 0 ; i < services_len ; i++)
+    {
+      BusService *service;
+
+      /* To avoid duplicate entries, only look for unique names */
+      if (services[i][0] != ':')
+        continue;
+
+      _dbus_string_init_const (&bus_name_str, services[i]);
+      service = bus_registry_lookup (registry, &bus_name_str);
+      _dbus_assert (service != NULL);
+
+      conn_filter = bus_service_get_primary_owners_connection (service);
+      _dbus_assert (conn_filter != NULL);
+
+      if (!dbus_message_iter_open_container (&hash_iter, DBUS_TYPE_DICT_ENTRY, NULL,
+                                             &entry_iter))
+        {
+          dbus_message_iter_abandon_container (&iter, &hash_iter);
+          goto oom;
+        }
+
+      if (!dbus_message_iter_append_basic (&entry_iter, DBUS_TYPE_STRING, &services[i]))
+        {
+          dbus_message_iter_abandon_container (&hash_iter, &entry_iter);
+          dbus_message_iter_abandon_container (&iter, &hash_iter);
+          goto oom;
+        }
+
+      if (!dbus_message_iter_open_container (&entry_iter, DBUS_TYPE_ARRAY, "s",
+                                             &arr_iter))
+        {
+          dbus_message_iter_abandon_container (&hash_iter, &entry_iter);
+          dbus_message_iter_abandon_container (&iter, &hash_iter);
+          goto oom;
+        }
+
+      if (!bus_match_rule_dump (matchmaker, conn_filter, &arr_iter))
+        {
+          dbus_message_iter_abandon_container (&entry_iter, &arr_iter);
+          dbus_message_iter_abandon_container (&hash_iter, &entry_iter);
+          dbus_message_iter_abandon_container (&iter, &hash_iter);
+          goto oom;
+        }
+
+      if (!dbus_message_iter_close_container (&entry_iter, &arr_iter))
+        {
+          dbus_message_iter_abandon_container (&hash_iter, &entry_iter);
+          dbus_message_iter_abandon_container (&iter, &hash_iter);
+          goto oom;
+        }
+      if (!dbus_message_iter_close_container (&hash_iter, &entry_iter))
+        {
+          dbus_message_iter_abandon_container (&iter, &hash_iter);
+          goto oom;
+        }
+    }
+
+  if (!dbus_message_iter_close_container (&iter, &hash_iter))
+    goto oom;
+
+  if (!bus_transaction_send_from_driver (transaction, caller_connection,
+                                         reply))
+    goto oom;
+
+  dbus_message_unref (reply);
+  dbus_free_string_array (services);
+  return TRUE;
+
+oom:
+  if (reply != NULL)
+    dbus_message_unref (reply);
+
+  dbus_free_string_array (services);
 
   BUS_SET_OOM (error);
   return FALSE;
