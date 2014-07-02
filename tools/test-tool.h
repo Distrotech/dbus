@@ -24,6 +24,7 @@
 #ifndef DBUS_TEST_TOOL_H
 #define DBUS_TEST_TOOL_H
 
+int dbus_test_tool_black_hole (int argc, char **argv);
 int dbus_test_tool_echo (int argc, char **argv);
 int dbus_test_tool_spam (int argc, char **argv);
 

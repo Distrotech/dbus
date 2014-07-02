@@ -34,8 +34,9 @@ static struct {
     const char *name;
     int (*callback) (int, char **);
 } subcommands[] = {
-      { "echo", dbus_test_tool_echo },
-      { "spam", dbus_test_tool_spam },
+      { "black-hole", dbus_test_tool_black_hole },
+      { "echo",       dbus_test_tool_echo },
+      { "spam",       dbus_test_tool_spam },
       { NULL, NULL }
 };
 
