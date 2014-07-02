@@ -882,7 +882,7 @@
 		<row>
 		  <entry><literal>ay</literal></entry>
 		  <entry>Array of bytes</entry>
-		  <entry><literal>DBUS_TYPE_G_BYTE_ARRAY</literal></entry>
+		  <entry><literal>DBUS_TYPE_G_UCHAR_ARRAY</literal></entry>
 		  <entry><literal>GArray *</literal></entry>
 		  <entry>g_array_free</entry>
 		  <entry></entry>
