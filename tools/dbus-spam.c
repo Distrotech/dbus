@@ -55,6 +55,9 @@ usage (int ecode)
            "    --queue=N     queue up N messages at a time (default 1)\n"
            "    --flood       send all messages immediately\n"
            "    --no-reply    set the NO_REPLY flag (implies --flood)\n"
+           "    --messages-per-conn=N   after sending messages-per-conn, wait\n"
+           "                  for the pending replies if any, then reconnect\n"
+           "                  (default: don't reconnect)\n"
            "\n"
            "    --string      send payload as a string (default)\n"
            "    --bytes       send payload as a byte-array\n"
@@ -145,21 +148,25 @@ consume_stdin (char   **payload_p,
 int
 dbus_test_tool_spam (int argc, char **argv)
 {
-  DBusConnection *connection;
+  DBusConnection *connection = NULL;
   DBusError error = DBUS_ERROR_INIT;
   DBusBusType type = DBUS_BUS_SESSION;
   const char *destination = DBUS_SERVICE_DBUS;
   int i;
   int count = 1;
   int sent = 0;
+  int sent_in_this_conn = 0;
   int received = 0;
+  int received_before_this_conn = 0;
   int queue_len = 1;
   const char *payload = NULL;
   char *payload_buf = NULL;
   size_t payload_len;
   int payload_type = DBUS_TYPE_STRING;
   DBusMessage *template = NULL;
+  dbus_bool_t flood = FALSE;
   dbus_bool_t no_reply = FALSE;
+  unsigned int messages_per_conn = 0;
   unsigned int seed = time (NULL);
   int n_random_sizes = 0;
   unsigned int *random_sizes = NULL;
@@ -279,15 +286,28 @@ dbus_test_tool_spam (int argc, char **argv)
         }
       else if (strcmp (arg, "--flood") == 0)
         {
+          if (queue_len > 1)
+            usage (2);
+
+          if (messages_per_conn > 0)
+            usage (2);
+
+          flood = TRUE;
           queue_len = -1;
         }
       else if (strcmp (arg, "--no-reply") == 0)
         {
+          if (queue_len > 1)
+            usage (2);
+
           queue_len = -1;
           no_reply = TRUE;
         }
       else if (strstr (arg, "--queue=") == arg)
         {
+          if (flood || no_reply)
+            usage (2);
+
           queue_len = atoi (arg + strlen ("--queue="));
 
           if (queue_len < 1)
@@ -296,6 +316,13 @@ dbus_test_tool_spam (int argc, char **argv)
       else if (strstr (arg, "--seed=") == arg)
         {
           seed = strtoul (arg + strlen ("--seed="), NULL, 10);
+        }
+      else if (strstr (arg, "--messages-per-conn=") == arg)
+        {
+          messages_per_conn = atoi (arg + strlen ("--messages-per-conn="));
+
+          if (messages_per_conn > 0 && flood)
+            usage (2);
         }
       else
         {
@@ -311,23 +338,50 @@ dbus_test_tool_spam (int argc, char **argv)
       payload_len = strlen (payload);
     }
 
-  VERBOSE (stderr, "Will send up to %d messages, with up to %d queued\n",
-           count, queue_len);
-
-  connection = dbus_bus_get_private (type, &error);
-
-  if (connection == NULL)
-    {
-      fprintf (stderr, "Failed to connect to bus: %s: %s\n",
-               error.name, error.message);
-      dbus_error_free (&error);
-      return 1;
-    }
+  VERBOSE (stderr, "Will send up to %d messages, with up to %d queued, max %d per connection\n",
+           count, queue_len, messages_per_conn);
 
   while (no_reply ? sent < count : received < count)
     {
+      /* Connect?
+       * - In the first iteration
+       *  or
+       * - When messages_per_conn messages have been sent and no replies are being waited for
+       */
+      if (connection == NULL ||
+          (messages_per_conn > 0  && sent_in_this_conn == messages_per_conn &&
+           (no_reply || received - received_before_this_conn == messages_per_conn)))
+        {
+          if (connection != NULL)
+            {
+              dbus_connection_flush (connection);
+              dbus_connection_close (connection);
+              dbus_connection_unref (connection);
+            }
+
+          VERBOSE (stderr, "New connection.\n");
+          connection = dbus_bus_get_private (type, &error);
+
+          if (connection == NULL)
+            {
+              fprintf (stderr, "Failed to connect to bus: %s: %s\n",
+                       error.name, error.message);
+              dbus_error_free (&error);
+              return 1;
+            }
+
+          sent_in_this_conn = 0;
+          received_before_this_conn = received;
+        }
+
+      /* Send another message? Only if we don't exceed the 3 limits:
+       * - total amount of messages
+       * - messages sent on this connection
+       * - queue
+       */
       while (sent < count &&
-             (queue_len == -1 || sent < queue_len + received))
+             (messages_per_conn == 0 || sent_in_this_conn < messages_per_conn) &&
+             (queue_len == -1 || sent_in_this_conn < queue_len + received - received_before_this_conn))
         {
           DBusMessage *message;
 
@@ -408,7 +462,9 @@ dbus_test_tool_spam (int argc, char **argv)
               if (!dbus_connection_send (connection, message, NULL))
                 tool_oom ("sending message");
 
+              VERBOSE (stderr, "sent message #%d\n", sent);
               sent++;
+              sent_in_this_conn++;
             }
           else
             {
@@ -422,6 +478,7 @@ dbus_test_tool_spam (int argc, char **argv)
 
               VERBOSE (stderr, "sent message #%d\n", sent);
               sent++;
+              sent_in_this_conn++;
 
               if (pc == NULL)
                 tool_oom ("sending message");
@@ -445,7 +502,12 @@ dbus_test_tool_spam (int argc, char **argv)
         }
     }
 
-  dbus_connection_flush (connection);
+  if (connection != NULL)
+    {
+      dbus_connection_flush (connection);
+      dbus_connection_close (connection);
+      dbus_connection_unref (connection);
+    }
 
   VERBOSE (stderr, "Done\n");
 
@@ -454,8 +516,6 @@ dbus_test_tool_spam (int argc, char **argv)
   if (template != NULL)
     dbus_message_unref (template);
 
-  dbus_connection_close (connection);
-  dbus_connection_unref (connection);
   dbus_shutdown ();
   return 0;
 }
