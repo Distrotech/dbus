@@ -125,5 +125,6 @@ dbus_bool_t       bus_context_check_security_policy              (BusContext    
                                                                   DBusConnection   *proposed_recipient,
                                                                   DBusMessage      *message,
                                                                   DBusError        *error);
+void              bus_context_check_all_watches                  (BusContext       *context);
 
 #endif /* BUS_BUS_H */
