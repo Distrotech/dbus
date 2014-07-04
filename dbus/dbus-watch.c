@@ -454,6 +454,27 @@ _dbus_watch_list_toggle_watch (DBusWatchList           *watch_list,
 }
 
 /**
+ * Sets all watches to the given enabled state, invoking the
+ * application's DBusWatchToggledFunction if appropriate.
+ *
+ * @param watch_list the watch list.
+ * @param enabled #TRUE to enable
+ */
+void
+_dbus_watch_list_toggle_all_watches (DBusWatchList           *watch_list,
+                                     dbus_bool_t              enabled)
+{
+  DBusList *link;
+
+  for (link = _dbus_list_get_first_link (&watch_list->watches);
+       link != NULL;
+       link = _dbus_list_get_next_link (&watch_list->watches, link))
+    {
+      _dbus_watch_list_toggle_watch (watch_list, link->data, enabled);
+    }
+}
+
+/**
  * Sets the handler for the watch.
  *
  * @todo this function only exists because of the weird

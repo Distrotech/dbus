@@ -312,26 +312,17 @@ _dbus_server_remove_watch  (DBusServer *server,
 }
 
 /**
- * Toggles a watch and notifies app via server's
- * DBusWatchToggledFunction if available. It's an error to call this
- * function on a watch that was not previously added.
+ * Toggles all watch and notifies app via server's
+ * DBusWatchToggledFunction if available.
  *
  * @param server the server.
- * @param watch the watch to toggle.
  * @param enabled whether to enable or disable
  */
 void
-_dbus_server_toggle_watch (DBusServer  *server,
-                           DBusWatch   *watch,
-                           dbus_bool_t  enabled)
+_dbus_server_toggle_all_watches (DBusServer  *server,
+                                dbus_bool_t  enabled)
 {
-  _dbus_assert (watch != NULL);
-
-  HAVE_LOCK_CHECK (server);
-  protected_change_watch (server, watch,
-                          NULL, NULL,
-                          _dbus_watch_list_toggle_watch,
-                          enabled);
+  _dbus_watch_list_toggle_all_watches (server->watches, enabled);
 }
 
 /** Function to be called in protected_change_timeout() with refcount held */

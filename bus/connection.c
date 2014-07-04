@@ -293,6 +293,10 @@ bus_connection_disconnected (DBusConnection *connection)
           _dbus_list_remove_link (&d->connections->incomplete, d->link_in_connection_list);
           d->link_in_connection_list = NULL;
           d->connections->n_incomplete -= 1;
+
+          /* If we have dropped below the max. number of incomplete
+           * connections, start accept()ing again */
+          bus_context_check_all_watches (d->connections->context);
         }
       
       _dbus_assert (d->connections->n_incomplete >= 0);
@@ -688,31 +692,17 @@ bus_connections_setup_connection (BusConnections *connections,
   
   dbus_connection_ref (connection);
 
-  /* Note that we might disconnect ourselves here, but it only takes
-   * effect on return to the main loop. We call this to free up
-   * expired connections if possible, and to queue the timeout for our
-   * own expiration.
-   */
   bus_connections_expire_incomplete (connections);
   
-  /* And we might also disconnect ourselves here, but again it
-   * only takes effect on return to main loop.
-   */
-  if (connections->n_incomplete >
-      bus_context_get_max_incomplete_connections (connections->context))
-    {
-      _dbus_verbose ("Number of incomplete connections exceeds max, dropping oldest one\n");
-      
-      _dbus_assert (connections->incomplete != NULL);
-      /* Disconnect the oldest unauthenticated connection.  FIXME
-       * would it be more secure to drop a *random* connection?  This
-       * algorithm seems to mean that if someone can create new
-       * connections quickly enough, they can keep anyone else from
-       * completing authentication. But random may or may not really
-       * help with that, a more elaborate solution might be required.
-       */
-      dbus_connection_close (connections->incomplete->data);
-    }
+  /* The listening socket is removed from the main loop,
+   * i.e. does not accept(), while n_incomplete is at its
+   * maximum value; so we shouldn't get here in that case */
+  _dbus_assert (connections->n_incomplete <=
+      bus_context_get_max_incomplete_connections (connections->context));
+
+  /* If we have the maximum number of incomplete connections,
+   * stop accept()ing any more, to avert a DoS. See fd.o #80919 */
+  bus_context_check_all_watches (d->connections->context);
   
   retval = TRUE;
 
@@ -1418,6 +1408,10 @@ bus_connection_complete (DBusConnection   *connection,
 
   _dbus_assert (d->connections->n_incomplete >= 0);
   _dbus_assert (d->connections->n_completed > 0);
+
+  /* If we have dropped below the max. number of incomplete
+   * connections, start accept()ing again */
+  bus_context_check_all_watches (d->connections->context);
 
   /* See if we can remove the timeout */
   bus_connections_expire_incomplete (d->connections);
@@ -2316,7 +2310,6 @@ bus_transaction_add_cancel_hook (BusTransaction               *transaction,
   return TRUE;
 }
 
-#ifdef DBUS_ENABLE_STATS
 int
 bus_connections_get_n_active (BusConnections *connections)
 {
@@ -2329,6 +2322,7 @@ bus_connections_get_n_incomplete (BusConnections *connections)
   return connections->n_incomplete;
 }
 
+#ifdef DBUS_ENABLE_STATS
 int
 bus_connections_get_total_match_rules (BusConnections *connections)
 {

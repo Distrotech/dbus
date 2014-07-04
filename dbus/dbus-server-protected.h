@@ -99,9 +99,8 @@ dbus_bool_t _dbus_server_add_watch      (DBusServer             *server,
                                          DBusWatch              *watch);
 void        _dbus_server_remove_watch   (DBusServer             *server,
                                          DBusWatch              *watch);
-void        _dbus_server_toggle_watch   (DBusServer             *server,
-                                         DBusWatch              *watch,
-                                         dbus_bool_t             enabled);
+void        _dbus_server_toggle_all_watches (DBusServer         *server,
+                                             dbus_bool_t         enabled);
 dbus_bool_t _dbus_server_add_timeout    (DBusServer             *server,
                                          DBusTimeout            *timeout);
 void        _dbus_server_remove_timeout (DBusServer             *server,
