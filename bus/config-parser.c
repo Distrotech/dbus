@@ -438,7 +438,7 @@ bus_config_parser_new (const DBusString      *basedir,
        * and legitimate auth will fail.  If interactive auth (ask user for
        * password) is allowed, then potentially it has to be quite long.
        */
-      parser->limits.auth_timeout = 30000; /* 30 seconds */
+      parser->limits.auth_timeout = 5000; /* 5 seconds */
       
       parser->limits.max_incomplete_connections = 64;
       parser->limits.max_connections_per_user = 256;
