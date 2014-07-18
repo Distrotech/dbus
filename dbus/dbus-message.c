@@ -4428,6 +4428,21 @@ static DBusDataSlotAllocator slot_allocator;
 _DBUS_DEFINE_GLOBAL_LOCK (message_slots);
 
 /**
+ * Return how many file descriptors are pending in the loader
+ *
+ * @param loader the loader
+ */
+int
+_dbus_message_loader_get_pending_fds_count (DBusMessageLoader *loader)
+{
+#ifdef HAVE_UNIX_FD_PASSING
+  return loader->n_unix_fds;
+#else
+  return 0;
+#endif
+}
+
+/**
  * Allocates an integer ID to be used for storing application-specific
  * data on any DBusMessage. The allocated ID may then be used
  * with dbus_message_set_data() and dbus_message_get_data().

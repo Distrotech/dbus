@@ -1491,6 +1491,17 @@ _dbus_transport_set_allow_anonymous (DBusTransport              *transport,
   transport->allow_anonymous = value != FALSE;
 }
 
+/**
+ * Return how many file descriptors are pending in the loader
+ *
+ * @param transport the transport
+ */
+int
+_dbus_transport_get_pending_fds_count (DBusTransport *transport)
+{
+  return _dbus_message_loader_get_pending_fds_count (transport->loader);
+}
+
 #ifdef DBUS_ENABLE_STATS
 void
 _dbus_transport_get_stats (DBusTransport  *transport,
