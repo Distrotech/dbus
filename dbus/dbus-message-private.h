@@ -80,6 +80,8 @@ struct DBusMessageLoader
   int *unix_fds; /**< File descriptors that have been read from the transport but not yet been handed to any message. Array will be allocated at first use. */
   unsigned n_unix_fds_allocated; /**< Number of file descriptors this array has space for */
   unsigned n_unix_fds; /**< Number of valid file descriptors in array */
+  void (* unix_fds_change) (void *); /**< Notify when the pending fds change */
+  void *unix_fds_change_data;
 #endif
 };
 
