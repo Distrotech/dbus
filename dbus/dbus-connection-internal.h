@@ -44,6 +44,8 @@ typedef enum
 /** default timeout value when waiting for a message reply, 25 seconds */
 #define _DBUS_DEFAULT_TIMEOUT_VALUE (25 * 1000)
 
+typedef void (* DBusPendingFdsChangeFunction) (void *data);
+
 void              _dbus_connection_lock                        (DBusConnection     *connection);
 void              _dbus_connection_unlock                      (DBusConnection     *connection);
 DBusConnection *  _dbus_connection_ref_unlocked                (DBusConnection     *connection);
@@ -101,6 +103,9 @@ void              _dbus_connection_test_get_locks                 (DBusConnectio
                                                                    DBusCondVar **dispatch_cond_loc,
                                                                    DBusCondVar **io_path_cond_loc);
 int               _dbus_connection_get_pending_fds_count          (DBusConnection *connection);
+void              _dbus_connection_set_pending_fds_function       (DBusConnection *connection,
+                                                                   DBusPendingFdsChangeFunction callback,
+                                                                   void *data);
 
 /* if DBUS_ENABLE_STATS */
 void _dbus_connection_get_stats (DBusConnection *connection,

@@ -4059,6 +4059,9 @@ _dbus_message_loader_return_unix_fds(DBusMessageLoader  *loader,
 
   loader->n_unix_fds += n_fds;
   loader->unix_fds_outstanding = FALSE;
+
+  if (n_fds && loader->unix_fds_change)
+    loader->unix_fds_change (loader->unix_fds_change_data);
 #else
   _dbus_assert_not_reached("Platform doesn't support unix fd passing");
 #endif
@@ -4206,6 +4209,9 @@ load_message (DBusMessageLoader *loader,
       message->n_unix_fds_allocated = message->n_unix_fds = n_unix_fds;
       loader->n_unix_fds -= n_unix_fds;
       memmove (loader->unix_fds, loader->unix_fds + n_unix_fds, loader->n_unix_fds * sizeof (loader->unix_fds[0]));
+
+      if (loader->unix_fds_change)
+        loader->unix_fds_change (loader->unix_fds_change_data);
     }
   else
     message->unix_fds = NULL;
@@ -4511,6 +4517,25 @@ _dbus_message_loader_get_pending_fds_count (DBusMessageLoader *loader)
   return loader->n_unix_fds;
 #else
   return 0;
+#endif
+}
+
+/**
+ * Register a function to be called whenever the number of pending file
+ * descriptors in the loader change.
+ *
+ * @param loader the loader
+ * @param callback the callback
+ * @param data the data for the callback
+ */
+void
+_dbus_message_loader_set_pending_fds_function (DBusMessageLoader *loader,
+                                               void (* callback) (void *),
+                                               void *data)
+{
+#ifdef HAVE_UNIX_FD_PASSING
+  loader->unix_fds_change = callback;
+  loader->unix_fds_change_data = data;
 #endif
 }
 

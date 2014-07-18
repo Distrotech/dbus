@@ -1523,6 +1523,22 @@ _dbus_transport_get_pending_fds_count (DBusTransport *transport)
   return _dbus_message_loader_get_pending_fds_count (transport->loader);
 }
 
+/**
+ * Register a function to be called whenever the number of pending file
+ * descriptors in the loader change.
+ *
+ * @param transport the transport
+ * @param callback the callback
+ */
+void
+_dbus_transport_set_pending_fds_function (DBusTransport *transport,
+                                           void (* callback) (void *),
+                                           void *data)
+{
+  _dbus_message_loader_set_pending_fds_function (transport->loader,
+                                                 callback, data);
+}
+
 #ifdef DBUS_ENABLE_STATS
 void
 _dbus_transport_get_stats (DBusTransport  *transport,
