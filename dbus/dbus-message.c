@@ -4499,6 +4499,21 @@ _dbus_message_loader_get_max_message_unix_fds (DBusMessageLoader  *loader)
   return loader->max_message_unix_fds;
 }
 
+/**
+ * Return how many file descriptors are pending in the loader
+ *
+ * @param loader the loader
+ */
+int
+_dbus_message_loader_get_pending_fds_count (DBusMessageLoader *loader)
+{
+#ifdef HAVE_UNIX_FD_PASSING
+  return loader->n_unix_fds;
+#else
+  return 0;
+#endif
+}
+
 static DBusDataSlotAllocator slot_allocator =
   _DBUS_DATA_SLOT_ALLOCATOR_INIT (_DBUS_LOCK_NAME (message_slots));
 

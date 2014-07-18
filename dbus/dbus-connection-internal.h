@@ -100,6 +100,7 @@ void              _dbus_connection_test_get_locks                 (DBusConnectio
                                                                    DBusMutex **io_path_mutex_loc,
                                                                    DBusCondVar **dispatch_cond_loc,
                                                                    DBusCondVar **io_path_cond_loc);
+int               _dbus_connection_get_pending_fds_count          (DBusConnection *connection);
 
 /* if DBUS_ENABLE_STATS */
 void _dbus_connection_get_stats (DBusConnection *connection,

@@ -2549,6 +2549,17 @@ _dbus_connection_block_pending_call (DBusPendingCall *pending)
   dbus_pending_call_unref (pending);
 }
 
+/**
+ * Return how many file descriptors are pending in the loader
+ *
+ * @param connection the connection
+ */
+int
+_dbus_connection_get_pending_fds_count (DBusConnection *connection)
+{
+  return _dbus_transport_get_pending_fds_count (connection->transport);
+}
+
 /** @} */
 
 /**
