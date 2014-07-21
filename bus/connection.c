@@ -33,6 +33,7 @@
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-timeout.h>
+#include <dbus/dbus-connection-internal.h>
 
 /* Trim executed commands to this length; we want to keep logs readable */
 #define MAX_LOG_COMMAND_LEN 50
@@ -102,6 +103,8 @@ typedef struct
   int peak_match_rules;
   int peak_bus_names;
 #endif
+  int n_pending_unix_fds;
+  DBusTimeout *pending_unix_fds_timeout;
 } BusConnectionData;
 
 static dbus_bool_t bus_pending_reply_expired (BusExpireList *list,
@@ -268,6 +271,15 @@ bus_connection_disconnected (DBusConnection *connection)
   
   dbus_connection_set_dispatch_status_function (connection,
                                                 NULL, NULL, NULL);
+
+  if (d->pending_unix_fds_timeout)
+    {
+      _dbus_loop_remove_timeout (bus_context_get_loop (d->connections->context),
+                                 d->pending_unix_fds_timeout);
+      _dbus_timeout_unref (d->pending_unix_fds_timeout);
+    }
+  d->pending_unix_fds_timeout = NULL;
+  _dbus_connection_set_pending_fds_function (connection, NULL, NULL);
   
   bus_connection_remove_transactions (connection);
 
@@ -592,6 +604,42 @@ oom:
    return FALSE;
 }
 
+static void
+check_pending_fds_cb (DBusConnection *connection)
+{
+  BusConnectionData *d = BUS_CONNECTION_DATA (connection);
+  int n_pending_unix_fds_old = d->n_pending_unix_fds;
+  int n_pending_unix_fds_new;
+
+  n_pending_unix_fds_new = _dbus_connection_get_pending_fds_count (connection);
+
+  _dbus_verbose ("Pending fds count changed on connection %p: %d -> %d\n",
+                 connection, n_pending_unix_fds_old, n_pending_unix_fds_new);
+
+  if (n_pending_unix_fds_old == 0 && n_pending_unix_fds_new > 0)
+    {
+      _dbus_timeout_set_interval (d->pending_unix_fds_timeout,
+              bus_context_get_pending_fd_timeout (d->connections->context));
+      _dbus_timeout_set_enabled (d->pending_unix_fds_timeout, TRUE);
+    }
+
+  if (n_pending_unix_fds_old > 0 && n_pending_unix_fds_new == 0)
+    {
+      _dbus_timeout_set_enabled (d->pending_unix_fds_timeout, FALSE);
+    }
+
+
+  d->n_pending_unix_fds = n_pending_unix_fds_new;
+}
+
+static dbus_bool_t
+pending_unix_fds_timeout_cb (void *data)
+{
+  DBusConnection *connection = data;
+  dbus_connection_close (connection);
+  return TRUE;
+}
+
 dbus_bool_t
 bus_connections_setup_connection (BusConnections *connections,
                                   DBusConnection *connection)
@@ -687,6 +735,22 @@ bus_connections_setup_connection (BusConnections *connections,
         }
     }
 
+  /* Setup pending fds timeout (see #80559) */
+  d->pending_unix_fds_timeout = _dbus_timeout_new (100, /* irrelevant */
+                                                   pending_unix_fds_timeout_cb,
+                                                   connection, NULL);
+  if (d->pending_unix_fds_timeout == NULL)
+    goto out;
+
+  _dbus_timeout_set_enabled (d->pending_unix_fds_timeout, FALSE);
+  if (!_dbus_loop_add_timeout (bus_context_get_loop (connections->context),
+                               d->pending_unix_fds_timeout))
+    goto out;
+
+  _dbus_connection_set_pending_fds_function (connection,
+          (DBusPendingFdsChangeFunction) check_pending_fds_cb,
+          connection);
+
   _dbus_list_append_link (&connections->incomplete, d->link_in_connection_list);
   connections->n_incomplete += 1;
   
@@ -733,6 +797,13 @@ bus_connections_setup_connection (BusConnections *connections,
       
       dbus_connection_set_dispatch_status_function (connection,
                                                     NULL, NULL, NULL);
+
+      if (d->pending_unix_fds_timeout)
+        _dbus_timeout_unref (d->pending_unix_fds_timeout);
+
+      d->pending_unix_fds_timeout = NULL;
+
+      _dbus_connection_set_pending_fds_function (connection, NULL, NULL);
 
       if (d->link_in_connection_list != NULL)
         {
