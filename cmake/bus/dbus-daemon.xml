@@ -401,7 +401,11 @@ Available limit names are:</para>
       "auth_timeout"               : milliseconds (thousandths) a
                                      connection is given to
                                      authenticate
-      "max_completed_connections"  : max number of authenticated connections  
+      "pending_fd_timeout"         : milliseconds (thousandths) a
+                                     fd is given to be transmitted to
+                                     dbus-daemon before disconnecting the
+                                     connection
+      "max_completed_connections"  : max number of authenticated connections
       "max_incomplete_connections" : max number of unauthenticated
                                      connections
       "max_connections_per_user"   : max number of completed connections from

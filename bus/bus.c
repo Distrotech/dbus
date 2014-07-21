@@ -1229,6 +1229,12 @@ bus_context_get_auth_timeout (BusContext *context)
 }
 
 int
+bus_context_get_pending_fd_timeout (BusContext *context)
+{
+  return context->limits.pending_fd_timeout;
+}
+
+int
 bus_context_get_max_completed_connections (BusContext *context)
 {
   return context->limits.max_completed_connections;

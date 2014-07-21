@@ -428,6 +428,11 @@ bus_config_parser_new (const DBusString      *basedir,
        * password) is allowed, then potentially it has to be quite long.
        */
       parser->limits.auth_timeout = 5000; /* 5 seconds */
+
+      /* Do not allow a fd to stay forever in dbus-daemon
+       * https://bugs.freedesktop.org/show_bug.cgi?id=80559
+       */
+      parser->limits.pending_fd_timeout = 150000; /* 2.5 minutes */
       
       parser->limits.max_incomplete_connections = 64;
       parser->limits.max_connections_per_user = 256;
@@ -1891,6 +1896,12 @@ set_limit (BusConfigParser *parser,
       must_be_int = TRUE;
       parser->limits.auth_timeout = value;
     }
+  else if (strcmp (name, "pending_fd_timeout") == 0)
+    {
+      must_be_positive = TRUE;
+      must_be_int = TRUE;
+      parser->limits.pending_fd_timeout = value;
+    }
   else if (strcmp (name, "reply_timeout") == 0)
     {
       must_be_positive = TRUE;
@@ -3097,6 +3108,7 @@ limits_equal (const BusLimits *a,
      || a->max_message_unix_fds == b->max_message_unix_fds
      || a->activation_timeout == b->activation_timeout
      || a->auth_timeout == b->auth_timeout
+     || a->pending_fd_timeout == b->pending_fd_timeout
      || a->max_completed_connections == b->max_completed_connections
      || a->max_incomplete_connections == b->max_incomplete_connections
      || a->max_connections_per_user == b->max_connections_per_user
