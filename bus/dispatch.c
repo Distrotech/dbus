@@ -1312,6 +1312,11 @@ check_get_connection_unix_process_id (BusContext     *context,
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
           defined(__linux__) || \
           defined(__OpenBSD__)
+          /* In principle NetBSD should also be in that list, but
+           * its implementation of PID-passing doesn't work
+           * over a socketpair() as used in the debug-pipe transport.
+           * We test this functionality in a more realistic situation
+           * in test/dbus-daemon.c. */
           warn_unexpected (connection, message, "not this error");
 
           goto out;

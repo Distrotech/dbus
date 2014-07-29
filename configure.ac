@@ -818,6 +818,11 @@ if test x$dbus_have_struct_cmsgcred = xyes; then
     AC_DEFINE(HAVE_CMSGCRED,1,[Have cmsgcred structure])
 fi
 
+AC_CHECK_MEMBER([struct unpcbid.unp_pid],
+                [AC_DEFINE([HAVE_UNPCBID], 1, [Have unpcbid structure])],
+                [],
+                [[#include <sys/un.h>]])
+
 AC_CHECK_FUNCS(getpeerucred getpeereid)
 
 AC_CHECK_FUNCS(pipe2 accept4)

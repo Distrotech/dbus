@@ -568,6 +568,60 @@ test_creds (Fixture *f,
 }
 
 static void
+test_processid (Fixture *f,
+    gconstpointer context)
+{
+  const char *unique = dbus_bus_get_unique_name (f->left_conn);
+  DBusMessage *m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS, "GetConnectionUnixProcessID");
+  DBusPendingCall *pc;
+  DBusError error = DBUS_ERROR_INIT;
+  guint32 pid;
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  if (!dbus_message_append_args (m,
+        DBUS_TYPE_STRING, &unique,
+        DBUS_TYPE_INVALID))
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+                                          &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  g_assert_cmpstr (dbus_message_get_signature (m), ==, "u");
+
+  g_assert_true (dbus_message_get_args (m, &error,
+                                        DBUS_TYPE_UINT32, &pid,
+                                        DBUS_TYPE_INVALID));
+// g_assert_no_error (&error);
+
+  g_message ("GetConnectionUnixProcessID returned %u", pid);
+
+#ifdef G_OS_UNIX
+  g_assert_cmpuint (pid, ==, getpid ());
+#elif defined(G_OS_WIN32)
+  g_assert_cmpuint (pid, ==, GetCurrentProcessId ());
+#else
+  g_assert_not_reached ();
+#endif
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -632,6 +686,7 @@ main (int argc,
   g_test_add ("/no-reply/timeout", Fixture, &finite_timeout_config,
       setup, test_no_reply, teardown);
   g_test_add ("/creds", Fixture, NULL, setup, test_creds, teardown);
+  g_test_add ("/processid", Fixture, NULL, setup, test_processid, teardown);
 
   return g_test_run ();
 }

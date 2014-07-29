@@ -1797,16 +1797,41 @@ _dbus_read_credentials_socket  (int              client_fd,
 #endif
     int cr_len = sizeof (cr);
 
-    if (getsockopt (client_fd, SOL_SOCKET, SO_PEERCRED, &cr, &cr_len) == 0 &&
-	cr_len == sizeof (cr))
+    if (getsockopt (client_fd, SOL_SOCKET, SO_PEERCRED, &cr, &cr_len) != 0)
       {
-	pid_read = cr.pid;
-	uid_read = cr.uid;
+        _dbus_verbose ("Failed to getsockopt(SO_PEERCRED): %s\n",
+                       _dbus_strerror (errno));
+      }
+    else if (cr_len != sizeof (cr))
+      {
+        _dbus_verbose ("Failed to getsockopt(SO_PEERCRED), returned %d bytes, expected %d\n",
+                       cr_len, (int) sizeof (cr));
       }
     else
       {
-	_dbus_verbose ("Failed to getsockopt() credentials, returned len %d/%d: %s\n",
-		       cr_len, (int) sizeof (cr), _dbus_strerror (errno));
+        pid_read = cr.pid;
+        uid_read = cr.uid;
+      }
+#elif defined(HAVE_UNPCBID) && defined(LOCAL_PEEREID)
+    /* Another variant of the above - used on NetBSD
+     */
+    struct unpcbid cr;
+    socklen_t cr_len = sizeof (cr);
+
+    if (getsockopt (client_fd, 0, LOCAL_PEEREID, &cr, &cr_len) != 0)
+      {
+        _dbus_verbose ("Failed to getsockopt(LOCAL_PEEREID): %s\n",
+                       _dbus_strerror (errno));
+      }
+    else if (cr_len != sizeof (cr))
+      {
+        _dbus_verbose ("Failed to getsockopt(LOCAL_PEEREID), returned %d bytes, expected %d\n",
+                       cr_len, (int) sizeof (cr));
+      }
+    else
+      {
+        pid_read = cr.unp_pid;
+        uid_read = cr.unp_euid;
       }
 #elif defined(HAVE_CMSGCRED)
     /* We only check for HAVE_CMSGCRED, but we're really assuming that the
