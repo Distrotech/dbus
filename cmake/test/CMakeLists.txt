@@ -1,6 +1,8 @@
 
 add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
+include_directories(${CMAKE_SOURCE_DIR}/../test)
+
 set(DBUS_SESSION_BUS_LISTEN_ADDRESS ${TEST_LISTEN})
 
 add_library(dbus-testutils STATIC
