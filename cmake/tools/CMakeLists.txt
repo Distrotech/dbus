@@ -45,3 +45,6 @@ install_targets(/bin dbus-launch )
 add_executable(dbus-monitor ${dbus_monitor_SOURCES})
 target_link_libraries(dbus-monitor ${DBUS_LIBRARIES})
 install_targets(/bin dbus-monitor )
+
+# create the /var/lib/dbus directory for dbus-uuidgen
+install(DIRECTORY DESTINATION var/lib/dbus)

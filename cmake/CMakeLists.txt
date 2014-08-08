@@ -73,7 +73,7 @@ set(EXPANDED_DATADIR         ${DBUS_INSTALL_DIR}/${DBUS_DATADIR})
 set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_DIR}/lib/dbus/machine-id)
 set(DBUS_BINDIR              ${EXPANDED_BINDIR})
 set(DBUS_DAEMONDIR           ${EXPANDED_BINDIR})
-
+set(DBUS_LOCALSTATEDIR       ${DBUS_INSTALL_DIR}/var)
 
 #enable building of shared library
 SET(BUILD_SHARED_LIBS ON)
@@ -401,7 +401,7 @@ endif (MSVC_IDE)
  endif (NOT $ENV{TMPDIR} STREQUAL "")
 
  # Not used on Windows, where there is no system bus
-set (DBUS_SYSTEM_PID_FILE ${EXPANDED_LOCALSTATEDIR}/run/dbus/pid)
+set (DBUS_SYSTEM_PID_FILE ${DBUS_LOCALSTATEDIR}/run/dbus/pid)
 
 if (WIN32)
 	set (DBUS_CONSOLE_AUTH_DIR "")
@@ -423,7 +423,7 @@ set (DEFAULT_MESSAGE_UNIX_FDS 1024)
 # and also to connect to. If this ever changes, it'll need to be split into
 # two variables, one for the listening address and one for the connecting
 # address.
-set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "unix:path=${EXPANDED_LOCALSTATEDIR}/run/dbus/system_bus_socket" CACHE STRING "system bus default address")
+set (DBUS_SYSTEM_BUS_DEFAULT_ADDRESS "unix:path=${DBUS_LOCALSTATEDIR}/run/dbus/system_bus_socket" CACHE STRING "system bus default address")
 
 if (WIN32)
   set (DBUS_SESSION_BUS_LISTEN_ADDRESS "autolaunch:" CACHE STRING "session bus default listening address")

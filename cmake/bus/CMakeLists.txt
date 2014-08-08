@@ -3,17 +3,14 @@ add_definitions(-DDBUS_COMPILATION)
 SET(EFENCE "")
 SET(BUS_DIR ${CMAKE_SOURCE_DIR}/../bus)
 
-set (config_DATA
-	session.conf				
-	system.conf
-)
-
 # config files for installation 
 CONFIGURE_FILE( "${BUS_DIR}/session.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/session.conf" IMMEDIATE @ONLY)
 FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/session.d)
 
-CONFIGURE_FILE( "system.conf.cmake" "${CMAKE_CURRENT_BINARY_DIR}/system.conf" IMMEDIATE @ONLY)
-FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/system.d)
+if(NOT WIN32)
+    CONFIGURE_FILE( "system.conf.cmake" "${CMAKE_CURRENT_BINARY_DIR}/system.conf" IMMEDIATE @ONLY)
+    FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/system.d)
+endif()
 
 # copy services for local daemon start to local service dir data/dbus-1/services
 SET (SERVICE_FILES test/data/valid-service-files)
@@ -88,8 +85,16 @@ set_target_properties(dbus-daemon PROPERTIES OUTPUT_NAME ${DBUS_DAEMON_NAME})
 set_target_properties(dbus-daemon PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
 install_targets(/bin dbus-daemon)
-install_files(/etc/dbus-1 FILES ${config_DATA})
-install(DIRECTORY .  DESTINATION etc/dbus-1/session.d  FILES_MATCHING PATTERN "*.conf")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/session.conf DESTINATION etc/dbus-1)
+install(DIRECTORY DESTINATION etc/dbus-1/session.d)
+install(DIRECTORY DESTINATION share/dbus-1/services)
+
+if(NOT WIN32)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/system.conf DESTINATION etc/dbus-1)
+    install(DIRECTORY DESTINATION etc/dbus-1/system.d)
+    install(DIRECTORY DESTINATION share/dbus-1/system-services)
+    install(DIRECTORY DESTINATION var/run/dbus)
+endif()
 
 if (DBUS_SERVICE)
 	set (dbus_service_SOURCES 
