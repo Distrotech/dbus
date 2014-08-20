@@ -47,6 +47,8 @@ LT_AGE=12
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
+SOVERSION=`expr ${LT_CURRENT} - ${LT_AGE}`
+AC_SUBST([SOVERSION])
 
 DBUS_MAJOR_VERSION=dbus_major_version
 DBUS_MINOR_VERSION=dbus_minor_version
@@ -1418,6 +1420,11 @@ case $host_os in
         ;;
 esac
 
+### Detect if ld supports --version-script
+
+gl_LD_VERSION_SCRIPT
+AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT],
+               [test "x$have_ld_version_script" = xyes])
 ### Doxygen Documentation
 
 AC_PATH_PROG(DOXYGEN, doxygen, no)
@@ -1824,6 +1831,7 @@ fi
 
 AC_CONFIG_FILES([
 Doxyfile
+dbus/Version
 dbus/versioninfo.rc
 dbus/dbus-arch-deps.h
 bus/system.conf

@@ -291,15 +291,10 @@ install_files(/include/dbus FILES ${dbusinclude_HEADERS})
 ### Internal library, used for the daemon, tools and tests, compiled statically.
 
 add_library(dbus-internal ${DBUS_INTERNAL_ADD_LIBRARY_OPTIONS}
-			${DBUS_LIB_SOURCES}
-			${DBUS_LIB_HEADERS}
-			${DBUS_SHARED_SOURCES}
-			${DBUS_SHARED_HEADERS}
 			${DBUS_UTIL_SOURCES}
 			${DBUS_UTIL_HEADERS}
 )
-target_link_libraries(dbus-internal)
-set_target_properties(dbus-internal PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_LIBRARY_DEFINITIONS})
+target_link_libraries(dbus-internal dbus-1)
 if(WIN32)
     if(WINCE)
         target_link_libraries(dbus-internal ws2)

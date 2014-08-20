@@ -112,6 +112,7 @@ dbus_daemon_SOURCES=				\
 	main.c
 
 dbus_daemon_LDADD=					\
+	$(top_builddir)/dbus/libdbus-1.la	\
 	$(top_builddir)/dbus/libdbus-internal.la	\
 	$(EFENCE)					\
 	$(DBUS_BUS_LIBS)
@@ -136,7 +137,8 @@ dbus_daemon_launch_helper_SOURCES=		\
 	$(LAUNCH_HELPER_SOURCES)
 
 dbus_daemon_launch_helper_LDADD=		\
-	$(top_builddir)/dbus/libdbus-internal.la \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(top_builddir)/dbus/libdbus-internal.la	\
 	$(DBUS_LAUNCHER_LIBS)
 
 ## we build another binary so we can do the launch testing without root privs.
@@ -146,6 +148,7 @@ dbus_daemon_launch_helper_test_SOURCES=		\
 	$(LAUNCH_HELPER_SOURCES)
 
 dbus_daemon_launch_helper_test_LDADD=		\
+	$(top_builddir)/dbus/libdbus-1.la \
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
 
@@ -160,8 +163,10 @@ test_bus_launch_helper_SOURCES=		\
 	$(LAUNCH_HELPER_SOURCES)
 
 test_bus_launch_helper_LDADD=		\
+	$(top_builddir)/dbus/libdbus-1.la \
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(DBUS_LAUNCHER_LIBS)
+	$(NULL)
 
 test_bus_launch_helper_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
@@ -205,13 +210,21 @@ test_bus_system_SOURCES=			\
 	utils.h					\
 	test-system.c
 
-test_bus_system_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
+test_bus_system_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(top_builddir)/dbus/libdbus-internal.la \
+	$(DBUS_BUS_LIBS) \
+	$(NULL)
 
 test_bus_SOURCES=				\
 	$(BUS_SOURCES)				\
 	test-main.c
 
-test_bus_LDADD=$(top_builddir)/dbus/libdbus-internal.la $(DBUS_BUS_LIBS)
+test_bus_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(top_builddir)/dbus/libdbus-internal.la \
+	$(DBUS_BUS_LIBS) \
+	$(NULL)
 
 ## mop up the gcov files
 clean-local:

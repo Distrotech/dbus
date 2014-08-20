@@ -4,22 +4,14 @@
 SUBDIRS= . name-test 
 DIST_SUBDIRS=name-test
 
-# CPPFLAGS for binaries that are normally dynamic
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
-	$(DBUS_STATIC_BUILD_CPPFLAGS) \
+	-DDBUS_COMPILATION \
 	$(GLIB_CFLAGS) \
 	$(NULL)
 
 # improve backtraces from test stuff
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
-
-# CPPFLAGS for binaries that are always static
-static_cppflags = \
-	$(AM_CPPFLAGS) \
-	-DDBUS_STATIC_BUILD \
-	-DDBUS_COMPILATION \
-	$(NULL)
 
 noinst_LTLIBRARIES = libdbus-testutils.la
 
@@ -35,13 +27,11 @@ libdbus_testutils_la_SOURCES += \
 	$(NULL)
 endif
 
-testutils_shared_if_possible_cppflags = $(static_cppflags)
+testutils_shared_if_possible_cppflags = $(AM_CPPFLAGS)
 testutils_shared_if_possible_libs = libdbus-testutils.la
 
-libdbus_testutils_la_CPPFLAGS = \
-	$(static_cppflags) \
-	$(NULL)
 libdbus_testutils_la_LIBADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(NULL)
 
@@ -80,43 +70,31 @@ endif !DBUS_ENABLE_EMBEDDED_TESTS
 
 noinst_PROGRAMS= $(TEST_BINARIES)
 
-test_service_CPPFLAGS = $(static_cppflags)
 test_service_LDADD = libdbus-testutils.la
-test_names_CPPFLAGS = $(static_cppflags)
 test_names_LDADD = libdbus-testutils.la
-## break_loader_CPPFLAGS = $(static_cppflags)
 ## break_loader_LDADD = $(top_builddir)/dbus/libdbus-internal.la
-test_shell_service_CPPFLAGS = $(static_cppflags)
 test_shell_service_LDADD = libdbus-testutils.la
 test_shell_SOURCES = shell-test.c
-test_shell_CPPFLAGS = $(static_cppflags)
 test_shell_LDADD = libdbus-testutils.la
 test_spawn_SOURCES = spawn-test.c
-test_spawn_CPPFLAGS = $(static_cppflags)
 test_spawn_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 test_printf_SOURCES = internals/printf.c
-test_printf_CPPFLAGS = $(static_cppflags)
 test_printf_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 test_refs_SOURCES = internals/refs.c
-test_refs_CPPFLAGS = $(static_cppflags)
 test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 
 test_syslog_SOURCES = internals/syslog.c
-test_syslog_CPPFLAGS = $(static_cppflags)
 test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 
 manual_dir_iter_SOURCES = manual-dir-iter.c
-manual_dir_iter_CPPFLAGS = $(static_cppflags)
 manual_dir_iter_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 manual_paths_SOURCES = manual-paths.c
-manual_paths_CPPFLAGS = $(static_cppflags)
 manual_paths_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 manual_tcp_SOURCES = manual-tcp.c
-manual_tcp_CPPFLAGS = $(static_cppflags)
 manual_tcp_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 EXTRA_DIST = dbus-test-runner
@@ -264,9 +242,6 @@ test_uid_permissions_LDADD = \
 
 test_fdpass_SOURCES = \
     fdpass.c \
-    $(NULL)
-test_fdpass_CPPFLAGS = \
-    $(static_cppflags) \
     $(NULL)
 test_fdpass_LDADD = \
     libdbus-testutils.la \

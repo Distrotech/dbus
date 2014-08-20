@@ -54,9 +54,6 @@ else
 dbus_res =
 dbus_res_ldflag =
 no_undefined =
-## don't export symbols that start with "_" (we use this
-## convention for internal symbols)
-export_symbols = -export-symbols-regex "^[^_].*"
 
 intllibs = @LTLIBINTL@
 
@@ -275,34 +272,33 @@ libdbus_1_la_SOURCES=				\
 	$(DBUS_SHARED_SOURCES)
 
 libdbus_internal_la_SOURCES=			\
-	$(DBUS_LIB_SOURCES)			\
-	$(DBUS_SHARED_SOURCES)			\
 	$(DBUS_UTIL_SOURCES)
 
 BUILT_SOURCES=$(nodist_dbusarchinclude_HEADERS)
 EXTRA_DIST=dbus-arch-deps.h.in
 
-## this library is the same as libdbus, but exports all the symbols
-## and is only used for static linking within the dbus package.
 noinst_LTLIBRARIES=libdbus-internal.la
 
 libdbus_1_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	-Ddbus_1_EXPORTS \
 	$(NULL)
+
+if HAVE_LD_VERSION_SCRIPT
+SYMBOL_EXPORT_LDFLAGS=-Wl,--version-script=Version
+else
+SYMBOL_EXPORT_LDFLAGS=
+endif
+
 libdbus_1_la_LIBADD= $(LIBDBUS_LIBS)
 libdbus_1_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
-	$(export_symbols) \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	$(SYMBOL_EXPORT_LDFLAGS) \
 	-no-undefined \
 	$(NULL)
 
-libdbus_internal_la_CPPFLAGS = \
-	$(AM_CPPFLAGS) \
-	-DDBUS_STATIC_BUILD \
-	$(NULL)
-libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS)
+libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS) libdbus-1.la
 
 if DBUS_WIN
 # This must be a separate convenience library, otherwise libtool notices
@@ -312,7 +308,6 @@ if DBUS_WIN
 noinst_LTLIBRARIES += libdbus-init-win.la
 libdbus_init_win_la_SOURCES = dbus-init-win.cpp
 libdbus_1_la_LIBADD += libdbus-init-win.la
-libdbus_internal_la_LIBADD += libdbus-init-win.la
 endif
 
 noinst_PROGRAMS =
