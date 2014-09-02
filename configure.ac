@@ -1143,10 +1143,13 @@ dnl systemd detection
 if test x$enable_systemd = xno ; then
     have_systemd=no;
 else
-    PKG_CHECK_MODULES(SYSTEMD,
-        [libsystemd-login >= 32, libsystemd-daemon >= 32, libsystemd-journal >= 32],
-        have_systemd=yes,
-        have_systemd=no)
+    PKG_CHECK_MODULES([SYSTEMD],
+        [libsystemd >= 209],
+        [have_systemd=yes],
+        [PKG_CHECK_MODULES([SYSTEMD],
+            [libsystemd-login >= 32, libsystemd-daemon >= 32, libsystemd-journal >= 32],
+            [have_systemd=yes],
+            [have_systemd=no])])
 fi
 
 if test x$have_systemd = xyes; then
