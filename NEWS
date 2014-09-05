@@ -45,6 +45,14 @@ Fixes:
   (like Mac OS X 10.6), or available in libc but unsupported by the kernel
   (fd.o #77032; rmvsxop, OBATA Akio, Patrick Welche)
 
+• Fix compilation with --enable-stats (fd.o #81043, Gentoo #507232;
+  Alban Crequy)
+
+• Fix include path for test/internal/*.c with cmake (Ralf Habacker)
+
+• Change DBUS_TYPE_G_BYTE_ARRAY reference in dbus-tutorial.xml
+  to the correct DBUS_TYPE_G_UCHAR_ARRAY (fd.o #80795, Thomas Haller)
+
 D-Bus 1.8.6 (2014-06-02)
 ==
 
