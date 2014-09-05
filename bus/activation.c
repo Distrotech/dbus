@@ -637,7 +637,7 @@ update_directory (BusActivation       *activation,
 
       if (!_dbus_string_ends_with_c_str (&filename, ".service"))
         {
-          _dbus_verbose ("Skipping non-.service file %s\n",
+          _dbus_verbose ("Skipping non-.service file '%s'\n",
                          _dbus_string_get_const_data (&filename));
           continue;
         }
