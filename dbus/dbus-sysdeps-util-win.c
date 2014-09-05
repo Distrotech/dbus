@@ -424,155 +424,15 @@ _dbus_stat(const DBusString *filename,
   return TRUE;
 }
 
-
-/* This file is part of the KDE project
-Copyright (C) 2000 Werner Almesberger
-
-libc/sys/linux/sys/dirent.h - Directory entry as returned by readdir
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public License
-along with this program; see the file COPYING.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.
-*/
-#define HAVE_NO_D_NAMLEN	/* no struct dirent->d_namlen */
-#define HAVE_DD_LOCK  		/* have locking mechanism */
-
-#define MAXNAMLEN 255		/* sizeof(struct dirent.d_name)-1 */
-
-#define __dirfd(dir) (dir)->dd_fd
-
-/* struct dirent - same as Unix */
-struct dirent
-  {
-    long d_ino;                    /* inode (always 1 in WIN32) */
-    off_t d_off;                /* offset to this dirent */
-    unsigned short d_reclen;    /* length of d_name */
-    char d_name[_MAX_FNAME+1];    /* filename (null terminated) */
-  };
-
-/* typedef DIR - not the same as Unix */
-typedef struct
-  {
-    HANDLE handle;              /* FindFirst/FindNext handle */
-    short offset;               /* offset into directory */
-    short finished;             /* 1 if there are not more files */
-    WIN32_FIND_DATAA fileinfo;  /* from FindFirst/FindNext */
-    char *dir;                  /* the dir we are reading */
-    struct dirent dent;         /* the dirent to return */
-  }
-DIR;
-
-/**********************************************************************
-* Implement dirent-style opendir/readdir/closedir on Window 95/NT
-*
-* Functions defined are opendir(), readdir() and closedir() with the
-* same prototypes as the normal dirent.h implementation.
-*
-* Does not implement telldir(), seekdir(), rewinddir() or scandir().
-* The dirent struct is compatible with Unix, except that d_ino is
-* always 1 and d_off is made up as we go along.
-*
-* Error codes are not available with errno but GetLastError.
-*
-* The DIR typedef is not compatible with Unix.
-**********************************************************************/
-
-static DIR * _dbus_opendir(const char *dir)
-{
-  DIR *dp;
-  char *filespec;
-  HANDLE handle;
-  int index;
-
-  filespec = malloc(strlen(dir) + 2 + 1);
-  strcpy(filespec, dir);
-  index = strlen(filespec) - 1;
-  if (index >= 0 && (filespec[index] == '/' || filespec[index] == '\\'))
-    filespec[index] = '\0';
-  strcat(filespec, "\\*");
-
-  dp = (DIR *)malloc(sizeof(DIR));
-  dp->offset = 0;
-  dp->finished = 0;
-  dp->dir = strdup(dir);
-
-  handle = FindFirstFileA(filespec, &(dp->fileinfo));
-  if (handle == INVALID_HANDLE_VALUE)
-    {
-      if (GetLastError() == ERROR_NO_MORE_FILES)
-        dp->finished = 1;
-      else
-        return NULL;
-    }
-
-  dp->handle = handle;
-  free(filespec);
-
-  return dp;
-}
-
-static struct dirent * _dbus_readdir(DIR *dp)
-{
-  int saved_err = GetLastError();
-
-  if (!dp || dp->finished)
-    return NULL;
-
-  if (dp->offset != 0)
-    {
-      if (FindNextFileA(dp->handle, &(dp->fileinfo)) == 0)
-        {
-          if (GetLastError() == ERROR_NO_MORE_FILES)
-            {
-              SetLastError(saved_err);
-              dp->finished = 1;
-            }
-          return NULL;
-        }
-    }
-  dp->offset++;
-  
-  strncpy(dp->dent.d_name, dp->fileinfo.cFileName, _MAX_FNAME);
-  dp->dent.d_ino = 1;
-  dp->dent.d_reclen = strlen(dp->dent.d_name);
-  dp->dent.d_off = dp->offset;
-  
-  return &(dp->dent);
-}
-
-
-static int _dbus_closedir(DIR *dp)
-{
-  if (!dp)
-    return 0;
-  FindClose(dp->handle);
-  if (dp->dir)
-    free(dp->dir);
-  if (dp)
-    free(dp);
-
-  return 0;
-}
-
-
 /**
  * Internals of directory iterator
  */
 struct DBusDirIter
   {
-    DIR *d; /**< The DIR* from opendir() */
-
+    HANDLE handle;
+    WIN32_FIND_DATAA fileinfo;  /* from FindFirst/FindNext */
+    dbus_bool_t finished;       /* true if there are no more entries */
+    int offset;
   };
 
 /**
@@ -586,35 +446,66 @@ DBusDirIter*
 _dbus_directory_open (const DBusString *filename,
                       DBusError        *error)
 {
-  DIR *d;
   DBusDirIter *iter;
-  const char *filename_c;
+  DBusString filespec;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  filename_c = _dbus_string_get_const_data (filename);
-
-  d = _dbus_opendir (filename_c);
-  if (d == NULL)
+  if (!_dbus_string_init_from_string (&filespec, filename))
     {
-      char *emsg = _dbus_win_error_string (GetLastError ());
-      dbus_set_error (error, _dbus_win_error_from_last_error (),
-                      "Failed to read directory \"%s\": %s",
-                      filename_c, emsg);
-      _dbus_win_free_error_string (emsg);
+      dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
+                      "Could not allocate memory for directory filename copy");
       return NULL;
     }
+
+  if (_dbus_string_ends_with_c_str (&filespec, "/") || _dbus_string_ends_with_c_str (&filespec, "\\") )
+    {
+      if (!_dbus_string_append (&filespec, "*"))
+        {
+          dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
+                          "Could not append filename wildcard");
+          return NULL;
+        }
+    }
+  else if (!_dbus_string_ends_with_c_str (&filespec, "*"))
+    {
+      if (!_dbus_string_append (&filespec, "\\*"))
+        {
+          dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
+                          "Could not append filename wildcard 2");
+          return NULL;
+        }
+    }
+
   iter = dbus_new0 (DBusDirIter, 1);
   if (iter == NULL)
     {
-      _dbus_closedir (d);
+      _dbus_string_free (&filespec);
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
                       "Could not allocate memory for directory iterator");
       return NULL;
     }
 
-  iter->d = d;
-
+  iter->finished = FALSE;
+  iter->offset = 0;
+  iter->handle = FindFirstFileA (_dbus_string_get_const_data (&filespec), &(iter->fileinfo));
+  if (iter->handle == INVALID_HANDLE_VALUE)
+    {
+      if (GetLastError () == ERROR_NO_MORE_FILES)
+        iter->finished = TRUE;
+      else
+        {
+          char *emsg = _dbus_win_error_string (GetLastError ());
+          dbus_set_error (error, _dbus_win_error_from_last_error (),
+                          "Failed to read directory \"%s\": %s",
+                          _dbus_string_get_const_data (filename), emsg);
+          _dbus_win_free_error_string (emsg);
+          dbus_free ( iter );
+          _dbus_string_free (&filespec);
+          return NULL;
+        }
+    }
+  _dbus_string_free (&filespec);
   return iter;
 }
 
@@ -622,9 +513,6 @@ _dbus_directory_open (const DBusString *filename,
  * Get next file in the directory. Will not return "." or ".."  on
  * UNIX. If an error occurs, the contents of "filename" are
  * undefined. The error is never set if the function succeeds.
- *
- * @todo for thread safety, I think we have to use
- * readdir_r(). (GLib has the same issue, should file a bug.)
  *
  * @param iter the iterator
  * @param filename string to be set to the next file in the dir
@@ -636,40 +524,55 @@ _dbus_directory_get_next_file (DBusDirIter      *iter,
                                DBusString       *filename,
                                DBusError        *error)
 {
-  struct dirent *ent;
+  int saved_err = GetLastError();
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
 again:
   SetLastError (0);
-  ent = _dbus_readdir (iter->d);
-  if (ent == NULL)
+
+  if (!iter || iter->finished)
+      return FALSE;
+
+  if (iter->offset > 0)
     {
-      if (GetLastError() != 0)
+      if (FindNextFileA (iter->handle, &(iter->fileinfo)) == 0)
         {
-          char *emsg = _dbus_win_error_string (GetLastError ());
-          dbus_set_error (error, _dbus_win_error_from_last_error (),
-                          "Failed to get next in directory: %s", emsg);
-          _dbus_win_free_error_string (emsg);
+          if (GetLastError() == ERROR_NO_MORE_FILES)
+            {
+              SetLastError(saved_err);
+              iter->finished = 1;
+            }
+          else
+            {
+              char *emsg = _dbus_win_error_string (GetLastError ());
+              dbus_set_error (error, _dbus_win_error_from_last_error (),
+                             "Failed to get next in directory: %s", emsg);
+              _dbus_win_free_error_string (emsg);
+              return FALSE;
+            }
         }
+    }
+
+  iter->offset++;
+
+  if (iter->finished)
+      return FALSE;
+
+  if (iter->fileinfo.cFileName[0] == '.' &&
+     (iter->fileinfo.cFileName[1] == '\0' ||
+        (iter->fileinfo.cFileName[1] == '.' && iter->fileinfo.cFileName[2] == '\0')))
+      goto again;
+
+  _dbus_string_set_length (filename, 0);
+  if (!_dbus_string_append (filename, iter->fileinfo.cFileName))
+    {
+      dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
+                      "No memory to read directory entry");
       return FALSE;
     }
-  else if (ent->d_name[0] == '.' &&
-           (ent->d_name[1] == '\0' ||
-            (ent->d_name[1] == '.' && ent->d_name[2] == '\0')))
-    goto again;
-  else
-    {
-      _dbus_string_set_length (filename, 0);
-      if (!_dbus_string_append (filename, ent->d_name))
-        {
-          dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
-                          "No memory to read directory entry");
-          return FALSE;
-        }
-      else
-        return TRUE;
-    }
+
+  return TRUE;
 }
 
 /**
@@ -678,7 +581,9 @@ again:
 void
 _dbus_directory_close (DBusDirIter *iter)
 {
-  _dbus_closedir (iter->d);
+  if (!iter)
+      return;
+  FindClose(iter->handle);
   dbus_free (iter);
 }
 
