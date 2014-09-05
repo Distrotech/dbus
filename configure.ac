@@ -1736,9 +1736,9 @@ AH_VERBATIM(_DARWIN_ENVIRON,
 ])
 
 AC_ARG_ENABLE([stats],
-  [AS_HELP_STRING([--enable-stats],
-    [enable bus daemon usage statistics])],
-  [], [enable_stats=no])
+  [AS_HELP_STRING([--disable-stats],
+    [disable bus daemon usage statistics])],
+  [], [enable_stats=yes])
 if test "x$enable_stats" = xyes; then
   AC_DEFINE([DBUS_ENABLE_STATS], [1],
     [Define to enable bus daemon usage statistics])

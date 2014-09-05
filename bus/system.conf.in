@@ -63,11 +63,24 @@
     <allow receive_type="signal"/>
 
     <!-- Allow anyone to talk to the message bus -->
-    <allow send_destination="org.freedesktop.DBus"/>
+    <allow send_destination="org.freedesktop.DBus"
+           send_interface="org.freedesktop.DBus" />
+    <allow send_destination="org.freedesktop.DBus"
+           send_interface="org.freedesktop.DBus.Introspectable"/>
     <!-- But disallow some specific bus services -->
     <deny send_destination="org.freedesktop.DBus"
           send_interface="org.freedesktop.DBus"
           send_member="UpdateActivationEnvironment"/>
+    <deny send_destination="org.freedesktop.DBus"
+          send_interface="org.freedesktop.DBus.Debug.Stats"/>
+  </policy>
+
+  <!-- If the Stats interface was enabled at compile-time, root may use it.
+       Copy this into system.local.conf or system.d/*.conf if you want to
+       enable other privileged users to view statistics and debug info -->
+  <policy user="root">
+    <allow send_destination="org.freedesktop.DBus"
+           send_interface="org.freedesktop.DBus.Debug.Stats"/>
   </policy>
 
   <!-- Config files are placed here that among other things, punch 
