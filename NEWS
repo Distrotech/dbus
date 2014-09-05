@@ -1,7 +1,10 @@
 D-Bus 1.8.8 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Fix compilation with --enable-stats (fd.o #81043, Gentoo #507232;
+  Alban Crequy)
 
 D-Bus 1.8.6 (2014-06-02)
 ==
