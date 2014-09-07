@@ -13,7 +13,7 @@ test not running yet and there is help needed to get them running.
 
 Supported compilers
 -------------------
-On windows Microsoft Visual Studio 2010 (Express and professional variants) 
+On windows Microsoft Visual Studio 2010 (Express and professional variants)
 and mingw-w64|32 are known to work.
 
 Building
@@ -30,14 +30,19 @@ updated with windows specific stuff.
 
 Tests
 -----
+ - run complete test suite
+     make check
+   or
+     ctest [-V]
+
  - dbus library check
-    bin\test-dbus.exe <build-root>\test\data
+    ctest [-V] -R test-dbus
 
  - bus daemon check
-    bin\test-bus.exe <build-root>\test\data
+    ctest [-V] -R test-bus
 
  - check available names
-    bin\test_names.exe
+    ctest [-V] -R test-names
 
  - check if dbus-daemon is accessable
     bin\dbus-send.exe --session --type=method_call --print-reply --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames method return sender=org.freedesktop.DBus -> dest=:1.4 array [ string "org.freedesktop.DBus"string ":1.4"]
