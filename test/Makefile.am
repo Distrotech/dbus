@@ -119,6 +119,10 @@ test_syslog_SOURCES = internals/syslog.c
 test_syslog_CPPFLAGS = $(static_cppflags)
 test_syslog_LDADD = libdbus-testutils-internal.la $(GLIB_LIBS)
 
+manual_dir_iter_SOURCES = manual-dir-iter.c
+manual_dir_iter_CPPFLAGS = $(static_cppflags)
+manual_dir_iter_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+
 EXTRA_DIST = dbus-test-runner
 
 testexecdir = $(libdir)/dbus-1.0/test
@@ -130,6 +134,7 @@ installable_tests = \
 	test-printf \
 	$(NULL)
 installable_manual_tests = \
+	manual-dir-iter \
 	$(NULL)
 
 if DBUS_WITH_GLIB

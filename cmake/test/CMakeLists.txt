@@ -13,6 +13,10 @@ target_link_libraries(dbus-testutils ${DBUS_INTERNAL_LIBRARIES})
 
 add_subdirectory( name-test )
 
+set (manual-dir-iter_SOURCES
+    ${CMAKE_SOURCE_DIR}/../test/manual-dir-iter.c
+)
+
 set (test-service_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-service.c
 )
@@ -49,6 +53,7 @@ set (test-sleep-forever_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-sleep-forever.c
 )
 
+add_helper_executable(manual-dir-iter ${manual-dir-iter_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_helper_executable(test-service ${test-service_SOURCES} dbus-testutils)
 add_helper_executable(test-names ${test-names_SOURCES} dbus-testutils)
 add_test_executable(test-shell ${test-shell_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
