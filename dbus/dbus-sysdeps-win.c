@@ -3253,12 +3253,12 @@ _dbus_flush_caches (void)
  * See if errno is EAGAIN or EWOULDBLOCK (this has to be done differently
  * for Winsock so is abstracted)
  *
- * @returns #TRUE if errno == EAGAIN or errno == EWOULDBLOCK
+ * @returns #TRUE if e == EAGAIN or e == EWOULDBLOCK
  */
 dbus_bool_t
-_dbus_get_is_errno_eagain_or_ewouldblock (void)
+_dbus_get_is_errno_eagain_or_ewouldblock (int e)
 {
-  return errno == WSAEWOULDBLOCK;
+  return e == WSAEWOULDBLOCK;
 }
 
 /**
@@ -3723,6 +3723,18 @@ dbus_bool_t
 _dbus_check_setuid (void)
 {
   return FALSE;
+}
+
+int
+_dbus_save_socket_errno (void)
+{
+  return errno;
+}
+
+void
+_dbus_restore_socket_errno (int saved_errno)
+{
+  _dbus_win_set_errno (saved_errno);
 }
 
 /** @} end of sysdeps-win */

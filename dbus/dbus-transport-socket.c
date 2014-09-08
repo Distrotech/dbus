@@ -247,13 +247,15 @@ read_data_into_auth (DBusTransport *transport,
   DBusTransportSocket *socket_transport = (DBusTransportSocket*) transport;
   DBusString *buffer;
   int bytes_read;
-  
+  int saved_errno;
+
   *oom = FALSE;
 
   _dbus_auth_get_buffer (transport->auth, &buffer);
   
   bytes_read = _dbus_read_socket (socket_transport->fd,
                                   buffer, socket_transport->max_bytes_read_per_iteration);
+  saved_errno = _dbus_save_socket_errno ();
 
   _dbus_auth_return_buffer (transport->auth, buffer);
 
@@ -267,16 +269,16 @@ read_data_into_auth (DBusTransport *transport,
     {
       /* EINTR already handled for us */
 
-      if (_dbus_get_is_errno_enomem ())
+      if (_dbus_get_is_errno_enomem (saved_errno))
         {
           *oom = TRUE;
         }
-      else if (_dbus_get_is_errno_eagain_or_ewouldblock ())
+      else if (_dbus_get_is_errno_eagain_or_ewouldblock (saved_errno))
         ; /* do nothing, just return FALSE below */
       else
         {
           _dbus_verbose ("Error reading from remote app: %s\n",
-                         _dbus_strerror_from_errno ());
+                         _dbus_strerror (saved_errno));
           do_io_error (transport);
         }
 
@@ -299,6 +301,7 @@ write_data_from_auth (DBusTransport *transport)
 {
   DBusTransportSocket *socket_transport = (DBusTransportSocket*) transport;
   int bytes_written;
+  int saved_errno;
   const DBusString *buffer;
 
   if (!_dbus_auth_get_bytes_to_send (transport->auth,
@@ -308,6 +311,7 @@ write_data_from_auth (DBusTransport *transport)
   bytes_written = _dbus_write_socket (socket_transport->fd,
                                       buffer,
                                       0, _dbus_string_get_length (buffer));
+  saved_errno = _dbus_save_socket_errno ();
 
   if (bytes_written > 0)
     {
@@ -318,12 +322,12 @@ write_data_from_auth (DBusTransport *transport)
     {
       /* EINTR already handled for us */
       
-      if (_dbus_get_is_errno_eagain_or_ewouldblock ())
+      if (_dbus_get_is_errno_eagain_or_ewouldblock (saved_errno))
         ;
       else
         {
           _dbus_verbose ("Error writing to remote app: %s\n",
-                         _dbus_strerror_from_errno ());
+                         _dbus_strerror (saved_errno));
           do_io_error (transport);
         }
     }
@@ -527,6 +531,7 @@ do_writing (DBusTransport *transport)
       const DBusString *body;
       int header_len, body_len;
       int total_bytes_to_write;
+      int saved_errno;
       
       if (total > socket_transport->max_bytes_written_per_iteration)
         {
@@ -584,6 +589,7 @@ do_writing (DBusTransport *transport)
                                 &socket_transport->encoded_outgoing,
                                 socket_transport->message_bytes_written,
                                 total_bytes_to_write - socket_transport->message_bytes_written);
+          saved_errno = _dbus_save_socket_errno ();
         }
       else
         {
@@ -612,6 +618,7 @@ do_writing (DBusTransport *transport)
                                                       0, body_len,
                                                       unix_fds,
                                                       n);
+              saved_errno = _dbus_save_socket_errno ();
 
               if (bytes_written > 0 && n > 0)
                 _dbus_verbose("Wrote %i unix fds\n", n);
@@ -638,6 +645,8 @@ do_writing (DBusTransport *transport)
                                         body_len -
                                         (socket_transport->message_bytes_written - header_len));
                 }
+
+              saved_errno = _dbus_save_socket_errno ();
             }
         }
 
@@ -651,7 +660,7 @@ do_writing (DBusTransport *transport)
            * http://lists.freedesktop.org/archives/dbus/2008-March/009526.html
            */
           
-          if (_dbus_get_is_errno_eagain_or_ewouldblock () || _dbus_get_is_errno_epipe ())
+          if (_dbus_get_is_errno_eagain_or_ewouldblock (saved_errno) || _dbus_get_is_errno_epipe (saved_errno))
             goto out;
 
           /* Since Linux commit 25888e (from 2.6.37-rc4, Nov 2010), sendmsg()
@@ -663,7 +672,7 @@ do_writing (DBusTransport *transport)
            * https://bugs.freedesktop.org/show_bug.cgi?id=80163
            */
 
-          else if (_dbus_get_is_errno_etoomanyrefs ())
+          else if (_dbus_get_is_errno_etoomanyrefs (saved_errno))
             {
               /* We only send fds in the first byte of the message.
                * ETOOMANYREFS cannot happen after.
@@ -686,7 +695,7 @@ do_writing (DBusTransport *transport)
           else
             {
               _dbus_verbose ("Error writing to remote app: %s\n",
-                             _dbus_strerror_from_errno ());
+                             _dbus_strerror (saved_errno));
               do_io_error (transport);
               goto out;
             }
@@ -730,6 +739,7 @@ do_reading (DBusTransport *transport)
   int bytes_read;
   int total;
   dbus_bool_t oom;
+  int saved_errno;
 
   _dbus_verbose ("fd = %d\n",socket_transport->fd);
   
@@ -773,6 +783,8 @@ do_reading (DBusTransport *transport)
         bytes_read = _dbus_read_socket (socket_transport->fd,
                                         &socket_transport->encoded_incoming,
                                         socket_transport->max_bytes_read_per_iteration);
+
+      saved_errno = _dbus_save_socket_errno ();
 
       _dbus_assert (_dbus_string_get_length (&socket_transport->encoded_incoming) ==
                     bytes_read);
@@ -823,6 +835,7 @@ do_reading (DBusTransport *transport)
                                                        buffer,
                                                        socket_transport->max_bytes_read_per_iteration,
                                                        fds, &n_fds);
+          saved_errno = _dbus_save_socket_errno ();
 
           if (bytes_read >= 0 && n_fds > 0)
             _dbus_verbose("Read %i unix fds\n", n_fds);
@@ -834,28 +847,29 @@ do_reading (DBusTransport *transport)
         {
           bytes_read = _dbus_read_socket (socket_transport->fd,
                                           buffer, socket_transport->max_bytes_read_per_iteration);
+          saved_errno = _dbus_save_socket_errno ();
         }
 
       _dbus_message_loader_return_buffer (transport->loader,
                                           buffer);
     }
-  
+
   if (bytes_read < 0)
     {
       /* EINTR already handled for us */
 
-      if (_dbus_get_is_errno_enomem ())
+      if (_dbus_get_is_errno_enomem (saved_errno))
         {
           _dbus_verbose ("Out of memory in read()/do_reading()\n");
           oom = TRUE;
           goto out;
         }
-      else if (_dbus_get_is_errno_eagain_or_ewouldblock ())
+      else if (_dbus_get_is_errno_eagain_or_ewouldblock (saved_errno))
         goto out;
       else
         {
           _dbus_verbose ("Error reading from remote app: %s\n",
-                         _dbus_strerror_from_errno ());
+                         _dbus_strerror (saved_errno));
           do_io_error (transport);
           goto out;
         }
@@ -1129,6 +1143,8 @@ socket_do_iteration (DBusTransport *transport,
 
   if (poll_fd.events)
     {
+      int saved_errno;
+
       if (flags & DBUS_ITERATION_BLOCK)
 	poll_timeout = timeout_milliseconds;
       else
@@ -1147,8 +1163,9 @@ socket_do_iteration (DBusTransport *transport,
       
     again:
       poll_res = _dbus_poll (&poll_fd, 1, poll_timeout);
+      saved_errno = _dbus_save_socket_errno ();
 
-      if (poll_res < 0 && _dbus_get_is_errno_eintr ())
+      if (poll_res < 0 && _dbus_get_is_errno_eintr (saved_errno))
 	goto again;
 
       if (flags & DBUS_ITERATION_BLOCK)
@@ -1191,7 +1208,7 @@ socket_do_iteration (DBusTransport *transport,
       else
         {
           _dbus_verbose ("Error from _dbus_poll(): %s\n",
-                         _dbus_strerror_from_errno ());
+                         _dbus_strerror (saved_errno));
         }
     }
 

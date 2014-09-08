@@ -722,33 +722,23 @@ _dbus_set_errno_to_zero (void)
 }
 
 /**
- * See if errno is set
- * @returns #TRUE if errno is not 0
- */
-dbus_bool_t
-_dbus_get_is_errno_nonzero (void)
-{
-  return errno != 0;
-}
-
-/**
  * See if errno is ENOMEM
- * @returns #TRUE if errno == ENOMEM
+ * @returns #TRUE if e == ENOMEM
  */
 dbus_bool_t
-_dbus_get_is_errno_enomem (void)
+_dbus_get_is_errno_enomem (int e)
 {
-  return errno == ENOMEM;
+  return e == ENOMEM;
 }
 
 /**
  * See if errno is EINTR
- * @returns #TRUE if errno == EINTR
+ * @returns #TRUE if e == EINTR
  */
 dbus_bool_t
-_dbus_get_is_errno_eintr (void)
+_dbus_get_is_errno_eintr (int e)
 {
-  return errno == EINTR;
+  return e == EINTR;
 }
 
 /**
@@ -756,9 +746,9 @@ _dbus_get_is_errno_eintr (void)
  * @returns #TRUE if errno == EPIPE
  */
 dbus_bool_t
-_dbus_get_is_errno_epipe (void)
+_dbus_get_is_errno_epipe (int e)
 {
-  return errno == EPIPE;
+  return e == EPIPE;
 }
 
 /**
@@ -766,10 +756,10 @@ _dbus_get_is_errno_epipe (void)
  * @returns #TRUE if errno == ETOOMANYREFS
  */
 dbus_bool_t
-_dbus_get_is_errno_etoomanyrefs (void)
+_dbus_get_is_errno_etoomanyrefs (int e)
 {
 #ifdef ETOOMANYREFS
-  return errno == ETOOMANYREFS;
+  return e == ETOOMANYREFS;
 #else
   return FALSE;
 #endif

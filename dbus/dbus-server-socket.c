@@ -184,6 +184,7 @@ socket_handle_watch (DBusWatch    *watch,
     {
       int client_fd;
       int listen_fd;
+      int saved_errno;
 
       listen_fd = dbus_watch_get_socket (watch);
 
@@ -192,15 +193,17 @@ socket_handle_watch (DBusWatch    *watch,
       else 
           client_fd = _dbus_accept (listen_fd);
 
+      saved_errno = _dbus_save_socket_errno ();
+
       if (client_fd < 0)
         {
           /* EINTR handled for us */
 
-          if (_dbus_get_is_errno_eagain_or_ewouldblock ())
+          if (_dbus_get_is_errno_eagain_or_ewouldblock (saved_errno))
             _dbus_verbose ("No client available to accept after all\n");
           else
             _dbus_verbose ("Failed to accept a client connection: %s\n",
-                           _dbus_strerror_from_errno ());
+                           _dbus_strerror (saved_errno));
 
           SERVER_UNLOCK (server);
         }

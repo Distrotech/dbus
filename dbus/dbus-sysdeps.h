@@ -376,13 +376,14 @@ dbus_bool_t _dbus_generate_random_ascii        (DBusString *str,
 const char* _dbus_error_from_errno (int error_number);
 const char* _dbus_error_from_system_errno (void);
 
+int         _dbus_save_socket_errno                  (void);
+void        _dbus_restore_socket_errno               (int saved_errno);
 void        _dbus_set_errno_to_zero                  (void);
-dbus_bool_t _dbus_get_is_errno_nonzero               (void);
-dbus_bool_t _dbus_get_is_errno_eagain_or_ewouldblock (void);
-dbus_bool_t _dbus_get_is_errno_enomem                (void);
-dbus_bool_t _dbus_get_is_errno_eintr                 (void);
-dbus_bool_t _dbus_get_is_errno_epipe                 (void);
-dbus_bool_t _dbus_get_is_errno_etoomanyrefs           (void);
+dbus_bool_t _dbus_get_is_errno_eagain_or_ewouldblock (int e);
+dbus_bool_t _dbus_get_is_errno_enomem                (int e);
+dbus_bool_t _dbus_get_is_errno_eintr                 (int e);
+dbus_bool_t _dbus_get_is_errno_epipe                 (int e);
+dbus_bool_t _dbus_get_is_errno_etoomanyrefs          (int e);
 const char* _dbus_strerror_from_errno                (void);
 
 void _dbus_disable_sigpipe (void);

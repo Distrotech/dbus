@@ -3937,12 +3937,12 @@ _dbus_daemon_unpublish_session_bus_address (void)
  * See if errno is EAGAIN or EWOULDBLOCK (this has to be done differently
  * for Winsock so is abstracted)
  *
- * @returns #TRUE if errno == EAGAIN or errno == EWOULDBLOCK
+ * @returns #TRUE if e == EAGAIN or e == EWOULDBLOCK
  */
 dbus_bool_t
-_dbus_get_is_errno_eagain_or_ewouldblock (void)
+_dbus_get_is_errno_eagain_or_ewouldblock (int e)
 {
-  return errno == EAGAIN || errno == EWOULDBLOCK;
+  return e == EAGAIN || e == EWOULDBLOCK;
 }
 
 /**
@@ -4197,6 +4197,18 @@ _dbus_append_address_from_socket (int         fd,
                   "Failed to open socket: %s",
                   _dbus_strerror (errno));
   return FALSE;
+}
+
+int
+_dbus_save_socket_errno (void)
+{
+  return errno;
+}
+
+void
+_dbus_restore_socket_errno (int saved_errno)
+{
+  errno = saved_errno;
 }
 
 /* tests in dbus-sysdeps-util.c */

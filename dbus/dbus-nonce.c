@@ -53,10 +53,14 @@ do_check_nonce (int fd, const DBusString *nonce, DBusError *error)
 
   while (nleft)
     {
+      int saved_errno;
+
       n = _dbus_read_socket (fd, &p, nleft);
-      if (n == -1 && _dbus_get_is_errno_eintr())
+      saved_errno = _dbus_save_socket_errno ();
+
+      if (n == -1 && _dbus_get_is_errno_eintr (saved_errno))
         ;
-      else if (n == -1 && _dbus_get_is_errno_eagain_or_ewouldblock())
+      else if (n == -1 && _dbus_get_is_errno_eagain_or_ewouldblock (saved_errno))
         _dbus_sleep_milliseconds (100);
       else if (n==-1)
         {
