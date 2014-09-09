@@ -69,9 +69,12 @@
   __attribute__((__format__ (__printf__, format_idx, arg_idx)))
 #define _DBUS_GNUC_NORETURN                         \
   __attribute__((__noreturn__))
+#define _DBUS_GNUC_UNUSED                           \
+  __attribute__((__unused__))
 #else   /* !__GNUC__ */
 #define _DBUS_GNUC_PRINTF( format_idx, arg_idx )
 #define _DBUS_GNUC_NORETURN
+#define _DBUS_GNUC_UNUSED
 #endif  /* !__GNUC__ */
 
 #if    __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
