@@ -862,6 +862,13 @@ _dbus_register_shutdown_func_unlocked (DBusShutdownFunction  func,
  * You MUST free all memory and release all reference counts
  * returned to you by libdbus prior to calling dbus_shutdown().
  *
+ * If a shared connection is open, calling dbus_shutdown() will
+ * drain its queue of messages and disconnect it. In particular,
+ * this will result in processing of the special Disconnected
+ * signal, which may result in a call to _exit(), unless you
+ * have used dbus_connection_set_exit_on_disconnect() to disable
+ * that behaviour.
+ *
  * You can't continue to use any D-Bus objects, such as connections,
  * that were allocated prior to dbus_shutdown(). You can, however,
  * start over; call dbus_threads_init() again, create new connections,
