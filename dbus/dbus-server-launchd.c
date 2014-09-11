@@ -42,6 +42,7 @@
 
 #include "dbus-misc.h"
 #include "dbus-server-socket.h"
+#include "dbus-sysdeps-unix.h"
 
 /* put other private launchd functions here */
 

@@ -142,6 +142,8 @@ dbus_bool_t _dbus_append_address_from_socket (int         fd,
                                               DBusString *address,
                                               DBusError  *error);
 
+void _dbus_fd_set_close_on_exec (int fd);
+
 /** @} */
 
 DBUS_END_DECLS

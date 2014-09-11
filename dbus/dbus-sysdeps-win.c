@@ -518,10 +518,10 @@ _dbus_close_socket (int        fd,
  * on exec. Should be called for all file
  * descriptors in D-Bus code.
  *
- * @param handle the Windows HANDLE
+ * @param handle the Windows HANDLE (a SOCKET is also OK)
  */
-void
-_dbus_fd_set_close_on_exec (intptr_t handle)
+static void
+_dbus_win_handle_set_close_on_exec (HANDLE handle)
 {
   if ( !SetHandleInformation( (HANDLE) handle,
                         HANDLE_FLAG_INHERIT | HANDLE_FLAG_PROTECT_FROM_CLOSE,
@@ -1605,7 +1605,8 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
         }
     }
 
-  _dbus_fd_set_close_on_exec (fd);
+  /* Every SOCKET is also a HANDLE. */
+  _dbus_win_handle_set_close_on_exec ((HANDLE) fd);
 
   if (!_dbus_set_fd_nonblocking (fd, error))
     {
@@ -1803,7 +1804,7 @@ _dbus_listen_tcp_socket (const char     *host,
 
   for (i = 0 ; i < nlisten_fd ; i++)
     {
-      _dbus_fd_set_close_on_exec (listen_fd[i]);
+      _dbus_win_handle_set_close_on_exec ((HANDLE) listen_fd[i]);
       if (!_dbus_set_fd_nonblocking (listen_fd[i], error))
         {
           goto failed;
