@@ -1663,6 +1663,25 @@ write_credentials_byte (int             server_fd,
  * object, then adds pid/uid if available, so any previous credentials
  * stored in the object are lost.
  *
+ * DBusServer makes the security assumption that the credentials
+ * returned by this method are the credentials that were active
+ * at the time the socket was opened. Do not add APIs to this
+ * method that would break that assumption.
+ *
+ * In particular, it is incorrect to use any API of the form
+ * "get the process ID at the other end of the connection, then
+ * determine its uid, gid, or other credentials from the pid"
+ * (e.g. looking in /proc on Linux). If we did that, we would
+ * be vulnerable to several attacks. A malicious process could
+ * queue up the rest of the authentication handshake and a malicious
+ * message that it should not be allowed to send, then race with
+ * the DBusServer to exec() a more privileged (e.g. setuid) binary that
+ * would have been allowed to send that message; or it could exit,
+ * and arrange for enough setuid processes to be started that its
+ * pid would be recycled for one of those processes with high
+ * probability; or it could fd-pass the connection to a more
+ * privileged process.
+ *
  * Return value indicates whether a byte was read, not whether
  * we got valid credentials. On some systems, such as Linux,
  * reading/writing the byte isn't actually required, but we do it
