@@ -396,12 +396,14 @@ DBUS_SESSION_BUS_ADDRESS is set.</para>
 used in a listenable address to configure the interface on which
 the server will listen: either the hostname is the IP address of
 one of the local machine's interfaces (most commonly 127.0.0.1),
-or a DNS name that resolves to one of those IP addresses, or '*'
-to listen on all interfaces simultaneously.  If not specified,
+a DNS name that resolves to one of those IP addresses, '0.0.0.0'
+to listen on all IPv4 interfaces simultaneously, or '::'
+to listen on all IPv4 and IPv6 interfaces simultaneously (if supported
+by the OS).  If not specified,
 the default is the same value as "host".</para>
 
 
-<para>Example: &lt;listen&gt;tcp:host=localhost,bind=*,port=0&lt;/listen&gt;</para>
+<para>Example: &lt;listen&gt;tcp:host=localhost,bind=0.0.0.0,port=0&lt;/listen&gt;</para>
 
 <itemizedlist remap='TP'>
 
