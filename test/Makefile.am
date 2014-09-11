@@ -75,12 +75,12 @@ TEST_BINARIES = \
 ## since they depend on stuff from this directory
 TESTS = \
 	../bus/test-bus$(EXEEXT) \
-	../bus/test-bus-system$(EXEEXT) \
 	../dbus/test-dbus$(EXEEXT) \
 	$(NULL)
 
 if DBUS_UNIX
 TESTS += ../bus/test-bus-launch-helper$(EXEEXT)
+TESTS += ../bus/test-bus-system$(EXEEXT)
 endif
 
 else !DBUS_ENABLE_EMBEDDED_TESTS

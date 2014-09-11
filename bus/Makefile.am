@@ -33,9 +33,11 @@ CONFIG_IN_FILES=				\
 	system.conf.in				\
 	org.freedesktop.dbus-session.plist.in
 
-config_DATA=					\
-	session.conf				\
-	system.conf
+config_DATA = session.conf
+
+if DBUS_UNIX
+config_DATA += system.conf
+endif
 
 if DBUS_ENABLE_LAUNCHD
 agentdir=$(LAUNCHD_AGENT_DIR)
@@ -169,11 +171,11 @@ if DBUS_ENABLE_EMBEDDED_TESTS
 ## even when not doing "make check"
 
 # run as a test by test/Makefile.am
-noinst_PROGRAMS += test-bus test-bus-system
+noinst_PROGRAMS += test-bus
 
 if DBUS_UNIX
 # run as a test by test/Makefile.am
-noinst_PROGRAMS += test-bus-launch-helper
+noinst_PROGRAMS += test-bus-launch-helper test-bus-system
 # this is used by the tests but is not,itself, a test
 noinst_PROGRAMS += dbus-daemon-launch-helper-test
 endif DBUS_UNIX
@@ -203,11 +205,13 @@ clean-local:
 	/bin/rm *.bb *.bbg *.da *.gcov || true
 
 install-data-hook:
-	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/run/dbus
-	$(mkinstalldirs) $(DESTDIR)$(configdir)/system.d
 	$(mkinstalldirs) $(DESTDIR)$(configdir)/session.d
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/services
+if DBUS_UNIX
+	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/run/dbus
+	$(mkinstalldirs) $(DESTDIR)$(configdir)/system.d
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/system-services
+endif
 if HAVE_SYSTEMD
 # Install dbus.socket as default implementation of a D-Bus stack.
 # Deliberately not using $(LN_S) here: ln -fs is not universally portable,

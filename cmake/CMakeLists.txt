@@ -400,13 +400,8 @@ endif (MSVC_IDE)
      endif (NOT $ENV{TEMP} STREQUAL "")
  endif (NOT $ENV{TMPDIR} STREQUAL "")
 
-# TODO: fix redhet
-if (WIN32)
-  # bus-test expects a non empty string
-	set (DBUS_SYSTEM_PID_FILE "/dbus-pid")
-else (WIN32)
-	set (DBUS_SYSTEM_PID_FILE ${EXPANDED_LOCALSTATEDIR}/run/dbus/pid)
-endif (WIN32)
+ # Not used on Windows, where there is no system bus
+set (DBUS_SYSTEM_PID_FILE ${EXPANDED_LOCALSTATEDIR}/run/dbus/pid)
 
 if (WIN32)
 	set (DBUS_CONSOLE_AUTH_DIR "")
