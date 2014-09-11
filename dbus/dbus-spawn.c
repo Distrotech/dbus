@@ -454,9 +454,25 @@ read_data (DBusBabysitter *sitter,
               {
                 if (what == CHILD_EXITED)
                   {
+                    /* Do not reset sitter->errnum to 0 here. We get here if
+                     * the babysitter reports that the grandchild process has
+                     * exited, and there are two ways that can happen:
+                     *
+                     * 1. grandchild successfully exec()s the desired process,
+                     * but then the desired process exits or is terminated
+                     * by a signal. The babysitter observes this and reports
+                     * CHILD_EXITED.
+                     *
+                     * 2. grandchild fails to exec() the desired process,
+                     * attempts to report the exec() failure (which
+                     * we will receive as CHILD_EXEC_FAILED), and then
+                     * exits itself (which will prompt the babysitter to
+                     * send CHILD_EXITED). We want the CHILD_EXEC_FAILED
+                     * to take precedence (and have its errno logged),
+                     * which _dbus_babysitter_set_child_exit_error() does.
+                     */
                     sitter->have_child_status = TRUE;
                     sitter->status = arg;
-                    sitter->errnum = 0;
                     _dbus_verbose ("recorded child status exited = %d signaled = %d exitstatus = %d termsig = %d\n",
                                    WIFEXITED (sitter->status), WIFSIGNALED (sitter->status),
                                    WEXITSTATUS (sitter->status), WTERMSIG (sitter->status));
