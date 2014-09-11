@@ -2024,7 +2024,7 @@ _dbus_message_iter_init_common (DBusMessage         *message,
                                 DBusMessageRealIter *real,
                                 int                  iter_type)
 {
-  _dbus_assert (sizeof (DBusMessageRealIter) <= sizeof (DBusMessageIter));
+  _DBUS_STATIC_ASSERT (sizeof (DBusMessageRealIter) <= sizeof (DBusMessageIter));
 
   /* Since the iterator will read or write who-knows-what from the
    * message, we need to get in the right byte order

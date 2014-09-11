@@ -189,9 +189,9 @@ dbus_error_init (DBusError *error)
 {
   DBusRealError *real;
 
-  _dbus_return_if_fail (error != NULL);
+  _DBUS_STATIC_ASSERT (sizeof (DBusError) == sizeof (DBusRealError));
 
-  _dbus_assert (sizeof (DBusError) == sizeof (DBusRealError));
+  _dbus_return_if_fail (error != NULL);
 
   real = (DBusRealError *)error;
   

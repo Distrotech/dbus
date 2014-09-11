@@ -1660,18 +1660,18 @@ _dbus_read_credentials_socket  (int              client_fd,
   } cmsg;
 #endif
 
-  uid_read = DBUS_UID_UNSET;
-  pid_read = DBUS_PID_UNSET;
-
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-
   /* The POSIX spec certainly doesn't promise this, but
    * we need these assertions to fail as soon as we're wrong about
    * it so we can do the porting fixups
    */
-  _dbus_assert (sizeof (pid_t) <= sizeof (dbus_pid_t));
-  _dbus_assert (sizeof (uid_t) <= sizeof (dbus_uid_t));
-  _dbus_assert (sizeof (gid_t) <= sizeof (dbus_gid_t));
+  _DBUS_STATIC_ASSERT (sizeof (pid_t) <= sizeof (dbus_pid_t));
+  _DBUS_STATIC_ASSERT (sizeof (uid_t) <= sizeof (dbus_uid_t));
+  _DBUS_STATIC_ASSERT (sizeof (gid_t) <= sizeof (dbus_gid_t));
+
+  uid_read = DBUS_UID_UNSET;
+  pid_read = DBUS_PID_UNSET;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   _dbus_credentials_clear (credentials);
 
@@ -2352,9 +2352,9 @@ _dbus_credentials_add_from_current_process (DBusCredentials *credentials)
    * we need these assertions to fail as soon as we're wrong about
    * it so we can do the porting fixups
    */
-  _dbus_assert (sizeof (pid_t) <= sizeof (dbus_pid_t));
-  _dbus_assert (sizeof (uid_t) <= sizeof (dbus_uid_t));
-  _dbus_assert (sizeof (gid_t) <= sizeof (dbus_gid_t));
+  _DBUS_STATIC_ASSERT (sizeof (pid_t) <= sizeof (dbus_pid_t));
+  _DBUS_STATIC_ASSERT (sizeof (uid_t) <= sizeof (dbus_uid_t));
+  _DBUS_STATIC_ASSERT (sizeof (gid_t) <= sizeof (dbus_gid_t));
 
   if (!_dbus_credentials_add_pid(credentials, _dbus_getpid()))
     return FALSE;

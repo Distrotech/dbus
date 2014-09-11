@@ -599,7 +599,7 @@ marshal_2_octets (DBusString   *str,
   dbus_bool_t retval;
   int orig_len;
 
-  _dbus_assert (sizeof (value) == 2);
+  _DBUS_STATIC_ASSERT (sizeof (value) == 2);
 
   if (byte_order != DBUS_COMPILER_BYTE_ORDER)
     value = DBUS_UINT16_SWAP_LE_BE (value);
@@ -628,7 +628,7 @@ marshal_4_octets (DBusString   *str,
   dbus_bool_t retval;
   int orig_len;
 
-  _dbus_assert (sizeof (value) == 4);
+  _DBUS_STATIC_ASSERT (sizeof (value) == 4);
 
   if (byte_order != DBUS_COMPILER_BYTE_ORDER)
     value = DBUS_UINT32_SWAP_LE_BE (value);
@@ -657,7 +657,7 @@ marshal_8_octets (DBusString    *str,
   dbus_bool_t retval;
   int orig_len;
 
-  _dbus_assert (sizeof (value) == 8);
+  _DBUS_STATIC_ASSERT (sizeof (value) == 8);
 
   swap_8_octets (&value, byte_order);
 

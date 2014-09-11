@@ -133,11 +133,11 @@ _dbus_string_init_preallocated (DBusString *str,
                                 int         allocate_size)
 {
   DBusRealString *real;
-  
+
+  _DBUS_STATIC_ASSERT (sizeof (DBusString) == sizeof (DBusRealString));
+
   _dbus_assert (str != NULL);
 
-  _dbus_assert (sizeof (DBusString) == sizeof (DBusRealString));
-  
   real = (DBusRealString*) str;
 
   /* It's very important not to touch anything
