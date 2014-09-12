@@ -417,10 +417,6 @@ endif (WIN32)
 
 set (DBUS_USER )
 
-# In Autotools this has a different default on QNX, but there seems little
-# point in replicating that here; if you're on an unusual Unix, use Autotools.
-set (DEFAULT_MESSAGE_UNIX_FDS 1024)
-
 # This won't work on Windows. It's not meant to - the system bus is
 # meaningless on Windows anyway.
 #

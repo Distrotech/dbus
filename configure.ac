@@ -1242,17 +1242,6 @@ if test x$with_valgrind != xno; then
   AC_DEFINE([WITH_VALGRIND], [1], [Define to add Valgrind instrumentation])
 fi
 
-# Determine maximum number of Unix fds which may be passed
-AS_CASE([$host_os],
-  [*qnx*],
-    [DEFAULT_MESSAGE_UNIX_FDS=256],
-  [*],
-    [DEFAULT_MESSAGE_UNIX_FDS=1024])
-AC_DEFINE_UNQUOTED([DBUS_DEFAULT_MESSAGE_UNIX_FDS],
-  [$DEFAULT_MESSAGE_UNIX_FDS],
-  [Default for dbus_connection_get_max_message_unix_fds()])
-AC_SUBST([DEFAULT_MESSAGE_UNIX_FDS])
-
 #### Set up final flags
 LIBDBUS_LIBS="$THREAD_LIBS $NETWORK_libs"
 AC_SUBST([LIBDBUS_LIBS])
