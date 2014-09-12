@@ -3,8 +3,15 @@ D-Bus 1.8.8 (UNRELEASED)
 
 Fixes:
 
+• Check for libsystemd from systemd >= 209, falling back to
+  the older separate libraries if not found (Umut Tezduyar Lindskog,
+  Simon McVittie)
+
 • Fix compilation with --enable-stats (fd.o #81043, Gentoo #507232;
   Alban Crequy)
+
+• Improve documentation for running tests on Windows (fd.o #41252,
+  Ralf Habacker)
 
 D-Bus 1.8.6 (2014-06-02)
 ==
