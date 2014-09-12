@@ -45,6 +45,10 @@ Fixes:
   (like Mac OS X 10.6), or available in libc but unsupported by the kernel
   (fd.o #77032; rmvsxop, OBATA Akio, Patrick Welche)
 
+• Check for libsystemd from systemd >= 209, falling back to
+  the older separate libraries if not found (Umut Tezduyar Lindskog,
+  Simon McVittie)
+
 • Fix compilation with --enable-stats (fd.o #81043, Gentoo #507232;
   Alban Crequy)
 
@@ -52,6 +56,9 @@ Fixes:
 
 • Change DBUS_TYPE_G_BYTE_ARRAY reference in dbus-tutorial.xml
   to the correct DBUS_TYPE_G_UCHAR_ARRAY (fd.o #80795, Thomas Haller)
+
+• Improve documentation for running tests on Windows (fd.o #41252,
+  Ralf Habacker)
 
 D-Bus 1.8.6 (2014-06-02)
 ==
