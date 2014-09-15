@@ -4,8 +4,8 @@ D-Bus 1.9.0 (UNRELEASED)
 Requirements:
 
 • Support for the systemd: (LISTEN_FDS) pseudo-transport on Linux now
-  requires the sd-daemon shared library, dropping the embedded convenience
-  copy (fd.o #71818, Simon)
+  requires either the libsystemd or libsd-daemon shared library, dropping the
+  embedded convenience copy of sd-daemon (fd.o #71818, Simon)
 
 Build-time configuration changes:
 
@@ -26,6 +26,12 @@ Enhancements:
 
 • use backtrace() if it is in -lexecinfo instead of libc, as on NetBSD
   (fd.o #69702, Patrick Welche)
+
+• in dbus-monitor, print more information about file descriptors
+  (fd.o #80603, Alban Crequy)
+
+• do not install system bus configuration if built for Windows
+  (fd.o #83583; Ralf Habacker, Simon McVittie)
 
 Fixes:
 
@@ -63,6 +69,9 @@ Fixes:
 
 • Improve documentation for running tests on Windows (fd.o #41252,
   Ralf Habacker)
+
+• in dbus-monitor, do not leak file descriptors that we have monitored
+  (fd.o #80603, Alban Crequy)
 
 D-Bus 1.8.6 (2014-06-02)
 ==
