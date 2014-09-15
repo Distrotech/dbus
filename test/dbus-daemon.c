@@ -603,22 +603,34 @@ test_processid (Fixture *f,
   while (m == NULL)
     test_main_context_iterate (f->ctx, TRUE);
 
-  g_assert_cmpstr (dbus_message_get_signature (m), ==, "u");
+  if (dbus_message_get_args (m, &error,
+        DBUS_TYPE_UINT32, &pid,
+        DBUS_TYPE_INVALID))
+    {
+      g_assert_cmpstr (dbus_message_get_signature (m), ==, "u");
+      assert_no_error (&error);
 
-  g_assert_true (dbus_message_get_args (m, &error,
-                                        DBUS_TYPE_UINT32, &pid,
-                                        DBUS_TYPE_INVALID));
-// g_assert_no_error (&error);
-
-  g_message ("GetConnectionUnixProcessID returned %u", pid);
+      g_message ("GetConnectionUnixProcessID returned %u", pid);
 
 #ifdef G_OS_UNIX
-  g_assert_cmpuint (pid, ==, getpid ());
+      g_assert_cmpuint (pid, ==, getpid ());
 #elif defined(G_OS_WIN32)
-  g_assert_cmpuint (pid, ==, GetCurrentProcessId ());
+      g_assert_cmpuint (pid, ==, GetCurrentProcessId ());
 #else
-  g_assert_not_reached ();
+      g_assert_not_reached ();
 #endif
+    }
+  else
+    {
+      g_assert_cmpstr (error.name, ==, DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN);
+
+#ifdef PID_SHOULD_WORK
+      g_error ("Expected pid to be passed, but got %s: %s",
+          error.name, error.message);
+#endif
+
+      dbus_error_free (&error);
+    }
 }
 
 static void
