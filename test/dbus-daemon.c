@@ -43,6 +43,30 @@
 
 #include "test-utils.h"
 
+/* Platforms where we know that credentials-passing passes both the
+ * uid and the pid. Please keep these in alphabetical order.
+ *
+ * These platforms should #error in _dbus_read_credentials_socket()
+ * if we didn't detect their flavour of credentials-passing, since that
+ * would be a regression.
+ */
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+  defined(__linux__) || \
+  defined(__OpenBSD__)
+# define UNIX_USER_SHOULD_WORK
+# define PID_SHOULD_WORK
+#endif
+
+/* Platforms where we know that credentials-passing passes the
+ * uid, but not necessarily the pid. Again, alphabetical order please.
+ *
+ * These platforms should also #error in _dbus_read_credentials_socket()
+ * if we didn't detect their flavour of credentials-passing.
+ */
+#if defined(__NetBSD__)
+# define UNIX_USER_SHOULD_WORK
+#endif
+
 typedef struct {
     gboolean skip;
 
@@ -528,8 +552,11 @@ test_creds (Fixture *f,
       dbus_message_iter_next (&arr_iter);
     }
 
-#ifdef G_OS_UNIX
+#ifdef UNIX_USER_SHOULD_WORK
   g_assert (seen & SEEN_UNIX_USER);
+#endif
+
+#ifdef PID_SHOULD_WORK
   g_assert (seen & SEEN_PID);
 #endif
 
