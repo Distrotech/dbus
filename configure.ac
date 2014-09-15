@@ -598,6 +598,10 @@ if test "x$ac_cv_header_syslog_h" = "xyes"; then
   AC_CHECK_DECLS([LOG_PERROR], [], [], [[#include <syslog.h>]])
 fi
 
+# For test-segfault.c
+AC_CHECK_HEADERS_ONCE([sys/prctl.h])
+AC_CHECK_FUNCS_ONCE([prctl raise])
+
 #### Check for broken poll; taken from Glib's configure
 
 AC_MSG_CHECKING([for broken poll])
