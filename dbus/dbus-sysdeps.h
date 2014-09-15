@@ -537,6 +537,14 @@ void _dbus_request_file_descriptor_limit (unsigned int limit);
 const char *
 _dbus_replace_install_prefix (const char *configure_time_path);
 
+/* Do not set this too high: it is a denial-of-service risk.
+ * See <https://bugs.freedesktop.org/show_bug.cgi?id=82820>
+ *
+ * (This needs to be in the non-Unix-specific header so that
+ * the config-parser can use it.)
+ */
+#define DBUS_DEFAULT_MESSAGE_UNIX_FDS 16
+
 /** @} */
 
 DBUS_END_DECLS
