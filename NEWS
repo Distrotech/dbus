@@ -7,6 +7,10 @@ Fixes:
   the older separate libraries if not found (Umut Tezduyar Lindskog,
   Simon McVittie)
 
+• On Linux, use prctl() to disable core dumps from a test executable
+  that deliberately raises SIGSEGV to test dbus-daemon's handling
+  of that condition (fd.o #83772, Simon McVittie)
+
 • Fix compilation with --enable-stats (fd.o #81043, Gentoo #507232;
   Alban Crequy)
 
