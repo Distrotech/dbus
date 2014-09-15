@@ -1,7 +1,45 @@
-D-Bus 1.8.8 (UNRELEASED)
+D-Bus 1.8.8 (2014-09-16)
 ==
 
-Fixes:
+The "smashy smashy egg man" release.
+
+Security fixes:
+
+• Do not accept an extra fd in the padding of a cmsg message, which
+  could lead to a 4-byte heap buffer overrun.
+  (CVE-2014-3635, fd.o #83622; Simon McVittie)
+
+• Reduce default for maximum Unix file descriptors passed per message
+  from 1024 to 16, preventing a uid with the default maximum number of
+  connections from exhausting the system bus' file descriptors under
+  Linux's default rlimit. Distributors or system administrators with a
+  more restrictive fd limit may wish to reduce these limits further.
+
+  Additionally, on Linux this prevents a second denial of service
+  in which the dbus-daemon can be made to exceed the maximum number
+  of fds per sendmsg() and disconnect the process that would have
+  received them.
+  (CVE-2014-3636, fd.o #82820; Alban Crequy)
+
+• Disconnect connections that still have a fd pending unmarshalling after
+  a new configurable limit, pending_fd_timeout (defaulting to 150 seconds),
+  removing the possibility of creating an abusive connection that cannot be
+  disconnected by setting up a circular reference to a connection's
+  file descriptor.
+  (CVE-2014-3637, fd.o #80559; Alban Crequy)
+
+• Reduce default for maximum pending replies per connection from 8192 to 128,
+  mitigating an algorithmic complexity denial-of-service attack
+  (CVE-2014-3638, fd.o #81053; Alban Crequy)
+
+• Reduce default for authentication timeout on the system bus from
+  30 seconds to 5 seconds, avoiding denial of service by using up
+  all unauthenticated connection slots; and when all unauthenticated
+  connection slots are used up, make new connection attempts block
+  instead of disconnecting them.
+  (CVE-2014-3639, fd.o #80919; Alban Crequy)
+
+Other fixes:
 
 • Check for libsystemd from systemd >= 209, falling back to
   the older separate libraries if not found (Umut Tezduyar Lindskog,
