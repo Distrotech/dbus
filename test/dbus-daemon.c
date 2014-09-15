@@ -52,6 +52,7 @@
  */
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
   defined(__linux__) || \
+  defined(__NetBSD__) || \
   defined(__OpenBSD__)
 # define UNIX_USER_SHOULD_WORK
 # define PID_SHOULD_WORK
@@ -63,7 +64,7 @@
  * These platforms should also #error in _dbus_read_credentials_socket()
  * if we didn't detect their flavour of credentials-passing.
  */
-#if defined(__NetBSD__)
+#if 0 /* defined(__your_platform_here__) */
 # define UNIX_USER_SHOULD_WORK
 #endif
 
