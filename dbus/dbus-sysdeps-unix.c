@@ -323,6 +323,12 @@ _dbus_read_socket_with_unix_fds (int               fd,
   m.msg_control = alloca(m.msg_controllen);
   memset(m.msg_control, 0, m.msg_controllen);
 
+  /* Do not include the padding at the end when we tell the kernel
+   * how much we're willing to receive. This avoids getting
+   * the padding filled with additional fds that we weren't expecting,
+   * if a (potentially malicious) sender included them. (fd.o #83622) */
+  m.msg_controllen = CMSG_LEN (*n_fds * sizeof(int));
+
  again:
 
   bytes_read = recvmsg(fd, &m, 0
@@ -362,18 +368,49 @@ _dbus_read_socket_with_unix_fds (int               fd,
       for (cm = CMSG_FIRSTHDR(&m); cm; cm = CMSG_NXTHDR(&m, cm))
         if (cm->cmsg_level == SOL_SOCKET && cm->cmsg_type == SCM_RIGHTS)
           {
-            unsigned i;
+            size_t i;
+            int *payload = (int *) CMSG_DATA (cm);
+            size_t payload_len_bytes = (cm->cmsg_len - CMSG_LEN (0));
+            size_t payload_len_fds = payload_len_bytes / sizeof (int);
+            size_t fds_to_use;
 
-            _dbus_assert(cm->cmsg_len <= CMSG_LEN(*n_fds * sizeof(int)));
-            *n_fds = (cm->cmsg_len - CMSG_LEN(0)) / sizeof(int);
+            /* Every non-negative int fits in a size_t without truncation,
+             * and we already know that *n_fds is non-negative, so
+             * casting (size_t) *n_fds is OK */
+            _DBUS_STATIC_ASSERT (sizeof (size_t) >= sizeof (int));
 
-            memcpy(fds, CMSG_DATA(cm), *n_fds * sizeof(int));
+            if (_DBUS_LIKELY (payload_len_fds <= (size_t) *n_fds))
+              {
+                /* The fds in the payload will fit in our buffer */
+                fds_to_use = payload_len_fds;
+              }
+            else
+              {
+                /* Too many fds in the payload. This shouldn't happen
+                 * any more because we're setting m.msg_controllen to
+                 * the exact number we can accept, but be safe and
+                 * truncate. */
+                fds_to_use = (size_t) *n_fds;
+
+                /* Close the excess fds to avoid DoS: if they stayed open,
+                 * someone could send us an extra fd per message
+                 * and we'd eventually run out. */
+                for (i = fds_to_use; i < payload_len_fds; i++)
+                  {
+                    close (payload[i]);
+                  }
+              }
+
+            memcpy (fds, payload, fds_to_use * sizeof (int));
             found = TRUE;
+            /* This cannot overflow because we have chosen fds_to_use
+             * to be <= *n_fds */
+            *n_fds = (int) fds_to_use;
 
             /* Linux doesn't tell us whether MSG_CMSG_CLOEXEC actually
                worked, hence we need to go through this list and set
                CLOEXEC everywhere in any case */
-            for (i = 0; i < *n_fds; i++)
+            for (i = 0; i < fds_to_use; i++)
               _dbus_fd_set_close_on_exec(fds[i]);
 
             break;

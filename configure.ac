@@ -37,7 +37,7 @@ LT_CURRENT=11
 
 ## increment any time the source changes; set to
 ##  0 if you increment CURRENT
-LT_REVISION=6
+LT_REVISION=7
 
 ## increment if any interfaces have been added; set to 0
 ## if any interfaces have been changed or removed. removal has
@@ -1244,17 +1244,6 @@ if test x$with_valgrind != xno; then
   PKG_CHECK_MODULES([VALGRIND], [valgrind >= 3.6])
   AC_DEFINE([WITH_VALGRIND], [1], [Define to add Valgrind instrumentation])
 fi
-
-# Determine maximum number of Unix fds which may be passed
-AS_CASE([$host_os],
-  [*qnx*],
-    [DEFAULT_MESSAGE_UNIX_FDS=256],
-  [*],
-    [DEFAULT_MESSAGE_UNIX_FDS=1024])
-AC_DEFINE_UNQUOTED([DBUS_DEFAULT_MESSAGE_UNIX_FDS],
-  [$DEFAULT_MESSAGE_UNIX_FDS],
-  [Default for dbus_connection_get_max_message_unix_fds()])
-AC_SUBST([DEFAULT_MESSAGE_UNIX_FDS])
 
 #### Set up final flags
 LIBDBUS_LIBS="$THREAD_LIBS $NETWORK_libs $SYSTEMD_LIBS"

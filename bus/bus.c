@@ -39,6 +39,7 @@
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-credentials.h>
 #include <dbus/dbus-internals.h>
+#include <dbus/dbus-server-protected.h>
 
 #ifdef DBUS_CYGWIN
 #include <signal.h>
@@ -68,6 +69,7 @@ struct BusContext
   unsigned int keep_umask : 1;
   unsigned int allow_anonymous : 1;
   unsigned int systemd_activation : 1;
+  dbus_bool_t watches_enabled;
 };
 
 static dbus_int32_t server_data_slot = -1;
@@ -758,6 +760,8 @@ bus_context_new (const DBusString *config_file,
       goto failed;
     }
 
+  context->watches_enabled = TRUE;
+
   context->registry = bus_registry_new (context);
   if (context->registry == NULL)
     {
@@ -1237,6 +1241,12 @@ bus_context_get_auth_timeout (BusContext *context)
 }
 
 int
+bus_context_get_pending_fd_timeout (BusContext *context)
+{
+  return context->limits.pending_fd_timeout;
+}
+
+int
 bus_context_get_max_completed_connections (BusContext *context)
 {
   return context->limits.max_completed_connections;
@@ -1657,4 +1667,37 @@ bus_context_check_security_policy (BusContext     *context,
 
   _dbus_verbose ("security policy allowing message\n");
   return TRUE;
+}
+
+void
+bus_context_check_all_watches (BusContext *context)
+{
+  DBusList *link;
+  dbus_bool_t enabled = TRUE;
+
+  if (bus_connections_get_n_incomplete (context->connections) >=
+      bus_context_get_max_incomplete_connections (context))
+    {
+      enabled = FALSE;
+    }
+
+  if (context->watches_enabled == enabled)
+    return;
+
+  context->watches_enabled = enabled;
+
+  for (link = _dbus_list_get_first_link (&context->servers);
+       link != NULL;
+       link = _dbus_list_get_next_link (&context->servers, link))
+    {
+      /* A BusContext might contains several DBusServer (if there are
+       * several <listen> configuration items) and a DBusServer might
+       * contain several DBusWatch in its DBusWatchList (if getaddrinfo
+       * returns several addresses on a dual IPv4-IPv6 stack or if
+       * systemd passes several fds).
+       * We want to enable/disable them all.
+       */
+      DBusServer *server = link->data;
+      _dbus_server_toggle_all_watches (server, enabled);
+    }
 }

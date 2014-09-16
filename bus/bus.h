@@ -54,6 +54,7 @@ typedef struct
   long max_message_unix_fds;        /**< Max number of unix fds of a single message*/
   int activation_timeout;           /**< How long to wait for an activation to time out */
   int auth_timeout;                 /**< How long to wait for an authentication to time out */
+  int pending_fd_timeout;           /**< How long to wait for a D-Bus message with a fd to time out */
   int max_completed_connections;    /**< Max number of authorized connections */
   int max_incomplete_connections;   /**< Max number of incomplete connections */
   int max_connections_per_user;     /**< Max number of connections auth'd as same user */
@@ -106,6 +107,7 @@ BusClientPolicy*  bus_context_create_client_policy               (BusContext    
                                                                   DBusError        *error);
 int               bus_context_get_activation_timeout             (BusContext       *context);
 int               bus_context_get_auth_timeout                   (BusContext       *context);
+int               bus_context_get_pending_fd_timeout             (BusContext       *context);
 int               bus_context_get_max_completed_connections      (BusContext       *context);
 int               bus_context_get_max_incomplete_connections     (BusContext       *context);
 int               bus_context_get_max_connections_per_user       (BusContext       *context);
@@ -125,5 +127,6 @@ dbus_bool_t       bus_context_check_security_policy              (BusContext    
                                                                   DBusConnection   *proposed_recipient,
                                                                   DBusMessage      *message,
                                                                   DBusError        *error);
+void              bus_context_check_all_watches                  (BusContext       *context);
 
 #endif /* BUS_BUS_H */

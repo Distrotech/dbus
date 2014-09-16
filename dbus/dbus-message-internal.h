@@ -96,6 +96,10 @@ long               _dbus_message_loader_get_max_message_size  (DBusMessageLoader
 void               _dbus_message_loader_set_max_message_unix_fds(DBusMessageLoader  *loader,
                                                                  long                n);
 long               _dbus_message_loader_get_max_message_unix_fds(DBusMessageLoader  *loader);
+int                _dbus_message_loader_get_pending_fds_count (DBusMessageLoader  *loader);
+void               _dbus_message_loader_set_pending_fds_function (DBusMessageLoader *loader,
+                                                                  void (* callback) (void *),
+                                                                  void *data);
 
 typedef struct DBusInitialFDs DBusInitialFDs;
 DBusInitialFDs *_dbus_check_fdleaks_enter (void);
