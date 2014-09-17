@@ -34,7 +34,6 @@
 /** @} */
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
-#include "dbus-test.h"
 #include <stdio.h>
 #include <string.h>
 
