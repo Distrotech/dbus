@@ -25,7 +25,10 @@
 #ifndef DBUS_SYSDEPS_H
 #define DBUS_SYSDEPS_H
 
+#ifndef VERSION
+#warning Please include config.h before dbus-sysdeps.h
 #include "config.h"
+#endif
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
