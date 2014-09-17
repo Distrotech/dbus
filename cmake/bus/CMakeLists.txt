@@ -77,7 +77,11 @@ if(DBUS_ENABLE_STATS)
 	)
 endif(DBUS_ENABLE_STATS)
 
-include_directories(${XML_INCLUDE_DIR})
+include_directories(
+	${CMAKE_BINARY_DIR}
+	${CMAKE_SOURCE_DIR}/..
+	${XML_INCLUDE_DIR}
+)
 
 add_executable(dbus-daemon ${BUS_SOURCES} ${BUS_DIR}/main.c)
 target_link_libraries(dbus-daemon ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
@@ -114,6 +118,16 @@ if (DBUS_ENABLE_EMBEDDED_TESTS)
 	set(SOURCES ${BUS_SOURCES} ${BUS_DIR}/test-main.c)
 	add_test_executable(test-bus "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
 	set_target_properties(test-bus PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
+	if (NOT DBUS_WIN32)
+		set(test_bus_system_SOURCES
+			${XML_SOURCES}
+			${BUS_DIR}/config-parser-common.c
+			${BUS_DIR}/config-parser-trivial.c
+			${BUS_DIR}/utils.c
+			${BUS_DIR}/test-system.c
+		)
+		add_test_executable(test-bus-system "${test_bus_system_SOURCES}" ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} ${DBUS_BUS_LIBS})
+	endif()
 endif (DBUS_ENABLE_EMBEDDED_TESTS)
 
 if(MSVC)
