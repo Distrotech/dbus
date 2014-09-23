@@ -433,6 +433,8 @@ bus_dispatch_remove_connection (DBusConnection *connection)
 
 #include <stdio.h>
 
+#include "stats.h"
+
 /* This is used to know whether we need to block in order to finish
  * sending a message, or whether the initial dbus_connection_send()
  * already flushed the queue.
@@ -1393,20 +1395,21 @@ check_get_connection_unix_process_id (BusContext     *context,
  * but the correct thing may include OOM errors.
  */
 static dbus_bool_t
-check_add_match_all (BusContext     *context,
-                     DBusConnection *connection)
+check_add_match (BusContext     *context,
+                 DBusConnection *connection,
+                 const char     *rule)
 {
   DBusMessage *message;
   dbus_bool_t retval;
   dbus_uint32_t serial;
   DBusError error;
-  const char *empty = "";
 
   retval = FALSE;
   dbus_error_init (&error);
   message = NULL;
 
-  _dbus_verbose ("check_add_match_all for %p\n", connection);
+  _dbus_verbose ("check_add_match for connection %p, rule %s\n",
+                 connection, rule);
 
   message = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
                                           DBUS_PATH_DBUS,
@@ -1416,8 +1419,7 @@ check_add_match_all (BusContext     *context,
   if (message == NULL)
     return TRUE;
 
-  /* empty string match rule matches everything */
-  if (!dbus_message_append_args (message, DBUS_TYPE_STRING, &empty,
+  if (!dbus_message_append_args (message, DBUS_TYPE_STRING, &rule,
                                  DBUS_TYPE_INVALID))
     {
       dbus_message_unref (message);
@@ -1521,6 +1523,132 @@ check_add_match_all (BusContext     *context,
   return retval;
 }
 
+#ifdef DBUS_ENABLE_STATS
+/* returns TRUE if the correct thing happens,
+ * but the correct thing may include OOM errors.
+ */
+static dbus_bool_t
+check_get_all_match_rules (BusContext     *context,
+                           DBusConnection *connection)
+{
+  DBusMessage *message;
+  dbus_bool_t retval;
+  dbus_uint32_t serial;
+  DBusError error;
+
+  retval = FALSE;
+  dbus_error_init (&error);
+  message = NULL;
+
+  _dbus_verbose ("check_get_all_match_rules for connection %p\n",
+                 connection);
+
+  message = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+                                          DBUS_PATH_DBUS,
+                                          BUS_INTERFACE_STATS,
+                                          "GetAllMatchRules");
+
+  if (message == NULL)
+    return TRUE;
+
+  if (!dbus_connection_send (connection, message, &serial))
+    {
+      dbus_message_unref (message);
+      return TRUE;
+    }
+
+  dbus_message_unref (message);
+  message = NULL;
+
+  dbus_connection_ref (connection); /* because we may get disconnected */
+
+  /* send our message */
+  bus_test_run_clients_loop (SEND_PENDING (connection));
+
+  if (!dbus_connection_get_is_connected (connection))
+    {
+      _dbus_verbose ("connection was disconnected\n");
+
+      dbus_connection_unref (connection);
+
+      return TRUE;
+    }
+
+  block_connection_until_message_from_bus (context, connection, "reply to AddMatch");
+
+  if (!dbus_connection_get_is_connected (connection))
+    {
+      _dbus_verbose ("connection was disconnected\n");
+
+      dbus_connection_unref (connection);
+
+      return TRUE;
+    }
+
+  dbus_connection_unref (connection);
+
+  message = pop_message_waiting_for_memory (connection);
+  if (message == NULL)
+    {
+      _dbus_warn ("Did not receive a reply to %s %d on %p\n",
+                  "AddMatch", serial, connection);
+      goto out;
+    }
+
+  verbose_message_received (connection, message);
+
+  if (!dbus_message_has_sender (message, DBUS_SERVICE_DBUS))
+    {
+      _dbus_warn ("Message has wrong sender %s\n",
+                  dbus_message_get_sender (message) ?
+                  dbus_message_get_sender (message) : "(none)");
+      goto out;
+    }
+
+  if (dbus_message_get_type (message) == DBUS_MESSAGE_TYPE_ERROR)
+    {
+      if (dbus_message_is_error (message,
+                                 DBUS_ERROR_NO_MEMORY))
+        {
+          ; /* good, this is a valid response */
+        }
+      else
+        {
+          warn_unexpected (connection, message, "not this error");
+
+          goto out;
+        }
+    }
+  else
+    {
+      if (dbus_message_get_type (message) == DBUS_MESSAGE_TYPE_METHOD_RETURN)
+        {
+          ; /* good, expected */
+          _dbus_assert (dbus_message_get_reply_serial (message) == serial);
+        }
+      else
+        {
+          warn_unexpected (connection, message, "method return for AddMatch");
+
+          goto out;
+        }
+    }
+
+  if (!check_no_leftovers (context))
+    goto out;
+
+  retval = TRUE;
+
+ out:
+  dbus_error_free (&error);
+
+  if (message)
+    dbus_message_unref (message);
+
+  return retval;
+}
+#endif
+
 /* returns TRUE if the correct thing happens,
  * but the correct thing may include OOM errors.
  */
@@ -1561,7 +1689,7 @@ check_hello_connection (BusContext *context)
     }
   else
     {
-      if (!check_add_match_all (context, connection))
+      if (!check_add_match (context, connection, ""))
         return FALSE;
 
       kill_client_connection (context, connection);
@@ -4516,7 +4644,7 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
   if (!check_double_hello_message (context, foo))
     _dbus_assert_not_reached ("double hello message failed");
 
-  if (!check_add_match_all (context, foo))
+  if (!check_add_match (context, foo, ""))
     _dbus_assert_not_reached ("AddMatch message failed");
 
   bar = dbus_connection_open_private (TEST_DEBUG_PIPE, &error);
@@ -4531,7 +4659,7 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
   if (!check_hello_message (context, bar))
     _dbus_assert_not_reached ("hello message failed");
 
-  if (!check_add_match_all (context, bar))
+  if (!check_add_match (context, bar, ""))
     _dbus_assert_not_reached ("AddMatch message failed");
 
   baz = dbus_connection_open_private (TEST_DEBUG_PIPE, &error);
@@ -4546,8 +4674,16 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
   if (!check_hello_message (context, baz))
     _dbus_assert_not_reached ("hello message failed");
 
-  if (!check_add_match_all (context, baz))
+  if (!check_add_match (context, baz, ""))
     _dbus_assert_not_reached ("AddMatch message failed");
+
+  if (!check_add_match (context, baz, "interface='com.example'"))
+    _dbus_assert_not_reached ("AddMatch message failed");
+
+#ifdef DBUS_ENABLE_STATS
+  if (!check_get_all_match_rules (context, baz))
+    _dbus_assert_not_reached ("GetAllMatchRules message failed");
+#endif
 
 #ifdef DBUS_WIN_FIXME
   _dbus_warn("TODO: testing of GetConnectionUnixUser message skipped for now\n");
@@ -4665,7 +4801,7 @@ bus_dispatch_test_conf_fail (const DBusString *test_data_dir,
   if (!check_double_hello_message (context, foo))
     _dbus_assert_not_reached ("double hello message failed");
 
-  if (!check_add_match_all (context, foo))
+  if (!check_add_match (context, foo, ""))
     _dbus_assert_not_reached ("AddMatch message failed");
 
   /* this only tests the activation.c user check */
@@ -4745,7 +4881,7 @@ bus_dispatch_sha1_test (const DBusString *test_data_dir)
   if (!check_hello_message (context, foo))
     _dbus_assert_not_reached ("hello message failed");
 
-  if (!check_add_match_all (context, foo))
+  if (!check_add_match (context, foo, ""))
     _dbus_assert_not_reached ("addmatch message failed");
 
   if (!check_no_leftovers (context))
@@ -4794,7 +4930,7 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   if (!check_hello_message (context, foo))
     _dbus_assert_not_reached ("hello message failed");
 
-  if (!check_add_match_all (context, foo))
+  if (!check_add_match (context, foo, ""))
     _dbus_assert_not_reached ("AddMatch message failed");
 
   bar = dbus_connection_open_private (TEST_DEBUG_PIPE, &error);
@@ -4809,7 +4945,7 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   if (!check_hello_message (context, bar))
     _dbus_assert_not_reached ("hello message failed");
 
-  if (!check_add_match_all (context, bar))
+  if (!check_add_match (context, bar, ""))
     _dbus_assert_not_reached ("AddMatch message failed");
 
   if (!(m = dbus_message_new_signal("/", "a.b.c", "d")))
