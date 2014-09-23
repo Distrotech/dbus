@@ -38,6 +38,7 @@
 
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-list.h>
+#include <dbus/dbus-sysdeps-unix.h>
 #include <dbus/dbus-watch.h>
 #include "dir-watch.h"
 
@@ -236,6 +237,11 @@ _init_inotify (BusContext *context)
           _dbus_warn ("Cannot initialize inotify\n");
           goto out;
         }
+
+      /* In the inotify_init1 case this is unnecessary but harmless,
+       * in the other cases it's necessary */
+      _dbus_fd_set_close_on_exec (inotify_fd);
+
       loop = bus_context_get_loop (context);
       _dbus_loop_ref (loop);
 
