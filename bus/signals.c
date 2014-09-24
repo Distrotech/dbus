@@ -22,6 +22,7 @@
  */
 
 #include <config.h>
+#include <strings.h>
 #include "signals.h"
 #include "services.h"
 #include "utils.h"
@@ -119,9 +120,44 @@ bus_match_rule_unref (BusMatchRule *rule)
 }
 
 #if defined(DBUS_ENABLE_VERBOSE_MODE) || defined(DBUS_ENABLE_STATS)
-/* Note this function does not do escaping, so it's only
- * good for debug spew at the moment
- */
+static dbus_bool_t
+append_key_and_escaped_value (DBusString *str, const char *token, const char *value)
+{
+  const char *p = value;
+
+  if (!_dbus_string_append_printf (str, "%s='", token))
+    return FALSE;
+
+  while (*p != '\0')
+    {
+      const char *next = index (p, '\'');
+
+      if (next)
+        {
+          if (!_dbus_string_append_printf (str, "%.*s", (int) (next - p), p))
+            return FALSE;
+          /* Horrible escape sequence: single quote cannot be escaped inside
+           * a single quoted string. So we close the single quote, escape the
+           * single quote, and reopen a single quote.
+           */
+          if (!_dbus_string_append_printf (str, "'\\''"))
+            return FALSE;
+          p = next + 1;
+        }
+      else
+        {
+          if (!_dbus_string_append_printf (str, "%s", p))
+            return FALSE;
+          break;
+        }
+    }
+
+  if (!_dbus_string_append_byte (str, '\''))
+    return FALSE;
+
+  return TRUE;
+}
+
 /* returns NULL if no memory */
 static char*
 match_rule_to_string (BusMatchRule *rule)
@@ -136,7 +172,7 @@ match_rule_to_string (BusMatchRule *rule)
   
   if (rule->flags & BUS_MATCH_MESSAGE_TYPE)
     {
-      if (!_dbus_string_append_printf (&str, "type='%s'",
+      if (!append_key_and_escaped_value (&str, "type",
             dbus_message_type_to_string (rule->message_type)))
         goto nomem;
     }
@@ -149,7 +185,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
       
-      if (!_dbus_string_append_printf (&str, "interface='%s'", rule->interface))
+      if (!append_key_and_escaped_value (&str, "interface", rule->interface))
         goto nomem;
     }
 
@@ -161,7 +197,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
       
-      if (!_dbus_string_append_printf (&str, "member='%s'", rule->member))
+      if (!append_key_and_escaped_value (&str, "member", rule->member))
         goto nomem;
     }
 
@@ -173,7 +209,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
       
-      if (!_dbus_string_append_printf (&str, "path='%s'", rule->path))
+      if (!append_key_and_escaped_value (&str, "path", rule->path))
         goto nomem;
     }
 
@@ -185,7 +221,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
 
-      if (!_dbus_string_append_printf (&str, "path_namespace='%s'", rule->path))
+      if (!append_key_and_escaped_value (&str, "path_namespace", rule->path))
         goto nomem;
     }
 
@@ -197,7 +233,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
       
-      if (!_dbus_string_append_printf (&str, "sender='%s'", rule->sender))
+      if (!append_key_and_escaped_value (&str, "sender", rule->sender))
         goto nomem;
     }
 
@@ -209,7 +245,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
       
-      if (!_dbus_string_append_printf (&str, "destination='%s'", rule->destination))
+      if (!append_key_and_escaped_value (&str, "destination", rule->destination))
         goto nomem;
     }
 
@@ -221,7 +257,7 @@ match_rule_to_string (BusMatchRule *rule)
             goto nomem;
         }
 
-      if (!_dbus_string_append_printf (&str, "eavesdrop='%s'",
+      if (!append_key_and_escaped_value (&str, "eavesdrop",
             (rule->flags & BUS_MATCH_CLIENT_IS_EAVESDROPPING) ?
             "true" : "false"))
         goto nomem;
@@ -250,11 +286,12 @@ match_rule_to_string (BusMatchRule *rule)
               is_namespace = (rule->arg_lens[i] & BUS_MATCH_ARG_NAMESPACE) != 0;
               
               if (!_dbus_string_append_printf (&str,
-                                               "arg%d%s='%s'",
+                                               "arg%d%s",
                                                i,
                                                is_path ? "path" :
-                                               is_namespace ? "namespace" : "",
-                                               rule->args[i]))
+                                               is_namespace ? "namespace" : ""))
+                goto nomem;
+              if (!append_key_and_escaped_value (&str, "", rule->args[i]))
                 goto nomem;
             }
           
