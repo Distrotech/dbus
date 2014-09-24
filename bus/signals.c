@@ -2499,7 +2499,12 @@ static struct {
   { "type='method_call',arg3='foosh'", "arg3='foosh',type='method_call'" },
   { "arg3='fool'", "arg3='fool'" },
   { "arg0namespace='fool'", "arg0namespace='fool'" },
-  { "member='food'", "member='food'" }
+  { "member='food'", "member='food'" },
+  { "member=escape", "member='escape'" },
+  { "member=icecream", "member=ice'cream'" },
+  { "arg0='comma,type=comma',type=signal", "type=signal,arg0='comma,type=comma'" },
+  { "arg0=escap\\e", "arg0='escap\\e'" },
+  { "arg0=Time: 8 o\\'clock", "arg0='Time: 8 o'\\''clock'" },
 };
 
 static void
@@ -2512,6 +2517,8 @@ test_equality (void)
     {
       BusMatchRule *first;
       BusMatchRule *second;
+      char *first_str, *second_str;
+      BusMatchRule *first_reparsed, *second_reparsed;
       int j;
       
       first = check_parse (TRUE, equality_tests[i].first);
@@ -2526,6 +2533,21 @@ test_equality (void)
                       equality_tests[i].second);
           exit (1);
         }
+
+      /* Check match_rule_to_string */
+      first_str = match_rule_to_string (first);
+      _dbus_assert (first_str != NULL);
+      second_str = match_rule_to_string (second);
+      _dbus_assert (second_str != NULL);
+      _dbus_assert (strcmp (first_str, second_str) == 0);
+      first_reparsed = check_parse (TRUE, first_str);
+      second_reparsed = check_parse (TRUE, second_str);
+      _dbus_assert (match_rule_equal (first, first_reparsed));
+      _dbus_assert (match_rule_equal (second, second_reparsed));
+      bus_match_rule_unref (first_reparsed);
+      bus_match_rule_unref (second_reparsed);
+      dbus_free (first_str);
+      dbus_free (second_str);
 
       bus_match_rule_unref (second);
 
