@@ -764,6 +764,7 @@
           <tgroup cols="3">
             <thead>
               <row>
+                <entry>Category</entry>
                 <entry>Conventional Name</entry>
                 <entry>Code</entry>
                 <entry>Description</entry>
@@ -771,62 +772,77 @@
             </thead>
             <tbody>
               <row>
+                <entry>reserved</entry>
                 <entry><literal>INVALID</literal></entry>
                 <entry>0 (ASCII NUL)</entry>
                 <entry>Not a valid type code, used to terminate signatures</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>BYTE</literal></entry>
                 <entry>121 (ASCII 'y')</entry>
                 <entry>8-bit unsigned integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>BOOLEAN</literal></entry>
                 <entry>98 (ASCII 'b')</entry>
                 <entry>Boolean value, 0 is <literal>FALSE</literal> and 1 is <literal>TRUE</literal>. Everything else is invalid.</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>INT16</literal></entry>
                 <entry>110 (ASCII 'n')</entry>
                 <entry>16-bit signed integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>UINT16</literal></entry>
                 <entry>113 (ASCII 'q')</entry>
                 <entry>16-bit unsigned integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>INT32</literal></entry>
                 <entry>105 (ASCII 'i')</entry>
                 <entry>32-bit signed integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>UINT32</literal></entry>
                 <entry>117 (ASCII 'u')</entry>
                 <entry>32-bit unsigned integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>INT64</literal></entry>
                 <entry>120 (ASCII 'x')</entry>
                 <entry>64-bit signed integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>UINT64</literal></entry>
                 <entry>116 (ASCII 't')</entry>
                 <entry>64-bit unsigned integer</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>DOUBLE</literal></entry>
                 <entry>100 (ASCII 'd')</entry>
                 <entry>IEEE 754 double</entry>
               </row><row>
+                <entry>string-like, basic</entry>
                 <entry><literal>STRING</literal></entry>
                 <entry>115 (ASCII 's')</entry>
                 <entry>UTF-8 string (<emphasis>must</emphasis> be valid UTF-8). Must be nul terminated and contain no other nul bytes.</entry>
               </row><row>
+                <entry>string-like, basic</entry>
                 <entry><literal>OBJECT_PATH</literal></entry>
                 <entry>111 (ASCII 'o')</entry>
                 <entry>Name of an object instance</entry>
               </row><row>
+                <entry>string-like, basic</entry>
                 <entry><literal>SIGNATURE</literal></entry>
                 <entry>103 (ASCII 'g')</entry>
                 <entry>A type signature</entry>
               </row><row>
+                <entry>container</entry>
                 <entry><literal>ARRAY</literal></entry>
                 <entry>97 (ASCII 'a')</entry>
                 <entry>Array</entry>
               </row><row>
+                <entry>container</entry>
                 <entry><literal>STRUCT</literal></entry>
                 <entry>114 (ASCII 'r'), 40 (ASCII '('), 41 (ASCII ')')</entry>
                 <entry>Struct; type code 114 'r' is reserved for use in
@@ -834,10 +850,12 @@
                   concept of a struct, and must not appear in signatures
                   used on D-Bus.</entry>
               </row><row>
+                <entry>container</entry>
                 <entry><literal>VARIANT</literal></entry>
                 <entry>118 (ASCII 'v') </entry>
                 <entry>Variant type (the type of the value is part of the value itself)</entry>
               </row><row>
+                <entry>container</entry>
                 <entry><literal>DICT_ENTRY</literal></entry>
                 <entry>101 (ASCII 'e'), 123 (ASCII '{'), 125 (ASCII '}') </entry>
                 <entry>Entry in a dict or map (array of key-value pairs).
@@ -846,11 +864,13 @@
                   dict or dict-entry, and must not appear in signatures
                   used on D-Bus.</entry>
               </row><row>
+                <entry>fixed, basic</entry>
                 <entry><literal>UNIX_FD</literal></entry>
                 <entry>104 (ASCII 'h')</entry>
                 <entry>Unix file descriptor</entry>
               </row>
               <row>
+                <entry>reserved</entry>
                 <entry>(reserved)</entry>
                 <entry>109 (ASCII 'm')</entry>
                 <entry>Reserved for <ulink
@@ -860,6 +880,7 @@
                   specified here</entry>
               </row>
               <row>
+                <entry>reserved</entry>
                 <entry>(reserved)</entry>
                 <entry>42 (ASCII '*')</entry>
                 <entry>Reserved for use in bindings/implementations to
@@ -867,6 +888,7 @@
                   and must not appear in signatures used on D-Bus.</entry>
               </row>
               <row>
+                <entry>reserved</entry>
                 <entry>(reserved)</entry>
                 <entry>63 (ASCII '?')</entry>
                 <entry>Reserved for use in bindings/implementations to
@@ -874,6 +896,7 @@
                   not appear in signatures used on D-Bus.</entry>
               </row>
               <row>
+                <entry>reserved</entry>
                 <entry>(reserved)</entry>
                 <entry>64 (ASCII '@'), 38 (ASCII '&amp;'),
                   94 (ASCII '^')</entry>
