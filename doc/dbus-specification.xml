@@ -4559,6 +4559,32 @@
           "type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='Foo',path='/bar/foo',destination=':452345.34',arg2='bar'"
         </para>
         <para>
+          Within single quotes (ASCII apostrophe, U+0027), a backslash
+          (U+005C) represents itself, and an apostrophe ends the quoted
+          section. Outside single quotes, \' (backslash, apostrophe)
+          represents an apostrophe, and any backslash not followed by
+          an apostrophe represents itself. For instance, the match rules
+          <literal>arg0=''\''',arg1='\',arg2=',',arg3='\\'</literal> and
+          <literal>arg0=\',arg1=\,arg2=',',arg3=\\</literal>
+          both match messages where the arguments are a 1-character string
+          containing an apostrophe, a 1-character string containing a
+          backslash, a 1-character string containing a comma, and a
+          2-character string containing two backslashes<footnote>
+            <para>
+              This idiosyncratic quoting style is based on the rules for
+              escaping items to appear inside single-quoted strings
+              in POSIX <literal>/bin/sh</literal>, but please
+              note that backslashes that are not inside single quotes have
+              different behaviour. This syntax does not offer any way to
+              represent an apostrophe inside single quotes (it is necessary
+              to leave the single-quoted section, backslash-escape the
+              apostrophe and re-enter single quotes), or to represent a
+              comma outside single quotes (it is necessary to wrap it in
+              a single-quoted section).
+            </para>
+          </footnote>.
+        </para>
+        <para>
           The following table describes the keys that can be used to create 
           a match rule.
           <informaltable>
