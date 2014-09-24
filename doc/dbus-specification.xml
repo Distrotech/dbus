@@ -1018,8 +1018,8 @@
 
       <para>
         Arrays have a maximum length defined to be 2 to the 26th power or
-        67108864. Implementations must not send or accept arrays exceeding this
-        length.
+        67108864 (64 MiB). Implementations must not send or accept arrays
+        exceeding this length.
       </para>
 
       <para>
@@ -1224,8 +1224,8 @@
 
       <para>
         The maximum length of a message, including header, header alignment padding, 
-        and body is 2 to the 27th power or 134217728. Implementations must not 
-        send or accept messages exceeding this size.
+        and body is 2 to the 27th power or 134217728 (128 MiB).
+        Implementations must not send or accept messages exceeding this size.
       </para>
       
       <para>
