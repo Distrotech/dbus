@@ -122,6 +122,7 @@ bus_match_rule_unref (BusMatchRule *rule)
 /* Note this function does not do escaping, so it's only
  * good for debug spew at the moment
  */
+/* returns NULL if no memory */
 static char*
 match_rule_to_string (BusMatchRule *rule)
 {
@@ -130,10 +131,7 @@ match_rule_to_string (BusMatchRule *rule)
   
   if (!_dbus_string_init (&str))
     {
-      char *s;
-      while ((s = _dbus_strdup ("nomem")) == NULL)
-        ; /* only OK for debug spew... */
-      return s;
+      return NULL;
     }
   
   if (rule->flags & BUS_MATCH_MESSAGE_TYPE)
@@ -272,12 +270,7 @@ match_rule_to_string (BusMatchRule *rule)
   
  nomem:
   _dbus_string_free (&str);
-  {
-    char *s;
-    while ((s = _dbus_strdup ("nomem")) == NULL)
-      ;  /* only OK for debug spew... */
-    return s;
-  }
+  return NULL;
 }
 #endif /* defined(DBUS_ENABLE_VERBOSE_MODE) || defined(DBUS_ENABLE_STATS) */
 
@@ -1427,7 +1420,7 @@ bus_matchmaker_add_rule (BusMatchmaker   *matchmaker,
     char *s = match_rule_to_string (rule);
 
     _dbus_verbose ("Added match rule %s to connection %p\n",
-                   s, rule->matches_go_to);
+                   s ? s : "nomem", rule->matches_go_to);
     dbus_free (s);
   }
 #endif
@@ -1520,7 +1513,7 @@ bus_matchmaker_remove_rule_link (DBusList       **rules,
     char *s = match_rule_to_string (rule);
 
     _dbus_verbose ("Removed match rule %s for connection %p\n",
-                   s, rule->matches_go_to);
+                   s ? s : "nomem", rule->matches_go_to);
     dbus_free (s);
   }
 #endif
@@ -1557,7 +1550,7 @@ bus_matchmaker_remove_rule (BusMatchmaker   *matchmaker,
     char *s = match_rule_to_string (rule);
 
     _dbus_verbose ("Removed match rule %s for connection %p\n",
-                   s, rule->matches_go_to);
+                   s ? s : "nomem", rule->matches_go_to);
     dbus_free (s);
   }
 #endif
@@ -2034,7 +2027,7 @@ get_recipients_from_list (DBusList       **rules,
         char *s = match_rule_to_string (rule);
 
         _dbus_verbose ("Checking whether message matches rule %s for connection %p\n",
-                       s, rule->matches_go_to);
+                       s ? s : "nomem", rule->matches_go_to);
         dbus_free (s);
       }
 #endif
