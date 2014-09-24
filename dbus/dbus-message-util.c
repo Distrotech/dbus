@@ -1205,6 +1205,7 @@ _dbus_message_test (const char *test_data_dir)
 #endif
   char **decomposed;
   DBusInitialFDs *initial_fds;
+  dbus_bool_t ok;
 
   initial_fds = _dbus_check_fdleaks_enter ();
 
@@ -1603,18 +1604,19 @@ _dbus_message_test (const char *test_data_dir)
 
   dbus_message_iter_init_append (message, &iter);
 
-  _dbus_assert (dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY,
+  ok = dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY,
 			  			  (DBUS_STRUCT_BEGIN_CHAR_AS_STRING
 						   DBUS_TYPE_STRING_AS_STRING
 						   DBUS_TYPE_STRING_AS_STRING
 						   DBUS_STRUCT_END_CHAR_AS_STRING),
-						  &array_iter));
-  _dbus_assert (dbus_message_iter_open_container (&array_iter, DBUS_TYPE_STRUCT,
-			  			  NULL, &struct_iter));
-
+                          &array_iter);
+  _dbus_assert (ok);
+  ok = dbus_message_iter_open_container (&array_iter, DBUS_TYPE_STRUCT,
+                          NULL, &struct_iter);
+  _dbus_assert (ok);
   s = "peaches";
-  _dbus_assert (dbus_message_iter_append_basic (&struct_iter, DBUS_TYPE_STRING,
-			  			&s));
+  ok = dbus_message_iter_append_basic (&struct_iter, DBUS_TYPE_STRING, &s);
+  _dbus_assert (ok);
 
   /* uh-oh, error, try and unwind */
 
