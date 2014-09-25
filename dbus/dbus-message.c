@@ -4876,6 +4876,54 @@ dbus_message_demarshal_bytes_needed(const char *buf,
     }
 }
 
+/**
+ * Sets a flag indicating that the caller of the method is prepared
+ * to wait for interactive authorization to take place (for instance
+ * via Polkit) before the actual method is processed.
+ *
+ * The flag is #FALSE by default; that is, by default the other end is
+ * expected to make any authorization decisions non-interactively
+ * and promptly. It may use the error
+ * #DBUS_ERROR_INTERACTIVE_AUTHORIZATION_REQUIRED to signal that
+ * authorization failed, but could have succeeded if this flag had
+ * been used.
+ *
+ * For messages whose type is not #DBUS_MESSAGE_TYPE_METHOD_CALL,
+ * this flag is meaningless and should not be set.
+ *
+ * On the protocol level this toggles
+ * #DBUS_HEADER_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION.
+ *
+ * @param message the message
+ * @param allow #TRUE if interactive authorization is acceptable
+ */
+void
+dbus_message_set_allow_interactive_authorization (DBusMessage *message,
+                                                  dbus_bool_t  allow)
+{
+  _dbus_return_if_fail (message != NULL);
+  _dbus_return_if_fail (!message->locked);
+
+  _dbus_header_toggle_flag (&message->header,
+                            DBUS_HEADER_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION,
+                            allow);
+}
+
+/**
+ * Returns whether the flag controlled by
+ * dbus_message_set_allow_interactive_authorization() has been set.
+ *
+ * @param message the message
+ */
+dbus_bool_t
+dbus_message_get_allow_interactive_authorization (DBusMessage *message)
+{
+  _dbus_return_val_if_fail (message != NULL, FALSE);
+
+  return _dbus_header_get_flag (&message->header,
+                                DBUS_HEADER_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION);
+}
+
 /** @} */
 
 /* tests in dbus-message-util.c */

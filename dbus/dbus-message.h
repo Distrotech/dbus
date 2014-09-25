@@ -302,6 +302,14 @@ DBUS_EXPORT
 int          dbus_message_demarshal_bytes_needed (const char *str, 
                                                   int len);
 
+DBUS_EXPORT
+void dbus_message_set_allow_interactive_authorization (DBusMessage *message,
+    dbus_bool_t allow);
+
+DBUS_EXPORT
+dbus_bool_t dbus_message_get_allow_interactive_authorization (
+    DBusMessage *message);
+
 /** @} */
 
 DBUS_END_DECLS
