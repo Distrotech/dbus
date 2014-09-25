@@ -22,7 +22,9 @@
  */
 
 #include <config.h>
-#include <strings.h>
+
+#include <string.h>
+
 #include "signals.h"
 #include "services.h"
 #include "utils.h"
@@ -130,7 +132,7 @@ append_key_and_escaped_value (DBusString *str, const char *token, const char *va
 
   while (*p != '\0')
     {
-      const char *next = index (p, '\'');
+      const char *next = strchr (p, '\'');
 
       if (next)
         {
