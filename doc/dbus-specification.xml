@@ -1399,6 +1399,66 @@
                   for the destination name in response to this message.
                 </entry>
               </row>
+              <row>
+                <entry><literal>ALLOW_INTERACTIVE_AUTHORIZATION</literal></entry>
+                <entry>0x4</entry>
+                <entry>
+                  <para>
+                    This flag may be set on a method call message to
+                    inform the receiving side that the caller is prepared
+                    to wait for interactive authorization, which might
+                    take a considerable time to complete. For instance,
+                    if this flag is set, it would be appropriate to
+                    query the user for passwords or confirmation via
+                    Polkit or a similar framework.
+                  </para>
+                  <para>
+                    This flag is only useful when
+                    unprivileged code calls a more privileged method call,
+                    and an authorization framework is deployed that allows
+                    possibly interactive authorization. If no such framework
+                    is deployed it has no effect. This flag should not
+                    be set by default by client implementations. If it is
+                    set, the caller should also set a suitably long timeout
+                    on the method call to make sure the user interaction
+                    may complete. This flag is only valid for method call
+                    messages, and shall be ignored otherwise.
+                  </para>
+                  <para>
+                    Interaction that takes place as a part of the
+                    effect of the method being called is outside the scope
+                    of this flag, even if it could also be characterized
+                    as authentication or authorization. For instance, in
+                    a method call that directs a network management service
+                    to attempt to connect to a virtual private network,
+                    this flag should control how the network management
+                    service makes the decision "is this user allowed to
+                    change system network configuration?", but it should
+                    not affect how or whether the network management
+                    service interacts with the user to obtain the credentials
+                    that are required for access to the VPN.
+                  </para>
+                  <para>
+                    If a this flag is not set on a method call, and a
+                    service determines that the requested operation is
+                    not allowed without interactive authorization, but
+                    could be allowed after successful interactive
+                    authorization, it may return the
+                    <literal>org.freedesktop.DBus.Error.InteractiveAuthorizationRequired</literal>
+                    error.
+                  </para>
+                  <para>
+                    The absence of this flag does not guarantee that
+                    interactive authorization will not be applied, since
+                    existing services that pre-date this flag might
+                    already use interactive authorization. However,
+                    existing D-Bus APIs that will use interactive
+                    authorization should document that the call may take
+                    longer than usual, and new D-Bus APIs should avoid
+                    interactive authorization in the absence of this flag.
+                  </para>
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
