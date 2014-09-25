@@ -106,7 +106,7 @@ run by your X session, such as
 or
 <filename>~/.Xclients</filename>.</para>
 
-<para>To start a D-Bus session within a text\(hymode session,
+<para>To start a D-Bus session within a text-mode session,
   do not use <emphasis remap='B'>dbus-launch</emphasis>.
   Instead, see <citerefentry><refentrytitle>dbus-run-session</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
 </para>
