@@ -1750,6 +1750,8 @@ dbus/versioninfo.rc
 dbus/dbus-arch-deps.h
 bus/system.conf
 bus/session.conf
+bus/example-system-enable-stats.conf
+bus/example-session-disable-stats.conf
 bus/messagebus
 bus/messagebus-config
 bus/org.freedesktop.dbus-session.plist

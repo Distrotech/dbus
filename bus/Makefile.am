@@ -31,13 +31,22 @@ EFENCE=
 CONFIG_IN_FILES=				\
 	session.conf.in				\
 	system.conf.in				\
-	org.freedesktop.dbus-session.plist.in
+	org.freedesktop.dbus-session.plist.in	\
+	example-system-enable-stats.conf.in	\
+	example-session-disable-stats.conf.in	\
+	$(NULL)
 
 config_DATA = session.conf
 
 if DBUS_UNIX
 config_DATA += system.conf
 endif
+
+examplesdir = ${docdir}/examples
+examples_DATA = \
+	example-system-enable-stats.conf	\
+	example-session-disable-stats.conf	\
+	$(NULL)
 
 if DBUS_ENABLE_LAUNCHD
 agentdir=$(LAUNCHD_AGENT_DIR)
