@@ -1,5 +1,7 @@
-D-Bus 1.9.0 (UNRELEASED)
+D-Bus 1.9.0 (2014-10-01)
 ==
+
+The “tiered cheeses” release.
 
 Requirements:
 
@@ -8,6 +10,13 @@ Requirements:
   embedded convenience copy of sd-daemon (fd.o #71818, Simon)
 
 Build-time configuration changes:
+
+• The Stats interface is now enabled by default, and locked-down to
+  root-only on the system bus. Configure with --disable-stats
+  to disable it altogether on memory- or disk-constrained systems,
+  or see ${docdir}/examples/ to open it up to non-root users on the
+  system bus or restrict access on the session bus.
+  (fd.o #80759; Simon McVittie, Alban Crequy)
 
 • The CMake build system now builds the same shared library name as Autotools
   on at least Linux and Windows:
@@ -21,6 +30,12 @@ Build-time configuration changes:
 
 Enhancements:
 
+• D-Bus Specification version 0.24
+  · document how to quote match rules (fd.o #24307, Simon McVittie)
+  · explicitly say that most message types never expect a reply
+    regardles of whether they have NO_REPLY_EXPECTED
+    (fd.o #75749, Simon McVittie)
+
 • on Unix platforms, disable Nagle's algorithm on TCP connections to improve
   initial latency (fd.o #75544, Matt Hoosier)
 
@@ -32,6 +47,11 @@ Enhancements:
 
 • do not install system bus configuration if built for Windows
   (fd.o #83583; Ralf Habacker, Simon McVittie)
+
+• Add GetAllMatchRules to the Stats interface (fd.o #24307, Alban Crequy)
+
+• Add a regression test for file descriptor passing (fd.o #83622,
+  Simon McVittie)
 
 Fixes:
 
@@ -53,11 +73,17 @@ Fixes:
 
 • Fix include path for test/internal/*.c with cmake (Ralf Habacker)
 
-• Change DBUS_TYPE_G_BYTE_ARRAY reference in dbus-tutorial.xml
-  to the correct DBUS_TYPE_G_UCHAR_ARRAY (fd.o #80795, Thomas Haller)
+• Documentation improvements
+  (fd.o #80795, #84313; Thomas Haller, Sebastian Rasmussen)
 
 • in dbus-monitor, do not leak file descriptors that we have monitored
   (fd.o #80603, Alban Crequy)
+
+• Set the close-on-exec flag for the inotify file descriptor, even
+  if built with CMake or older libc (fd.o #73689, Simon McVittie)
+
+• Remove some LGPL code from the Windows dbus-daemon
+  (fd.o #57272, Ralf Habacker)
 
 D-Bus 1.8.8 (2014-09-16)
 ==

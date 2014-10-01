@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.24</releaseinfo>
-    <date>(not yet released)</date>
+    <date>2014-10-01</date>
     <authorgroup>
       <author>
         <firstname>Havoc</firstname>
@@ -72,10 +72,11 @@
    <revhistory>
      <revision>
        <revnumber>0.24</revnumber>
-       <date>(not yet released)</date>
-       <authorinitials>n/a</authorinitials>
+       <date>2014-10-01</date>
+       <authorinitials>SMcV</authorinitials>
        <revremark>
-         see <ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink>
+         non-method-calls never expect a reply even without NO_REPLY_EXPECTED;
+         document how to quote match rules
        </revremark>
      </revision>
      <revision>
