@@ -76,6 +76,11 @@ dbus_launch_LDADD = \
 	$(DBUS_X_LIBS) \
 	$(NULL)
 
+examplesdir = ${docdir}/examples
+dist_examples_SCRIPTS = \
+	GetAllMatchRules.py \
+	$(NULL)
+
 EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\
 	run-with-tmp-session-bus.conf
