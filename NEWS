@@ -1,3 +1,11 @@
+D-Bus 1.9.2 (UNRELEASED)
+==
+
+Enhancements:
+
+• Add an example script to find potentially undesired match rules
+  (fd.o #84598, Alban Crequy)
+
 D-Bus 1.9.0 (2014-10-01)
 ==
 
