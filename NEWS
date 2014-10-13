@@ -11,6 +11,11 @@ Enhancements:
 • Add an example script to find potentially undesired match rules
   (fd.o #84598, Alban Crequy)
 
+Fixes:
+
+• Make the .pc file relocatable by letting pkg-config do all variable
+  expansion itself (fd.o #75858, Руслан Ижбулатов)
+
 D-Bus 1.9.0 (2014-10-01)
 ==
 
