@@ -9,6 +9,13 @@ Enhancements:
   · clarify arbitrary limits by quoting them in mebibytes
   · new value 'const' for EmitsChangedSignal annotation
 
+• Add dbus-test-tool, a D-Bus swiss army knife with multiple subcommands,
+  useful for debugging and performance testing:
+  · dbus-test-tool spam: send repeated messages
+  · dbus-test-tool echo: send an empty reply for all method calls
+  · dbus-test-tool black-hole: do not reply to method calls
+  (fd.o #34140; Alban Crequy, Simon McVittie, Will Thompson)
+
 • Add an example script to find potentially undesired match rules
   (fd.o #84598, Alban Crequy)
 
