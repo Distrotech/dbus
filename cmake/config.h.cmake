@@ -190,6 +190,9 @@
 /* Define to 1 if you have strtoull */
 #cmakedefine   HAVE_STRTOULL 1
 
+/* Define to 1 if you have pip2 */
+#cmakedefine   HAVE_PIPE2
+
 // structs
 /* Define to 1 if you have struct cmsgred */
 #cmakedefine    HAVE_CMSGCRED 1
