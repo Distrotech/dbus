@@ -38,6 +38,10 @@ check_symbol_exists(strtoll      "stdlib.h"         HAVE_STRTOLL)            #  
 check_symbol_exists(strtoull     "stdlib.h"         HAVE_STRTOULL)           #  dbus-send.c
 set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(pipe2        "fcntl.h;unistd.h"         HAVE_PIPE2)
+check_symbol_exists(accept4      "sys/socket.h"             HAVE_ACCEPT4)
+check_symbol_exists(dirfd        "dirent.h"                 HAVE_DIRFD)
+check_symbol_exists(inotify_init1 "sys/inotify.h"           HAVE_INOTIFY_INIT1)
+check_symbol_exists(SCM_RIGHTS    "sys/types.h;sys/socket.h;sys/un.h" HAVE_UNIX_FD_PASSING)
 
 check_struct_member(cmsgcred cmcred_pid "sys/types.h sys/socket.h" HAVE_CMSGCRED)   #  dbus-sysdeps.c
 

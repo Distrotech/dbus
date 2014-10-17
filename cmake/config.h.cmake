@@ -193,6 +193,11 @@
 /* Define to 1 if you have pip2 */
 #cmakedefine   HAVE_PIPE2
 
+#cmakedefine HAVE_ACCEPT4 1
+#cmakedefine HAVE_DIRFD 1
+#cmakedefine HAVE_INOTIFY_INIT1 1
+#cmakedefine HAVE_UNIX_FD_PASSING 1
+
 // structs
 /* Define to 1 if you have struct cmsgred */
 #cmakedefine    HAVE_CMSGCRED 1
