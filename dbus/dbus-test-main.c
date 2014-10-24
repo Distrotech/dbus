@@ -31,12 +31,21 @@
 #include <locale.h>
 #endif
 
+#ifdef DBUS_UNIX
+# include <dbus/dbus-sysdeps-unix.h>
+#endif
+
 int
 main (int    argc,
       char **argv)
 {
   const char *test_data_dir;
   const char *specific_test;
+
+#ifdef DBUS_UNIX
+  /* close any inherited fds so dbus-spawn's check for close-on-exec works */
+  _dbus_close_all ();
+#endif
 
 #if HAVE_SETLOCALE
   setlocale(LC_ALL, "");

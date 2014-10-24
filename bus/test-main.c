@@ -31,6 +31,10 @@
 #include <dbus/dbus-message-internal.h>
 #include "selinux.h"
 
+#ifdef DBUS_UNIX
+# include <dbus/dbus-sysdeps-unix.h>
+#endif
+
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static void
 die (const char *failure)
@@ -108,6 +112,11 @@ main (int argc, char **argv)
     }
 
   _dbus_string_init_const (&test_data_dir, dir);
+
+#ifdef DBUS_UNIX
+  /* close any inherited fds so dbus-spawn's check for close-on-exec works */
+  _dbus_close_all ();
+#endif
 
   if (!_dbus_threads_init_debug ())
     die ("initializing debug threads");
