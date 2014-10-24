@@ -158,7 +158,10 @@ ENDFOREACH(FILE_TYPE)
 MESSAGE(STATUS "Copying generated bus config files to test directory")
 set (OUTDIR ${CMAKE_BINARY_DIR}/test/data/valid-config-files)
 
-FILE(GLOB FILES "${CMAKE_SOURCE_DIR}/../bus/*.conf.in" )
+SET(FILES
+  "${CMAKE_SOURCE_DIR}/../bus/session.conf.in"
+  "${CMAKE_SOURCE_DIR}/../bus/system.conf.in"
+)
 FILE(MAKE_DIRECTORY ${OUTDIR})
 FOREACH(FILE ${FILES})
     GET_FILENAME_COMPONENT(FILENAME ${FILE} NAME)
