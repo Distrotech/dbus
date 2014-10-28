@@ -38,6 +38,7 @@
 
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-list.h>
+#include <dbus/dbus-sysdeps-unix.h>
 #include "dir-watch.h"
 
 #define MAX_DIRS_TO_WATCH 128
