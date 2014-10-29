@@ -1619,7 +1619,12 @@ bus_pending_reply_send_no_reply (BusConnections  *connections,
                                     DBUS_ERROR_NO_REPLY))
     goto out;
 
-  errmsg = "Message did not receive a reply (timeout by message bus)";
+  /* If you change these messages, adjust test/dbus-daemon.c to match */
+  if (pending->will_send_reply == NULL)
+    errmsg = "Message recipient disconnected from message bus without replying";
+  else
+    errmsg = "Message did not receive a reply (timeout by message bus)";
+
   dbus_message_iter_init_append (message, &iter);
   if (!dbus_message_iter_append_basic (&iter, DBUS_TYPE_STRING, &errmsg))
     goto out;

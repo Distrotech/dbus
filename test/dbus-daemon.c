@@ -57,6 +57,7 @@ typedef struct {
 
     DBusConnection *right_conn;
     gboolean right_conn_echo;
+    gboolean wait_forever_called;
 } Fixture;
 
 #define assert_no_error(e) _assert_no_error (e, __FILE__, __LINE__)
@@ -157,10 +158,18 @@ echo_filter (DBusConnection *connection,
     DBusMessage *message,
     void *user_data)
 {
+  Fixture *f = user_data;
   DBusMessage *reply;
 
   if (dbus_message_get_type (message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+  /* WaitForever() never replies, emulating a service that has got stuck */
+  if (dbus_message_is_method_call (message, "com.example", "WaitForever"))
+    {
+      f->wait_forever_called = TRUE;
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
 
   reply = dbus_message_new_method_return (message);
 
@@ -257,7 +266,7 @@ setup (Fixture *f,
 static void
 add_echo_filter (Fixture *f)
 {
-  if (!dbus_connection_add_filter (f->right_conn, echo_filter, NULL, NULL))
+  if (!dbus_connection_add_filter (f->right_conn, echo_filter, f, NULL))
     g_error ("OOM");
 
   f->right_conn_echo = TRUE;
@@ -340,6 +349,80 @@ pending_call_store_reply (DBusPendingCall *pc,
 
   *message_p = dbus_pending_call_steal_reply (pc);
   g_assert (*message_p != NULL);
+}
+
+static void
+test_no_reply (Fixture *f,
+    gconstpointer context)
+{
+  const Config *config = context;
+  DBusMessage *m;
+  DBusPendingCall *pc;
+  DBusMessage *reply = NULL;
+  enum { TIMEOUT, DISCONNECT } mode;
+  gboolean ok;
+
+  if (f->skip)
+    return;
+
+  g_test_bug ("76112");
+
+  if (config != NULL && config->config_file != NULL)
+    mode = TIMEOUT;
+  else
+    mode = DISCONNECT;
+
+  m = dbus_message_new_method_call (
+      dbus_bus_get_unique_name (f->right_conn), "/",
+      "com.example", "WaitForever");
+
+  add_echo_filter (f);
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                        DBUS_TIMEOUT_INFINITE) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  if (dbus_pending_call_get_completed (pc))
+    pending_call_store_reply (pc, &reply);
+  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply, &reply,
+        NULL))
+    g_error ("OOM");
+
+  dbus_pending_call_unref (pc);
+  dbus_message_unref (m);
+
+  if (mode == DISCONNECT)
+    {
+      while (!f->wait_forever_called)
+        test_main_context_iterate (f->ctx, TRUE);
+
+      dbus_connection_remove_filter (f->right_conn, echo_filter, f);
+      dbus_connection_close (f->right_conn);
+      dbus_connection_unref (f->right_conn);
+      f->right_conn = NULL;
+    }
+
+  while (reply == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  /* using inefficient string comparison for better assertion message */
+  g_assert_cmpstr (
+      dbus_message_type_to_string (dbus_message_get_type (reply)), ==,
+      dbus_message_type_to_string (DBUS_MESSAGE_TYPE_ERROR));
+  ok = dbus_set_error_from_message (&f->e, reply);
+  g_assert (ok);
+  g_assert_cmpstr (f->e.name, ==, DBUS_ERROR_NO_REPLY);
+
+  if (mode == DISCONNECT)
+    g_assert_cmpstr (f->e.message, ==,
+        "Message recipient disconnected from message bus without replying");
+  else
+    g_assert_cmpstr (f->e.message, ==,
+        "Message did not receive a reply (timeout by message bus)");
 }
 
 static void
@@ -475,7 +558,7 @@ teardown (Fixture *f,
     {
       if (f->right_conn_echo)
         {
-          dbus_connection_remove_filter (f->right_conn, echo_filter, NULL);
+          dbus_connection_remove_filter (f->right_conn, echo_filter, f);
           f->right_conn_echo = FALSE;
         }
 
@@ -503,6 +586,10 @@ static Config limited_config = {
     "34393", 10000, "valid-config-files/incoming-limit.conf"
 };
 
+static Config finite_timeout_config = {
+    NULL, 1, "valid-config-files/finite-timeout.conf"
+};
+
 int
 main (int argc,
     char **argv)
@@ -513,6 +600,10 @@ main (int argc,
   g_test_add ("/echo/session", Fixture, NULL, setup, test_echo, teardown);
   g_test_add ("/echo/limited", Fixture, &limited_config,
       setup, test_echo, teardown);
+  g_test_add ("/no-reply/disconnect", Fixture, NULL,
+      setup, test_no_reply, teardown);
+  g_test_add ("/no-reply/timeout", Fixture, &finite_timeout_config,
+      setup, test_no_reply, teardown);
   g_test_add ("/creds", Fixture, NULL, setup, test_creds, teardown);
 
   return g_test_run ();
