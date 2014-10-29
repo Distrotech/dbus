@@ -27,13 +27,28 @@ Enhancements:
 • Add an example script to find potentially undesired match rules
   (fd.o #84598, Alban Crequy)
 
+• Document the central assumption that makes our use of credentials-passing
+  secure (fd.o #83499, Simon McVittie)
+
+• Replace the dbus-glib section of the tutorial with a GDBus recommendation,
+  and add some links to GDBus and QtDBus documentation (fd.o #25140,
+  Simon McVittie)
+
 Fixes:
+
+• Use a less confusing NoReply message when disconnected with a reply pending
+  (fd.o #76112, Simon McVittie)
 
 • Make the .pc file relocatable by letting pkg-config do all variable
   expansion itself (fd.o #75858, Руслан Ижбулатов)
 
 • Fix a build failure on platforms with kqueue, which regressed in 1.9.0
   (fd.o #85563, Patrick Welche)
+
+• Consistently save errno after socket calls (fd.o #83625, Simon McVittie)
+
+• In dbus-spawn, when the grandchild process exits due to a failed exec(),
+  do not lose the exec() errno (fd.o #24821, Simon McVittie)
 
 • Do not fail the tests if a parent process has leaked non-close-on-exec
   file descriptors to us (fd.o #73689, fd.o #83899; Simon McVittie)
