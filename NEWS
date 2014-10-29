@@ -1,13 +1,21 @@
 D-Bus 1.9.2 (UNRELEASED)
 ==
 
+The “structurally unsound flapjack” release.
+
 Enhancements:
 
 • D-Bus Specification version 0.25
+  · new value 'const' for EmitsChangedSignal annotation
+    (fd.o #72958, Lennart Poettering)
+  · new ALLOW_INTERACTIVE_AUTHORIZATION flag, for PolicyKit and similar
+    (fd.o #83449; Lennart Poettering, Simon McVittie)
   · annotate table of types with reserved/basic/container, and for
     basic types, fixed/string-like
   · clarify arbitrary limits by quoting them in mebibytes
-  · new value 'const' for EmitsChangedSignal annotation
+
+• New API: add accessors for the ALLOW_INTERACTIVE_AUTHORIZATION flag
+  (fd.o #83449, Simon McVittie)
 
 • Add dbus-test-tool, a D-Bus swiss army knife with multiple subcommands,
   useful for debugging and performance testing:
@@ -23,6 +31,16 @@ Fixes:
 
 • Make the .pc file relocatable by letting pkg-config do all variable
   expansion itself (fd.o #75858, Руслан Ижбулатов)
+
+• Fix a build failure on platforms with kqueue, which regressed in 1.9.0
+  (fd.o #85563, Patrick Welche)
+
+• Do not fail the tests if a parent process has leaked non-close-on-exec
+  file descriptors to us (fd.o #73689, fd.o #83899; Simon McVittie)
+
+• Detect accept4, dirfd, inotify_init1, pipe2, and Unix fd passing
+  when building with cmake, and expand test coverage there
+  (fd.o #73689; Ralf Habacker, Simon McVittie)
 
 D-Bus 1.9.0 (2014-10-01)
 ==
