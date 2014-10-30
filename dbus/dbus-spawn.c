@@ -1033,7 +1033,7 @@ do_exec (int                       child_err_report_fd,
       retval = fcntl (i, F_GETFD);
 
       if (retval != -1 && !(retval & FD_CLOEXEC))
-	_dbus_warn ("Fd %d did not have the close-on-exec flag set!\n", i);
+        _dbus_warn ("Fd %d did not have the close-on-exec flag set!\n", i);
     }
 #endif
 

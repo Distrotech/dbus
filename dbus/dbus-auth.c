@@ -37,7 +37,7 @@
  * @brief DBusAuth object
  *
  * DBusAuth manages the authentication negotiation when a connection
- * is first established, and also manage any encryption used over a
+ * is first established, and also manages any encryption used over a
  * connection.
  *
  * @todo some SASL profiles require sending the empty string as a
