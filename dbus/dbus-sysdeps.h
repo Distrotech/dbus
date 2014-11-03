@@ -452,6 +452,7 @@ void _dbus_init_system_log (dbus_bool_t is_daemon);
 
 typedef enum {
   DBUS_SYSTEM_LOG_INFO,
+  DBUS_SYSTEM_LOG_WARNING,
   DBUS_SYSTEM_LOG_SECURITY,
   DBUS_SYSTEM_LOG_FATAL
 } DBusSystemLogSeverity;

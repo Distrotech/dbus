@@ -68,16 +68,18 @@ test_syslog (Fixture *f,
     {
       _dbus_init_system_log (FALSE);
       _dbus_system_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
+      _dbus_system_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
       _dbus_system_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
       exit (0);
     }
 
   g_test_trap_assert_passed ();
-  g_test_trap_assert_stderr ("*" MESSAGE "42\n*" MESSAGE "666\n*");
+  g_test_trap_assert_stderr ("*" MESSAGE "42\n*" MESSAGE "45\n*" MESSAGE "666\n*");
 #endif
   /* manual test (this is the best we can do on Windows) */
   _dbus_init_system_log (FALSE);
   _dbus_system_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
+  _dbus_system_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
   _dbus_system_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
 }
 

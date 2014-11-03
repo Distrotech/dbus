@@ -339,6 +339,7 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
   switch(severity) 
    {
      case DBUS_SYSTEM_LOG_INFO: s = "info"; break;
+     case DBUS_SYSTEM_LOG_WARNING: s = "warning"; break;
      case DBUS_SYSTEM_LOG_SECURITY: s = "security"; break;
      case DBUS_SYSTEM_LOG_FATAL: s = "fatal"; break;
    }

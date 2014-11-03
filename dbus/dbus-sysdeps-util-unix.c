@@ -572,6 +572,9 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
       case DBUS_SYSTEM_LOG_INFO:
         flags =  LOG_DAEMON | LOG_NOTICE;
         break;
+      case DBUS_SYSTEM_LOG_WARNING:
+        flags =  LOG_DAEMON | LOG_WARNING;
+        break;
       case DBUS_SYSTEM_LOG_SECURITY:
         flags = LOG_AUTH | LOG_NOTICE;
         break;
