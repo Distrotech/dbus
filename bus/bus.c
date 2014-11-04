@@ -64,6 +64,7 @@ struct BusContext
   BusPolicy *policy;
   BusMatchmaker *matchmaker;
   BusLimits limits;
+  DBusRLimit *initial_fd_limit;
   unsigned int fork : 1;
   unsigned int syslog : 1;
   unsigned int keep_umask : 1;
@@ -647,19 +648,38 @@ oom:
 static void
 raise_file_descriptor_limit (BusContext      *context)
 {
+#ifdef DBUS_UNIX
+  DBusError error = DBUS_ERROR_INIT;
 
-  /* I just picked this out of thin air; we need some extra
-   * descriptors for things like any internal pipes we create,
-   * inotify, connections to SELinux, etc.
+  /* we only do this once */
+  if (context->initial_fd_limit != NULL)
+    return;
+
+  context->initial_fd_limit = _dbus_rlimit_save_fd_limit (&error);
+
+  if (context->initial_fd_limit == NULL)
+    {
+      bus_context_log (context, DBUS_SYSTEM_LOG_INFO,
+                       "%s: %s", error.name, error.message);
+      dbus_error_free (&error);
+      return;
+    }
+
+  /* We used to compute a suitable rlimit based on the configured number
+   * of connections, but that breaks down as soon as we allow fd-passing,
+   * because each connection is allowed to pass 64 fds to us, and if
+   * they all did, we'd hit kernel limits. We now hard-code 64k as a
+   * good limit, like systemd does: that's enough to avoid DoS from
+   * anything short of multiple uids conspiring against us.
    */
-  unsigned int arbitrary_extra_fds = 32;
-  unsigned int limit;
-
-  limit = context->limits.max_completed_connections +
-    context->limits.max_incomplete_connections
-    + arbitrary_extra_fds;
-
-  _dbus_request_file_descriptor_limit (limit);
+  if (!_dbus_rlimit_raise_fd_limit_if_privileged (65536, &error))
+    {
+      bus_context_log (context, DBUS_SYSTEM_LOG_INFO,
+                       "%s: %s", error.name, error.message);
+      dbus_error_free (&error);
+      return;
+    }
+#endif
 }
 
 static dbus_bool_t
@@ -1118,6 +1138,10 @@ bus_context_unref (BusContext *context)
 
           dbus_free (context->pidfile);
 	}
+
+      if (context->initial_fd_limit)
+        _dbus_rlimit_free (context->initial_fd_limit);
+
       dbus_free (context);
 
       dbus_server_free_data_slot (&server_data_slot);
@@ -1280,6 +1304,12 @@ int
 bus_context_get_reply_timeout (BusContext *context)
 {
   return context->limits.reply_timeout;
+}
+
+DBusRLimit *
+bus_context_get_initial_fd_limit (BusContext *context)
+{
+  return context->initial_fd_limit;
 }
 
 void

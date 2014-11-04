@@ -373,53 +373,140 @@ _dbus_change_to_daemon_user  (const char    *user,
 }
 #endif /* !HAVE_LIBAUDIT */
 
-
-/**
- * Attempt to ensure that the current process can open
- * at least @limit file descriptors.
- *
- * If @limit is lower than the current, it will not be
- * lowered.  No error is returned if the request can
- * not be satisfied.
- *
- * @limit Number of file descriptors
- */
-void
-_dbus_request_file_descriptor_limit (unsigned int limit)
-{
 #ifdef HAVE_SETRLIMIT
+
+/* We assume that if we have setrlimit, we also have getrlimit and
+ * struct rlimit.
+ */
+
+struct DBusRLimit {
+    struct rlimit lim;
+};
+
+DBusRLimit *
+_dbus_rlimit_save_fd_limit (DBusError *error)
+{
+  DBusRLimit *self;
+
+  self = dbus_new0 (DBusRLimit, 1);
+
+  if (self == NULL)
+    {
+      _DBUS_SET_OOM (error);
+      return NULL;
+    }
+
+  if (getrlimit (RLIMIT_NOFILE, &self->lim) < 0)
+    {
+      dbus_set_error (error, _dbus_error_from_errno (errno),
+                      "Failed to get fd limit: %s", _dbus_strerror (errno));
+      dbus_free (self);
+      return NULL;
+    }
+
+  return self;
+}
+
+dbus_bool_t
+_dbus_rlimit_raise_fd_limit_if_privileged (unsigned int  desired,
+                                           DBusError    *error)
+{
   struct rlimit lim;
-  struct rlimit target_lim;
 
   /* No point to doing this practically speaking
    * if we're not uid 0.  We expect the system
    * bus to use this before we change UID, and
-   * the session bus takes the Linux default
-   * of 1024 for both cur and max.
+   * the session bus takes the Linux default,
+   * currently 1024 for cur and 4096 for max.
    */
   if (getuid () != 0)
-    return;
+    {
+      /* not an error, we're probably the session bus */
+      return TRUE;
+    }
 
   if (getrlimit (RLIMIT_NOFILE, &lim) < 0)
-    return;
+    {
+      dbus_set_error (error, _dbus_error_from_errno (errno),
+                      "Failed to get fd limit: %s", _dbus_strerror (errno));
+      return FALSE;
+    }
 
-  if (lim.rlim_cur >= limit)
-    return;
+  if (lim.rlim_cur == RLIM_INFINITY || lim.rlim_cur >= desired)
+    {
+      /* not an error, everything is fine */
+      return TRUE;
+    }
 
   /* Ignore "maximum limit", assume we have the "superuser"
    * privileges.  On Linux this is CAP_SYS_RESOURCE.
    */
-  target_lim.rlim_cur = target_lim.rlim_max = limit;
-  /* Also ignore errors; if we fail, we will at least work
-   * up to whatever limit we had, which seems better than
-   * just outright aborting.
-   *
-   * However, in the future we should probably log this so OS builders
-   * have a chance to notice any misconfiguration like dbus-daemon
-   * being started without CAP_SYS_RESOURCE.
-   */
-  setrlimit (RLIMIT_NOFILE, &target_lim);
+  lim.rlim_cur = lim.rlim_max = desired;
+
+  if (setrlimit (RLIMIT_NOFILE, &lim) < 0)
+    {
+      dbus_set_error (error, _dbus_error_from_errno (errno),
+                      "Failed to set fd limit to %u: %s",
+                      desired, _dbus_strerror (errno));
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+dbus_bool_t
+_dbus_rlimit_restore_fd_limit (DBusRLimit *saved,
+                               DBusError  *error)
+{
+  if (setrlimit (RLIMIT_NOFILE, &saved->lim) < 0)
+    {
+      dbus_set_error (error, _dbus_error_from_errno (errno),
+                      "Failed to restore old fd limit: %s",
+                      _dbus_strerror (errno));
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+#else /* !HAVE_SETRLIMIT */
+
+static void
+fd_limit_not_supported (DBusError *error)
+{
+  dbus_set_error (error, DBUS_ERROR_NOT_SUPPORTED,
+                  "cannot change fd limit on this platform");
+}
+
+DBusRLimit *
+_dbus_rlimit_save_fd_limit (DBusError *error)
+{
+  fd_limit_not_supported (error);
+  return NULL;
+}
+
+dbus_bool_t
+_dbus_rlimit_raise_fd_limit_if_privileged (unsigned int  desired,
+                                           DBusError    *error)
+{
+  fd_limit_not_supported (error);
+  return FALSE;
+}
+
+dbus_bool_t
+_dbus_rlimit_restore_fd_limit (DBusRLimit *saved,
+                               DBusError  *error)
+{
+  fd_limit_not_supported (error);
+  return FALSE;
+}
+
 #endif
+
+void
+_dbus_rlimit_free (DBusRLimit *lim)
+{
+  dbus_free (lim);
 }
 
 void

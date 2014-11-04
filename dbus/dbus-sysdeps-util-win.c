@@ -256,9 +256,42 @@ _dbus_change_to_daemon_user  (const char    *user,
   return TRUE;
 }
 
-void
-_dbus_request_file_descriptor_limit (unsigned int limit)
+static void
+fd_limit_not_supported (DBusError *error)
 {
+  dbus_set_error (error, DBUS_ERROR_NOT_SUPPORTED,
+                  "cannot change fd limit on this platform");
+}
+
+DBusRLimit *
+_dbus_rlimit_save_fd_limit (DBusError *error)
+{
+  fd_limit_not_supported (error);
+  return NULL;
+}
+
+dbus_bool_t
+_dbus_rlimit_raise_fd_limit_if_privileged (unsigned int  desired,
+                                           DBusError    *error)
+{
+  fd_limit_not_supported (error);
+  return FALSE;
+}
+
+dbus_bool_t
+_dbus_rlimit_restore_fd_limit (DBusRLimit *saved,
+                               DBusError  *error)
+{
+  fd_limit_not_supported (error);
+  return FALSE;
+}
+
+void
+_dbus_rlimit_free (DBusRLimit *lim)
+{
+  /* _dbus_rlimit_save_fd_limit() cannot return non-NULL on Windows
+   * so there cannot be anything to free */
+  _dbus_assert (lim == NULL);
 }
 
 void
