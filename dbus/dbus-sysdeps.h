@@ -546,8 +546,6 @@ dbus_bool_t _dbus_change_to_daemon_user (const char *user,
 
 void _dbus_flush_caches (void);
 
-void _dbus_request_file_descriptor_limit (unsigned int limit);
-
 /*
  * replaces the term DBUS_PREFIX in configure_time_path by the
  * current dbus installation directory. On unix this function is a noop
@@ -565,6 +563,15 @@ _dbus_replace_install_prefix (const char *configure_time_path);
  * the config-parser can use it.)
  */
 #define DBUS_DEFAULT_MESSAGE_UNIX_FDS 16
+
+typedef struct DBusRLimit DBusRLimit;
+
+DBusRLimit     *_dbus_rlimit_save_fd_limit                 (DBusError    *error);
+dbus_bool_t     _dbus_rlimit_raise_fd_limit_if_privileged  (unsigned int  desired,
+                                                            DBusError    *error);
+dbus_bool_t     _dbus_rlimit_restore_fd_limit              (DBusRLimit   *saved,
+                                                            DBusError    *error);
+void            _dbus_rlimit_free                          (DBusRLimit   *lim);
 
 /** @} */
 
