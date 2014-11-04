@@ -671,7 +671,7 @@ raise_file_descriptor_limit (BusContext      *context)
 
   if (context->initial_fd_limit == NULL)
     {
-      bus_context_log (context, DBUS_SYSTEM_LOG_INFO,
+      bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
                        "%s: %s", error.name, error.message);
       dbus_error_free (&error);
       return;
@@ -686,7 +686,7 @@ raise_file_descriptor_limit (BusContext      *context)
    */
   if (!_dbus_rlimit_raise_fd_limit_if_privileged (65536, &error))
     {
-      bus_context_log (context, DBUS_SYSTEM_LOG_INFO,
+      bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
                        "%s: %s", error.name, error.message);
       dbus_error_free (&error);
       return;

@@ -1704,7 +1704,7 @@ child_setup (void *user_data)
     {
       /* unfortunately we don't actually know the service name here */
       bus_context_log (activation->context,
-                       DBUS_SYSTEM_LOG_INFO,
+                       DBUS_SYSTEM_LOG_WARNING,
                        "Failed to reset fd limit before activating "
                        "service: %s: %s",
                        error.name, error.message);
