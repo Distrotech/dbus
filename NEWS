@@ -1,3 +1,13 @@
+D-Bus 1.6.26 (2014-11-10)
+==
+
+Security fix backported from 1.8.10:
+
+• Increase dbus-daemon's RLIMIT_NOFILE rlimit to 65536
+  so that CVE-2014-3636 part A cannot exhaust the system bus'
+  file descriptors, completing the incomplete fix in 1.8.8.
+  (CVE-2014-7824, fd.o #85105; Simon McVittie, Alban Crequy)
+
 D-Bus 1.6.24 (2014-09-16)
 ==
 
