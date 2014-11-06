@@ -3,6 +3,13 @@ D-Bus 1.9.2 (UNRELEASED)
 
 The “structurally unsound flapjack” release.
 
+Security fixes:
+
+• Increase dbus-daemon's RLIMIT_NOFILE rlimit to 65536
+  so that CVE-2014-3636 part A cannot exhaust the system bus'
+  file descriptors, completing the incomplete fix in 1.8.8.
+  (CVE-2014-7824, fd.o #85105; Simon McVittie, Alban Crequy)
+
 Enhancements:
 
 • D-Bus Specification version 0.25

@@ -1688,6 +1688,31 @@ out:
   return retval;
 }
 
+static void
+child_setup (void *user_data)
+{
+#ifdef DBUS_UNIX
+  BusActivation *activation = user_data;
+  DBusRLimit *initial_fd_limit;
+  DBusError error;
+
+  dbus_error_init (&error);
+  initial_fd_limit = bus_context_get_initial_fd_limit (activation->context);
+
+  if (initial_fd_limit != NULL &&
+      !_dbus_rlimit_restore_fd_limit (initial_fd_limit, &error))
+    {
+      /* unfortunately we don't actually know the service name here */
+      bus_context_log (activation->context,
+                       DBUS_SYSTEM_LOG_INFO,
+                       "Failed to reset fd limit before activating "
+                       "service: %s: %s",
+                       error.name, error.message);
+    }
+#endif
+}
+
+
 dbus_bool_t
 bus_activation_activate_service (BusActivation  *activation,
                                  DBusConnection *connection,
@@ -2121,7 +2146,8 @@ bus_activation_activate_service (BusActivation  *activation,
                                           service_name,
                                           argv,
                                           envp,
-                                          NULL, activation,
+                                          child_setup,
+                                          activation,
                                           &tmp_error))
     {
       _dbus_verbose ("Failed to spawn child\n");
