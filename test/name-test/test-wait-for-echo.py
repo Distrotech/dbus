@@ -3,15 +3,15 @@
 import os,sys
 
 try:
-    import gobject
     import dbus
     import dbus.mainloop.glib
+    from gi.repository import GObject
 except:
     print "Failed import, aborting test"
     sys.exit(0)
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-loop = gobject.MainLoop()
+loop = GObject.MainLoop()
 
 exitcode = 0
 
@@ -21,7 +21,7 @@ def handle_noreceipt():
     exitcode = 1
     loop.quit()
 
-gobject.timeout_add(7000, handle_noreceipt)
+GObject.timeout_add(7000, handle_noreceipt)
 
 bus = dbus.SessionBus()
 

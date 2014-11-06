@@ -3,7 +3,7 @@
 import os,sys
 
 try:
-    import gobject
+    from gi.repository import GObject
     import dbus
     import dbus.mainloop.glib
 except:
@@ -11,7 +11,7 @@ except:
     sys.exit(0)
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-loop = gobject.MainLoop()
+loop = GObject.MainLoop()
 
 exitcode = 0
 
@@ -54,7 +54,7 @@ def check_counter():
     if counter == 0:
         print "Failed to get NameOwnerChanged for TestSuiteForkingEchoService"
         sys.exit(1)
-gobject.timeout_add(15000, check_counter)
+GObject.timeout_add(15000, check_counter)
 
 loop.run()
 sys.exit(0)
