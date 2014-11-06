@@ -24,6 +24,9 @@ Enhancements:
   · dbus-test-tool black-hole: do not reply to method calls
   (fd.o #34140; Alban Crequy, Simon McVittie, Will Thompson)
 
+• Add support for process ID in credentials-passing on NetBSD
+  (fd.o #69702, Patrick Welche)
+
 • Add an example script to find potentially undesired match rules
   (fd.o #84598, Alban Crequy)
 
@@ -52,6 +55,11 @@ Fixes:
 
 • Do not fail the tests if a parent process has leaked non-close-on-exec
   file descriptors to us (fd.o #73689, fd.o #83899; Simon McVittie)
+
+• Do not fail the tests on Unix platforms with incomplete
+  credentials-passing support, but do fail if we can't pass credentials
+  on a platform where it is known to work: Linux, FreeBSD, OpenBSD, NetBSD
+  (fd.o #69702, Simon McVittie)
 
 • Detect accept4, dirfd, inotify_init1, pipe2, and Unix fd passing
   when building with cmake, and expand test coverage there
