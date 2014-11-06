@@ -1,7 +1,14 @@
-D-Bus 1.8.10 (UNRELEASED)
+D-Bus 1.8.10 (2014-11-10)
 ==
 
-...
+The “tenants with a leaking roof get priority” release.
+
+Security fixes:
+
+• Increase dbus-daemon's RLIMIT_NOFILE rlimit to 65536
+  so that CVE-2014-3636 part A cannot exhaust the system bus'
+  file descriptors, completing the incomplete fix in 1.8.8.
+  (CVE-2014-7824, fd.o #85105; Simon McVittie, Alban Crequy)
 
 D-Bus 1.8.8 (2014-09-16)
 ==
