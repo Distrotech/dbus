@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.25</releaseinfo>
-    <date>(not yet released)</date>
+    <date>2014-11-10</date>
     <authorgroup>
       <author>
         <firstname>Havoc</firstname>
@@ -72,10 +72,10 @@
    <revhistory>
      <revision>
        <revnumber>0.25</revnumber>
-       <date>(not yet released)</date>
-       <authorinitials>n/a</authorinitials>
+       <date>2014-11-10</date>
+       <authorinitials>smcv, lennart</authorinitials>
        <revremark>
-         see <ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink>
+         ALLOW_INTERACTIVE_AUTHORIZATION flag, EmitsChangedSignal=const
        </revremark>
      </revision>
      <revision>
