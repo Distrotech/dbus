@@ -1,7 +1,11 @@
 D-Bus 1.8.12 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Send back an AccessDenied error if the addressed recipient is not allowed
+  to receive a message (and in builds with assertions enabled, don't
+  assert under the same conditions). (fd.o #86194, Jacek Bukarewicz)
 
 D-Bus 1.8.10 (2014-11-10)
 ==
