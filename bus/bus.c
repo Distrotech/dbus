@@ -1660,7 +1660,7 @@ bus_context_check_security_policy (BusContext     *context,
       complain_about_message (context, DBUS_ERROR_ACCESS_DENIED,
           "Rejected receive message", toggles,
           message, sender, proposed_recipient, requested_reply,
-          (addressed_recipient == proposed_recipient), NULL);
+          (addressed_recipient == proposed_recipient), error);
       _dbus_verbose ("security policy disallowing message due to recipient policy\n");
       return FALSE;
     }
