@@ -29,6 +29,25 @@ If your use-case isn't one of these, D-Bus may still be useful, but
 only by accident; so you should evaluate carefully whether D-Bus makes
 sense for your project.
 
+Security
+==
+
+If you find a security vulnerability that is not known to the public,
+please report it privately to dbus-security@lists.freedesktop.org
+or by reporting a freedesktop.org bug that is marked as
+restricted to the "D-BUS security group" (you might need to "Show
+Advanced Fields" to have that option).
+
+On Unix systems, the system bus (dbus-daemon --system) is designed
+to be a security boundary between users with different privileges.
+
+On Unix systems, the session bus (dbus-daemon --session) is designed
+to be used by a single user, and only accessible by that user.
+
+We do not currently consider D-Bus on Windows to be security-supported,
+and we do not recommend allowing untrusted users to access Windows
+D-Bus via TCP.
+
 Note: low-level API vs. high-level binding APIs
 ===
 

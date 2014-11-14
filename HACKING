@@ -11,6 +11,11 @@ of patches, etc. should go there.
 Security
 ===
 
+If you find a security vulnerability that is not known to the public,
+please report it privately to dbus-security@lists.freedesktop.org
+or by reporting a freedesktop.org bug that is marked as
+restricted to the "D-BUS security group".
+
 Most of D-Bus is security sensitive.  Guidelines related to that:
 
  - avoid memcpy(), sprintf(), strlen(), snprintf, strlcat(),
