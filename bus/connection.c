@@ -860,6 +860,14 @@ bus_connections_expire_incomplete (BusConnections *connections)
 
           if (elapsed >= (double) auth_timeout)
             {
+              /* Unfortunately, we can't identify the connection: it doesn't
+               * have a unique name yet, we don't know its uid/pid yet,
+               * and so on. */
+              bus_context_log (connections->context, DBUS_SYSTEM_LOG_INFO,
+                  "Connection has not authenticated soon enough, closing it "
+                  "(auth_timeout=%dms, elapsed: %.0fms)",
+                  auth_timeout, elapsed);
+
               _dbus_verbose ("Timing out authentication for connection %p\n", connection);
               dbus_connection_close (connection);
             }
