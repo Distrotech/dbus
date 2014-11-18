@@ -1886,6 +1886,7 @@ bus_connections_expect_reply (BusConnections  *connections,
   DBusList *link;
   CancelPendingReplyData *cprd;
   int count;
+  int limit;
 
   _dbus_assert (will_get_reply != NULL);
   _dbus_assert (will_send_reply != NULL);
@@ -1916,10 +1917,19 @@ bus_connections_expect_reply (BusConnections  *connections,
       if (pending->will_get_reply == will_get_reply)
         ++count;
     }
-  
-  if (count >=
-      bus_context_get_max_replies_per_connection (connections->context))
+
+  limit = bus_context_get_max_replies_per_connection (connections->context);
+
+  if (count >= limit)
     {
+      bus_context_log (connections->context, DBUS_SYSTEM_LOG_WARNING,
+                       "The maximum number of pending replies for "
+                       "\"%s\" (%s) has been reached "
+                       "(max_replies_per_connection=%d)",
+                       bus_connection_get_name (will_get_reply),
+                       bus_connection_get_loginfo (will_get_reply),
+                       limit);
+
       dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
 		      "The maximum number of pending replies per connection has been reached");
       return FALSE;
