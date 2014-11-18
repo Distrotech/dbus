@@ -1660,15 +1660,19 @@ bus_activation_activate_service (BusActivation  *activation,
   dbus_bool_t retval;
   dbus_bool_t was_pending_activation;
   DBusString command;
+  int limit;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  if (activation->n_pending_activations >=
-      bus_context_get_max_pending_activations (activation->context))
+  limit = bus_context_get_max_pending_activations (activation->context);
+
+  if (activation->n_pending_activations >= limit)
     {
       dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
-                      "The maximum number of pending activations has been reached, activation of %s failed",
-                      service_name);
+                      "The maximum number of pending activations has been "
+                      "reached, activation of %s failed "
+                      "(max_pending_service_starts=%d)",
+                      service_name, limit);
       return FALSE;
     }
 
