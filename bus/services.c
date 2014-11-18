@@ -392,7 +392,8 @@ bus_registry_acquire_service (BusRegistry      *registry,
   BusActivation  *activation;
   BusSELinuxID *sid;
   BusOwner *primary_owner;
- 
+  int limit;
+
   retval = FALSE;
 
   if (!_dbus_validate_bus_name (service_name, 0,
@@ -478,15 +479,24 @@ bus_registry_acquire_service (BusRegistry      *registry,
       goto out;
     }
 
-  if (bus_connection_get_n_services_owned (connection) >=
-      bus_context_get_max_services_per_connection (registry->context))
+  limit = bus_context_get_max_services_per_connection (registry->context);
+
+  if (bus_connection_get_n_services_owned (connection) >= limit)
     {
-      dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
+      DBusError tmp_error;
+
+      dbus_error_init (&tmp_error);
+      dbus_set_error (&tmp_error, DBUS_ERROR_LIMITS_EXCEEDED,
                       "Connection \"%s\" is not allowed to own more services "
-                      "(increase limits in configuration file if required)",
+                      "(increase limits in configuration file if required; "
+                      "max_names_per_connection=%d)",
                       bus_connection_is_active (connection) ?
                       bus_connection_get_name (connection) :
-                      "(inactive)");
+                      "(inactive)",
+                      limit);
+      bus_context_log (registry->context, DBUS_SYSTEM_LOG_WARNING,
+          "%s", tmp_error.message);
+      dbus_move_error (&tmp_error, error);
       goto out;
     }
   
