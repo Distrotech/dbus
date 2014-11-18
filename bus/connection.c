@@ -863,7 +863,7 @@ bus_connections_expire_incomplete (BusConnections *connections)
               /* Unfortunately, we can't identify the connection: it doesn't
                * have a unique name yet, we don't know its uid/pid yet,
                * and so on. */
-              bus_context_log (connections->context, DBUS_SYSTEM_LOG_INFO,
+              bus_context_log (connections->context, DBUS_SYSTEM_LOG_WARNING,
                   "Connection has not authenticated soon enough, closing it "
                   "(auth_timeout=%dms, elapsed: %.0fms)",
                   auth_timeout, elapsed);
