@@ -1433,7 +1433,12 @@ static dbus_bool_t
 pending_activation_timed_out (void *data)
 {
   BusPendingActivation *pending_activation = data;
+  BusContext *context;
   DBusError error;
+  int timeout;
+
+  context = pending_activation->activation->context;
+  timeout = bus_context_get_activation_timeout (context);
 
   /* Kill the spawned process, since it sucks
    * (not sure this is what we want to do, but
@@ -1444,10 +1449,11 @@ pending_activation_timed_out (void *data)
 
   dbus_error_init (&error);
 
-  bus_context_log_and_set_error (pending_activation->activation->context,
-                   DBUS_SYSTEM_LOG_INFO, &error, DBUS_ERROR_TIMED_OUT,
-                   "Failed to activate service '%s': timed out",
-                   pending_activation->service_name);
+  bus_context_log_and_set_error (context, DBUS_SYSTEM_LOG_WARNING, &error,
+                   DBUS_ERROR_TIMED_OUT,
+                   "Failed to activate service '%s': timed out "
+                   "(service_start_timeout=%dms)",
+                   pending_activation->service_name, timeout);
 
   pending_activation_failed (pending_activation, &error);
 
