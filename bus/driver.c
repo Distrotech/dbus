@@ -1312,6 +1312,7 @@ bus_driver_handle_add_match (DBusConnection *connection,
   const char *text, *bustype;
   DBusString str;
   BusMatchmaker *matchmaker;
+  int limit;
   BusContext *context;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -1319,15 +1320,25 @@ bus_driver_handle_add_match (DBusConnection *connection,
   text = NULL;
   rule = NULL;
 
-  if (bus_connection_get_n_match_rules (connection) >=
-      bus_context_get_max_match_rules_per_connection (bus_transaction_get_context (transaction)))
+  context = bus_transaction_get_context (transaction);
+  limit = bus_context_get_max_match_rules_per_connection (context);
+
+  if (bus_connection_get_n_match_rules (connection) >= limit)
     {
-      dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
+      DBusError tmp_error;
+
+      dbus_error_init (&tmp_error);
+      dbus_set_error (&tmp_error, DBUS_ERROR_LIMITS_EXCEEDED,
                       "Connection \"%s\" is not allowed to add more match rules "
-                      "(increase limits in configuration file if required)",
+                      "(increase limits in configuration file if required; "
+                      "max_match_rules_per_connection=%d)",
                       bus_connection_is_active (connection) ?
                       bus_connection_get_name (connection) :
-                      "(inactive)");
+                      "(inactive)",
+                      limit);
+      bus_context_log (context, DBUS_SYSTEM_LOG_WARNING, "%s",
+                       tmp_error.message);
+      dbus_move_error (&tmp_error, error);
       goto failed;
     }
 
@@ -1345,7 +1356,6 @@ bus_driver_handle_add_match (DBusConnection *connection,
   if (rule == NULL)
     goto failed;
 
-  context = bus_transaction_get_context (transaction);
   bustype = context ? bus_context_get_type (context) : NULL;
   if (bus_match_rule_get_client_is_eavesdropping (rule) &&
       !bus_apparmor_allows_eavesdropping (connection, bustype, error))
