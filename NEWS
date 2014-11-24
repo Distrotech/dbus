@@ -1,7 +1,27 @@
-D-Bus 1.8.12 (UNRELEASED)
+D-Bus 1.8.12 (2014-11-24)
 ==
 
+The “days of fuchsia passed” release.
+
 Fixes:
+
+• Partially revert the CVE-2014-3639 patch by increasing the default
+  authentication timeout on the system bus from 5 seconds back to 30
+  seconds, since this has been reported to cause boot regressions for
+  some users, mostly with parallel boot (systemd) on slower hardware.
+
+  On fast systems where local users are considered particularly hostile,
+  administrators can return to the 5 second timeout (or any other value
+  in milliseconds) by saving this as /etc/dbus-1/system-local.conf:
+
+  <busconfig>
+    <limit name="auth_timeout">5000</limit>
+  </busconfig>
+
+  (fd.o #86431, Simon McVittie)
+
+• Add a message in syslog/the Journal when the auth_timeout is exceeded
+  (fd.o #86431, Simon McVittie)
 
 • Send back an AccessDenied error if the addressed recipient is not allowed
   to receive a message (and in builds with assertions enabled, don't
