@@ -29,6 +29,7 @@
 #include <dbus/dbus-connection-internal.h>
 
 #include "connection.h"
+#include "driver.h"
 #include "services.h"
 #include "utils.h"
 
@@ -48,6 +49,9 @@ bus_stats_handle_get_stats (DBusConnection *connection,
   dbus_uint32_t in_use, in_free_list, allocated;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  if (!bus_driver_check_message_is_for_us (message, error))
+    return FALSE;
 
   context = bus_transaction_get_context (transaction);
   connections = bus_context_get_connections (context);
@@ -130,6 +134,9 @@ bus_stats_handle_get_connection_stats (DBusConnection *caller_connection,
   DBusConnection *stats_connection;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  if (!bus_driver_check_message_is_for_us (message, error))
+    return FALSE;
 
   registry = bus_connection_get_registry (caller_connection);
 
