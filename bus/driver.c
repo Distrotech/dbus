@@ -881,6 +881,41 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   if (!bus_driver_check_message_is_for_us (message, error))
     return FALSE;
 
+#ifdef DBUS_UNIX
+    {
+      /* UpdateActivationEnvironment is basically a recipe for privilege
+      * escalation so let's be extra-careful: do not allow the sysadmin
+      * to shoot themselves in the foot. */
+      unsigned long uid;
+
+      if (!dbus_connection_get_unix_user (connection, &uid))
+        {
+          bus_context_log (bus_transaction_get_context (transaction),
+              DBUS_SYSTEM_LOG_SECURITY,
+              "rejected attempt to call UpdateActivationEnvironment by "
+              "unknown uid");
+          dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+              "rejected attempt to call UpdateActivationEnvironment by "
+              "unknown uid");
+          return FALSE;
+        }
+
+      /* On the system bus, we could in principle allow uid 0 to call
+       * UpdateActivationEnvironment; but they should know better anyway,
+       * and our default system.conf has always forbidden it */
+      if (!_dbus_unix_user_is_process_owner (uid))
+        {
+          bus_context_log (bus_transaction_get_context (transaction),
+              DBUS_SYSTEM_LOG_SECURITY,
+              "rejected attempt to call UpdateActivationEnvironment by uid %lu",
+              uid);
+          dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+              "rejected attempt to call UpdateActivationEnvironment");
+          return FALSE;
+        }
+    }
+#endif
+
   activation = bus_connection_get_activation (connection);
 
   dbus_message_iter_init (message, &iter);
