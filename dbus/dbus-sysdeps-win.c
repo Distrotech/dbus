@@ -146,7 +146,7 @@ static dbus_pid_t
 get_pid_from_extended_tcp_table(int peer_port)
 {
   dbus_pid_t result;
-  DWORD errorCode, size, i;
+  DWORD errorCode, size = 0, i;
   MIB_TCPTABLE_OWNER_PID *tcp_table;
 
   if ((errorCode =
