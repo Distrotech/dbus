@@ -319,6 +319,7 @@ find_subtree_recurse (DBusObjectSubtree  *subtree,
     }
 }
 
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static DBusObjectSubtree*
 find_subtree (DBusObjectTree *tree,
               const char    **path,
@@ -337,6 +338,7 @@ find_subtree (DBusObjectTree *tree,
   else
     return subtree;
 }
+#endif
 
 static DBusObjectSubtree*
 lookup_subtree (DBusObjectTree *tree,
