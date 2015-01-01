@@ -635,6 +635,91 @@ test_processid (Fixture *f,
 }
 
 static void
+test_canonical_path_uae (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS, "UpdateActivationEnvironment");
+  DBusPendingCall *pc;
+  DBusMessageIter args_iter;
+  DBusMessageIter arr_iter;
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &args_iter);
+
+  /* Append an empty a{ss} (string => string dictionary). */
+  if (!dbus_message_iter_open_container (&args_iter, DBUS_TYPE_ARRAY,
+        "{ss}", &arr_iter) ||
+      !dbus_message_iter_close_container (&args_iter, &arr_iter))
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+                                          &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  /* it succeeds */
+  g_assert_cmpint (dbus_message_get_type (m), ==,
+      DBUS_MESSAGE_TYPE_METHOD_RETURN);
+
+  dbus_message_unref (m);
+
+  /* Now try with the wrong object path */
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      "/com/example/Wrong", DBUS_INTERFACE_DBUS, "UpdateActivationEnvironment");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &args_iter);
+
+  /* Append an empty a{ss} (string => string dictionary). */
+  if (!dbus_message_iter_open_container (&args_iter, DBUS_TYPE_ARRAY,
+        "{ss}", &arr_iter) ||
+      !dbus_message_iter_close_container (&args_iter, &arr_iter))
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+                                          &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  /* it fails, yielding an error message with one string argument */
+  g_assert_cmpint (dbus_message_get_type (m), ==, DBUS_MESSAGE_TYPE_ERROR);
+  g_assert_cmpstr (dbus_message_get_error_name (m), ==,
+      DBUS_ERROR_ACCESS_DENIED);
+  g_assert_cmpstr (dbus_message_get_signature (m), ==, "s");
+
+  dbus_message_unref (m);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -700,6 +785,8 @@ main (int argc,
       setup, test_no_reply, teardown);
   g_test_add ("/creds", Fixture, NULL, setup, test_creds, teardown);
   g_test_add ("/processid", Fixture, NULL, setup, test_processid, teardown);
+  g_test_add ("/canonical-path/uae", Fixture, NULL,
+      setup, test_canonical_path_uae, teardown);
 
   return g_test_run ();
 }
