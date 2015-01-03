@@ -1,3 +1,4 @@
+include_directories(${CMAKE_SOURCE_DIR}/../test)
 
 add_definitions(${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
@@ -66,7 +67,6 @@ if(DBUS_WITH_GLIB)
     include_directories(
         ${GLIB2_INCLUDE_DIR}
         ${GOBJECT_INCLUDE_DIR}
-        ${CMAKE_SOURCE_DIR}/../test
     )
     set(TEST_LIBRARIES ${DBUS_INTERNAL_LIBRARIES} dbus-testutils ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES})
 
