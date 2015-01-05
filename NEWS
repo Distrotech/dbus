@@ -1,7 +1,38 @@
-D-Bus 1.9.6 (UNRELEASED)
+D-Bus 1.9.8 (UNRELEASED)
 ==
 
 ...
+
+D-Bus 1.9.6 (2015-01-05)
+==
+
+The “I do have a bread knife” release.
+
+Security hardening:
+
+• Do not allow calls to UpdateActivationEnvironment from uids other than
+  the uid of the dbus-daemon. If a system service installs unsafe
+  security policy rules that allow arbitrary method calls
+  (such as CVE-2014-8148) then this prevents memory consumption and
+  possible privilege escalation via UpdateActivationEnvironment.
+
+  We believe that in practice, privilege escalation here is avoided
+  by dbus-daemon-launch-helper sanitizing its environment; but
+  it seems better to be safe.
+
+• Do not allow calls to UpdateActivationEnvironment or the Stats interface
+  on object paths other than /org/freedesktop/DBus. Some system services
+  install unsafe security policy rules that allow arbitrary method calls
+  to any destination, method and interface with a specified object path;
+  while less bad than allowing arbitrary method calls, these security
+  policies are still harmful, since dbus-daemon normally offers the
+  same API on all object paths and other system services might behave
+  similarly.
+
+Other fixes:
+
+• Add missing initialization so GetExtendedTcpTable doesn't crash on
+  Windows Vista SP0 (fd.o #77008, Илья А. Ткаченко)
 
 D-Bus 1.9.4 (2014-11-24)
 ==
