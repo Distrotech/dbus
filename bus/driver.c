@@ -878,6 +878,44 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
+  if (!bus_driver_check_message_is_for_us (message, error))
+    return FALSE;
+
+#ifdef DBUS_UNIX
+    {
+      /* UpdateActivationEnvironment is basically a recipe for privilege
+      * escalation so let's be extra-careful: do not allow the sysadmin
+      * to shoot themselves in the foot. */
+      unsigned long uid;
+
+      if (!dbus_connection_get_unix_user (connection, &uid))
+        {
+          bus_context_log (bus_transaction_get_context (transaction),
+              DBUS_SYSTEM_LOG_SECURITY,
+              "rejected attempt to call UpdateActivationEnvironment by "
+              "unknown uid");
+          dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+              "rejected attempt to call UpdateActivationEnvironment by "
+              "unknown uid");
+          return FALSE;
+        }
+
+      /* On the system bus, we could in principle allow uid 0 to call
+       * UpdateActivationEnvironment; but they should know better anyway,
+       * and our default system.conf has always forbidden it */
+      if (!_dbus_unix_user_is_process_owner (uid))
+        {
+          bus_context_log (bus_transaction_get_context (transaction),
+              DBUS_SYSTEM_LOG_SECURITY,
+              "rejected attempt to call UpdateActivationEnvironment by uid %lu",
+              uid);
+          dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+              "rejected attempt to call UpdateActivationEnvironment");
+          return FALSE;
+        }
+    }
+#endif
+
   activation = bus_connection_get_activation (connection);
 
   dbus_message_iter_init (message, &iter);
@@ -1963,6 +2001,38 @@ bus_driver_handle_introspect (DBusConnection *connection,
   _dbus_string_free (&xml);
 
   return FALSE;
+}
+
+/*
+ * Set @error and return FALSE if the message is not directed to the
+ * dbus-daemon by its canonical object path. This is hardening against
+ * system services with poorly-written security policy files, which
+ * might allow sending dangerously broad equivalence classes of messages
+ * such as "anything with this assumed-to-be-safe object path".
+ *
+ * dbus-daemon is unusual in that it normally ignores the object path
+ * of incoming messages; we need to keep that behaviour for the "read"
+ * read-only method calls like GetConnectionUnixUser for backwards
+ * compatibility, but it seems safer to be more restrictive for things
+ * intended to be root-only or privileged-developers-only.
+ *
+ * It is possible that there are other system services with the same
+ * quirk as dbus-daemon.
+ */
+dbus_bool_t
+bus_driver_check_message_is_for_us (DBusMessage *message,
+                                    DBusError   *error)
+{
+  if (!dbus_message_has_path (message, DBUS_PATH_DBUS))
+    {
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+          "Method '%s' is only available at the canonical object path '%s'",
+          dbus_message_get_member (message), DBUS_PATH_DBUS);
+
+      return FALSE;
+    }
+
+  return TRUE;
 }
 
 dbus_bool_t
