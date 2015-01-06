@@ -1073,6 +1073,7 @@ _dbus_string_append_printf_valist  (DBusString        *str,
                                     const char        *format,
                                     va_list            args)
 {
+  dbus_bool_t ret = FALSE;
   int len;
   va_list args_copy;
 
@@ -1084,21 +1085,21 @@ _dbus_string_append_printf_valist  (DBusString        *str,
   len = _dbus_printf_string_upper_bound (format, args);
 
   if (len < 0)
-    return FALSE;
+    goto out;
 
   if (!_dbus_string_lengthen (str, len))
     {
-      /* don't leak the copy */
-      va_end (args_copy);
-      return FALSE;
+      goto out;
     }
   
   vsprintf ((char*) (real->str + (real->len - len)),
             format, args_copy);
+  ret = TRUE;
 
+out:
   va_end (args_copy);
 
-  return TRUE;
+  return ret;
 }
 
 /**
