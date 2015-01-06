@@ -2339,7 +2339,7 @@ test_parsing (void *data)
   rule = check_parse (TRUE, "arg7path='/foo'");
   if (rule != NULL)
     {
-      _dbus_assert (rule->flags = BUS_MATCH_ARGS);
+      _dbus_assert (rule->flags == BUS_MATCH_ARGS);
       _dbus_assert (rule->args != NULL);
       _dbus_assert (rule->args_len == 8);
       _dbus_assert (rule->args[7] != NULL);
