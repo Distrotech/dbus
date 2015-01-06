@@ -2774,7 +2774,7 @@ signature_from_seed (char *buf,
 {
   /* try to avoid ascending, descending, or alternating length to help find bugs */
   const char *sample_signatures[] = {
-    "asax"
+    "asax",
     "",
     "asau(xxxx)",
     "x",
