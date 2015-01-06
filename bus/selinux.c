@@ -157,12 +157,14 @@ log_callback (const char *fmt, ...)
       vsnprintf(buf, sizeof(buf), fmt, ap);
       audit_log_user_avc_message(audit_fd, AUDIT_USER_AVC, buf, NULL, NULL,
                                NULL, getuid());
-      return;
+      goto out;
     }
   }
 #endif /* HAVE_LIBAUDIT */
   
   vsyslog (LOG_USER | LOG_INFO, fmt, ap);
+
+out:
   va_end(ap);
 }
 
