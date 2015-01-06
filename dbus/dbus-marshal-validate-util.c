@@ -118,7 +118,7 @@ _dbus_marshal_validate_test (void)
     "bar",
     "bar/baz",
     "/foo/bar/",
-    "/foo/"
+    "/foo/",
     "foo/",
     "boo//blah",
     "//",
