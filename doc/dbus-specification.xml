@@ -3102,9 +3102,12 @@
       For instance, listening on <literal>tcp:host=127.0.0.1</literal>
       might result in the connectable address
       <literal>tcp:host=127.0.0.1,port=30958</literal>,
-      or listening on <literal>unix:tmpdir=/tmp</literal>
+      listening on <literal>unix:tmpdir=/tmp</literal>
       might result in the connectable address
-      <literal>unix:abstract=/tmp/dbus-U8OSdmf7</literal>.
+      <literal>unix:abstract=/tmp/dbus-U8OSdmf7</literal>, or
+      listening on <literal>unix:runtime=yes</literal>
+      might result in the connectable address
+      <literal>unix:path=/run/user/1234/bus</literal>.
     </para>
   </sect1>
   
@@ -3144,6 +3147,9 @@
         Unix addresses that specify <literal>tmpdir</literal> are only
         listenable: the corresponding connectable address will specify
         either <literal>path</literal> or <literal>abstract</literal>.
+        Similarly, Unix addresses that specify <literal>runtime</literal>
+        are only listenable, and the corresponding connectable address
+        will specify <literal>path</literal>.
       </para>
       <sect3 id="transports-unix-domain-sockets-addresses">
         <title>Server Address Format</title>
@@ -3176,12 +3182,17 @@
             <entry>(string)</entry>
             <entry>unique string (path) in the abstract namespace. If set, the "path" or "tmpdir" key must not be set. This key is only supported on platforms with "abstract Unix sockets", of which Linux is the only known example.</entry>
           </row>
+          <row>
+            <entry>runtime</entry>
+            <entry><literal>yes</literal></entry>
+            <entry>If given, This key can only be used in server addresses, not in client addresses. If set, its value must be <literal>yes</literal>. This is typically used in an address string like <literal>unix:runtime=yes;unix:tmpdir=/tmp</literal> so that there can be a fallback if <literal>XDG_RUNTIME_DIR</literal> is not set.</entry>
+          </row>
         </tbody>
         </tgroup>
        </informaltable>
        <para>
          Exactly one of the keys <literal>path</literal>,
-         <literal>abstract</literal> or
+         <literal>abstract</literal>, <literal>runtime</literal> or
          <literal>tmpdir</literal> must be provided.
        </para>
       </sect3>
