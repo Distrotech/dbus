@@ -1339,6 +1339,10 @@ bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char
       vfprintf (stderr, msg, args);
       fprintf (stderr, "\n");
       va_end (args);
+
+      if (severity == DBUS_SYSTEM_LOG_FATAL)
+        _dbus_exit (1);
+
       return;
     }
 
