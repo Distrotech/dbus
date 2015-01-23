@@ -34,5 +34,6 @@
 
 void tool_millisleep (int ms);
 void tool_oom (const char *doing);
+dbus_bool_t tool_write_all (int fd, const void *buf, size_t size);
 
 #endif

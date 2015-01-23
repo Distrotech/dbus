@@ -20,6 +20,9 @@
  */
 
 #include <config.h>
+
+#include "dbus/dbus-internals.h"        /* just for the macros */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +40,13 @@
 #include "tool-common.h"
 
 #define EAVESDROPPING_RULE "eavesdrop=true"
+
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+
+/* http://www.tcpdump.org/linktypes.html */
+#define LINKTYPE_DBUS 231
 
 #ifdef DBUS_WIN
 
@@ -213,10 +223,85 @@ profile_filter_func (DBusConnection	*connection,
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+typedef enum {
+    BINARY_MODE_NOT,
+    BINARY_MODE_RAW,
+    BINARY_MODE_PCAP
+} BinaryMode;
+
+static DBusHandlerResult
+binary_filter_func (DBusConnection *connection,
+                    DBusMessage    *message,
+                    void           *user_data)
+{
+  BinaryMode mode = _DBUS_POINTER_TO_INT (user_data);
+  char *blob;
+  int len;
+
+  /* It would be nice if we could do a zero-copy "peek" one day, but libdbus
+   * is so copy-happy that this isn't really a big deal.
+   */
+  if (!dbus_message_marshal (message, &blob, &len))
+    tool_oom ("retrieving message");
+
+  switch (mode)
+    {
+      case BINARY_MODE_PCAP:
+          {
+            struct timeval t = { 0, 0 };
+            /* seconds, microseconds, bytes captured (possibly truncated),
+             * original length.
+             * http://wiki.wireshark.org/Development/LibpcapFileFormat
+             */
+            dbus_uint32_t header[4] = { 0, 0, len, len };
+
+            /* If this gets padded then we'd need to write it out in pieces */
+            _DBUS_STATIC_ASSERT (sizeof (header) == 16);
+
+            if (_DBUS_UNLIKELY (gettimeofday (&t, NULL) < 0))
+              {
+                /* I'm fairly sure this can't actually happen */
+                perror ("dbus-monitor: gettimeofday");
+                exit (1);
+              }
+
+            header[0] = t.tv_sec;
+            header[1] = t.tv_usec;
+
+            if (!tool_write_all (STDOUT_FILENO, header, sizeof (header)))
+              {
+                perror ("dbus-monitor: write");
+                exit (1);
+              }
+          }
+        break;
+
+      case BINARY_MODE_RAW:
+      default:
+        /* nothing special, just the raw message stream */
+        break;
+    }
+
+  if (!tool_write_all (STDOUT_FILENO, blob, len))
+    {
+      perror ("dbus-monitor: write");
+      exit (1);
+    }
+
+  dbus_free (blob);
+
+  if (dbus_message_is_signal (message,
+                              DBUS_INTERFACE_LOCAL,
+                              "Disconnected"))
+    exit (0);
+
+  return DBUS_HANDLER_RESULT_HANDLED;
+}
+
 static void
 usage (char *name, int ecode)
 {
-  fprintf (stderr, "Usage: %s [--system | --session | --address ADDRESS] [--monitor | --profile ] [watch expressions]\n", name);
+  fprintf (stderr, "Usage: %s [--system | --session | --address ADDRESS] [--monitor | --profile | --pcap | --binary ] [watch expressions]\n", name);
   exit (ecode);
 }
 
@@ -304,7 +389,7 @@ main (int argc, char *argv[])
   DBusHandleMessageFunction filter_func = monitor_filter_func;
   char *address = NULL;
   dbus_bool_t seen_bus_type = FALSE;
-  
+  BinaryMode binary_mode = BINARY_MODE_NOT;
   int i = 0, j = 0, numFilters = 0;
   char **filters = NULL;
 
@@ -348,9 +433,25 @@ main (int argc, char *argv[])
       else if (!strcmp (arg, "--help"))
 	usage (argv[0], 0);
       else if (!strcmp (arg, "--monitor"))
-	filter_func = monitor_filter_func;
+        {
+          filter_func = monitor_filter_func;
+          binary_mode = BINARY_MODE_NOT;
+        }
       else if (!strcmp (arg, "--profile"))
-	filter_func = profile_filter_func;
+        {
+          filter_func = profile_filter_func;
+          binary_mode = BINARY_MODE_NOT;
+        }
+      else if (!strcmp (arg, "--binary"))
+        {
+          filter_func = binary_filter_func;
+          binary_mode = BINARY_MODE_RAW;
+        }
+      else if (!strcmp (arg, "--pcap"))
+        {
+          filter_func = binary_filter_func;
+          binary_mode = BINARY_MODE_PCAP;
+        }
       else if (!strcmp (arg, "--"))
 	continue;
       else if (arg[0] == '-')
@@ -418,7 +519,8 @@ main (int argc, char *argv[])
       exit (1);
     }
 
-  if (!dbus_connection_add_filter (connection, filter_func, NULL, NULL))
+  if (!dbus_connection_add_filter (connection, filter_func,
+                                   _DBUS_INT_TO_POINTER (binary_mode), NULL))
     {
       fprintf (stderr, "Couldn't add filter!\n");
       exit (1);
@@ -472,6 +574,45 @@ main (int argc, char *argv[])
         }
     }
 
+  switch (binary_mode)
+    {
+      case BINARY_MODE_NOT:
+      case BINARY_MODE_RAW:
+        break;
+
+      case BINARY_MODE_PCAP:
+          {
+            /* We're not using libpcap because the file format is simple
+             * enough not to need it.
+             * http://wiki.wireshark.org/Development/LibpcapFileFormat */
+            struct {
+                dbus_uint32_t magic;
+                dbus_uint16_t major_version;
+                dbus_uint16_t minor_version;
+                dbus_int32_t timezone;
+                dbus_uint32_t precision;
+                dbus_uint32_t max_length;
+                dbus_uint32_t link_type;
+            } header = {
+                0xA1B2C3D4U,  /* magic number */
+                2, 4,         /* v2.4 */
+                0,            /* capture in GMT */
+                0,            /* no opinion on timestamp precision */
+                (1 << 27),    /* D-Bus spec says so */
+                LINKTYPE_DBUS
+            };
+
+            /* Assert that there is no padding */
+            _DBUS_STATIC_ASSERT (sizeof (header) == 24);
+
+            if (!tool_write_all (STDOUT_FILENO, &header, sizeof (header)))
+              {
+                perror ("dbus-monitor: write");
+                exit (1);
+              }
+          }
+        break;
+    }
 
   while (dbus_connection_read_write_dispatch(connection, -1))
     ;

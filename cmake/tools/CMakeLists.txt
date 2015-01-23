@@ -1,3 +1,5 @@
+add_definitions("-DDBUS_COMPILATION")
+
 set (dbus_send_SOURCES
 	../../tools/dbus-print-message.c			
 	../../tools/dbus-print-message.h			
