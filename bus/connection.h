@@ -116,6 +116,11 @@ dbus_bool_t      bus_connection_get_unix_groups  (DBusConnection       *connecti
                                                   DBusError            *error);
 BusClientPolicy* bus_connection_get_policy  (DBusConnection       *connection);
 
+dbus_bool_t bus_connection_is_monitor (DBusConnection *connection);
+dbus_bool_t bus_connection_be_monitor (DBusConnection *connection,
+                                       BusTransaction *transaction,
+                                       DBusError      *error);
+
 /* transaction API so we can send or not send a block of messages as a whole */
 
 typedef void (* BusTransactionCancelFunction) (void *data);

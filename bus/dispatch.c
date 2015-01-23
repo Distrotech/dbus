@@ -47,6 +47,13 @@
  * dbus_connection_open_private() does not block. */
 #define TEST_DEBUG_PIPE "debug-pipe:name=test-server"
 
+static inline const char *
+nonnull (const char *maybe_null,
+         const char *if_null)
+{
+  return (maybe_null ? maybe_null : if_null);
+}
+
 static dbus_bool_t
 send_one_message (DBusConnection *connection,
                   BusContext     *context,
@@ -199,6 +206,54 @@ bus_dispatch (DBusConnection *connection,
 
   /* Ref connection in case we disconnect it at some point in here */
   dbus_connection_ref (connection);
+
+  /* Monitors aren't meant to send messages to us. */
+  if (bus_connection_is_monitor (connection))
+    {
+      sender = bus_connection_get_name (connection);
+
+      /* should never happen */
+      if (sender == NULL)
+        sender = "(unknown)";
+
+      if (dbus_message_is_signal (message,
+                                  DBUS_INTERFACE_LOCAL,
+                                  "Disconnected"))
+        {
+          bus_context_log (context, DBUS_SYSTEM_LOG_INFO,
+                           "Monitoring connection %s closed.", sender);
+          bus_connection_disconnected (connection);
+          goto out;
+        }
+      else
+        {
+          /* Monitors are not allowed to send messages, because that
+           * probably indicates that the monitor is incorrectly replying
+           * to its eavesdropped messages, and we want the authors of
+           * such monitors to fix them.
+           */
+          bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
+                           "Monitoring connection %s (%s) is not allowed "
+                           "to send messages; closing it. Please fix the "
+                           "monitor to not do that. "
+                           "(message type=\"%s\" interface=\"%s\" "
+                           "member=\"%s\" error name=\"%s\" "
+                           "destination=\"%s\")",
+                           sender, bus_connection_get_loginfo (connection),
+                           dbus_message_type_to_string (
+                             dbus_message_get_type (message)),
+                           nonnull (dbus_message_get_interface (message),
+                                    "(unset)"),
+                           nonnull (dbus_message_get_member (message),
+                                    "(unset)"),
+                           nonnull (dbus_message_get_error_name (message),
+                                    "(unset)"),
+                           nonnull (dbus_message_get_destination (message),
+                                    DBUS_SERVICE_DBUS));
+          dbus_connection_close (connection);
+          goto out;
+        }
+    }
 
   service_name = dbus_message_get_destination (message);
 

@@ -1788,6 +1788,35 @@ bus_driver_handle_get_id (DBusConnection *connection,
   return FALSE;
 }
 
+static dbus_bool_t
+bus_driver_handle_become_monitor (DBusConnection *connection,
+                                  BusTransaction *transaction,
+                                  DBusMessage    *message,
+                                  DBusError      *error)
+{
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  if (!bus_driver_check_message_is_for_us (message, error))
+    return FALSE;
+
+  if (!bus_driver_check_caller_is_privileged (connection, transaction,
+                                              message, error))
+    return FALSE;
+
+  /* Send the ack before we remove the rule, since the ack is undone
+   * on transaction cancel, but becoming a monitor isn't.
+   */
+  if (!send_ack_reply (connection, transaction, message, error))
+    return FALSE;
+
+  /* FIXME: use the array of filters from the message */
+
+  if (!bus_connection_be_monitor (connection, transaction, error))
+    return FALSE;
+
+  return TRUE;
+}
+
 typedef struct
 {
   const char *name;
@@ -1889,6 +1918,11 @@ static const MessageHandler introspectable_message_handlers[] = {
   { NULL, NULL, NULL, NULL }
 };
 
+static const MessageHandler monitoring_message_handlers[] = {
+  { "BecomeMonitor", "asu", "", bus_driver_handle_become_monitor },
+  { NULL, NULL, NULL, NULL }
+};
+
 #ifdef DBUS_ENABLE_STATS
 static const MessageHandler stats_message_handlers[] = {
   { "GetStats", "", "a{sv}", bus_stats_handle_get_stats },
@@ -1920,6 +1954,7 @@ static InterfaceHandler interface_handlers[] = {
     "      <arg type=\"s\"/>\n"
     "    </signal>\n" },
   { DBUS_INTERFACE_INTROSPECTABLE, introspectable_message_handlers, NULL },
+  { DBUS_INTERFACE_MONITORING, monitoring_message_handlers, NULL },
 #ifdef DBUS_ENABLE_STATS
   { BUS_INTERFACE_STATS, stats_message_handlers, NULL },
 #endif

@@ -64,6 +64,10 @@ struct BusConnections
   int stamp;                   /**< Incrementing number */
   BusExpireList *pending_replies; /**< List of pending replies */
 
+  /** List of all monitoring connections, a subset of completed.
+   * Each member is a #DBusConnection. */
+  DBusList *monitors;
+
 #ifdef DBUS_ENABLE_STATS
   int total_match_rules;
   int peak_match_rules;
@@ -105,6 +109,9 @@ typedef struct
 #endif
   int n_pending_unix_fds;
   DBusTimeout *pending_unix_fds_timeout;
+
+  /** non-NULL if and only if this is a monitor */
+  DBusList *link_in_monitors;
 } BusConnectionData;
 
 static dbus_bool_t bus_pending_reply_expired (BusExpireList *list,
@@ -282,6 +289,12 @@ bus_connection_disconnected (DBusConnection *connection)
   _dbus_connection_set_pending_fds_function (connection, NULL, NULL);
   
   bus_connection_remove_transactions (connection);
+
+  if (d->link_in_monitors != NULL)
+    {
+      _dbus_list_remove_link (&d->connections->monitors, d->link_in_monitors);
+      d->link_in_monitors = NULL;
+    }
 
   if (d->link_in_connection_list != NULL)
     {
@@ -513,7 +526,10 @@ bus_connections_unref (BusConnections *connections)
         }
 
       _dbus_assert (connections->n_incomplete == 0);
-      
+
+      /* drop all monitors */
+      _dbus_list_clear (&connections->monitors);
+
       /* drop all real connections */
       while (connections->completed != NULL)
         {
@@ -2493,3 +2509,87 @@ bus_connection_get_peak_bus_names (DBusConnection *connection)
   return d->peak_bus_names;
 }
 #endif /* DBUS_ENABLE_STATS */
+
+dbus_bool_t
+bus_connection_is_monitor (DBusConnection *connection)
+{
+  BusConnectionData *d;
+
+  d = BUS_CONNECTION_DATA (connection);
+
+  return d != NULL && d->link_in_monitors != NULL;
+}
+
+dbus_bool_t
+bus_connection_be_monitor (DBusConnection *connection,
+                           BusTransaction *transaction,
+                           DBusError      *error)
+{
+  BusConnectionData *d;
+  DBusList *link;
+  DBusList *tmp;
+  DBusList *iter;
+
+  d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert (d != NULL);
+
+  link = _dbus_list_alloc_link (connection);
+
+  if (link == NULL)
+    {
+      BUS_SET_OOM (error);
+      return FALSE;
+    }
+
+  /* release all its names */
+  if (!_dbus_list_copy (&d->services_owned, &tmp))
+    {
+      _dbus_list_free_link (link);
+      BUS_SET_OOM (error);
+      return FALSE;
+    }
+
+  for (iter = _dbus_list_get_first_link (&tmp);
+      iter != NULL;
+      iter = _dbus_list_get_next_link (&tmp, iter))
+    {
+      BusService *service = iter->data;
+
+      /* This call is transactional: if there isn't enough memory to
+       * do everything, then the service gets all its names back when
+       * the transaction is cancelled due to OOM. */
+      if (!bus_service_remove_owner (service, connection, transaction, error))
+        {
+          _dbus_list_free_link (link);
+          _dbus_list_clear (&tmp);
+          return FALSE;
+        }
+    }
+
+  /* We have now done everything that can fail, so there is no problem
+   * with doing the irrevocable stuff. */
+
+  _dbus_list_clear (&tmp);
+
+  bus_context_log (transaction->context, DBUS_SYSTEM_LOG_INFO,
+                   "Connection %s (%s) became a monitor.", d->name,
+                   d->cached_loginfo_string);
+
+  if (d->n_match_rules > 0)
+    {
+      BusMatchmaker *mm;
+
+      mm = bus_context_get_matchmaker (d->connections->context);
+      bus_matchmaker_disconnected (mm, connection);
+    }
+
+  /* flag it as a monitor */
+  d->link_in_monitors = link;
+  _dbus_list_append_link (&d->connections->monitors, link);
+
+  /* it isn't allowed to reply, and it is no longer relevant whether it
+   * receives replies */
+  bus_connection_drop_pending_replies (d->connections, connection);
+
+  return TRUE;
+}
