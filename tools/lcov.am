@@ -21,10 +21,10 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 lcov-reset:
-	lcov --directory @abs_top_srcdir@ --zerocounters
+	lcov --directory @abs_top_builddir@ --zerocounters
 
 lcov-report:
-	lcov --directory @abs_top_srcdir@ --capture \
+	lcov --directory @abs_top_builddir@ --capture \
 		--output-file @abs_top_builddir@/lcov.info
 	$(mkdir_p) @abs_top_builddir@/lcov.html
 	git_commit=`GIT_DIR=@abs_top_srcdir@/.git git log -1 --pretty=format:%h 2>/dev/null`;\
