@@ -41,17 +41,32 @@
 #include <string.h>
 
 static DBusConnection *
+bus_driver_get_owner_of_name (DBusConnection *connection,
+                              const char     *name)
+{
+  BusRegistry *registry;
+  BusService *serv;
+  DBusString str;
+
+  registry = bus_connection_get_registry (connection);
+  _dbus_string_init_const (&str, name);
+  serv = bus_registry_lookup (registry, &str);
+
+  if (serv == NULL)
+    return NULL;
+
+  return bus_service_get_primary_owners_connection (serv);
+}
+
+static DBusConnection *
 bus_driver_get_conn_helper (DBusConnection  *connection,
                             DBusMessage     *message,
                             const char      *what_we_want,
                             const char     **name_p,
                             DBusError       *error)
 {
-  const char *name;
-  BusRegistry *registry;
-  BusService *serv;
-  DBusString str;
   DBusConnection *conn;
+  const char *name;
 
   if (!dbus_message_get_args (message, error,
                               DBUS_TYPE_STRING, &name,
@@ -61,20 +76,15 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
   _dbus_assert (name != NULL);
   _dbus_verbose ("asked for %s of connection %s\n", what_we_want, name);
 
-  registry = bus_connection_get_registry (connection);
-  _dbus_string_init_const (&str, name);
-  serv = bus_registry_lookup (registry, &str);
+  conn = bus_driver_get_owner_of_name (connection, name);
 
-  if (serv == NULL)
+  if (conn == NULL)
     {
       dbus_set_error (error, DBUS_ERROR_NAME_HAS_NO_OWNER,
                       "Could not get %s of name '%s': no such name",
                       what_we_want, name);
       return NULL;
     }
-
-  conn = bus_service_get_primary_owners_connection (serv);
-  _dbus_assert (conn != NULL);
 
   if (name_p != NULL)
     *name_p = name;
