@@ -211,6 +211,37 @@ test_activation (Fixture *f,
       "org.freedesktop.systemd1");
   dbus_message_unref (m);
 
+  /* A malicious process tries to disrupt the activation.
+   * In a more realistic scenario this would be another parallel
+   * connection. */
+  m = dbus_message_new_signal ("/org/freedesktop/systemd1",
+      "org.freedesktop.systemd1.Activator", "ActivationFailure");
+  if (!dbus_message_set_destination (m, "org.freedesktop.DBus"))
+    g_error ("OOM");
+
+  do
+    {
+      const char *unit = "dbus-com.example.SystemdActivatable2.service";
+      const char *error_name = "com.example.Malice";
+      const char *error_message = "I'm on yr bus, making yr activations fail";
+
+      if (!dbus_message_append_args (m,
+            DBUS_TYPE_STRING, &unit,
+            DBUS_TYPE_STRING, &error_name,
+            DBUS_TYPE_STRING, &error_message,
+            DBUS_TYPE_INVALID))
+        g_error ("OOM");
+    }
+  while (0);
+
+  dbus_connection_send (f->caller, m, NULL);
+  dbus_message_unref (m);
+
+  /* This is just to make sure that the malicious message has arrived and
+   * been processed by the dbus-daemon, i.e. @caller won the race
+   * with @activated. */
+  take_well_known_name (f, f->caller, "com.example.Sync");
+
   /* The activatable service takes its name. Here I'm faking it by using
    * an existing connection; in real life it would be yet another
    * connection. */
