@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.example.SystemdActivatable3
+Exec=/bin/false 3
+SystemdService=dbus-com.example.SystemdActivatable3.service

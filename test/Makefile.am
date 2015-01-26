@@ -160,6 +160,7 @@ installable_tests += \
 	test-marshal \
 	test-refs \
 	test-relay \
+	test-sd-activation \
 	test-syntax \
 	test-syslog \
 	test-uid-permissions \
@@ -229,6 +230,15 @@ test_dbus_daemon_eavesdrop_LDADD = \
     $(GLIB_LIBS) \
     $(NULL)
 
+test_sd_activation_SOURCES = \
+    sd-activation.c \
+    $(NULL)
+test_sd_activation_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
+test_sd_activation_LDADD = \
+    $(testutils_shared_if_possible_libs) \
+    $(GLIB_LIBS) \
+    $(NULL)
+
 test_marshal_SOURCES = marshal.c
 test_marshal_LDADD = \
     $(top_builddir)/dbus/libdbus-1.la \
@@ -287,6 +297,7 @@ in_data = \
 	data/valid-config-files/finite-timeout.conf.in \
 	data/valid-config-files/incoming-limit.conf.in \
 	data/valid-config-files/multi-user.conf.in \
+	data/valid-config-files/systemd-activation.conf.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service.in \
@@ -355,6 +366,10 @@ static_data = \
 	data/sha-1/bit-messages.sha1 \
 	data/sha-1/byte-hashes.sha1 \
 	data/sha-1/byte-messages.sha1 \
+	data/systemd-activation/com.example.SystemdActivatable1.service \
+	data/systemd-activation/com.example.SystemdActivatable2.service \
+	data/systemd-activation/com.example.SystemdActivatable3.service \
+	data/systemd-activation/org.freedesktop.systemd1.service \
 	data/valid-config-files/basic.conf \
 	data/valid-config-files/basic.d/basic.conf \
 	data/valid-config-files/entities.conf \

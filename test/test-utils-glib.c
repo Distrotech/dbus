@@ -100,6 +100,9 @@ spawn_dbus_daemon (const gchar *binary,
       configuration,
       "--nofork",
       "--print-address=1", /* stdout */
+#ifdef DBUS_UNIX
+      "--systemd-activation",
+#endif
       NULL
   };
 #ifdef DBUS_UNIX
