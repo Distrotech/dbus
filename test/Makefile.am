@@ -162,6 +162,7 @@ installable_tests += \
 	test-relay \
 	test-syntax \
 	test-syslog \
+	test-uid-permissions \
 	$(NULL)
 installable_manual_tests += \
 	manual-authz \
@@ -240,6 +241,15 @@ test_syntax_LDADD = \
     $(GLIB_LIBS) \
     $(NULL)
 
+test_uid_permissions_SOURCES = \
+    uid-permissions.c \
+    $(NULL)
+test_uid_permissions_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
+test_uid_permissions_LDADD = \
+    $(testutils_shared_if_possible_libs) \
+    $(GLIB_LIBS) \
+    $(NULL)
+
 if DBUS_ENABLE_MODULAR_TESTS
 TESTS += $(installable_tests)
 installcheck_tests += $(installable_tests)
@@ -276,6 +286,7 @@ in_data = \
 	data/valid-config-files/debug-allow-all.conf.in \
 	data/valid-config-files/finite-timeout.conf.in \
 	data/valid-config-files/incoming-limit.conf.in \
+	data/valid-config-files/multi-user.conf.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service.in \

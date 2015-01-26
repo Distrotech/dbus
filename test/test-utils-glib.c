@@ -299,6 +299,88 @@ test_connect_to_bus (TestMainContext *ctx,
   return conn;
 }
 
+DBusConnection *
+test_connect_to_bus_as_user (TestMainContext *ctx,
+    const char *address,
+    TestUser user)
+{
+  /* For now we only do tests like this on Linux, because I don't know how
+   * safe this use of setresuid() is on other platforms */
+#if defined(HAVE_GETRESUID) && defined(HAVE_SETRESUID) && defined(__linux__)
+  uid_t ruid, euid, suid;
+  const struct passwd *pwd;
+  DBusConnection *conn;
+  const char *username;
+
+  switch (user)
+    {
+      case TEST_USER_ME:
+        return test_connect_to_bus (ctx, address);
+
+      case TEST_USER_ROOT:
+        username = "root";
+        break;
+
+      case TEST_USER_MESSAGEBUS:
+        username = DBUS_USER;
+        break;
+
+      case TEST_USER_OTHER:
+        username = DBUS_TEST_USER;
+        break;
+
+      default:
+        g_return_val_if_reached (NULL);
+    }
+
+  if (getresuid (&ruid, &euid, &suid) != 0)
+    g_error ("getresuid: %s", g_strerror (errno));
+
+  if (ruid != 0 || euid != 0 || suid != 0)
+    {
+      g_message ("SKIP: not uid 0 (ruid=%ld euid=%ld suid=%ld)",
+          (unsigned long) ruid, (unsigned long) euid, (unsigned long) suid);
+      return NULL;
+    }
+
+  pwd = getpwnam (username);
+
+  if (pwd == NULL)
+    {
+      g_message ("SKIP: getpwnam(\"%s\"): %s", username, g_strerror (errno));
+      return NULL;
+    }
+
+  /* Impersonate the desired user while we connect to the bus.
+   * This should work, because we're root. */
+  if (setresuid (pwd->pw_uid, pwd->pw_uid, 0) != 0)
+    g_error ("setresuid(%ld, (same), 0): %s",
+        (unsigned long) pwd->pw_uid, g_strerror (errno));
+
+  conn = test_connect_to_bus (ctx, address);
+
+  /* go back to our saved uid */
+  if (setresuid (0, 0, 0) != 0)
+    g_error ("setresuid(0, 0, 0): %s", g_strerror (errno));
+
+  return conn;
+
+#else
+
+  switch (user)
+    {
+      case TEST_USER_ME:
+        return test_connect_to_bus (ctx, address);
+
+      default:
+        g_message ("SKIP: setresuid() not available, or unsure about "
+            "credentials-passing semantics on this platform");
+        return NULL;
+    }
+
+#endif
+}
+
 void
 test_kill_pid (GPid pid)
 {

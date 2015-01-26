@@ -74,6 +74,9 @@ gchar *test_get_dbus_daemon (const gchar *config_file,
 
 DBusConnection *test_connect_to_bus (TestMainContext *ctx,
     const gchar *address);
+DBusConnection *test_connect_to_bus_as_user (TestMainContext *ctx,
+    const char *address,
+    TestUser user);
 
 void test_kill_pid (GPid pid);
 
