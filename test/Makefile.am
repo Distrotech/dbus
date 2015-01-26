@@ -362,18 +362,69 @@ EXTRA_DIST += $(static_data)
 
 ## copy tests to builddir so that generated tests and static tests
 ## are all in one place.
-all-local:
+all-local: copy-config-local uninstalled-config-local
+	@:
+
+copy-config-local:
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files/session.d
-	$(AM_V_at)set -e && \
+	$(AM_V_GEN)set -e; \
 	if test $(srcdir) = . || test $(srcdir) -ef .; then \
 		echo '-- No need to copy test data as srcdir = builddir'; \
 	else \
 		for F in $(static_data); do \
-			$(MKDIR_P) $${F%/*}; \
-			rm -f $$F; \
-			cp $(srcdir)/$$F $$F; \
+			$(MKDIR_P) "$${F%/*}"; \
+			rm -f "$$F"; \
+			cp $(srcdir)/"$$F" "$$F"; \
 		done; \
 	fi
+
+uninstalled-config-local:
+	$(AM_V_GEN)set -e; \
+	for F in $(in_data); do \
+		$(MKDIR_P) "$${F%/*}"; \
+		sed \
+			-e 's,[@]DBUS_TEST_DATA[@],@abs_builddir@/data,' \
+			-e 's,[@]DBUS_TEST_EXEC[@],@abs_builddir@,' \
+			-e 's,[@]EXEEXT[@],$(EXEEXT),' \
+			-e 's,[@]TEST_LAUNCH_HELPER_BINARY[@],@abs_top_builddir@/bus/dbus-daemon-launch-helper-test$(EXEEXT),' \
+			-e 's,[@]TEST_LISTEN[@],$(TEST_LISTEN),' \
+			< $(srcdir)/"$$F" > "$${F%.in}"; \
+	done
+
+installable-config-local:
+if DBUS_ENABLE_INSTALLED_TESTS
+	$(AM_V_GEN)set -e; \
+	for F in $(in_data); do \
+		$(MKDIR_P) "installable/$${F%/*}"; \
+		sed \
+			-e 's,[@]DBUS_TEST_DATA[@],$(testexecdir)/data,' \
+			-e 's,[@]DBUS_TEST_EXEC[@],$(testexecdir),' \
+			-e 's,[@]EXEEXT[@],$(EXEEXT),' \
+			-e 's,[@]TEST_LAUNCH_HELPER_BINARY[@],/bin/false,' \
+			-e 's,[@]TEST_LISTEN[@],$(TEST_LISTEN),' \
+			< $(srcdir)/"$$F" > "installable/$${F%.in}"; \
+	done
+else
+	@:
+endif
+
+
+install-data-local: install-config-local
+	@:
+
+install-config-local: installable-config-local
+if DBUS_ENABLE_INSTALLED_TESTS
+	$(AM_V_gen)set -e; \
+	for F in $(static_data); do \
+		install -m644 "$(srcdir)/$$F" "$(testexecdir)/$$F"; \
+	done
+	for F in $(in_data); do \
+		install -d "$${F%/*}";
+		install -m644 "installable/$${F%.in}" "$(testexecdir)/$${F%.in}"; \
+	done
+else
+	@:
+endif
 
 ## this doesn't clean most copied test data files when srcdir=builddir
 clean-local:
@@ -381,6 +432,9 @@ clean-local:
 		echo '-- No need to clean test data as srcdir = builddir'; \
 	else \
 		rm -f $(static_data); \
+		for F in $(in_data); do \
+			rm -f "$${F%.in}"; \
+		done; \
 	fi
 
 imported_data = \
@@ -389,7 +443,11 @@ imported_data = \
 	$(NULL)
 
 noinst_DATA = $(imported_data)
-CLEANFILES = $(noinst_DATA) XDG_RUNTIME_DIR
+CLEANFILES = \
+	$(noinst_DATA) \
+	XDG_RUNTIME_DIR \
+	installable \
+	$(NULL)
 
 $(imported_data): data/valid-config-files/%.conf: $(top_builddir)/bus/%.conf
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files

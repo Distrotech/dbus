@@ -1782,25 +1782,6 @@ doc/dbus-send.1.xml
 doc/dbus-uuidgen.1.xml
 dbus-1.pc
 dbus-1-uninstalled.pc
-test/data/valid-config-files/debug-allow-all.conf
-test/data/valid-config-files/debug-allow-all-sha1.conf
-test/data/valid-config-files/finite-timeout.conf
-test/data/valid-config-files/incoming-limit.conf
-test/data/valid-config-files-system/debug-allow-all-pass.conf
-test/data/valid-config-files-system/debug-allow-all-fail.conf
-test/data/valid-service-files/org.freedesktop.DBus.TestSuite.PrivServer.service
-test/data/valid-service-files/org.freedesktop.DBus.TestSuiteEchoService.service
-test/data/valid-service-files/org.freedesktop.DBus.TestSuiteForkingEchoService.service
-test/data/valid-service-files/org.freedesktop.DBus.TestSuiteSegfaultService.service
-test/data/valid-service-files/org.freedesktop.DBus.TestSuiteShellEchoServiceSuccess.service
-test/data/valid-service-files/org.freedesktop.DBus.TestSuiteShellEchoServiceFail.service
-test/data/valid-service-files-system/org.freedesktop.DBus.TestSuiteEchoService.service
-test/data/valid-service-files-system/org.freedesktop.DBus.TestSuiteSegfaultService.service
-test/data/valid-service-files-system/org.freedesktop.DBus.TestSuiteShellEchoServiceSuccess.service
-test/data/valid-service-files-system/org.freedesktop.DBus.TestSuiteShellEchoServiceFail.service
-test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service
-test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoUser.service
-test/data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service
 ])
 AC_OUTPUT
 
