@@ -1816,6 +1816,7 @@ echo "
         Building modular tests:   ${enable_modular_tests}
             - with GLib:          ${with_glib}
             - with dbus-glib:     ${with_dbus_glib}
+        Installing tests:         ${enable_installed_tests}
         Building verbose mode:    ${enable_verbose_mode}
         Building assertions:      ${enable_asserts}
         Building checks:          ${enable_checks}

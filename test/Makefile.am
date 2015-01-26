@@ -136,9 +136,11 @@ manual_tcp_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
 EXTRA_DIST = dbus-test-runner
 
-testexecdir = $(libdir)/dbus-1.0/test
+testexecdir = $(libexecdir)/installed-tests/dbus
+testmetadir = $(datadir)/installed-tests/dbus
 
 testexec_PROGRAMS =
+testmeta_DATA =
 
 installable_tests = \
 	test-shell \
@@ -165,6 +167,9 @@ installable_manual_tests += \
 	manual-authz \
 	$(NULL)
 endif DBUS_WITH_GLIB
+
+installable_test_meta = $(installable_tests:=.test)
+installable_test_meta_with_config = $(installable_tests:=_with_config.test)
 
 installcheck_tests =
 installcheck_environment = \
@@ -241,6 +246,9 @@ installcheck_tests += $(installable_tests)
 
 if DBUS_ENABLE_INSTALLED_TESTS
   testexec_PROGRAMS += $(installable_tests) $(installable_manual_tests)
+
+  testmeta_DATA += $(installable_test_meta)
+  testmeta_DATA += $(installable_test_meta_with_config)
 else !DBUS_ENABLE_INSTALLED_TESTS
   noinst_PROGRAMS += $(installable_tests) $(installable_manual_tests)
 endif !DBUS_ENABLE_INSTALLED_TESTS
@@ -414,14 +422,19 @@ install-data-local: install-config-local
 
 install-config-local: installable-config-local
 if DBUS_ENABLE_INSTALLED_TESTS
-	$(AM_V_gen)set -e; \
+	$(AM_V_GEN)set -e; \
 	for F in $(static_data); do \
-		install -m644 "$(srcdir)/$$F" "$(testexecdir)/$$F"; \
-	done
+		install -d "$(DESTDIR)$(testexecdir)/$${F%/*}"; \
+		install -m644 "$(srcdir)/$$F" "$(DESTDIR)$(testexecdir)/$$F"; \
+	done; \
 	for F in $(in_data); do \
-		install -d "$${F%/*}";
-		install -m644 "installable/$${F%.in}" "$(testexecdir)/$${F%.in}"; \
+		install -d "$(DESTDIR)$(testexecdir)/$${F%/*}"; \
+		install -m644 "installable/$${F%.in}" "$(DESTDIR)$(testexecdir)/$${F%.in}"; \
 	done
+	ln -nfs $(sysconfdir)/dbus-1/session.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/session.conf
+	ln -nfs $(sysconfdir)/dbus-1/session.d $(DESTDIR)$(testexecdir)/data/valid-config-files/session.d
+	ln -nfs $(sysconfdir)/dbus-1/system.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/system.conf
+	ln -nfs $(sysconfdir)/dbus-1/system.d $(DESTDIR)$(testexecdir)/data/valid-config-files/system.d
 else
 	@:
 endif
@@ -452,3 +465,17 @@ CLEANFILES = \
 $(imported_data): data/valid-config-files/%.conf: $(top_builddir)/bus/%.conf
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files
 	$(AM_V_GEN)cp $< $@
+
+$(installable_test_meta): %.test: % Makefile
+	$(AM_V_GEN) ( \
+		echo '[Test]'; \
+		echo 'Type=session'; \
+		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp $(testexecdir)/$*'; \
+	) > $@.tmp && mv $@.tmp $@
+
+$(installable_test_meta_with_config): %_with_config.test: % Makefile
+	$(AM_V_GEN) ( \
+		echo '[Test]'; \
+		echo 'Type=session'; \
+		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$*'; \
+	) > $@.tmp && mv $@.tmp $@
