@@ -25,15 +25,23 @@ static_cppflags = \
 
 noinst_LTLIBRARIES = libdbus-testutils-internal.la
 
+libdbus_testutils_la_SOURCES = \
+	test-utils.c \
+	test-utils.h \
+	$(NULL)
+
+if DBUS_WITH_GLIB
+libdbus_testutils_la_SOURCES += \
+	test-utils-glib.c \
+	test-utils-glib.h \
+	$(NULL)
+endif
+
 # You can link either libdbus-testutils, dbus-glib and libdbus-1,
 # or libdbus-testutils-internal and libdbus-internal - never both in the
 # same binary.
 if DBUS_WITH_DBUS_GLIB
 noinst_LTLIBRARIES += libdbus-testutils.la
-libdbus_testutils_la_SOURCES = \
-	test-utils.c \
-	test-utils.h \
-	$(NULL)
 libdbus_testutils_la_LIBADD = \
 	$(top_builddir)/dbus/libdbus-1.la \
 	$(GLIB_LIBS) \
@@ -50,8 +58,7 @@ libdbus_testutils_internal_la_CPPFLAGS = \
 	$(static_cppflags) \
 	$(NULL)
 libdbus_testutils_internal_la_SOURCES = \
-	test-utils.c \
-	test-utils.h \
+	$(libdbus_testutils_la_SOURCES) \
 	$(NULL)
 libdbus_testutils_internal_la_LIBADD = \
 	$(top_builddir)/dbus/libdbus-internal.la \

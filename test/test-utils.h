@@ -34,5 +34,7 @@ dbus_bool_t test_server_setup                     (TestMainContext *ctx,
                                                    DBusServer    *server);
 void        test_server_shutdown                  (TestMainContext *ctx,
                                                    DBusServer    *server);
+void        test_pending_call_store_reply         (DBusPendingCall *pc,
+                                                   void *data);
 
 #endif

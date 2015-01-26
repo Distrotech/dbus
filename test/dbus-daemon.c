@@ -26,22 +26,12 @@
 
 #include <config.h>
 
-#include <glib.h>
+#include "test-utils-glib.h"
 
-#include <dbus/dbus.h>
-
-#include <string.h>
-
-#ifdef DBUS_WIN
-# include <io.h>
-# include <windows.h>
-#else
-# include <signal.h>
+#ifdef DBUS_UNIX
 # include <unistd.h>
 # include <sys/types.h>
 #endif
-
-#include "test-utils.h"
 
 /* Platforms where we know that credentials-passing passes both the
  * uid and the pid. Please keep these in alphabetical order.
@@ -85,99 +75,6 @@ typedef struct {
     gboolean wait_forever_called;
 } Fixture;
 
-#define assert_no_error(e) _assert_no_error (e, __FILE__, __LINE__)
-static void
-_assert_no_error (const DBusError *e,
-    const char *file,
-    int line)
-{
-  if (G_UNLIKELY (dbus_error_is_set (e)))
-    g_error ("%s:%d: expected success but got error: %s: %s",
-        file, line, e->name, e->message);
-}
-
-static gchar *
-spawn_dbus_daemon (gchar *binary,
-    gchar *configuration,
-    GPid *daemon_pid)
-{
-  GError *error = NULL;
-  GString *address;
-  gint address_fd;
-  gchar *argv[] = {
-      binary,
-      configuration,
-      "--nofork",
-      "--print-address=1", /* stdout */
-      NULL
-  };
-
-  g_spawn_async_with_pipes (NULL, /* working directory */
-      argv,
-      NULL, /* envp */
-      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
-      NULL, /* child_setup */
-      NULL, /* user data */
-      daemon_pid,
-      NULL, /* child's stdin = /dev/null */
-      &address_fd,
-      NULL, /* child's stderr = our stderr */
-      &error);
-  g_assert_no_error (error);
-
-  address = g_string_new (NULL);
-
-  /* polling until the dbus-daemon writes out its address is a bit stupid,
-   * but at least it's simple, unlike dbus-launch... in principle we could
-   * use select() here, but life's too short */
-  while (1)
-    {
-      gssize bytes;
-      gchar buf[4096];
-      gchar *newline;
-
-      bytes = read (address_fd, buf, sizeof (buf));
-
-      if (bytes > 0)
-        g_string_append_len (address, buf, bytes);
-
-      newline = strchr (address->str, '\n');
-
-      if (newline != NULL)
-        {
-          if ((newline > address->str) && ('\r' == newline[-1]))
-            newline -= 1;
-          g_string_truncate (address, newline - address->str);
-          break;
-        }
-
-      g_usleep (G_USEC_PER_SEC / 10);
-    }
-
-  return g_string_free (address, FALSE);
-}
-
-static DBusConnection *
-connect_to_bus (Fixture *f,
-    const gchar *address)
-{
-  DBusConnection *conn;
-  DBusError error = DBUS_ERROR_INIT;
-  dbus_bool_t ok;
-
-  conn = dbus_connection_open_private (address, &error);
-  assert_no_error (&error);
-  g_assert (conn != NULL);
-
-  ok = dbus_bus_register (conn, &error);
-  assert_no_error (&error);
-  g_assert (ok);
-  g_assert (dbus_bus_get_unique_name (conn) != NULL);
-
-  test_connection_setup (f->ctx, conn);
-  return conn;
-}
-
 static DBusHandlerResult
 echo_filter (DBusConnection *connection,
     DBusMessage *message,
@@ -220,71 +117,23 @@ setup (Fixture *f,
     gconstpointer context)
 {
   const Config *config = context;
-  gchar *dbus_daemon;
-  gchar *arg;
   gchar *address;
 
   f->ctx = test_main_context_get ();
   f->ge = NULL;
   dbus_error_init (&f->e);
 
-  if (config != NULL && config->config_file != NULL)
-    {
-      if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
-        {
-          g_message ("SKIP: cannot use DBUS_TEST_DAEMON_ADDRESS for "
-              "unusally-configured dbus-daemon");
-          f->skip = TRUE;
-          return;
-        }
+  address = test_get_dbus_daemon (config ? config->config_file : NULL,
+                                  &f->daemon_pid);
 
-      if (g_getenv ("DBUS_TEST_DATA") == NULL)
-        {
-          g_message ("SKIP: set DBUS_TEST_DATA to a directory containing %s",
-              config->config_file);
-          f->skip = TRUE;
-          return;
-        }
-
-      arg = g_strdup_printf (
-          "--config-file=%s/%s",
-          g_getenv ("DBUS_TEST_DATA"), config->config_file);
-    }
-  else if (g_getenv ("DBUS_TEST_SYSCONFDIR") != NULL)
+  if (address == NULL)
     {
-      arg = g_strdup_printf ("--config-file=%s/dbus-1/session.conf",
-          g_getenv ("DBUS_TEST_SYSCONFDIR"));
-    }
-  else if (g_getenv ("DBUS_TEST_DATA") != NULL)
-    {
-      arg = g_strdup_printf (
-          "--config-file=%s/valid-config-files/session.conf",
-          g_getenv ("DBUS_TEST_DATA"));
-    }
-  else
-    {
-      arg = g_strdup ("--session");
+      f->skip = TRUE;
+      return;
     }
 
-  dbus_daemon = g_strdup (g_getenv ("DBUS_TEST_DAEMON"));
-
-  if (dbus_daemon == NULL)
-    dbus_daemon = g_strdup ("dbus-daemon");
-
-  if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
-    {
-      address = g_strdup (g_getenv ("DBUS_TEST_DAEMON_ADDRESS"));
-    }
-  else
-    {
-      address = spawn_dbus_daemon (dbus_daemon, arg, &f->daemon_pid);
-    }
-
-  g_free (dbus_daemon);
-  g_free (arg);
-
-  f->left_conn = connect_to_bus (f, address);
-  f->right_conn = connect_to_bus (f, address);
+  f->left_conn = test_connect_to_bus (f->ctx, address);
+  f->right_conn = test_connect_to_bus (f->ctx, address);
   g_free (address);
 }
 
@@ -367,16 +216,6 @@ test_echo (Fixture *f,
 }
 
 static void
-pending_call_store_reply (DBusPendingCall *pc,
-    void *data)
-{
-  DBusMessage **message_p = data;
-
-  *message_p = dbus_pending_call_steal_reply (pc);
-  g_assert (*message_p != NULL);
-}
-
-static void
 test_no_reply (Fixture *f,
     gconstpointer context)
 {
@@ -412,9 +251,9 @@ test_no_reply (Fixture *f,
     g_error ("OOM");
 
   if (dbus_pending_call_get_completed (pc))
-    pending_call_store_reply (pc, &reply);
-  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply, &reply,
-        NULL))
+    test_pending_call_store_reply (pc, &reply);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+        &reply, NULL))
     g_error ("OOM");
 
   dbus_pending_call_unref (pc);
@@ -485,8 +324,8 @@ test_creds (Fixture *f,
   m = NULL;
 
   if (dbus_pending_call_get_completed (pc))
-    pending_call_store_reply (pc, &m);
-  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
                                           &m, NULL))
     g_error ("OOM");
 
@@ -596,8 +435,8 @@ test_processid (Fixture *f,
   m = NULL;
 
   if (dbus_pending_call_get_completed (pc))
-    pending_call_store_reply (pc, &m);
-  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
                                           &m, NULL))
     g_error ("OOM");
 
@@ -609,7 +448,7 @@ test_processid (Fixture *f,
         DBUS_TYPE_INVALID))
     {
       g_assert_cmpstr (dbus_message_get_signature (m), ==, "u");
-      assert_no_error (&error);
+      test_assert_no_error (&error);
 
       g_message ("GetConnectionUnixProcessID returned %u", pid);
 
@@ -664,8 +503,8 @@ test_canonical_path_uae (Fixture *f,
   m = NULL;
 
   if (dbus_pending_call_get_completed (pc))
-    pending_call_store_reply (pc, &m);
-  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
                                           &m, NULL))
     g_error ("OOM");
 
@@ -702,8 +541,8 @@ test_canonical_path_uae (Fixture *f,
   m = NULL;
 
   if (dbus_pending_call_get_completed (pc))
-    pending_call_store_reply (pc, &m);
-  else if (!dbus_pending_call_set_notify (pc, pending_call_store_reply,
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
                                           &m, NULL))
     g_error ("OOM");
 
@@ -748,12 +587,7 @@ teardown (Fixture *f,
 
   if (f->daemon_pid != 0)
     {
-#ifdef DBUS_WIN
-      TerminateProcess (f->daemon_pid, 1);
-#else
-      kill (f->daemon_pid, SIGTERM);
-#endif
-
+      test_kill_pid (f->daemon_pid);
       g_spawn_close_pid (f->daemon_pid);
       f->daemon_pid = 0;
     }

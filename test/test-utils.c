@@ -7,6 +7,14 @@
 #endif
 
 #ifdef DBUS_TEST_USE_INTERNAL
+# define test_assert(x) _dbus_assert(x)
+#elif defined(g_assert_true)
+# define test_assert(x) g_assert_true(x)
+#else
+# define test_assert(x) g_assert(x)
+#endif
+
+#ifdef DBUS_TEST_USE_INTERNAL
 
 typedef struct
 {
@@ -389,4 +397,14 @@ void test_main_context_iterate (TestMainContext *ctx,
 #else
   g_main_context_iteration (ctx, may_block);
 #endif
+}
+
+void
+test_pending_call_store_reply (DBusPendingCall *pc,
+    void *data)
+{
+  DBusMessage **message_p = data;
+
+  *message_p = dbus_pending_call_steal_reply (pc);
+  test_assert (*message_p != NULL);
 }
