@@ -82,6 +82,107 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
   return conn;
 }
 
+/*
+ * Log a security warning and set error unless the uid of the connection
+ * is either the uid of this process, or on Unix, uid 0 (root).
+ *
+ * This is intended to be a second line of defence after <deny> rules,
+ * to mitigate incorrect system bus security policy configuration files
+ * like the ones in CVE-2014-8148 and CVE-2014-8156, and (if present)
+ * LSM rules; so it doesn't need to be perfect, but as long as we have
+ * potentially dangerous functionality in the system bus, it does need
+ * to exist.
+ */
+static dbus_bool_t
+bus_driver_check_caller_is_privileged (DBusConnection *connection,
+                                       BusTransaction *transaction,
+                                       DBusMessage    *message,
+                                       DBusError      *error)
+{
+#ifdef DBUS_UNIX
+  unsigned long uid;
+
+  if (!dbus_connection_get_unix_user (connection, &uid))
+    {
+      const char *method = dbus_message_get_member (message);
+
+      /* Yes this repetition is pretty horrible, but there's no
+       * bus_context_log_valist() or dbus_set_error_valist() or
+       * bus_context_log_literal() or dbus_set_error_literal().
+       */
+      bus_context_log (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY,
+          "rejected attempt to call %s by unknown uid", method);
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+          "rejected attempt to call %s by unknown uid", method);
+      return FALSE;
+    }
+
+  /* I'm writing it in this slightly strange form so that it's more
+   * obvious that this security-sensitive code is correct.
+   */
+  if (_dbus_unix_user_is_process_owner (uid))
+    {
+      /* OK */
+    }
+  else if (uid == 0)
+    {
+      /* OK */
+    }
+  else
+    {
+      const char *method = dbus_message_get_member (message);
+
+      bus_context_log (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY,
+          "rejected attempt to call %s by uid %lu", method, uid);
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+          "rejected attempt to call %s by uid %lu", method, uid);
+      return FALSE;
+    }
+
+  return TRUE;
+#elif DBUS_WIN
+  char *windows_sid = NULL;
+  dbus_bool_t ret = FALSE;
+
+  if (!dbus_connection_get_windows_user (connection, &windows_sid))
+    {
+      const char *method = dbus_message_get_member (message);
+
+      bus_context_log (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY,
+          "rejected attempt to call %s by unknown uid", method);
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+          "rejected attempt to call %s by unknown uid", method);
+      goto out;
+    }
+
+  if (!_dbus_windows_user_is_process_owner (windows_sid))
+    {
+      const char *method = dbus_message_get_member (message);
+
+      bus_context_log (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY,
+          "rejected attempt to call %s by uid %s", method, windows_sid);
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+          "rejected attempt to call %s by uid %s", method, windows_sid);
+      goto out;
+    }
+
+  ret = TRUE;
+out:
+  dbus_free (windows_sid);
+  return ret;
+#else
+  /* make sure we fail closed in the hypothetical case that we are neither
+   * Unix nor Windows */
+  dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+      "please teach bus/driver.c how uids work on this platform");
+  return FALSE;
+#endif
+}
+
 static dbus_bool_t bus_driver_send_welcome_message (DBusConnection *connection,
                                                     DBusMessage    *hello_message,
                                                     BusTransaction *transaction,
@@ -884,35 +985,12 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 #ifdef DBUS_UNIX
     {
       /* UpdateActivationEnvironment is basically a recipe for privilege
-      * escalation so let's be extra-careful: do not allow the sysadmin
-      * to shoot themselves in the foot. */
-      unsigned long uid;
-
-      if (!dbus_connection_get_unix_user (connection, &uid))
-        {
-          bus_context_log (bus_transaction_get_context (transaction),
-              DBUS_SYSTEM_LOG_SECURITY,
-              "rejected attempt to call UpdateActivationEnvironment by "
-              "unknown uid");
-          dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
-              "rejected attempt to call UpdateActivationEnvironment by "
-              "unknown uid");
-          return FALSE;
-        }
-
-      /* On the system bus, we could in principle allow uid 0 to call
-       * UpdateActivationEnvironment; but they should know better anyway,
-       * and our default system.conf has always forbidden it */
-      if (!_dbus_unix_user_is_process_owner (uid))
-        {
-          bus_context_log (bus_transaction_get_context (transaction),
-              DBUS_SYSTEM_LOG_SECURITY,
-              "rejected attempt to call UpdateActivationEnvironment by uid %lu",
-              uid);
-          dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
-              "rejected attempt to call UpdateActivationEnvironment");
-          return FALSE;
-        }
+       * escalation so let's be extra-careful: do not allow the sysadmin
+       * to shoot themselves in the foot.
+       */
+      if (!bus_driver_check_caller_is_privileged (connection, transaction,
+                                                  message, error))
+        return FALSE;
     }
 #endif
 

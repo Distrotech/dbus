@@ -164,10 +164,10 @@ teardown (Fixture *f,
   test_main_context_unref (f->ctx);
 }
 
-static Config root_fail_config = {
+static Config root_ok_config = {
     "valid-config-files/multi-user.conf",
     TEST_USER_ROOT,
-    FALSE
+    TRUE
 };
 
 static Config messagebus_ok_config = {
@@ -189,7 +189,7 @@ main (int argc,
   g_test_init (&argc, &argv, NULL);
   g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
 
-  g_test_add ("/uid-permissions/uae/root", Fixture, &root_fail_config,
+  g_test_add ("/uid-permissions/uae/root", Fixture, &root_ok_config,
       setup, test_uae, teardown);
   g_test_add ("/uid-permissions/uae/messagebus", Fixture, &messagebus_ok_config,
       setup, test_uae, teardown);
