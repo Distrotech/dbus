@@ -33,12 +33,43 @@
 
 #include "test-utils.h"
 
+/*
+ * Multi-user support for regression tests run with root privileges in
+ * a continuous integration system.
+ *
+ * A developer would normally run the tests as their own uid. Tests run
+ * as TEST_USER_ME are run, and the others are skipped.
+ *
+ * In a CI system that has access to root privileges, most tests should still
+ * be run as an arbitrary non-root user, as above.
+ *
+ * Certain tests can usefully be run again, as root. When this is done,
+ * tests using TEST_USER_ME will be skipped, and tests using TEST_USER_ROOT,
+ * TEST_USER_MESSAGEBUS and/or TEST_USER_OTHER can exercise situations
+ * that only arise when there's more than one uid.
+ */
+typedef enum {
+    /* Whatever non-root user happens to be running the regression test;
+     * such tests also work on Windows */
+    TEST_USER_ME,
+    /* Must be uid 0 on Unix; the test is skipped on Windows */
+    TEST_USER_ROOT,
+    /* The user who would normally run the system bus. This is the DBUS_USER
+     * from configure.ac, usually 'messagebus' but perhaps 'dbus' or
+     * '_dbus'. */
+    TEST_USER_MESSAGEBUS,
+    /* An unprivileged user who is neither root nor DBUS_USER.
+     * This is DBUS_TEST_USER from configure.ac, usually 'nobody'. */
+    TEST_USER_OTHER
+} TestUser;
+
 #define test_assert_no_error(e) _test_assert_no_error (e, __FILE__, __LINE__)
 void _test_assert_no_error (const DBusError *e,
     const char *file,
     int line);
 
 gchar *test_get_dbus_daemon (const gchar *config_file,
+    TestUser user,
     GPid *daemon_pid);
 
 DBusConnection *test_connect_to_bus (TestMainContext *ctx,

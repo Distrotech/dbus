@@ -124,6 +124,7 @@ setup (Fixture *f,
   dbus_error_init (&f->e);
 
   address = test_get_dbus_daemon (config ? config->config_file : NULL,
+                                  TEST_USER_ME,
                                   &f->daemon_pid);
 
   if (address == NULL)

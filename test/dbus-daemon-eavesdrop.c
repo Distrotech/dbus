@@ -283,7 +283,7 @@ setup (Fixture *f,
   f->ge = NULL;
   dbus_error_init (&f->e);
 
-  address = test_get_dbus_daemon (NULL, &f->daemon_pid);
+  address = test_get_dbus_daemon (NULL, TEST_USER_ME, &f->daemon_pid);
 
   f->sender = test_connect_to_bus (f->ctx, address);
   dbus_bus_request_name (f->sender, SENDER_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE,

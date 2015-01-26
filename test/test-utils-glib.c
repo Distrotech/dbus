@@ -33,9 +33,11 @@
 # include <io.h>
 # include <windows.h>
 #else
+# include <errno.h>
 # include <signal.h>
 # include <unistd.h>
 # include <sys/types.h>
+# include <pwd.h>
 #endif
 
 #include <glib.h>
@@ -53,9 +55,41 @@ _test_assert_no_error (const DBusError *e,
         file, line, e->name, e->message);
 }
 
+#ifdef DBUS_UNIX
+static void
+child_setup (gpointer user_data)
+{
+  const struct passwd *pwd = user_data;
+  uid_t uid = geteuid ();
+
+  if (pwd == NULL || (pwd->pw_uid == uid && getuid () == uid))
+    return;
+
+  if (uid != 0)
+    g_error ("not currently euid 0: %lu", (unsigned long) uid);
+
+  if (setuid (pwd->pw_uid) != 0)
+    g_error ("could not setuid (%lu): %s",
+        (unsigned long) pwd->pw_uid, g_strerror (errno));
+
+  uid = getuid ();
+
+  if (uid != pwd->pw_uid)
+    g_error ("after successful setuid (%lu) my uid is %ld",
+        (unsigned long) pwd->pw_uid, (unsigned long) uid);
+
+  uid = geteuid ();
+
+  if (uid != pwd->pw_uid)
+    g_error ("after successful setuid (%lu) my euid is %ld",
+        (unsigned long) pwd->pw_uid, (unsigned long) uid);
+}
+#endif
+
 static gchar *
 spawn_dbus_daemon (const gchar *binary,
     const gchar *configuration,
+    TestUser user,
     GPid *daemon_pid)
 {
   GError *error = NULL;
@@ -68,13 +102,74 @@ spawn_dbus_daemon (const gchar *binary,
       "--print-address=1", /* stdout */
       NULL
   };
+#ifdef DBUS_UNIX
+  const struct passwd *pwd = NULL;
+#endif
+
+  if (user == TEST_USER_ME)
+    {
+#ifdef DBUS_UNIX
+      if (getuid () == 0)
+        {
+          g_message ("SKIP: this test is not designed to run as root");
+          return NULL;
+        }
+#endif
+    }
+  else
+    {
+#ifdef DBUS_UNIX
+      if (getuid () != 0)
+        {
+          g_message ("SKIP: cannot use alternative uid when not uid 0");
+          return NULL;
+        }
+
+      switch (user)
+        {
+          case TEST_USER_ROOT:
+            break;
+
+          case TEST_USER_MESSAGEBUS:
+            pwd = getpwnam (DBUS_USER);
+
+            if (pwd == NULL)
+              {
+                g_message ("SKIP: user '%s' does not exist", DBUS_USER);
+                return NULL;
+              }
+
+            break;
+
+          case TEST_USER_OTHER:
+            pwd = getpwnam (DBUS_TEST_USER);
+
+            if (pwd == NULL)
+              {
+                g_message ("SKIP: user '%s' does not exist", DBUS_TEST_USER);
+                return NULL;
+              }
+
+            break;
+
+          default:
+            g_assert_not_reached ();
+        }
+#else
+      g_message ("SKIP: cannot use alternative uid on Windows");
+      return NULL;
+#endif
+    }
 
   g_spawn_async_with_pipes (NULL, /* working directory */
       (gchar **) argv, /* g_s_a_w_p() is not const-correct :-( */
       NULL, /* envp */
       G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
-      NULL, /* child_setup */
-      NULL, /* user data */
+#ifdef DBUS_UNIX
+      child_setup, (gpointer) pwd,
+#else
+      NULL, NULL,
+#endif
       daemon_pid,
       NULL, /* child's stdin = /dev/null */
       &address_fd,
@@ -118,6 +213,7 @@ spawn_dbus_daemon (const gchar *binary,
 
 gchar *
 test_get_dbus_daemon (const gchar *config_file,
+                      TestUser     user,
                       GPid        *daemon_pid)
 {
   gchar *dbus_daemon;
@@ -126,12 +222,6 @@ test_get_dbus_daemon (const gchar *config_file,
 
   if (config_file != NULL)
     {
-      if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
-        {
-          g_message ("SKIP: cannot use DBUS_TEST_DAEMON_ADDRESS for "
-              "unusally-configured dbus-daemon");
-          return NULL;
-        }
 
       if (g_getenv ("DBUS_TEST_DATA") == NULL)
         {
@@ -167,11 +257,20 @@ test_get_dbus_daemon (const gchar *config_file,
 
   if (g_getenv ("DBUS_TEST_DAEMON_ADDRESS") != NULL)
     {
-      address = g_strdup (g_getenv ("DBUS_TEST_DAEMON_ADDRESS"));
+      if (config_file != NULL || user != TEST_USER_ME)
+        {
+          g_message ("SKIP: cannot use DBUS_TEST_DAEMON_ADDRESS for "
+              "unusally-configured dbus-daemon");
+          address = NULL;
+        }
+      else
+        {
+          address = g_strdup (g_getenv ("DBUS_TEST_DAEMON_ADDRESS"));
+        }
     }
   else
     {
-      address = spawn_dbus_daemon (dbus_daemon, arg, daemon_pid);
+      address = spawn_dbus_daemon (dbus_daemon, arg, user, daemon_pid);
     }
 
   g_free (dbus_daemon);

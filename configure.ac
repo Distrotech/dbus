@@ -168,6 +168,9 @@ AC_ARG_WITH(console-auth-dir, AS_HELP_STRING([--with-console-auth-dir=[dirname]]
 AC_ARG_WITH(console-owner-file, AS_HELP_STRING([--with-console-owner-file=[filename]],[file whose owner determines current console owner]))
 AC_ARG_WITH(launchd-agent-dir, AS_HELP_STRING([--with-launchd-agent-dir=[dirname]],[directory to put the launchd agent (default: /Library/LaunchAgents)]))
 AC_ARG_WITH(dbus_user, AS_HELP_STRING([--with-dbus-user=<user>],[User for running the DBUS daemon (messagebus)]))
+AC_ARG_WITH([test_user],
+  [AS_HELP_STRING([--with-test-user=<user>],
+    [Unprivileged user for regression tests, other than root and the dbus_user (default: nobody)])])
 AC_ARG_WITH(dbus_daemondir, AS_HELP_STRING([--with-dbus-daemondir=[dirname]],[Directory for installing the DBUS daemon]))
 
 AC_ARG_ENABLE([embedded-tests],
@@ -591,7 +594,7 @@ AC_DEFINE_UNQUOTED([DBUS_USE_SYNC], [$have_sync], [Use the gcc __sync extension]
 AC_SEARCH_LIBS(socket,[socket network])
 AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl,gethostbyname)])
 
-AC_CHECK_FUNCS([vsnprintf vasprintf nanosleep usleep setenv clearenv unsetenv socketpair getgrouplist fpathconf setrlimit poll setlocale localeconv strtoll strtoull issetugid getresuid getrlimit])
+AC_CHECK_FUNCS([vsnprintf vasprintf nanosleep usleep setenv clearenv unsetenv socketpair getgrouplist fpathconf setrlimit poll setlocale localeconv strtoll strtoull issetugid getresuid setresuid getrlimit])
 
 AC_CHECK_HEADERS([syslog.h])
 if test "x$ac_cv_header_syslog_h" = "xyes"; then
@@ -1574,6 +1577,13 @@ else
 fi
 AC_SUBST(DBUS_USER)
 AC_DEFINE_UNQUOTED(DBUS_USER,"$DBUS_USER", [User for running the system BUS daemon])
+
+#### User for regression tests
+AS_IF([test -z "$with_test_user"], [with_test_user=nobody])
+DBUS_TEST_USER="$with_test_user"
+AC_SUBST([DBUS_TEST_USER])
+AC_DEFINE_UNQUOTED([DBUS_TEST_USER], ["$DBUS_TEST_USER"],
+  [Unprivileged user used in some regression tests])
 
 #### Prefix to install into
 DBUS_PREFIX=$EXPANDED_PREFIX
