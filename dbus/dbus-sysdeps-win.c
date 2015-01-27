@@ -1666,7 +1666,7 @@ _dbus_listen_tcp_socket (const char     *host,
   _DBUS_ZERO (hints);
 
   if (!family)
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
   else if (!strcmp(family, "ipv4"))
     hints.ai_family = AF_INET;
   else if (!strcmp(family, "ipv6"))
