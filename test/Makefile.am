@@ -123,6 +123,10 @@ manual_dir_iter_SOURCES = manual-dir-iter.c
 manual_dir_iter_CPPFLAGS = $(static_cppflags)
 manual_dir_iter_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
+manual_tcp_SOURCES = manual-tcp.c
+manual_tcp_CPPFLAGS = $(static_cppflags)
+manual_tcp_LDADD = $(top_builddir)/dbus/libdbus-internal.la
+
 EXTRA_DIST = dbus-test-runner
 
 testexecdir = $(libdir)/dbus-1.0/test
@@ -135,7 +139,8 @@ installable_tests = \
 	$(NULL)
 installable_manual_tests = \
 	manual-dir-iter \
-	$(NULL)
+        manual-tcp \
+        $(NULL)
 
 if DBUS_WITH_GLIB
 installable_tests += \
