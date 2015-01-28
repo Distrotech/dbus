@@ -48,6 +48,10 @@ set (test-sleep-forever_SOURCES
     ${CMAKE_SOURCE_DIR}/../test/test-sleep-forever.c
 )
 
+set (manual-tcp_SOURCES
+    ${CMAKE_SOURCE_DIR}/../test/manual-tcp.c
+)
+
 add_helper_executable(test-service ${test-service_SOURCES} dbus-testutils)
 add_helper_executable(test-names ${test-names_SOURCES} dbus-testutils)
 add_test_executable(test-shell ${test-shell_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
@@ -57,6 +61,7 @@ add_helper_executable(test-spawn ${test-spawn_SOURCES} ${DBUS_INTERNAL_LIBRARIES
 add_helper_executable(test-exit ${test-exit_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_helper_executable(test-segfault ${test-segfault_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 add_helper_executable(test-sleep-forever ${test-sleep-forever_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
+add_test_executable(manual-tcp ${manual-tcp_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 
 if(DBUS_WITH_GLIB)
     message(STATUS "with glib test apps")
