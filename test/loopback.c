@@ -2,6 +2,7 @@
  *
  * Author: Simon McVittie <simon.mcvittie@collabora.co.uk>
  * Copyright © 2010-2012 Nokia Corporation
+ * Copyright © 2015 Collabora Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
@@ -27,9 +28,11 @@
 #include <config.h>
 
 #include <glib.h>
+#include <glib/gstdio.h>
 
 #include <dbus/dbus.h>
 
+#include <errno.h>
 #include <string.h>
 
 #include "test-utils-glib.h"
@@ -44,6 +47,9 @@ typedef struct {
     GQueue server_messages;
 
     DBusConnection *client_conn;
+
+    gchar *tmp_runtime_dir;
+    gchar *saved_runtime_dir;
 } Fixture;
 
 static void
@@ -99,6 +105,56 @@ setup (Fixture *f,
       new_conn_cb, f, NULL);
   test_server_setup (f->ctx, f->server);
 }
+
+#ifdef DBUS_UNIX
+static void
+setup_runtime (Fixture *f,
+    gconstpointer addr)
+{
+  char *listening_at;
+  GError *error = NULL;
+
+  /* this is chosen to be something needing escaping */
+  f->tmp_runtime_dir = g_dir_make_tmp ("dbus=daemon=test.XXXXXX", &error);
+  g_assert_no_error (error);
+
+  /* we're relying on being single-threaded for this to be safe */
+  f->saved_runtime_dir = g_strdup (g_getenv ("XDG_RUNTIME_DIR"));
+  g_setenv ("XDG_RUNTIME_DIR", f->tmp_runtime_dir, TRUE);
+
+  setup (f, addr);
+
+  listening_at = dbus_server_get_address (f->server);
+  g_message ("listening at %s", listening_at);
+  g_assert (g_str_has_prefix (listening_at, "unix:path="));
+  g_assert (strstr (listening_at, "dbus%3ddaemon%3dtest.") != NULL);
+  g_assert (strstr (listening_at, "/bus,") != NULL ||
+      g_str_has_suffix (listening_at, "/bus"));
+
+  dbus_free (listening_at);
+}
+
+static void
+setup_no_runtime (Fixture *f,
+    gconstpointer addr)
+{
+  char *listening_at;
+
+  /* we're relying on being single-threaded for this to be safe */
+  f->saved_runtime_dir = g_strdup (g_getenv ("XDG_RUNTIME_DIR"));
+  g_unsetenv ("XDG_RUNTIME_DIR");
+
+  setup (f, addr);
+
+  listening_at = dbus_server_get_address (f->server);
+  g_message ("listening at %s", listening_at);
+  /* we have fallen back to something in /tmp, either abstract or not */
+  g_assert (g_str_has_prefix (listening_at, "unix:"));
+  g_assert (strstr (listening_at, "=/tmp/") != NULL);
+
+  dbus_free (listening_at);
+}
+#endif
 
 static void
 test_connect (Fixture *f,
@@ -251,6 +307,46 @@ teardown (Fixture *f,
   test_main_context_unref (f->ctx);
 }
 
+#ifdef DBUS_UNIX
+static void
+teardown_no_runtime (Fixture *f,
+    gconstpointer addr)
+{
+  teardown (f, addr);
+
+  /* we're relying on being single-threaded for this to be safe */
+  if (f->saved_runtime_dir != NULL)
+    g_setenv ("XDG_RUNTIME_DIR", f->saved_runtime_dir, TRUE);
+  else
+    g_unsetenv ("XDG_RUNTIME_DIR");
+  g_free (f->saved_runtime_dir);
+}
+
+static void
+teardown_runtime (Fixture *f,
+    gconstpointer addr)
+{
+  gchar *path;
+
+  teardown (f, addr);
+
+  /* the socket may exist */
+  path = g_strdup_printf ("%s/bus", f->tmp_runtime_dir);
+  g_assert (g_remove (path) == 0 || errno == ENOENT);
+  g_free (path);
+  /* there shouldn't be anything else in there */
+  g_assert_cmpint (g_rmdir (f->tmp_runtime_dir), ==, 0);
+
+  /* we're relying on being single-threaded for this to be safe */
+  if (f->saved_runtime_dir != NULL)
+    g_setenv ("XDG_RUNTIME_DIR", f->saved_runtime_dir, TRUE);
+  else
+    g_unsetenv ("XDG_RUNTIME_DIR");
+  g_free (f->saved_runtime_dir);
+  g_free (f->tmp_runtime_dir);
+}
+#endif
+
 int
 main (int argc,
     char **argv)
@@ -272,6 +368,13 @@ main (int argc,
       test_connect, teardown);
   g_test_add ("/message/unix", Fixture, "unix:tmpdir=/tmp", setup,
       test_message, teardown);
+
+  g_test_add ("/connect/unix/runtime", Fixture,
+      "unix:runtime=yes;unix:tmpdir=/tmp", setup_runtime, test_connect,
+      teardown_runtime);
+  g_test_add ("/connect/unix/no-runtime", Fixture,
+      "unix:runtime=yes;unix:tmpdir=/tmp", setup_no_runtime, test_connect,
+      teardown_no_runtime);
 #endif
 
   g_test_add ("/message/bad-guid", Fixture, "tcp:host=127.0.0.1", setup,
