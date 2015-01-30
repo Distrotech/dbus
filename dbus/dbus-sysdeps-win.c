@@ -1714,10 +1714,19 @@ _dbus_listen_tcp_socket (const char     *host,
       if (bind (fd, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) == SOCKET_ERROR)
         {
           DBUS_SOCKET_SET_ERRNO ();
+          closesocket (fd);
+          if (errno == WSAEADDRINUSE)
+          {
+              /* Calling this function with port=0 tries to
+               * bind the same port twice, so we should
+               * ignore the second bind.
+               */
+              tmp = tmp->ai_next;
+              continue;
+          }
           dbus_set_error (error, _dbus_error_from_errno (errno),
                           "Failed to bind socket \"%s:%s\": %s",
                           host ? host : "*", port, _dbus_strerror_from_errno ());
-          closesocket (fd);
           goto failed;
     }
 
@@ -1763,7 +1772,10 @@ _dbus_listen_tcp_socket (const char     *host,
                                   host ? host : "*", port, _dbus_strerror_from_errno());
                   goto failed;
                 }
-              snprintf( portbuf, sizeof( portbuf ) - 1, "%d", addr.AddressIn.sin_port );
+              if (addr.AddressIn.sin_family = AF_INET)
+                  snprintf( portbuf, sizeof( portbuf ) - 1, "%d", ntohs(addr.AddressIn.sin_port) );
+              else
+                  snprintf( portbuf, sizeof( portbuf ) - 1, "%d", ntohs(addr.AddressIn6.sin6_port) );
               if (!_dbus_string_append(retport, portbuf))
                 {
                   dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
