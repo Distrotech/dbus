@@ -89,6 +89,8 @@ typedef enum
 /** The monitoring interface exported by the dbus-daemon */
 #define DBUS_INTERFACE_MONITORING     "org.freedesktop.DBus.Monitoring"
 
+/** The verbose interface exported by the dbus-daemon */
+#define DBUS_INTERFACE_VERBOSE        "org.freedesktop.DBus.Verbose"
 /** The interface supported by introspectable objects */
 #define DBUS_INTERFACE_INTROSPECTABLE "org.freedesktop.DBus.Introspectable"
 /** The interface supported by objects with properties */

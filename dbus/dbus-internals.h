@@ -99,6 +99,8 @@ void _dbus_verbose_real       (const char *format,
 #endif
 void _dbus_verbose_reset_real (void);
 dbus_bool_t _dbus_is_verbose_real (void);
+dbus_bool_t _dbus_get_verbose (void);
+void _dbus_set_verbose (dbus_bool_t state);
 
 #  define _dbus_verbose_reset _dbus_verbose_reset_real
 #  define _dbus_is_verbose _dbus_is_verbose_real

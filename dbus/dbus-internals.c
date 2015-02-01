@@ -363,6 +363,16 @@ _dbus_is_verbose_real (void)
   return verbose;
 }
 
+void _dbus_set_verbose (dbus_bool_t state)
+{
+    verbose = state;
+}
+
+dbus_bool_t _dbus_get_verbose (void)
+{
+    return verbose;
+}
+
 /**
  * Prints a warning message to stderr
  * if the user has enabled verbose mode.

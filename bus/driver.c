@@ -1770,6 +1770,72 @@ bus_driver_handle_reload_config (DBusConnection *connection,
   return FALSE;
 }
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+static dbus_bool_t
+bus_driver_handle_enable_verbose (DBusConnection *connection,
+                                  BusTransaction *transaction,
+                                  DBusMessage    *message,
+                                  DBusError      *error)
+{
+    DBusMessage *reply = NULL;
+
+    _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+    reply = dbus_message_new_method_return (message);
+    if (reply == NULL)
+      goto oom;
+
+    if (! bus_transaction_send_from_driver (transaction, connection, reply))
+      goto oom;
+
+    _dbus_set_verbose(TRUE);
+
+    dbus_message_unref (reply);
+    return TRUE;
+
+   oom:
+    _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+    BUS_SET_OOM (error);
+
+    if (reply)
+      dbus_message_unref (reply);
+    return FALSE;
+}
+
+static dbus_bool_t
+bus_driver_handle_disable_verbose (DBusConnection *connection,
+                                   BusTransaction *transaction,
+                                   DBusMessage    *message,
+                                   DBusError      *error)
+{
+    DBusMessage *reply = NULL;
+
+    _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+    reply = dbus_message_new_method_return (message);
+    if (reply == NULL)
+      goto oom;
+
+    if (! bus_transaction_send_from_driver (transaction, connection, reply))
+      goto oom;
+
+    _dbus_set_verbose(FALSE);
+
+    dbus_message_unref (reply);
+    return TRUE;
+
+   oom:
+    _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+    BUS_SET_OOM (error);
+
+    if (reply)
+      dbus_message_unref (reply);
+    return FALSE;
+}
+#endif
+
 static dbus_bool_t
 bus_driver_handle_get_id (DBusConnection *connection,
                           BusTransaction *transaction,
@@ -2042,6 +2108,14 @@ static const MessageHandler monitoring_message_handlers[] = {
   { NULL, NULL, NULL, NULL }
 };
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+static const MessageHandler verbose_message_handlers[] = {
+  { "EnableVerbose", "", "", bus_driver_handle_enable_verbose},
+  { "DisableVerbose", "", "", bus_driver_handle_disable_verbose},
+  { NULL, NULL, NULL, NULL }
+};
+#endif
+
 #ifdef DBUS_ENABLE_STATS
 static const MessageHandler stats_message_handlers[] = {
   { "GetStats", "", "a{sv}", bus_stats_handle_get_stats },
@@ -2074,6 +2148,9 @@ static InterfaceHandler interface_handlers[] = {
     "    </signal>\n" },
   { DBUS_INTERFACE_INTROSPECTABLE, introspectable_message_handlers, NULL },
   { DBUS_INTERFACE_MONITORING, monitoring_message_handlers, NULL },
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+  { DBUS_INTERFACE_VERBOSE, verbose_message_handlers, NULL },
+#endif
 #ifdef DBUS_ENABLE_STATS
   { BUS_INTERFACE_STATS, stats_message_handlers, NULL },
 #endif
