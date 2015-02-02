@@ -116,10 +116,11 @@ dbus_bool_t      bus_connection_get_unix_groups  (DBusConnection       *connecti
                                                   DBusError            *error);
 BusClientPolicy* bus_connection_get_policy  (DBusConnection       *connection);
 
-dbus_bool_t bus_connection_is_monitor (DBusConnection *connection);
-dbus_bool_t bus_connection_be_monitor (DBusConnection *connection,
-                                       BusTransaction *transaction,
-                                       DBusError      *error);
+dbus_bool_t bus_connection_is_monitor (DBusConnection  *connection);
+dbus_bool_t bus_connection_be_monitor (DBusConnection  *connection,
+                                       BusTransaction  *transaction,
+                                       DBusList       **rules,
+                                       DBusError       *error);
 
 /* transaction API so we can send or not send a block of messages as a whole */
 
@@ -128,6 +129,9 @@ typedef void (* BusTransactionCancelFunction) (void *data);
 BusTransaction* bus_transaction_new              (BusContext                   *context);
 BusContext*     bus_transaction_get_context      (BusTransaction               *transaction);
 dbus_bool_t     bus_transaction_send             (BusTransaction               *transaction,
+                                                  DBusConnection               *connection,
+                                                  DBusMessage                  *message);
+dbus_bool_t     bus_transaction_capture          (BusTransaction               *transaction,
                                                   DBusConnection               *connection,
                                                   DBusMessage                  *message);
 dbus_bool_t     bus_transaction_send_from_driver (BusTransaction               *transaction,

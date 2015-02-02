@@ -67,6 +67,7 @@ struct BusConnections
   /** List of all monitoring connections, a subset of completed.
    * Each member is a #DBusConnection. */
   DBusList *monitors;
+  BusMatchmaker *monitor_matchmaker;
 
 #ifdef DBUS_ENABLE_STATS
   int total_match_rules;
@@ -292,6 +293,11 @@ bus_connection_disconnected (DBusConnection *connection)
 
   if (d->link_in_monitors != NULL)
     {
+      BusMatchmaker *mm = d->connections->monitor_matchmaker;
+
+      if (mm != NULL)
+        bus_matchmaker_disconnected (mm, connection);
+
       _dbus_list_remove_link (&d->connections->monitors, d->link_in_monitors);
       d->link_in_monitors = NULL;
     }
@@ -553,7 +559,10 @@ bus_connections_unref (BusConnections *connections)
       _dbus_timeout_unref (connections->expire_timeout);
       
       _dbus_hash_table_unref (connections->completed_by_user);
-      
+
+      if (connections->monitor_matchmaker != NULL)
+        bus_matchmaker_unref (connections->monitor_matchmaker);
+
       dbus_free (connections);
 
       dbus_connection_free_data_slot (&connection_data_slot);
@@ -1271,6 +1280,10 @@ bus_connection_send_oom_error (DBusConnection *connection,
 
   _dbus_assert (d != NULL);  
   _dbus_assert (d->oom_message != NULL);
+
+  bus_context_log (d->connections->context, DBUS_SYSTEM_LOG_WARNING,
+                   "dbus-daemon transaction failed (OOM), sending error to "
+                   "sender %s", bus_connection_get_loginfo (connection));
 
   /* should always succeed since we set it to a placeholder earlier */
   if (!dbus_message_set_reply_serial (d->oom_message,
@@ -2120,11 +2133,95 @@ bus_transaction_get_context (BusTransaction  *transaction)
   return transaction->context;
 }
 
+/**
+ * Reserve enough memory to capture the given message if the
+ * transaction goes through.
+ */
+dbus_bool_t
+bus_transaction_capture (BusTransaction *transaction,
+                         DBusConnection *sender,
+                         DBusMessage    *message)
+{
+  BusConnections *connections;
+  BusMatchmaker *mm;
+  DBusList *link;
+  DBusList *recipients = NULL;
+  dbus_bool_t ret = FALSE;
+
+  connections = bus_context_get_connections (transaction->context);
+
+  /* shortcut: don't compose the message unless someone wants it */
+  if (connections->monitors == NULL)
+    return TRUE;
+
+  mm = connections->monitor_matchmaker;
+  /* This is non-null if there has ever been a monitor - we don't GC it.
+   * There's little point, since there is up to 1 per process. */
+  _dbus_assert (mm != NULL);
+
+  if (!bus_matchmaker_get_recipients (mm, connections, sender, NULL, message,
+        &recipients))
+    goto out;
+
+  for (link = _dbus_list_get_first_link (&recipients);
+      link != NULL;
+      link = _dbus_list_get_next_link (&recipients, link))
+    {
+      DBusConnection *recipient = link->data;
+
+      if (!bus_transaction_send (transaction, recipient, message))
+        goto out;
+    }
+
+  ret = TRUE;
+
+out:
+  _dbus_list_clear (&recipients);
+  return ret;
+}
+
+static dbus_bool_t
+bus_transaction_capture_error_reply (BusTransaction  *transaction,
+                                     const DBusError *error,
+                                     DBusMessage     *in_reply_to)
+{
+  BusConnections *connections;
+  DBusMessage *reply;
+  dbus_bool_t ret = FALSE;
+
+  _dbus_assert (error != NULL);
+  _DBUS_ASSERT_ERROR_IS_SET (error);
+
+  connections = bus_context_get_connections (transaction->context);
+
+  /* shortcut: don't compose the message unless someone wants it */
+  if (connections->monitors == NULL)
+    return TRUE;
+
+  reply = dbus_message_new_error (in_reply_to,
+                                  error->name,
+                                  error->message);
+
+  if (reply == NULL)
+    return FALSE;
+
+  if (!dbus_message_set_sender (reply, DBUS_SERVICE_DBUS))
+    goto out;
+
+  ret = bus_transaction_capture (transaction, NULL, reply);
+
+out:
+  dbus_message_unref (reply);
+  return ret;
+}
+
 dbus_bool_t
 bus_transaction_send_from_driver (BusTransaction *transaction,
                                   DBusConnection *connection,
                                   DBusMessage    *message)
 {
+  DBusError error = DBUS_ERROR_INIT;
+
   /* We have to set the sender to the driver, and have
    * to check security policy since it was not done in
    * dispatch.c
@@ -2149,14 +2246,34 @@ bus_transaction_send_from_driver (BusTransaction *transaction,
   
   /* bus driver never wants a reply */
   dbus_message_set_no_reply (message, TRUE);
-  
-  /* If security policy doesn't allow the message, we silently
-   * eat it; the driver doesn't care about getting a reply.
+
+  /* Capture it for monitors, even if the real recipient's receive policy
+   * does not allow it to receive this message from us (which would be odd).
+   */
+  if (!bus_transaction_capture (transaction, NULL, message))
+    return FALSE;
+
+  /* If security policy doesn't allow the message, we would silently
+   * eat it; the driver doesn't care about getting a reply. However,
+   * if we're actively capturing messages, it's nice to log that we
+   * tried to send it and did not allow ourselves to do so.
    */
   if (!bus_context_check_security_policy (bus_transaction_get_context (transaction),
                                           transaction,
-                                          NULL, connection, connection, message, NULL))
-    return TRUE;
+                                          NULL, connection, connection, message, &error))
+    {
+      if (!bus_transaction_capture_error_reply (transaction, &error, message))
+        {
+          bus_context_log (transaction->context, DBUS_SYSTEM_LOG_WARNING,
+                           "message from dbus-daemon rejected but not enough "
+                           "memory to capture it");
+        }
+
+      /* This is not fatal to the transaction so silently eat the disallowed
+       * message (see reasoning above) */
+      dbus_error_free (&error);
+      return TRUE;
+    }
 
   return bus_transaction_send (transaction, connection, message);
 }
@@ -2520,10 +2637,53 @@ bus_connection_is_monitor (DBusConnection *connection)
   return d != NULL && d->link_in_monitors != NULL;
 }
 
+static dbus_bool_t
+bcd_add_monitor_rules (BusConnectionData  *d,
+                       DBusConnection     *connection,
+                       DBusList          **rules)
+{
+  BusMatchmaker *mm = d->connections->monitor_matchmaker;
+  DBusList *iter;
+
+  if (mm == NULL)
+    {
+      mm = bus_matchmaker_new ();
+
+      if (mm == NULL)
+        return FALSE;
+
+      d->connections->monitor_matchmaker = mm;
+    }
+
+  for (iter = _dbus_list_get_first_link (rules);
+      iter != NULL;
+      iter = _dbus_list_get_next_link (rules, iter))
+    {
+      if (!bus_matchmaker_add_rule (mm, iter->data))
+        {
+          bus_matchmaker_disconnected (mm, connection);
+          return FALSE;
+        }
+    }
+
+  return TRUE;
+}
+
+static void
+bcd_drop_monitor_rules (BusConnectionData *d,
+                        DBusConnection *connection)
+{
+  BusMatchmaker *mm = d->connections->monitor_matchmaker;
+
+  if (mm != NULL)
+    bus_matchmaker_disconnected (mm, connection);
+}
+
 dbus_bool_t
-bus_connection_be_monitor (DBusConnection *connection,
-                           BusTransaction *transaction,
-                           DBusError      *error)
+bus_connection_be_monitor (DBusConnection  *connection,
+                           BusTransaction  *transaction,
+                           DBusList       **rules,
+                           DBusError       *error)
 {
   BusConnectionData *d;
   DBusList *link;
@@ -2541,9 +2701,17 @@ bus_connection_be_monitor (DBusConnection *connection,
       return FALSE;
     }
 
+  if (!bcd_add_monitor_rules (d, connection, rules))
+    {
+      _dbus_list_free_link (link);
+      BUS_SET_OOM (error);
+      return FALSE;
+    }
+
   /* release all its names */
   if (!_dbus_list_copy (&d->services_owned, &tmp))
     {
+      bcd_drop_monitor_rules (d, connection);
       _dbus_list_free_link (link);
       BUS_SET_OOM (error);
       return FALSE;
@@ -2560,6 +2728,7 @@ bus_connection_be_monitor (DBusConnection *connection,
        * the transaction is cancelled due to OOM. */
       if (!bus_service_remove_owner (service, connection, transaction, error))
         {
+          bcd_drop_monitor_rules (d, connection);
           _dbus_list_free_link (link);
           _dbus_list_clear (&tmp);
           return FALSE;

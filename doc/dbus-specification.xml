@@ -4642,6 +4642,13 @@
           adding the same rule with the <literal>eavesdrop</literal> match
           omitted.
         </para>
+
+        <para>
+          Eavesdropping interacts poorly with buses with non-trivial
+          access control restrictions. The
+          <xref linkend="bus-messages-become-monitor"/> method provides
+          an alternative way to monitor buses.
+        </para>
       </sect3>
 
       <sect3 id="message-bus-routing-match-rules">
@@ -6227,6 +6234,96 @@
         by org.freedesktop.DBus.Peer.GetMachineId().
         For a desktop session bus, the bus ID can be used as a way to uniquely identify a user's session.
         </para>
+      </sect3>
+
+      <sect3 id="bus-messages-become-monitor">
+        <title><literal>org.freedesktop.DBus.Monitoring.BecomeMonitor</literal></title>
+        <para>
+          As a method:
+          <programlisting>
+            BecomeMonitor (in ARRAY of STRING rule, in UINT32 flags)
+          </programlisting>
+          Message arguments:
+          <informaltable>
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>Argument</entry>
+                  <entry>Type</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>0</entry>
+                  <entry>ARRAY of STRING</entry>
+                  <entry>Match rules to add to the connection</entry>
+                </row>
+                <row>
+                  <entry>1</entry>
+                  <entry>UINT32</entry>
+                  <entry>Not used, must be 0</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+
+        <para>
+          Converts the connection into a <emphasis>monitor
+            connection</emphasis> which can be used as a debugging/monitoring
+          tool. Only a user who is privileged on this
+          bus (by some implementation-specific definition) may create
+          monitor connections<footnote>
+            <para>
+              In the reference implementation,
+              the default configuration is that each user (identified by
+              numeric user ID) may monitor their own session bus,
+              and the root user (user ID zero) may monitor the
+              system bus.
+            </para>
+          </footnote>.
+       </para>
+
+       <para>
+         Monitor connections lose all their bus names, including the unique
+         connection name, and all their match rules. Sending messages on a
+         monitor connection is not allowed: applications should use a private
+         connection for monitoring.
+       </para>
+
+       <para>
+         Monitor connections may receive all messages, even messages that
+         should only have gone to some other connection ("eavesdropping").
+         The first argument is a list of match rules, which replace any
+         match rules that were previously active for this connection.
+         These match rules are always treated as if they contained the
+         special <literal>eavesdrop='true'</literal> member.
+       </para>
+
+       <para>
+         As a special case, an empty list of match rules (which would
+         otherwise match nothing, making the monitor useless) is treated
+         as a shorthand for matching all messages.
+       </para>
+
+       <para>
+         The second argument might be used for flags to influence the
+         behaviour of the monitor connection in future D-Bus versions.
+       </para>
+
+       <para>
+         Message bus implementations should attempt to minimize the
+         side-effects of monitoring — in particular, unlike ordinary
+         eavesdropping, monitoring the system bus does not require the
+         access control rules to be relaxed, which would change the set
+         of messages that can be delivered to their (non-monitor)
+         destinations. However, it is unavoidable that monitoring
+         will increase the message bus's resource consumption. In
+         edge cases where there was barely enough time or memory without
+         monitoring, this might result in message deliveries failing
+         when they would otherwise have succeeded.
+       </para>
       </sect3>
 
     </sect2>

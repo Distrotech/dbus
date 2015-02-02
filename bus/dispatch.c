@@ -291,6 +291,10 @@ bus_dispatch (DBusConnection *connection,
         {
           /* DBusConnection also handles some of these automatically, we leave
            * it to do so.
+           *
+           * FIXME: this means monitors won't get the opportunity to see
+           * non-signals with NULL destination, or their replies (which in
+           * practice are UnknownMethod errors)
            */
           result = DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
           goto out;
@@ -316,13 +320,30 @@ bus_dispatch (DBusConnection *connection,
           BUS_SET_OOM (&error);
           goto out;
         }
+    }
+  else
+    {
+      /* For monitors' benefit: we don't want the sender to be able to
+       * trick the monitor by supplying a forged sender, and we also
+       * don't want the message to have no sender at all. */
+      if (!dbus_message_set_sender (message, ":not.active.yet"))
+        {
+          BUS_SET_OOM (&error);
+          goto out;
+        }
+    }
 
-      /* We need to refetch the service name here, because
-       * dbus_message_set_sender can cause the header to be
-       * reallocated, and thus the service_name pointer will become
-       * invalid.
-       */
-      service_name = dbus_message_get_destination (message);
+  /* We need to refetch the service name here, because
+   * dbus_message_set_sender can cause the header to be
+   * reallocated, and thus the service_name pointer will become
+   * invalid.
+   */
+  service_name = dbus_message_get_destination (message);
+
+  if (!bus_transaction_capture (transaction, connection, message))
+    {
+      BUS_SET_OOM (&error);
+      goto out;
     }
 
   if (service_name &&
@@ -402,14 +423,10 @@ bus_dispatch (DBusConnection *connection,
  out:
   if (dbus_error_is_set (&error))
     {
-      if (!dbus_connection_get_is_connected (connection))
-        {
-          /* If we disconnected it, we won't bother to send it any error
-           * messages.
-           */
-          _dbus_verbose ("Not sending error to connection we disconnected\n");
-        }
-      else if (dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY))
+      /* Even if we disconnected it, pretend to send it any pending error
+       * messages so that monitors can observe them.
+       */
+      if (dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY))
         {
           bus_connection_send_oom_error (connection, message);
 

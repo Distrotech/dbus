@@ -2004,6 +2004,17 @@ bus_activation_activate_service (BusActivation  *activation,
           _dbus_string_init_const (&service_string, "org.freedesktop.systemd1");
           service = bus_registry_lookup (registry, &service_string);
 
+          /* Following the general principle of "log early and often",
+           * we capture that we *want* to send the activation message, even if
+           * systemd is not actually there to receive it yet */
+          if (!bus_transaction_capture (activation_transaction,
+                NULL, message))
+            {
+              dbus_message_unref (message);
+              BUS_SET_OOM (error);
+              return FALSE;
+            }
+
           if (service != NULL)
             {
               bus_context_log (activation->context,

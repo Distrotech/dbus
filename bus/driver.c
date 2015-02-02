@@ -217,6 +217,9 @@ bus_driver_send_service_owner_changed (const char     *service_name,
 
   _dbus_assert (dbus_message_has_signature (message, "sss"));
 
+  if (!bus_transaction_capture (transaction, NULL, message))
+    goto oom;
+
   retval = bus_dispatch_matches (transaction, NULL, NULL, message, error);
   dbus_message_unref (message);
 
@@ -1794,27 +1797,109 @@ bus_driver_handle_become_monitor (DBusConnection *connection,
                                   DBusMessage    *message,
                                   DBusError      *error)
 {
+  char **match_rules = NULL;
+  BusMatchRule *rule;
+  DBusList *rules = NULL;
+  DBusList *iter;
+  DBusString str;
+  int i;
+  int n_match_rules;
+  dbus_uint32_t flags;
+  dbus_bool_t ret = FALSE;
+
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   if (!bus_driver_check_message_is_for_us (message, error))
-    return FALSE;
+    goto out;
 
   if (!bus_driver_check_caller_is_privileged (connection, transaction,
                                               message, error))
-    return FALSE;
+    goto out;
+
+  if (!dbus_message_get_args (message, error,
+        DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &match_rules, &n_match_rules,
+        DBUS_TYPE_UINT32, &flags,
+        DBUS_TYPE_INVALID))
+    goto out;
+
+  if (flags != 0)
+    {
+      dbus_set_error (error, DBUS_ERROR_INVALID_ARGS,
+          "BecomeMonitor does not support any flags yet");
+      goto out;
+    }
+
+  /* Special case: a zero-length array becomes [""] */
+  if (n_match_rules == 0)
+    {
+      match_rules = dbus_malloc (2 * sizeof (char *));
+
+      if (match_rules == NULL)
+        {
+          BUS_SET_OOM (error);
+          goto out;
+        }
+
+      match_rules[0] = _dbus_strdup ("");
+
+      if (match_rules[0] == NULL)
+        {
+          BUS_SET_OOM (error);
+          goto out;
+        }
+
+      match_rules[1] = NULL;
+      n_match_rules = 1;
+    }
+
+  for (i = 0; i < n_match_rules; i++)
+    {
+      _dbus_string_init_const (&str, match_rules[i]);
+      rule = bus_match_rule_parse (connection, &str, error);
+
+      if (rule == NULL)
+        {
+          BUS_SET_OOM (error);
+          goto out;
+        }
+
+      /* monitors always eavesdrop */
+      bus_match_rule_set_client_is_eavesdropping (rule, TRUE);
+
+      if (!_dbus_list_append (&rules, rule))
+        {
+          BUS_SET_OOM (error);
+          bus_match_rule_unref (rule);
+          goto out;
+        }
+    }
 
   /* Send the ack before we remove the rule, since the ack is undone
    * on transaction cancel, but becoming a monitor isn't.
    */
   if (!send_ack_reply (connection, transaction, message, error))
-    return FALSE;
+    goto out;
 
-  /* FIXME: use the array of filters from the message */
+  if (!bus_connection_be_monitor (connection, transaction, &rules, error))
+    goto out;
 
-  if (!bus_connection_be_monitor (connection, transaction, error))
-    return FALSE;
+  ret = TRUE;
 
-  return TRUE;
+out:
+  if (ret)
+    _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+  else
+    _DBUS_ASSERT_ERROR_IS_SET (error);
+
+  for (iter = _dbus_list_get_first_link (&rules);
+      iter != NULL;
+      iter = _dbus_list_get_next_link (&rules, iter))
+    bus_match_rule_unref (iter->data);
+
+  _dbus_list_clear (&rules);
+
+  dbus_free_string_array (match_rules);
+  return ret;
 }
 
 typedef struct
