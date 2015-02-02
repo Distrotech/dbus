@@ -1394,6 +1394,29 @@ bus_context_log_literal (BusContext            *context,
     }
 }
 
+void
+bus_context_log_and_set_error (BusContext            *context,
+                               DBusSystemLogSeverity  severity,
+                               DBusError             *error,
+                               const char            *name,
+                               const char            *msg,
+                               ...)
+{
+  DBusError stack_error = DBUS_ERROR_INIT;
+  va_list args;
+
+  va_start (args, msg);
+  _dbus_set_error_valist (&stack_error, name, msg, args);
+  va_end (args);
+
+  /* If we hit OOM while setting the error, this will syslog "out of memory"
+   * which is itself an indication that something is seriously wrong */
+  bus_context_log_literal (context, DBUS_SYSTEM_LOG_SECURITY,
+                           stack_error.message);
+
+  dbus_move_error (&stack_error, error);
+}
+
 /*
  * Log something about a message, usually that it was rejected.
  */

@@ -106,14 +106,8 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
     {
       const char *method = dbus_message_get_member (message);
 
-      /* Yes this repetition is pretty horrible, but there's no
-       * bus_context_log_valist() or dbus_set_error_valist() or
-       * bus_context_log_literal() or dbus_set_error_literal().
-       */
-      bus_context_log (bus_transaction_get_context (transaction),
-          DBUS_SYSTEM_LOG_SECURITY,
-          "rejected attempt to call %s by unknown uid", method);
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+      bus_context_log_and_set_error (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY, error, DBUS_ERROR_ACCESS_DENIED,
           "rejected attempt to call %s by unknown uid", method);
       return FALSE;
     }
@@ -133,10 +127,8 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
     {
       const char *method = dbus_message_get_member (message);
 
-      bus_context_log (bus_transaction_get_context (transaction),
-          DBUS_SYSTEM_LOG_SECURITY,
-          "rejected attempt to call %s by uid %lu", method, uid);
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+      bus_context_log_and_set_error (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY, error, DBUS_ERROR_ACCESS_DENIED,
           "rejected attempt to call %s by uid %lu", method, uid);
       return FALSE;
     }
@@ -150,10 +142,8 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
     {
       const char *method = dbus_message_get_member (message);
 
-      bus_context_log (bus_transaction_get_context (transaction),
-          DBUS_SYSTEM_LOG_SECURITY,
-          "rejected attempt to call %s by unknown uid", method);
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+      bus_context_log_and_set_error (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY, error, DBUS_ERROR_ACCESS_DENIED,
           "rejected attempt to call %s by unknown uid", method);
       goto out;
     }
@@ -162,10 +152,8 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
     {
       const char *method = dbus_message_get_member (message);
 
-      bus_context_log (bus_transaction_get_context (transaction),
-          DBUS_SYSTEM_LOG_SECURITY,
-          "rejected attempt to call %s by uid %s", method, windows_sid);
-      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+      bus_context_log_and_set_error (bus_transaction_get_context (transaction),
+          DBUS_SYSTEM_LOG_SECURITY, error, DBUS_ERROR_ACCESS_DENIED,
           "rejected attempt to call %s by uid %s", method, windows_sid);
       goto out;
     }

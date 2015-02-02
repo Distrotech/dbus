@@ -1478,11 +1478,8 @@ pending_activation_timed_out (void *data)
 
   dbus_error_init (&error);
 
-  dbus_set_error (&error, DBUS_ERROR_TIMED_OUT,
-                  "Activation of %s timed out",
-                  pending_activation->service_name);
-  bus_context_log (pending_activation->activation->context,
-                   DBUS_SYSTEM_LOG_INFO,
+  bus_context_log_and_set_error (pending_activation->activation->context,
+                   DBUS_SYSTEM_LOG_INFO, &error, DBUS_ERROR_TIMED_OUT,
                    "Failed to activate service '%s': timed out",
                    pending_activation->service_name);
 

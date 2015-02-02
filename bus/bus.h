@@ -124,6 +124,12 @@ void              bus_context_log                                (BusContext    
 void              bus_context_log_literal                        (BusContext       *context,
                                                                   DBusSystemLogSeverity severity,
                                                                   const char       *msg);
+void              bus_context_log_and_set_error                  (BusContext       *context,
+                                                                  DBusSystemLogSeverity severity,
+                                                                  DBusError        *error,
+                                                                  const char       *name,
+                                                                  const char       *msg,
+                                                                  ...) _DBUS_GNUC_PRINTF (5, 6);
 dbus_bool_t       bus_context_check_security_policy              (BusContext       *context,
                                                                   BusTransaction   *transaction,
                                                                   DBusConnection   *sender,
