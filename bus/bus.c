@@ -1325,9 +1325,6 @@ bus_context_get_initial_fd_limit (BusContext *context)
 }
 
 void
-bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char *msg, ...) _DBUS_GNUC_PRINTF (3, 4);
-
-void
 bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char *msg, ...)
 {
   va_list args;

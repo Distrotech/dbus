@@ -120,7 +120,7 @@ DBusRLimit *      bus_context_get_initial_fd_limit               (BusContext    
 void              bus_context_log                                (BusContext       *context,
                                                                   DBusSystemLogSeverity severity,
                                                                   const char       *msg,
-                                                                  ...);
+                                                                  ...) _DBUS_GNUC_PRINTF (3, 4);
 dbus_bool_t       bus_context_check_security_policy              (BusContext       *context,
                                                                   BusTransaction   *transaction,
                                                                   DBusConnection   *sender,
