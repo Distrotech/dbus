@@ -121,6 +121,9 @@ void              bus_context_log                                (BusContext    
                                                                   DBusSystemLogSeverity severity,
                                                                   const char       *msg,
                                                                   ...) _DBUS_GNUC_PRINTF (3, 4);
+void              bus_context_log_literal                        (BusContext       *context,
+                                                                  DBusSystemLogSeverity severity,
+                                                                  const char       *msg);
 dbus_bool_t       bus_context_check_security_policy              (BusContext       *context,
                                                                   BusTransaction   *transaction,
                                                                   DBusConnection   *sender,

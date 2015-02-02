@@ -1374,6 +1374,26 @@ nonnull (const char *maybe_null,
   return (maybe_null ? maybe_null : if_null);
 }
 
+void
+bus_context_log_literal (BusContext            *context,
+                         DBusSystemLogSeverity  severity,
+                         const char            *msg)
+{
+  if (!context->syslog)
+    {
+      fputs (msg, stderr);
+      fputc ('\n', stderr);
+
+      if (severity == DBUS_SYSTEM_LOG_FATAL)
+        _dbus_exit (1);
+    }
+  else
+    {
+      _dbus_system_log (severity, "%s%s", nonnull (context->log_prefix, ""),
+                        msg);
+    }
+}
+
 /*
  * Log something about a message, usually that it was rejected.
  */
@@ -1432,7 +1452,7 @@ complain_about_message (BusContext     *context,
   /* If we hit OOM while setting the error, this will syslog "out of memory"
    * which is itself an indication that something is seriously wrong */
   if (log)
-    bus_context_log (context, DBUS_SYSTEM_LOG_SECURITY, "%s",
+    bus_context_log_literal (context, DBUS_SYSTEM_LOG_SECURITY,
         stack_error.message);
 
   dbus_move_error (&stack_error, error);
