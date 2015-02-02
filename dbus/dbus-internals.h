@@ -263,6 +263,10 @@ void _dbus_verbose_bytes_of_string (const DBusString    *str,
 
 extern const char *_dbus_no_memory_message;
 #define _DBUS_SET_OOM(error) dbus_set_error_const ((error), DBUS_ERROR_NO_MEMORY, _dbus_no_memory_message)
+void _dbus_set_error_valist (DBusError  *error,
+                             const char *name,
+                             const char *format,
+                             va_list     args) _DBUS_GNUC_PRINTF (3, 0);
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
 /* Memory debugging */

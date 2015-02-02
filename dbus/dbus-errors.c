@@ -356,8 +356,6 @@ dbus_set_error (DBusError  *error,
 		const char *format,
 		...)
 {
-  DBusRealError *real;
-  DBusString str;
   va_list args;
   
   if (error == NULL)
@@ -366,7 +364,26 @@ dbus_set_error (DBusError  *error,
   /* it's a bug to pile up errors */
   _dbus_return_if_error_is_set (error);
   _dbus_return_if_fail (name != NULL);
-  
+
+  va_start (args, format);
+  _dbus_set_error_valist (error, name, format, args);
+  va_end (args);
+}
+
+void
+_dbus_set_error_valist (DBusError  *error,
+                        const char *name,
+                        const char *format,
+                        va_list     args)
+{
+  DBusRealError *real;
+  DBusString str;
+
+  _dbus_assert (name != NULL);
+
+  if (error == NULL)
+    return;
+
   _dbus_assert (error->name == NULL);
   _dbus_assert (error->message == NULL);
 
@@ -384,14 +401,11 @@ dbus_set_error (DBusError  *error,
     }
   else
     {
-      va_start (args, format);
       if (!_dbus_string_append_printf_valist (&str, format, args))
         {
           _dbus_string_free (&str);
-          va_end (args);
           goto nomem;
         }
-      va_end (args);
     }
 
   real = (DBusRealError *)error;
