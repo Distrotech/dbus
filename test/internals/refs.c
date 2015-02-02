@@ -585,12 +585,6 @@ int
 main (int argc,
     char **argv)
 {
-  /* In GLib >= 2.24, < 2.31 this acts like g_thread_init() but avoids
-   * the deprecation of that function. In GLib >= 2.32 this is not
-   * necessary at all.
-   */
-  g_type_init ();
-
   g_test_init (&argc, &argv, NULL);
   g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
 

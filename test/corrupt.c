@@ -380,7 +380,6 @@ main (int argc,
     char **argv)
 {
   g_test_init (&argc, &argv, NULL);
-  g_type_init ();
 
   g_test_add ("/corrupt/tcp", Fixture, "tcp:host=127.0.0.1", setup,
       test_corrupt, teardown);
