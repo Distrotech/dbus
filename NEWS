@@ -1,7 +1,37 @@
 D-Bus 1.9.8 (UNRELEASED)
 ==
 
-...
+Dependencies:
+
+• full test coverage now requires PyGI (PyGObject 3,
+  "import gi.repository.GObject") instead of the
+  obsolete PyGObject 2 ("import gobject")
+
+Fixes:
+
+• fatal errors correctly make the dbus-daemon exit even if <syslog/> is
+  turned off (fd.o #88808, Simon McVittie)
+
+• TCP sockets on Windows no longer fail to listen approximately 1 time
+  in 256, caused by a logic error that should have always made it fail but
+  was mitigated by incorrect endianness for the port number
+  (fd.o #87999, Ralf Habacker)
+
+• fix some Windows build failures (fd.o #88009, #88010; Ralf Habacker)
+
+• on Windows, allow up to 8K connections to the dbus-daemon instead of the
+  previous 64, completing a previous fix which only worked under
+  Autotools (fd.o #71297, Ralf Habacker)
+
+• on Windows, if the IP family is unspecified only use IPv4,
+  to mitigate IPv6 not working correctly (fd.o #87999, Ralf Habacker)
+
+• fix some unlikely memory leaks on OOM (fd.o #88087, Simon McVittie)
+
+• lcov code coverage analysis works again (fd.o #88808, Simon McVittie)
+
+• fix an unused function error with --disable-embedded-tests (fd.o #87837,
+  Thiago Macieira)
 
 D-Bus 1.9.6 (2015-01-05)
 ==
