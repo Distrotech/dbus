@@ -156,6 +156,7 @@ installable_tests += \
 	test-corrupt \
 	test-dbus-daemon \
 	test-dbus-daemon-eavesdrop \
+	test-monitor \
 	test-loopback \
 	test-marshal \
 	test-refs \
@@ -245,6 +246,15 @@ test_marshal_LDADD = \
     $(GLIB_LIBS) \
     $(NULL)
 
+test_monitor_SOURCES = \
+    monitor.c \
+    $(NULL)
+test_monitor_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
+test_monitor_LDADD = \
+    $(testutils_shared_if_possible_libs) \
+    $(GLIB_LIBS) \
+    $(NULL)
+
 test_syntax_SOURCES = syntax.c
 test_syntax_LDADD = \
     $(top_builddir)/dbus/libdbus-1.la \
@@ -295,6 +305,7 @@ in_data = \
 	data/valid-config-files/debug-allow-all-sha1.conf.in \
 	data/valid-config-files/debug-allow-all.conf.in \
 	data/valid-config-files/finite-timeout.conf.in \
+	data/valid-config-files/forbidding.conf.in \
 	data/valid-config-files/incoming-limit.conf.in \
 	data/valid-config-files/multi-user.conf.in \
 	data/valid-config-files/systemd-activation.conf.in \
