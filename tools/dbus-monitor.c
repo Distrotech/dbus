@@ -90,10 +90,9 @@ monitor_filter_func (DBusConnection     *connection,
                               DBUS_INTERFACE_LOCAL,
                               "Disconnected"))
     exit (0);
-  
-  /* Conceptually we want this to be
-   * DBUS_HANDLER_RESULT_NOT_YET_HANDLED, but this raises
-   * some problems.  See bug 1719.
+
+  /* Monitors must not allow libdbus to reply to messages, so we eat
+   * the message. See bug 1719.
    */
   return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -236,6 +235,66 @@ only_one_type (dbus_bool_t *seen_bus_type,
     }
 }
 
+static dbus_bool_t
+become_monitor (DBusConnection *connection,
+    int numFilters,
+    const char * const *filters)
+{
+  DBusError error = DBUS_ERROR_INIT;
+  DBusMessage *m;
+  DBusMessage *r;
+  int i;
+  dbus_uint32_t zero = 0;
+  DBusMessageIter appender, array_appender;
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_MONITORING, "BecomeMonitor");
+
+  if (m == NULL)
+    tool_oom ("becoming a monitor");
+
+  dbus_message_iter_init_append (m, &appender);
+
+  if (!dbus_message_iter_open_container (&appender, DBUS_TYPE_ARRAY, "s",
+        &array_appender))
+    tool_oom ("opening string array");
+
+  for (i = 0; i < numFilters; i++)
+    {
+      if (!dbus_message_iter_append_basic (&array_appender, DBUS_TYPE_STRING,
+            &filters[i]))
+        tool_oom ("adding filter to array");
+    }
+
+  if (!dbus_message_iter_close_container (&appender, &array_appender) ||
+      !dbus_message_iter_append_basic (&appender, DBUS_TYPE_UINT32, &zero))
+    tool_oom ("finishing arguments");
+
+  r = dbus_connection_send_with_reply_and_block (connection, m, -1, &error);
+
+  if (r != NULL)
+    {
+      dbus_message_unref (r);
+    }
+  else if (dbus_error_has_name (&error, DBUS_ERROR_UNKNOWN_INTERFACE))
+    {
+      fprintf (stderr, "dbus-monitor: unable to enable new-style monitoring, "
+          "your dbus-daemon is too old. Falling back to eavesdropping.\n");
+      dbus_error_free (&error);
+    }
+  else
+    {
+      fprintf (stderr, "dbus-monitor: unable to enable new-style monitoring: "
+          "%s: \"%s\". Falling back to eavesdropping.\n",
+          error.name, error.message);
+      dbus_error_free (&error);
+    }
+
+  dbus_message_unref (m);
+
+  return (r != NULL);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -359,7 +418,18 @@ main (int argc, char *argv[])
       exit (1);
     }
 
-  if (numFilters)
+  if (!dbus_connection_add_filter (connection, filter_func, NULL, NULL))
+    {
+      fprintf (stderr, "Couldn't add filter!\n");
+      exit (1);
+    }
+
+  if (become_monitor (connection, numFilters,
+                      (const char * const *) filters))
+    {
+      /* no more preparation needed */
+    }
+  else if (numFilters)
     {
       size_t offset = 0;
       for (i = 0; i < j; i++)
@@ -402,10 +472,6 @@ main (int argc, char *argv[])
         }
     }
 
-  if (!dbus_connection_add_filter (connection, filter_func, NULL, NULL)) {
-    fprintf (stderr, "Couldn't add filter!\n");
-    exit (1);
-  }
 
   while (dbus_connection_read_write_dispatch(connection, -1))
     ;
