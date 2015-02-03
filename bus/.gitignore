@@ -24,3 +24,5 @@ test-bus-system
 dbus.service
 dbus.socket
 org.freedesktop.dbus-session.plist
+example-session-disable-stats.conf
+example-system-enable-stats.conf

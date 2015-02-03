@@ -29,8 +29,11 @@ test-relay
 test-dbus-daemon
 test-marshal
 manual-authz
+manual-dir-iter
+manual-tcp
 test-dbus-daemon-eavesdrop
 test-printf
 test-refs
 test-syntax
 test-syslog
+internals/.dirstamp
