@@ -109,17 +109,7 @@ spawn_dbus_daemon (const gchar *binary,
   const struct passwd *pwd = NULL;
 #endif
 
-  if (user == TEST_USER_ME)
-    {
-#ifdef DBUS_UNIX
-      if (getuid () == 0)
-        {
-          g_message ("SKIP: this test is not designed to run as root");
-          return NULL;
-        }
-#endif
-    }
-  else
+  if (user != TEST_USER_ME)
     {
 #ifdef DBUS_UNIX
       if (getuid () != 0)

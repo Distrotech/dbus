@@ -44,12 +44,11 @@
  * be run as an arbitrary non-root user, as above.
  *
  * Certain tests can usefully be run again, as root. When this is done,
- * tests using TEST_USER_ME will be skipped, and tests using TEST_USER_ROOT,
- * TEST_USER_MESSAGEBUS and/or TEST_USER_OTHER can exercise situations
- * that only arise when there's more than one uid.
+ * tests using TEST_USER_ROOT, TEST_USER_MESSAGEBUS and/or TEST_USER_OTHER
+ * can exercise situations that only arise when there's more than one uid.
  */
 typedef enum {
-    /* Whatever non-root user happens to be running the regression test;
+    /* Whatever user happens to be running the regression test;
      * such tests also work on Windows */
     TEST_USER_ME,
     /* Must be uid 0 on Unix; the test is skipped on Windows */
