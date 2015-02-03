@@ -3,9 +3,17 @@ D-Bus 1.9.8 (UNRELEASED)
 
 Dependencies:
 
+• full test coverage now requires GLib 2.36
 • full test coverage now requires PyGI (PyGObject 3,
   "import gi.repository.GObject") instead of the
   obsolete PyGObject 2 ("import gobject")
+
+Enhancements:
+
+• add GLib-style "installed tests" (fd.o #88810, Simon McVittie)
+
+• better regression test coverage, including systemd activation
+  (fd.o #57952, #88810; Simon McVittie)
 
 Fixes:
 
