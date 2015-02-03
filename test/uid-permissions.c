@@ -186,8 +186,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
-  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+  test_init (&argc, &argv);
 
   g_test_add ("/uid-permissions/uae/root", Fixture, &root_ok_config,
       setup, test_uae, teardown);

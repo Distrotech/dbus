@@ -31,6 +31,8 @@
 
 #include <dbus/dbus.h>
 
+#include "test-utils-glib.h"
+
 typedef struct {
     DBusError e;
 } Fixture;
@@ -248,7 +250,7 @@ main (int argc,
   char *aligned_le_blob;
   char *aligned_be_blob;
 
-  g_test_init (&argc, &argv, NULL);
+  test_init (&argc, &argv);
 
   /* We have to pass in a buffer that's at least "default aligned",
    * i.e.  on GNU systems to 8 or 16.  The linker may have only given

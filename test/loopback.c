@@ -32,7 +32,7 @@
 
 #include <string.h>
 
-#include "test-utils.h"
+#include "test-utils-glib.h"
 
 typedef struct {
     TestMainContext *ctx;
@@ -255,8 +255,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
-  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+  test_init (&argc, &argv);
 
   g_test_add ("/connect/tcp", Fixture, "tcp:host=127.0.0.1", setup,
       test_connect, teardown);

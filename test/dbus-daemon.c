@@ -608,8 +608,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
-  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+  test_init (&argc, &argv);
 
   g_test_add ("/echo/session", Fixture, NULL, setup, test_echo, teardown);
   g_test_add ("/echo/limited", Fixture, &limited_config,

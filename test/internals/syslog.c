@@ -33,6 +33,8 @@
 #include <dbus/dbus.h>
 #include <dbus/dbus-sysdeps.h>
 
+#include "test-utils-glib.h"
+
 typedef struct {
     int dummy;
 } Fixture;
@@ -93,8 +95,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
-  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+  test_init (&argc, &argv);
 
   g_test_add ("/syslog", Fixture, NULL, setup, test_syslog, teardown);
 

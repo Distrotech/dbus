@@ -30,6 +30,8 @@
 
 #include <dbus/dbus.h>
 
+#include "test-utils-glib.h"
+
 typedef struct {
     DBusError e;
 } Fixture;
@@ -269,7 +271,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
+  test_init (&argc, &argv);
 
   g_test_add ("/syntax/path", Fixture, &paths, setup, test_syntax, teardown);
   g_test_add ("/syntax/interface", Fixture, &interfaces,

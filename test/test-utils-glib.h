@@ -79,4 +79,6 @@ DBusConnection *test_connect_to_bus_as_user (TestMainContext *ctx,
 
 void test_kill_pid (GPid pid);
 
+void test_init (int *argcp, char ***argvp);
+
 #endif

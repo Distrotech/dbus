@@ -385,3 +385,29 @@ test_kill_pid (GPid pid)
     kill (pid, SIGTERM);
 #endif
 }
+
+static gboolean
+time_out (gpointer data)
+{
+  g_error ("timed out");
+  return FALSE;
+}
+
+void
+test_init (int *argcp, char ***argvp)
+{
+  g_test_init (argcp, argvp, NULL);
+  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+
+  /* Prevent tests from hanging forever. This is intended to be long enough
+   * that any reasonable regression test on any reasonable hardware would
+   * have finished. */
+#define TIMEOUT 60
+
+  g_timeout_add_seconds (TIMEOUT, time_out, NULL);
+#ifdef G_OS_UNIX
+  /* The GLib main loop might not be running (we don't use it in every
+   * test). Die with SIGALRM shortly after if necessary. */
+  alarm (TIMEOUT + 10);
+#endif
+}

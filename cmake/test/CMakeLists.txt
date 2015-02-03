@@ -77,7 +77,7 @@ if(DBUS_WITH_GLIB)
         ${CMAKE_SOURCE_DIR}/../test/test-utils-glib.h
         ${CMAKE_SOURCE_DIR}/../test/test-utils-glib.c
     )
-    target_link_libraries(dbus-testutils-glib ${DBUS_INTERNAL_LIBRARIES})
+    target_link_libraries(dbus-testutils-glib dbus-testutils ${DBUS_INTERNAL_LIBRARIES})
 
     add_definitions(
         ${GLIB2_DEFINITIONS}

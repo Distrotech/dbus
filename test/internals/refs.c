@@ -35,7 +35,7 @@
 #include <dbus/dbus-message-internal.h>
 #include <dbus/dbus-pending-call-internal.h>
 #include <dbus/dbus-server-protected.h>
-#include "test-utils.h"
+#include "test-utils-glib.h"
 
 static void
 assert_no_error (const DBusError *e)
@@ -585,8 +585,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
-  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+  test_init (&argc, &argv);
 
   g_test_add ("/refs/connection", Fixture, NULL, setup_connection,
       test_connection, teardown);

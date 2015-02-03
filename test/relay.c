@@ -30,7 +30,7 @@
 
 #include <dbus/dbus.h>
 
-#include "test-utils.h"
+#include "test-utils-glib.h"
 
 /* This is basically a miniature dbus-daemon. We relay messages from the client
  * on the left to the client on the right.
@@ -313,8 +313,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
-  g_test_bug_base ("https://bugs.freedesktop.org/show_bug.cgi?id=");
+  test_init (&argc, &argv);
 
   g_test_add ("/connect", Fixture, NULL, setup,
       test_connect, teardown);

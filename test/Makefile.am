@@ -242,7 +242,7 @@ test_sd_activation_LDADD = \
 
 test_marshal_SOURCES = marshal.c
 test_marshal_LDADD = \
-    $(top_builddir)/dbus/libdbus-1.la \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 
@@ -257,7 +257,7 @@ test_monitor_LDADD = \
 
 test_syntax_SOURCES = syntax.c
 test_syntax_LDADD = \
-    $(top_builddir)/dbus/libdbus-1.la \
+    $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
     $(NULL)
 

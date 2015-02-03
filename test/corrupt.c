@@ -31,7 +31,7 @@
 
 #include <dbus/dbus.h>
 
-#include "test-utils.h"
+#include "test-utils-glib.h"
 
 typedef struct {
     DBusError e;
@@ -379,7 +379,7 @@ int
 main (int argc,
     char **argv)
 {
-  g_test_init (&argc, &argv, NULL);
+  test_init (&argc, &argv);
 
   g_test_add ("/corrupt/tcp", Fixture, "tcp:host=127.0.0.1", setup,
       test_corrupt, teardown);
