@@ -134,6 +134,9 @@ dbus_bool_t     bus_transaction_send             (BusTransaction               *
 dbus_bool_t     bus_transaction_capture          (BusTransaction               *transaction,
                                                   DBusConnection               *connection,
                                                   DBusMessage                  *message);
+dbus_bool_t     bus_transaction_capture_error_reply (BusTransaction            *transaction,
+                                                  const DBusError              *error,
+                                                  DBusMessage                  *in_reply_to);
 dbus_bool_t     bus_transaction_send_from_driver (BusTransaction               *transaction,
                                                   DBusConnection               *connection,
                                                   DBusMessage                  *message);

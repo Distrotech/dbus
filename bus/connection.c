@@ -2180,7 +2180,7 @@ out:
   return ret;
 }
 
-static dbus_bool_t
+dbus_bool_t
 bus_transaction_capture_error_reply (BusTransaction  *transaction,
                                      const DBusError *error,
                                      DBusMessage     *in_reply_to)

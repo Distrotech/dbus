@@ -63,17 +63,47 @@ send_one_message (DBusConnection *connection,
                   BusTransaction *transaction,
                   DBusError      *error)
 {
+  DBusError stack_error = DBUS_ERROR_INIT;
+
   if (!bus_context_check_security_policy (context, transaction,
                                           sender,
                                           addressed_recipient,
                                           connection,
                                           message,
-                                          NULL))
-    return TRUE; /* silently don't send it */
+                                          &stack_error))
+    {
+      if (!bus_transaction_capture_error_reply (transaction, &stack_error,
+                                                message))
+        {
+          bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
+                           "broadcast rejected, but not enough "
+                           "memory to tell monitors");
+        }
+
+      dbus_error_free (&stack_error);
+      return TRUE; /* don't send it but don't return an error either */
+    }
 
   if (dbus_message_contains_unix_fds(message) &&
       !dbus_connection_can_send_type(connection, DBUS_TYPE_UNIX_FD))
-    return TRUE; /* silently don't send it */
+    {
+      dbus_set_error (&stack_error, DBUS_ERROR_NOT_SUPPORTED,
+                      "broadcast cannot be delivered to %s (%s) because "
+                      "it does not support receiving Unix fds",
+                      bus_connection_get_name (connection),
+                      bus_connection_get_loginfo (connection));
+
+      if (!bus_transaction_capture_error_reply (transaction, &stack_error,
+                                                message))
+        {
+          bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
+                           "broadcast with Unix fd not delivered, but not "
+                           "enough memory to tell monitors");
+        }
+
+      dbus_error_free (&stack_error);
+      return TRUE; /* don't send it but don't return an error either */
+    }
 
   if (!bus_transaction_send (transaction,
                              connection,
