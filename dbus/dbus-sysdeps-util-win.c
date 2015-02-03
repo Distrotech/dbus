@@ -335,7 +335,8 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
 {
   char *s = "";
   char buf[1024];
-  
+  char format[1024];
+
   switch(severity) 
    {
      case DBUS_SYSTEM_LOG_INFO: s = "info"; break;
@@ -344,8 +345,8 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
      case DBUS_SYSTEM_LOG_FATAL: s = "fatal"; break;
    }
    
-  sprintf(buf,"%s%s",s,msg);
-  vsprintf(buf,buf,args);
+  snprintf(format, sizeof(format), "%s%s", s ,msg);
+  vsnprintf(buf, sizeof(buf), format, args);
   OutputDebugStringA(buf);
   
   if (severity == DBUS_SYSTEM_LOG_FATAL)
