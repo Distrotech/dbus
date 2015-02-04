@@ -156,6 +156,7 @@ installable_tests += \
 	test-corrupt \
 	test-dbus-daemon \
 	test-dbus-daemon-eavesdrop \
+	test-fdpass \
 	test-monitor \
 	test-loopback \
 	test-marshal \
@@ -269,6 +270,17 @@ test_uid_permissions_SOURCES = \
 test_uid_permissions_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_uid_permissions_LDADD = \
     $(testutils_shared_if_possible_libs) \
+    $(GLIB_LIBS) \
+    $(NULL)
+
+test_fdpass_SOURCES = \
+    fdpass.c \
+    $(NULL)
+test_fdpass_CPPFLAGS = \
+    $(static_cppflags) \
+    $(NULL)
+test_fdpass_LDADD = \
+    libdbus-testutils-internal.la \
     $(GLIB_LIBS) \
     $(NULL)
 

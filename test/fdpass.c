@@ -47,7 +47,7 @@
 # include <unistd.h>
 #endif
 
-#include "test-utils.h"
+#include "test-utils-glib.h"
 
 /* Arbitrary; included here to avoid relying on the default */
 #define MAX_MESSAGE_UNIX_FDS 20
