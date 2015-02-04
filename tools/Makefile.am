@@ -31,10 +31,13 @@ dbus_send_SOURCES=				\
 	dbus-print-message.h			\
 	dbus-send.c
 
-dbus_monitor_SOURCES=				\
-	dbus-monitor.c				\
-	dbus-print-message.c			\
-	dbus-print-message.h
+dbus_monitor_SOURCES = \
+	dbus-monitor.c \
+	dbus-print-message.c \
+	dbus-print-message.h \
+	tool-common.c \
+	tool-common.h \
+	$(NULL)
 
 if DBUS_WIN
 dbus_launch_SOURCES=				\

@@ -34,6 +34,7 @@
 #include <time.h>
 
 #include "dbus-print-message.h"
+#include "tool-common.h"
 
 #define EAVESDROPPING_RULE "eavesdrop=true"
 
@@ -77,13 +78,6 @@ gettimeofday (struct timeval *__p,
   return 0;
 }
 #endif
-
-inline static void
-oom (const char *doing)
-{
-  fprintf (stderr, "OOM while %s\n", doing);
-  exit (1);
-}
 
 static DBusHandlerResult
 monitor_filter_func (DBusConnection     *connection,
@@ -312,10 +306,10 @@ main (int argc, char *argv[])
 
           filters = (char **) realloc (filters, numFilters * sizeof (char *));
           if (filters == NULL)
-            oom ("adding a new filter slot");
+            tool_oom ("adding a new filter slot");
           filters[j] = (char *) malloc (filter_len);
           if (filters[j] == NULL)
-            oom ("adding a new filter");
+            tool_oom ("adding a new filter");
           snprintf (filters[j], filter_len, "%s,%s", EAVESDROPPING_RULE, arg);
           j++;
       }
