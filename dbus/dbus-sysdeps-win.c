@@ -1763,9 +1763,12 @@ _dbus_listen_tcp_socket (const char     *host,
             {
               mysockaddr_gen addr;
               socklen_t addrlen = sizeof(addr);
-              char portbuf[10];
+              char portbuf[NI_MAXSERV];
 
-              if (getsockname(fd, &addr.Address, &addrlen) == SOCKET_ERROR)
+              if (getsockname(fd, &addr.Address, &addrlen) == SOCKET_ERROR ||
+                (res = getnameinfo (&addr.Address, addrlen, NULL, 0,
+                                    portbuf, sizeof(portbuf),
+                                    NI_NUMERICSERV)) != 0)
                 {
                   DBUS_SOCKET_SET_ERRNO ();
                   dbus_set_error (error, _dbus_error_from_errno (errno),
@@ -1773,10 +1776,6 @@ _dbus_listen_tcp_socket (const char     *host,
                                   host ? host : "*", port, _dbus_strerror_from_errno());
                   goto failed;
                 }
-              if (addr.AddressIn.sin_family = AF_INET)
-                  snprintf( portbuf, sizeof( portbuf ) - 1, "%d", ntohs(addr.AddressIn.sin_port) );
-              else
-                  snprintf( portbuf, sizeof( portbuf ) - 1, "%d", ntohs(addr.AddressIn6.sin6_port) );
               if (!_dbus_string_append(retport, portbuf))
                 {
                   dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
