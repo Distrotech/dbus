@@ -409,8 +409,6 @@ else (WIN32)
 	set (DBUS_CONSOLE_AUTH_DIR "/var/run/console/")
 endif (WIN32)
 
-set (DBUS_USER )
-
 # This won't work on Windows. It's not meant to - the system bus is
 # meaningless on Windows anyway.
 #
@@ -429,6 +427,7 @@ if (WIN32)
   set (DBUS_SESSION_CONFIG_FILE "etc/dbus-1/session.conf")
   # bus-test expects a non empty string
   set (DBUS_USER "Administrator")
+  set (DBUS_TEST_USER "guest")
 else (WIN32)
   set (DBUS_SESSION_BUS_LISTEN_ADDRESS "unix:tmpdir=${DBUS_SESSION_SOCKET_DIR}" CACHE STRING "session bus default listening address")
   set (DBUS_SESSION_BUS_CONNECT_ADDRESS "autolaunch:" CACHE STRING "session bus fallback address for clients")
@@ -436,7 +435,8 @@ else (WIN32)
   set (configdir ${sysconfdir}/dbus-1 )
   set (DBUS_SYSTEM_CONFIG_FILE  ${configdir}/system.conf)
   set (DBUS_SESSION_CONFIG_FILE ${configdir}/session.conf)
-  set (DBUS_USER "root")
+  set (DBUS_USER "messagebus")
+  set (DBUS_TEST_USER "nobody")
 endif (WIN32)
 
 set (DBUS_DAEMON_NAME "dbus-daemon" CACHE STRING "The name of the dbus daemon executable")
