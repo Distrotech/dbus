@@ -1,7 +1,21 @@
-D-Bus 1.8.16 (UNRELEASED)
+D-Bus 1.8.16 (2015-02-09)
 ==
 
-Fixes:
+The “poorly concealed wrestlers” release.
+
+Security fixes:
+
+• Do not allow non-uid-0 processes to send forged ActivationFailure
+  messages. On Linux systems with systemd activation, this would
+  allow a local denial of service: unprivileged processes could
+  flood the bus with these forged messages, winning the race with
+  the actual service activation and causing an error reply
+  to be sent back when service auto-activation was requested.
+  This does not prevent the real service from being started,
+  so it only works while the real service is not running.
+  (CVE-2015-0245, fd.o #88811; Simon McVittie)
+
+Other fixes:
 
 • fix a Windows build failure (fd.o #88009, Ralf Habacker)
 
