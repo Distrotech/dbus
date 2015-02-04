@@ -134,7 +134,7 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
     }
 
   return TRUE;
-#elif DBUS_WIN
+#elif defined(DBUS_WIN)
   char *windows_sid = NULL;
   dbus_bool_t ret = FALSE;
 
