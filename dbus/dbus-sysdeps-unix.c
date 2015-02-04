@@ -1463,9 +1463,18 @@ _dbus_listen_tcp_socket (const char     *host,
           _dbus_close(fd, NULL);
           if (saved_errno == EADDRINUSE)
             {
-              /* Depending on kernel policy, it may or may not
-                 be neccessary to bind to both IPv4 & 6 addresses
-                 so ignore EADDRINUSE here */
+              /* Depending on kernel policy, binding to an IPv6 address
+                 might implicitly bind to a corresponding IPv4
+                 address or vice versa, resulting in EADDRINUSE for the
+                 other one (e.g. bindv6only=0 on Linux).
+
+                 Also, after we "goto redo_lookup_with_port" after binding
+                 a port on one of the possible addresses, we will
+                 try to bind that same port on every address, including the
+                 same address again for a second time; that one will
+                 also fail with EADDRINUSE.
+
+                 For both those reasons, ignore EADDRINUSE here */
               tmp = tmp->ai_next;
               continue;
             }
