@@ -72,6 +72,13 @@ add_test_executable(manual-tcp ${manual-tcp_SOURCES} ${DBUS_INTERNAL_LIBRARIES})
 
 if(DBUS_WITH_GLIB)
     message(STATUS "with glib test apps")
+
+    add_library(dbus-testutils-glib STATIC
+        ${CMAKE_SOURCE_DIR}/../test/test-utils-glib.h
+        ${CMAKE_SOURCE_DIR}/../test/test-utils-glib.c
+    )
+    target_link_libraries(dbus-testutils-glib ${DBUS_INTERNAL_LIBRARIES})
+
     add_definitions(
         ${GLIB2_DEFINITIONS}
         ${GOBJECT_DEFINITIONS}
@@ -80,7 +87,8 @@ if(DBUS_WITH_GLIB)
         ${GLIB2_INCLUDE_DIR}
         ${GOBJECT_INCLUDE_DIR}
     )
-    set(TEST_LIBRARIES ${DBUS_INTERNAL_LIBRARIES} dbus-testutils ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES})
+
+    set(TEST_LIBRARIES ${DBUS_INTERNAL_LIBRARIES} dbus-testutils dbus-testutils-glib ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES})
 
     add_test_executable(test-corrupt ${CMAKE_SOURCE_DIR}/../test/corrupt.c ${TEST_LIBRARIES})
     add_test_executable(test-dbus-daemon ${CMAKE_SOURCE_DIR}/../test/dbus-daemon.c ${TEST_LIBRARIES})
