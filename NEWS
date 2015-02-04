@@ -1,7 +1,13 @@
 D-Bus 1.8.16 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• fix a Windows build failure (fd.o #88009, Ralf Habacker)
+
+• on Windows, allow up to 8K connections to the dbus-daemon instead of the
+  previous 64, completing a previous fix which only worked under
+  Autotools (fd.o #71297, Ralf Habacker)
 
 D-Bus 1.8.14 (2015-01-05)
 ==
