@@ -1,7 +1,34 @@
 D-Bus 1.9.10 (UNRELEASED)
 ==
 
-...
+Enhancements:
+
+• The new Monitoring interface in the dbus-daemon lets dbus-monitor and
+  similar tools receive messages without altering the security properties
+  of the system bus, by calling the new BecomeMonitor method on a
+  private connection. This bypasses the normal <allow> and <deny> rules
+  entirely, so to preserve normal message-privacy assumptions, only root
+  is allowed to do this on the system bus. Restricted environments,
+  such as Linux with LSMs, should lock down access to the Monitoring
+  interface. (fd.o #46787, Simon McVittie)
+
+• dbus-monitor uses BecomeMonitor to capture more traffic, if the
+  dbus-daemon supports it and access permissions allow it.
+  It still supports the previous approach ("eavesdropping" match rules)
+  for compatibility with older bus daemons. (fd.o #46787, Simon)
+
+• dbus-monitor can now log the message stream as binary data for later
+  analysis, with either no extra framing beyond the normal D-Bus headers,
+  or libpcap-compatible framing treating each D-Bus message
+  as a captured packet. (fd.o #46787, Simon)
+
+Fixes:
+
+• Fix some CMake build regressions (fd.o #88964, Ralf Habacker)
+
+• On Unix, forcibly terminate regression tests after 60 seconds to
+  prevent them from blocking continuous integration frameworks
+  (fd.o #46787, Simon)
 
 D-Bus 1.9.8 (2015-02-03)
 ==
