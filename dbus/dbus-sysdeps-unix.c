@@ -1518,7 +1518,7 @@ _dbus_listen_tcp_socket (const char     *host,
               if (result == -1 ||
                   (res = getnameinfo ((struct sockaddr*)&addr, addrlen, NULL, 0,
                                       portbuf, sizeof(portbuf),
-                                      NI_NUMERICHOST)) != 0)
+                                      NI_NUMERICHOST | NI_NUMERICSERV)) != 0)
                 {
                   dbus_set_error (error, _dbus_error_from_errno (errno),
                                   "Failed to resolve port \"%s:%s\": %s (%s)",
