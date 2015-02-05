@@ -349,6 +349,7 @@ static_data = \
 	data/valid-config-files/basic.conf \
 	data/valid-config-files/basic.d/basic.conf \
 	data/valid-config-files/entities.conf \
+	data/valid-config-files/listen-unix-runtime.conf \
 	data/valid-config-files/many-rules.conf \
 	data/valid-config-files/system.d/test.conf \
 	data/valid-messages/array-of-array-of-uint32.message \

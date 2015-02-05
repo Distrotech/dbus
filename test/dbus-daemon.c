@@ -2,6 +2,7 @@
  *
  * Author: Simon McVittie <simon.mcvittie@collabora.co.uk>
  * Copyright © 2010-2011 Nokia Corporation
+ * Copyright © 2015 Collabora Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
@@ -25,6 +26,14 @@
  */
 
 #include <config.h>
+
+#include <errno.h>
+#include <string.h>
+
+#include <dbus/dbus.h>
+
+#include <glib.h>
+#include <glib/gstdio.h>
 
 #include "test-utils-glib.h"
 
@@ -75,6 +84,9 @@ typedef struct {
     DBusConnection *right_conn;
     gboolean right_conn_echo;
     gboolean wait_forever_called;
+
+    gchar *tmp_runtime_dir;
+    gchar *saved_runtime_dir;
 } Fixture;
 
 static DBusHandlerResult
@@ -112,6 +124,7 @@ typedef struct {
     const char *bug_ref;
     guint min_messages;
     const char *config_file;
+    enum { SPECIFY_ADDRESS = 0, RELY_ON_DEFAULT } connect_mode;
 } Config;
 
 static void
@@ -125,6 +138,17 @@ setup (Fixture *f,
   f->ge = NULL;
   dbus_error_init (&f->e);
 
+  if (config != NULL && config->connect_mode == RELY_ON_DEFAULT)
+    {
+      /* this is chosen to be something needing escaping */
+      f->tmp_runtime_dir = g_dir_make_tmp ("dbus=daemon=test.XXXXXX", &f->ge);
+      g_assert_no_error (f->ge);
+
+      /* we're relying on being single-threaded for this to be safe */
+      f->saved_runtime_dir = g_strdup (g_getenv ("XDG_RUNTIME_DIR"));
+      g_setenv ("XDG_RUNTIME_DIR", f->tmp_runtime_dir, TRUE);
+    }
+
   address = test_get_dbus_daemon (config ? config->config_file : NULL,
                                   TEST_USER_ME,
                                   &f->daemon_pid);
@@ -136,7 +160,22 @@ setup (Fixture *f,
     }
 
   f->left_conn = test_connect_to_bus (f->ctx, address);
-  f->right_conn = test_connect_to_bus (f->ctx, address);
+
+  if (config != NULL && config->connect_mode == RELY_ON_DEFAULT)
+    {
+      /* use the default bus for the echo service ("right"), to check that
+       * it ends up on the same bus as the client ("left") */
+      f->right_conn = dbus_bus_get_private (DBUS_BUS_SESSION, &f->e);
+      test_assert_no_error (&f->e);
+
+      if (!test_connection_setup (f->ctx, f->right_conn))
+        g_error ("OOM");
+    }
+  else
+    {
+      f->right_conn = test_connect_to_bus (f->ctx, address);
+    }
+
   g_free (address);
 }
 
@@ -637,16 +676,45 @@ teardown (Fixture *f,
       f->daemon_pid = 0;
     }
 
+  if (f->tmp_runtime_dir != NULL)
+    {
+      gchar *path;
+
+      /* the socket may exist */
+      path = g_strdup_printf ("%s/bus", f->tmp_runtime_dir);
+      g_assert (g_remove (path) == 0 || errno == ENOENT);
+      g_free (path);
+      /* there shouldn't be anything else in there */
+      g_assert_cmpint (g_rmdir (f->tmp_runtime_dir), ==, 0);
+
+      /* we're relying on being single-threaded for this to be safe */
+      if (f->saved_runtime_dir != NULL)
+        g_setenv ("XDG_RUNTIME_DIR", f->saved_runtime_dir, TRUE);
+      else
+        g_unsetenv ("XDG_RUNTIME_DIR");
+      g_free (f->saved_runtime_dir);
+      g_free (f->tmp_runtime_dir);
+    }
+
   test_main_context_unref (f->ctx);
 }
 
 static Config limited_config = {
-    "34393", 10000, "valid-config-files/incoming-limit.conf"
+    "34393", 10000, "valid-config-files/incoming-limit.conf",
+    SPECIFY_ADDRESS
 };
 
 static Config finite_timeout_config = {
-    NULL, 1, "valid-config-files/finite-timeout.conf"
+    NULL, 1, "valid-config-files/finite-timeout.conf",
+    SPECIFY_ADDRESS
 };
+
+#ifdef DBUS_UNIX
+static Config listen_unix_runtime_config = {
+    "61303", 1, "valid-config-files/listen-unix-runtime.conf",
+    RELY_ON_DEFAULT
+};
+#endif
 
 int
 main (int argc,
@@ -665,6 +733,13 @@ main (int argc,
   g_test_add ("/processid", Fixture, NULL, setup, test_processid, teardown);
   g_test_add ("/canonical-path/uae", Fixture, NULL,
       setup, test_canonical_path_uae, teardown);
+#ifdef DBUS_UNIX
+  /* We can't test this in loopback.c with the rest of unix:runtime=yes,
+   * because dbus_bus_get[_private] is the only way to use the default,
+   * and that blocks on a round-trip to the dbus-daemon */
+  g_test_add ("/unix-runtime-is-default", Fixture, &listen_unix_runtime_config,
+      setup, test_echo, teardown);
+#endif
 
   return g_test_run ();
 }
