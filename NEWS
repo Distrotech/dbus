@@ -1,7 +1,17 @@
-D-Bus 1.6.30 (UNRELEASED)
+D-Bus 1.6.30 (2015-02-09)
 ==
 
-...
+Security fix backported from 1.8.16:
+
+• Do not allow non-uid-0 processes to send forged ActivationFailure
+  messages. On Linux systems with systemd activation, this would
+  allow a local denial of service: unprivileged processes could
+  flood the bus with these forged messages, winning the race with
+  the actual service activation and causing an error reply
+  to be sent back when service auto-activation was requested.
+  This does not prevent the real service from being started,
+  so the attack only works while the real service is not running.
+  (CVE-2015-0245, fd.o #88811; Simon McVittie)
 
 D-Bus 1.6.28 (2014-11-24)
 ==
