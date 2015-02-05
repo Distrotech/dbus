@@ -505,14 +505,14 @@ $(imported_data): data/valid-config-files/%.conf: $(top_builddir)/bus/%.conf
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files
 	$(AM_V_GEN)cp $< $@
 
-$(installable_test_meta): %.test: % Makefile
+$(installable_test_meta): %.test: %$(EXEEXT) Makefile
 	$(AM_V_GEN) ( \
 		echo '[Test]'; \
 		echo 'Type=session'; \
 		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp $(testexecdir)/$*'; \
 	) > $@.tmp && mv $@.tmp $@
 
-$(installable_test_meta_with_config): %_with_config.test: % Makefile
+$(installable_test_meta_with_config): %_with_config.test: %$(EXEEXT) Makefile
 	$(AM_V_GEN) ( \
 		echo '[Test]'; \
 		echo 'Type=session'; \
