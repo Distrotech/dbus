@@ -150,6 +150,10 @@ AC_ARG_ENABLE(asserts, AS_HELP_STRING([--enable-asserts],[include assertion chec
 AC_ARG_ENABLE(checks, AS_HELP_STRING([--enable-checks],[include sanity checks on public API]),enable_checks=$enableval,enable_checks=yes)
 AC_ARG_ENABLE(xml-docs, AS_HELP_STRING([--enable-xml-docs],[build XML documentation (requires xmlto)]),enable_xml_docs=$enableval,enable_xml_docs=auto)
 AC_ARG_ENABLE(doxygen-docs, AS_HELP_STRING([--enable-doxygen-docs],[build DOXYGEN documentation (requires Doxygen)]),enable_doxygen_docs=$enableval,enable_doxygen_docs=auto)
+AC_ARG_ENABLE([ducktype-docs],
+              AS_HELP_STRING([--enable-ducktype-docs],
+                             [build Ducktype documentation (requires Ducktype)]),
+              [enable_ducktype_docs=$enableval], [enable_ducktype_docs=auto])
 AC_ARG_ENABLE(abstract-sockets, AS_HELP_STRING([--enable-abstract-sockets],[use abstract socket namespace (linux only)]),enable_abstract_sockets=$enableval,enable_abstract_sockets=auto)
 AC_ARG_ENABLE(selinux, AS_HELP_STRING([--enable-selinux],[build with SELinux support]),enable_selinux=$enableval,enable_selinux=auto)
 AC_ARG_ENABLE(libaudit,AS_HELP_STRING([--enable-libaudit],[build audit daemon support for SELinux]),enable_libaudit=$enableval,enable_libaudit=auto)
@@ -1421,6 +1425,36 @@ AC_MSG_RESULT($enable_doxygen_docs)
 AC_CHECK_PROGS([XSLTPROC], [xsltproc])
 AM_CONDITIONAL([DBUS_HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
+### Ducktype/Yelp documentation
+
+AC_PATH_PROG([DUCKTYPE],[ducktype],[no])
+AC_PATH_PROG([YELP_BUILD],[yelp-build],[no])
+
+AC_MSG_CHECKING([whether to build Ducktype documentation])
+
+AS_IF([test "$DUCKTYPE" = "no"],[have_ducktype=no],[have_ducktype=yes])
+AS_IF([test "$YELP_BUILD" = "no"],[have_yelp_build=no],[have_yelp_build=yes])
+
+AS_IF([test "$enable_ducktype_docs" = "auto"],[
+    AS_IF([test "$have_ducktype" = "no" || test "$have_yelp_build" = "no"],[
+        enable_ducktype_docs=no
+    ],[
+        enable_ducktype_docs=yes
+    ])
+])
+
+AS_IF([test "$enable_ducktype_docs" = "yes"],[
+    AS_IF([test "$have_ducktype" = "no"],[
+        AC_MSG_ERROR([Building Ducktype docs explicitly required, but ducktype not found])
+    ])
+    AS_IF([test "$have_yelp_build" = "no"],[
+        AC_MSG_ERROR([Building Ducktype docs explicitly required, but yelp-build not found])
+    ])
+])
+
+AM_CONDITIONAL([DBUS_DUCKTYPE_DOCS_ENABLED],[test "$enable_ducktype_docs" = "yes"])
+AC_MSG_RESULT([$enable_ducktype_docs])
+
 ### XML Documentation
 
 AC_PATH_PROG(XMLTO, xmlto, no)
@@ -1451,7 +1485,8 @@ AM_CONDITIONAL(DBUS_XML_DOCS_ENABLED, test x$enable_xml_docs = xyes)
 AC_MSG_RESULT($enable_xml_docs)
 
 AM_CONDITIONAL(DBUS_CAN_UPLOAD_DOCS,
-    [test x$enable_doxygen_docs = xyes && test x$enable_xml_docs = xyes])
+    [test x$enable_doxygen_docs = xyes && test x$enable_xml_docs = xyes &&
+     test x$enable_ducktype_docs = xyes])
 
 #### Have to go $localstatedir->$prefix/var->/usr/local/var
 
@@ -1818,7 +1853,9 @@ echo "
 	32-bit int:		  ${DBUS_INT32_TYPE}
 	16-bit int:		  ${DBUS_INT16_TYPE}
         Doxygen:                  ${DOXYGEN:-not found}
-        xmlto:                    ${XMLTO:-not found}"
+        xmlto:                    ${XMLTO:-not found}
+        ducktype:                 ${DUCKTYPE:-not found}
+        yelp-build:               ${YELP_BUILD:-not found}"
 
 echo "
         Rebuilding generated files: ${USE_MAINTAINER_MODE}
@@ -1838,6 +1875,7 @@ echo "
         Building systemd support: ${have_systemd}
         Building X11 code:        ${have_x11}
         Building Doxygen docs:    ${enable_doxygen_docs}
+        Building Ducktype docs:   ${enable_ducktype_docs}
         Building XML docs:        ${enable_xml_docs}
         Building launchd support: ${have_launchd}
         Init scripts style:       ${with_init_scripts}
