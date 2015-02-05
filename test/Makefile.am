@@ -241,6 +241,7 @@ test_sd_activation_LDADD = \
     $(NULL)
 
 test_marshal_SOURCES = marshal.c
+test_marshal_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_marshal_LDADD = \
     $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
@@ -256,6 +257,7 @@ test_monitor_LDADD = \
     $(NULL)
 
 test_syntax_SOURCES = syntax.c
+test_syntax_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_syntax_LDADD = \
     $(testutils_shared_if_possible_libs) \
     $(GLIB_LIBS) \
