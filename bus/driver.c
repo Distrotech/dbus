@@ -1924,6 +1924,8 @@ bus_driver_handle_become_monitor (DBusConnection *connection,
                                   DBusError      *error)
 {
   char **match_rules = NULL;
+  const char *bustype;
+  BusContext *context;
   BusMatchRule *rule;
   DBusList *rules = NULL;
   DBusList *iter;
@@ -1936,6 +1938,11 @@ bus_driver_handle_become_monitor (DBusConnection *connection,
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   if (!bus_driver_check_message_is_for_us (message, error))
+    goto out;
+
+  context = bus_transaction_get_context (transaction);
+  bustype = context ? bus_context_get_type (context) : NULL;
+  if (!bus_apparmor_allows_eavesdropping (connection, bustype, error))
     goto out;
 
   if (!bus_driver_check_caller_is_privileged (connection, transaction,
