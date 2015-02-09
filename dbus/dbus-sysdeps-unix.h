@@ -90,6 +90,10 @@ dbus_bool_t _dbus_lookup_launchd_socket (DBusString *socket_path,
                                          const char *launchd_env_var,
                                          DBusError  *error);
 
+dbus_bool_t _dbus_lookup_user_bus (dbus_bool_t *supported,
+                                   DBusString  *address,
+                                   DBusError   *error);
+
 /** Information about a UNIX user */
 typedef struct DBusUserInfo  DBusUserInfo;
 /** Information about a UNIX group */
