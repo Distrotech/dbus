@@ -1560,6 +1560,16 @@ if test "x$with_systemdsystemunitdir" != xno; then
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test "x$have_systemd" != "xno" -a -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
+AC_ARG_WITH([systemduserunitdir],
+AS_HELP_STRING([--with-systemduserunitdir=DIR], [Directory for systemd user service files]),
+    [],
+    [
+    PKG_CHECK_EXISTS([systemd],
+      [with_systemduserunitdir=$($PKG_CONFIG --variable=systemduserunitdir systemd)],
+      [with_systemduserunitdir='${libdir}/systemd/user'])
+    ])
+AC_SUBST([systemduserunitdir], [$with_systemduserunitdir])
+
 ##### Set up location for system bus socket
 if ! test -z "$with_system_socket"; then
    DBUS_SYSTEM_SOCKET=$with_system_socket
@@ -1813,6 +1823,13 @@ if test "x$enable_stats" = xyes; then
     [Define to enable bus daemon usage statistics])
 fi
 
+AC_ARG_ENABLE([user-session],
+  [AS_HELP_STRING([--enable-user-session],
+    [enable user-session semantics for session bus under systemd])],
+  [], [enable_user_session=no])
+AM_CONDITIONAL([DBUS_ENABLE_USER_SESSION],
+  [test "x$enable_user_session" = xyes])
+
 AC_CONFIG_FILES([
 Doxyfile
 dbus/Version
@@ -1828,6 +1845,8 @@ bus/org.freedesktop.dbus-session.plist
 bus/rc.messagebus
 bus/dbus.service
 bus/dbus.socket
+bus/systemd-user/dbus.service
+bus/systemd-user/dbus.socket
 Makefile
 dbus/Makefile
 bus/Makefile

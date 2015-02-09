@@ -250,6 +250,10 @@ if HAVE_SYSTEMD
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants
 	ln -fs ../dbus.service $(DESTDIR)$(systemdsystemunitdir)/multi-user.target.wants/dbus.service
 endif
+if DBUS_ENABLE_USER_SESSION
+	$(mkinstalldirs) $(DESTDIR)$(systemduserunitdir)/sockets.target.wants
+	ln -fs ../dbus.socket $(DESTDIR)$(systemduserunitdir)/sockets.target.wants/dbus.socket
+endif
 
 if DBUS_UNIX
 install-exec-hook:
@@ -301,11 +305,21 @@ endif
 if HAVE_SYSTEMD
 SCRIPT_IN_FILES += \
 	dbus.service.in \
-	dbus.socket.in
+	dbus.socket.in \
+	systemd-user/dbus.service.in \
+	systemd-user/dbus.socket.in \
+	$(NULL)
 
 systemdsystemunit_DATA = \
 	dbus.service \
 	dbus.socket
+endif
+
+if DBUS_ENABLE_USER_SESSION
+systemduserunit_DATA = \
+	systemd-user/dbus.service \
+	systemd-user/dbus.socket \
+	$(NULL)
 endif
 
 #### Extra dist
