@@ -41,17 +41,32 @@
 #include <string.h>
 
 static DBusConnection *
+bus_driver_get_owner_of_name (DBusConnection *connection,
+                              const char     *name)
+{
+  BusRegistry *registry;
+  BusService *serv;
+  DBusString str;
+
+  registry = bus_connection_get_registry (connection);
+  _dbus_string_init_const (&str, name);
+  serv = bus_registry_lookup (registry, &str);
+
+  if (serv == NULL)
+    return NULL;
+
+  return bus_service_get_primary_owners_connection (serv);
+}
+
+static DBusConnection *
 bus_driver_get_conn_helper (DBusConnection  *connection,
                             DBusMessage     *message,
                             const char      *what_we_want,
                             const char     **name_p,
                             DBusError       *error)
 {
-  const char *name;
-  BusRegistry *registry;
-  BusService *serv;
-  DBusString str;
   DBusConnection *conn;
+  const char *name;
 
   if (!dbus_message_get_args (message, error,
                               DBUS_TYPE_STRING, &name,
@@ -61,20 +76,15 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
   _dbus_assert (name != NULL);
   _dbus_verbose ("asked for %s of connection %s\n", what_we_want, name);
 
-  registry = bus_connection_get_registry (connection);
-  _dbus_string_init_const (&str, name);
-  serv = bus_registry_lookup (registry, &str);
+  conn = bus_driver_get_owner_of_name (connection, name);
 
-  if (serv == NULL)
+  if (conn == NULL)
     {
       dbus_set_error (error, DBUS_ERROR_NAME_HAS_NO_OWNER,
                       "Could not get %s of name '%s': no such name",
                       what_we_want, name);
       return NULL;
     }
-
-  conn = bus_service_get_primary_owners_connection (serv);
-  _dbus_assert (conn != NULL);
 
   if (name_p != NULL)
     *name_p = name;
@@ -2238,8 +2248,26 @@ bus_driver_handle_message (DBusConnection *connection,
   if (dbus_message_is_signal (message, "org.freedesktop.systemd1.Activator", "ActivationFailure"))
     {
       BusContext *context;
+      DBusConnection *systemd;
 
       context = bus_connection_get_context (connection);
+      systemd = bus_driver_get_owner_of_name (connection,
+          "org.freedesktop.systemd1");
+
+      if (systemd != connection)
+        {
+          const char *attacker;
+
+          attacker = bus_connection_get_name (connection);
+          bus_context_log (context, DBUS_SYSTEM_LOG_SECURITY,
+                           "Ignoring forged ActivationFailure message from "
+                           "connection %s (%s)",
+                           attacker ? attacker : "(unauthenticated)",
+                           bus_connection_get_loginfo (connection));
+          /* ignore it */
+          return TRUE;
+        }
+
       return dbus_activation_systemd_failure(bus_context_get_activation(context), message);
     }
 

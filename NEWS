@@ -1,6 +1,20 @@
 D-Bus 1.9.10 (UNRELEASED)
 ==
 
+The “sad cyborgs” release.
+
+Security fixes:
+
+• Do not allow non-uid-0 processes to send forged ActivationFailure
+  messages. On Linux systems with systemd activation, this would
+  allow a local denial of service: unprivileged processes could
+  flood the bus with these forged messages, winning the race with
+  the actual service activation and causing an error reply
+  to be sent back when service auto-activation was requested.
+  This does not prevent the real service from being started,
+  so it only works while the real service is not running.
+  (CVE-2015-0245, fd.o #88811; Simon McVittie)
+
 Enhancements:
 
 • The new Monitoring interface in the dbus-daemon lets dbus-monitor and
@@ -22,7 +36,7 @@ Enhancements:
   or libpcap-compatible framing treating each D-Bus message
   as a captured packet. (fd.o #46787, Simon)
 
-Fixes:
+Other fixes:
 
 • Fix some CMake build regressions (fd.o #88964, Ralf Habacker)
 
