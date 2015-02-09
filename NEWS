@@ -1,9 +1,9 @@
-D-Bus 1.9.10 (UNRELEASED)
+D-Bus 1.9.10 (2015-02-09)
 ==
 
 The “sad cyborgs” release.
 
-Security fixes:
+Security fixes merged from 1.8.16:
 
 • Do not allow non-uid-0 processes to send forged ActivationFailure
   messages. On Linux systems with systemd activation, this would
