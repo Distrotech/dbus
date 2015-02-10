@@ -984,7 +984,7 @@ static BOOL is_winxp_sp3_or_lower()
  * @param process_id the process id for which the sid should be returned
  * @returns process sid
  */
-static dbus_bool_t
+dbus_bool_t
 _dbus_getsid(char **sid, dbus_pid_t process_id)
 {
   HANDLE process_token = INVALID_HANDLE_VALUE;

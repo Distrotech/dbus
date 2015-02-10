@@ -371,6 +371,28 @@ test_creds (Fixture *f,
           g_assert_not_reached ();
 #endif
         }
+      else if (g_strcmp0 (name, "WindowsSID") == 0)
+        {
+#ifdef G_OS_WIN32
+          gchar *sid;
+          guint32 result;
+          char *self_sid;
+
+          g_assert (!(seen & SEEN_WINDOWS_SID));
+          g_assert_cmpuint (dbus_message_iter_get_arg_type (&var_iter), ==,
+              DBUS_TYPE_STRING);
+          dbus_message_iter_get_basic (&var_iter, &sid);
+          g_message ("%s of this process is %s", name, sid);
+          if (_dbus_getsid (&self_sid, 0))
+            {
+              g_assert_cmpstr (self_sid, ==, sid);
+              LocalFree(self_sid);
+            }
+          seen |= SEEN_WINDOWS_SID;
+#else
+          g_assert_not_reached ();
+#endif
+        }
       else if (g_strcmp0 (name, "ProcessID") == 0)
         {
           guint32 u32;
@@ -402,9 +424,7 @@ test_creds (Fixture *f,
 #endif
 
 #ifdef G_OS_WIN32
-  /* FIXME: when implemented:
   g_assert (seen & SEEN_WINDOWS_SID);
-   */
 #endif
 }
 

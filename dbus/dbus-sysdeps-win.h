@@ -88,6 +88,7 @@ dbus_bool_t _dbus_get_install_root(char *prefix, int len);
 void        _dbus_threads_windows_init_global (void);
 void        _dbus_threads_windows_ensure_ctor_linked (void);
 
+dbus_bool_t _dbus_getsid(char **sid, dbus_pid_t process_id);
 #endif
 
 /** @} end of sysdeps-win.h */
