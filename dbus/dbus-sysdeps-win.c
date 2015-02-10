@@ -981,7 +981,7 @@ static BOOL is_winxp_sp3_or_lower()
 
 /** Gets our SID
  * @param sid points to sid buffer, need to be freed with LocalFree()
- * @param process_id the process id for which the sid should be returned
+ * @param process_id the process id for which the sid should be returned (use 0 for current process)
  * @returns process sid
  */
 dbus_bool_t
@@ -993,7 +993,13 @@ _dbus_getsid(char **sid, dbus_pid_t process_id)
   PSID psid;
   int retval = FALSE;
 
-  HANDLE process_handle = OpenProcess(is_winxp_sp3_or_lower() ? PROCESS_QUERY_INFORMATION : PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id);
+  HANDLE process_handle;
+  if (process_id == 0)
+    process_handle = GetCurrentProcess();
+  else if (is_winxp_sp3_or_lower())
+    process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
+  else
+    process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id);
 
   if (!OpenProcessToken (process_handle, TOKEN_QUERY, &process_token))
     {
