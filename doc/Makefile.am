@@ -7,6 +7,7 @@ man_pages = \
 	dbus-monitor.1 \
 	dbus-run-session.1 \
 	dbus-send.1 \
+	dbus-test-tool.1 \
 	dbus-uuidgen.1 \
 	$(NULL)
 
