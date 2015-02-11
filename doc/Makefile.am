@@ -8,6 +8,7 @@ man_pages = \
 	dbus-run-session.1 \
 	dbus-send.1 \
 	dbus-test-tool.1 \
+	dbus-update-activation-environment.1 \
 	dbus-uuidgen.1 \
 	$(NULL)
 

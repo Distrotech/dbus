@@ -16,6 +16,7 @@ bin_PROGRAMS = \
 	dbus-monitor \
 	dbus-send \
 	dbus-test-tool \
+	dbus-update-activation-environment \
 	$(NULL)
 
 if DBUS_UNIX
@@ -97,6 +98,13 @@ dbus_test_tool_SOURCES = \
 	test-tool.h \
 	$(NULL)
 dbus_test_tool_LDADD = $(top_builddir)/dbus/libdbus-1.la
+
+dbus_update_activation_environment_SOURCES = \
+	dbus-update-activation-environment.c \
+	tool-common.c \
+	tool-common.h \
+	$(NULL)
+dbus_update_activation_environment_LDADD = $(top_builddir)/dbus/libdbus-1.la
 
 EXTRA_DIST = run-with-tmp-session-bus.sh strtoll.c strtoull.c
 CLEANFILES = 				\

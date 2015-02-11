@@ -25,6 +25,12 @@ set (dbus_test_tool_SOURCES
 	../../tools/test-tool.h
 )
 
+set (dbus_update_activation_environment_SOURCES
+	../../tools/dbus-update-activation-environment.c
+	../../tools/tool-common.c
+	../../tools/tool-common.h
+)
+
 if (WIN32)
 set (dbus_launch_SOURCES
 	../../tools/dbus-launch-win.c
@@ -53,6 +59,10 @@ install_targets(/bin dbus-send )
 add_executable(dbus-test-tool ${dbus_test_tool_SOURCES})
 target_link_libraries(dbus-test-tool ${DBUS_LIBRARIES})
 install_targets(/bin dbus-test-tool )
+
+add_executable(dbus-update-activation-environment ${dbus_update_activation_environment_SOURCES})
+target_link_libraries(dbus-update-activation-environment ${DBUS_LIBRARIES})
+install_targets(/bin dbus-update-activation-environment )
 
 add_executable(dbus-launch ${dbus_launch_SOURCES})
 target_link_libraries(dbus-launch )
