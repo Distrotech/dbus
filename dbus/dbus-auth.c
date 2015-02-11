@@ -1102,20 +1102,23 @@ handle_server_data_external_mech (DBusAuth         *auth,
                                               auth->desired_identity))
         return FALSE;
 
-      /* also copy process ID from the socket credentials
+      /* also copy misc process info from the socket credentials
        */
       if (!_dbus_credentials_add_credential (auth->authorized_identity,
                                              DBUS_CREDENTIAL_UNIX_PROCESS_ID,
                                              auth->credentials))
         return FALSE;
 
-      /* also copy audit data from the socket credentials
-       */
       if (!_dbus_credentials_add_credential (auth->authorized_identity,
                                              DBUS_CREDENTIAL_ADT_AUDIT_DATA_ID,
                                              auth->credentials))
         return FALSE;
-      
+
+      if (!_dbus_credentials_add_credential (auth->authorized_identity,
+                                             DBUS_CREDENTIAL_LINUX_SECURITY_LABEL,
+                                             auth->credentials))
+        return FALSE;
+
       if (!send_ok (auth))
         return FALSE;
 

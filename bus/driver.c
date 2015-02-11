@@ -34,6 +34,7 @@
 #include "utils.h"
 
 #include <dbus/dbus-asv-util.h>
+#include <dbus/dbus-connection-internal.h>
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-message.h>
@@ -1647,7 +1648,7 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
   DBusMessageIter reply_iter;
   DBusMessageIter array_iter;
   unsigned long ulong_val;
-  char *windows_sid;
+  char *s;
   const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -1682,26 +1683,43 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
         goto oom;
     }
 
-  if (dbus_connection_get_windows_user (conn, &windows_sid))
+  if (dbus_connection_get_windows_user (conn, &s))
     {
       DBusString str;
       dbus_bool_t result;
 
-      if (windows_sid == NULL)
+      if (s == NULL)
         goto oom;
 
-      _dbus_string_init_const (&str, windows_sid);
+      _dbus_string_init_const (&str, s);
       result = _dbus_validate_utf8 (&str, 0, _dbus_string_get_length (&str));
       _dbus_string_free (&str);
       if (result)
         {
-          if (!_dbus_asv_add_string (&array_iter, "WindowsSID", windows_sid))
+          if (!_dbus_asv_add_string (&array_iter, "WindowsSID", s))
             {
-              dbus_free(windows_sid);
+              dbus_free (s);
               goto oom;
             }
         }
-      dbus_free(windows_sid);
+      dbus_free (s);
+    }
+
+  if (_dbus_connection_get_linux_security_label (conn, &s))
+    {
+      if (s == NULL)
+        goto oom;
+
+      /* use the GVariant bytestring convention for strings of unknown
+       * encoding: include the \0 in the payload, for zero-copy reading */
+      if (!_dbus_asv_add_byte_array (&array_iter, "LinuxSecurityLabel",
+                                     s, strlen (s) + 1))
+        {
+          dbus_free (s);
+          goto oom;
+        }
+
+      dbus_free (s);
     }
 
   if (!_dbus_asv_close (&reply_iter, &array_iter))

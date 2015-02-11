@@ -34,6 +34,7 @@ typedef enum {
   DBUS_CREDENTIAL_UNIX_PROCESS_ID,
   DBUS_CREDENTIAL_UNIX_USER_ID,
   DBUS_CREDENTIAL_ADT_AUDIT_DATA_ID,
+  DBUS_CREDENTIAL_LINUX_SECURITY_LABEL,
   DBUS_CREDENTIAL_WINDOWS_SID
 } DBusCredentialType;
 
@@ -47,6 +48,8 @@ dbus_bool_t      _dbus_credentials_add_unix_uid             (DBusCredentials    
                                                              dbus_uid_t          uid);
 dbus_bool_t      _dbus_credentials_add_windows_sid          (DBusCredentials    *credentials,
                                                              const char         *windows_sid);
+dbus_bool_t      _dbus_credentials_add_linux_security_label (DBusCredentials    *credentials,
+                                                             const char         *label);
 dbus_bool_t      _dbus_credentials_add_adt_audit_data       (DBusCredentials    *credentials,
                                                              void               *audit_data,
                                                              dbus_int32_t        size);
@@ -55,6 +58,7 @@ dbus_bool_t      _dbus_credentials_include                  (DBusCredentials    
 dbus_pid_t       _dbus_credentials_get_pid                  (DBusCredentials    *credentials);
 dbus_uid_t       _dbus_credentials_get_unix_uid             (DBusCredentials    *credentials);
 const char*      _dbus_credentials_get_windows_sid          (DBusCredentials    *credentials);
+const char *     _dbus_credentials_get_linux_security_label (DBusCredentials    *credentials);
 void *           _dbus_credentials_get_adt_audit_data       (DBusCredentials    *credentials);
 dbus_int32_t     _dbus_credentials_get_adt_audit_data_size  (DBusCredentials    *credentials);
 dbus_bool_t      _dbus_credentials_are_superset             (DBusCredentials    *credentials,

@@ -107,6 +107,9 @@ void              _dbus_connection_set_pending_fds_function       (DBusConnectio
                                                                    DBusPendingFdsChangeFunction callback,
                                                                    void *data);
 
+dbus_bool_t       _dbus_connection_get_linux_security_label       (DBusConnection  *connection,
+                                                                   char           **label_p);
+
 /* if DBUS_ENABLE_STATS */
 void _dbus_connection_get_stats (DBusConnection *connection,
                                  dbus_uint32_t  *in_messages,

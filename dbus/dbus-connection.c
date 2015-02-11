@@ -5322,6 +5322,32 @@ dbus_connection_set_unix_user_function (DBusConnection             *connection,
     (* old_free_function) (old_data);
 }
 
+/* Same calling convention as dbus_connection_get_windows_user */
+dbus_bool_t
+_dbus_connection_get_linux_security_label (DBusConnection  *connection,
+                                           char           **label_p)
+{
+  dbus_bool_t result;
+
+  _dbus_assert (connection != NULL);
+  _dbus_assert (label_p != NULL);
+
+  CONNECTION_LOCK (connection);
+
+  if (!_dbus_transport_try_to_authenticate (connection->transport))
+    result = FALSE;
+  else
+    result = _dbus_transport_get_linux_security_label (connection->transport,
+                                                       label_p);
+#ifndef __linux__
+  _dbus_assert (!result);
+#endif
+
+  CONNECTION_UNLOCK (connection);
+
+  return result;
+}
+
 /**
  * Gets the Windows user SID of the connection if known.  Returns
  * #TRUE if the ID is filled in.  Always returns #FALSE on non-Windows

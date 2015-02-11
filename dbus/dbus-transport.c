@@ -1425,6 +1425,33 @@ _dbus_transport_set_unix_user_function (DBusTransport             *transport,
   transport->free_unix_user_data = free_data_function;
 }
 
+dbus_bool_t
+_dbus_transport_get_linux_security_label (DBusTransport  *transport,
+                                          char          **label_p)
+{
+  DBusCredentials *auth_identity;
+
+  *label_p = NULL;
+
+  if (!transport->authenticated)
+    return FALSE;
+
+  auth_identity = _dbus_auth_get_identity (transport->auth);
+
+  if (_dbus_credentials_include (auth_identity,
+                                 DBUS_CREDENTIAL_LINUX_SECURITY_LABEL))
+    {
+      /* If no memory, we are supposed to return TRUE and set NULL */
+      *label_p = _dbus_strdup (_dbus_credentials_get_linux_security_label (auth_identity));
+
+      return TRUE;
+    }
+  else
+    {
+      return FALSE;
+    }
+}
+
 /**
  * See dbus_connection_get_windows_user().
  *

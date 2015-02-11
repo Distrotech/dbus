@@ -87,6 +87,9 @@ void               _dbus_transport_set_unix_user_function (DBusTransport        
                                                            DBusFreeFunction           *old_free_data_function);
 dbus_bool_t        _dbus_transport_get_windows_user       (DBusTransport              *transport,
                                                            char                      **windows_sid_p);
+dbus_bool_t        _dbus_transport_get_linux_security_label (DBusTransport            *transport,
+                                                           char                      **label_p);
+
 void               _dbus_transport_set_windows_user_function (DBusTransport              *transport,
                                                               DBusAllowWindowsUserFunction   function,
                                                               void                       *data,
