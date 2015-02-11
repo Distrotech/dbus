@@ -1686,6 +1686,10 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
     {
       DBusString str;
       dbus_bool_t result;
+
+      if (windows_sid == NULL)
+        goto oom;
+
       _dbus_string_init_const (&str, windows_sid);
       result = _dbus_validate_utf8 (&str, 0, _dbus_string_get_length (&str));
       _dbus_string_free (&str);
