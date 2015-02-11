@@ -6013,6 +6013,57 @@
                 a domain or local computer user or "S-1-5-18" for the
                 LOCAL_SYSTEM user</entry>
               </row>
+
+              <row>
+                <entry>LinuxSecurityLabel</entry>
+                <entry>ARRAY of BYTE</entry>
+                <entry>
+                  <para>On Linux systems, the security label that would result
+                    from the SO_PEERSEC getsockopt call. The array contains
+                    the non-zero bytes of the security label in an unspecified
+                    ASCII-compatible encoding<footnote>
+                      <para>It could be ASCII or UTF-8, but could also be
+                        ISO Latin-1 or any other encoding.</para>
+                    </footnote>, followed by a single zero byte.</para>
+                  <para>
+                    For example, the SELinux context
+                    <literal>system_u:system_r:init_t:s0</literal>
+                    (a string of length 27) would be encoded as 28 bytes
+                    ending with ':', 's', '0', '\x00'.<footnote>
+                      <para>Note that this is not the same as the older
+                        GetConnectionSELinuxContext method, which does
+                        not append the zero byte. Always appending the
+                        zero byte allows callers to read the string
+                        from the message payload without copying.</para>
+                    </footnote>
+                  </para>
+                  <para>
+                    On SELinux systems this is the SELinux context, as output
+                    by <literal>ps -Z</literal> or <literal>ls -Z</literal>.
+                    Typical values might include
+                    <literal>system_u:system_r:init_t:s0</literal>,
+                    <literal>unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023</literal>,
+                    or
+                    <literal>unconfined_u:unconfined_r:chrome_sandbox_t:s0-s0:c0.c1023</literal>.
+                  </para>
+                  <para>
+                    On Smack systems, this is the Smack label.
+                    Typical values might include
+                    <literal>_</literal>, <literal>*</literal>,
+                    <literal>User</literal>, <literal>System</literal>
+                    or <literal>System::Shared</literal>.
+                  </para>
+                  <para>
+                    On AppArmor systems, this is the AppArmor context,
+                    a composite string encoding the AppArmor label (one or more
+                    profiles) and the enforcement mode.
+                    Typical values might include <literal>unconfined</literal>,
+                    <literal>/usr/bin/firefox (enforce)</literal> or
+                    <literal>user1 (complain)</literal>.
+                  </para>
+                </entry>
+              </row>
+
             </tbody>
           </tgroup>
         </informaltable>
