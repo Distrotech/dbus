@@ -28,6 +28,8 @@
 
 #include "test-utils-glib.h"
 
+#include <string.h>
+
 #ifdef DBUS_UNIX
 # include <unistd.h>
 # include <sys/types.h>
@@ -305,7 +307,8 @@ test_creds (Fixture *f,
   enum {
       SEEN_UNIX_USER = 1,
       SEEN_PID = 2,
-      SEEN_WINDOWS_SID = 4
+      SEEN_WINDOWS_SID = 4,
+      SEEN_LINUX_SECURITY_LABEL = 8
   } seen = 0;
 
   if (m == NULL)
@@ -410,6 +413,27 @@ test_creds (Fixture *f,
           g_assert_not_reached ();
 #endif
           seen |= SEEN_PID;
+        }
+      else if (g_strcmp0 (name, "LinuxSecurityLabel") == 0)
+        {
+#ifdef __linux__
+          gchar *label;
+          int len;
+          DBusMessageIter ay_iter;
+
+          g_assert (!(seen & SEEN_LINUX_SECURITY_LABEL));
+          g_assert_cmpuint (dbus_message_iter_get_arg_type (&var_iter), ==,
+              DBUS_TYPE_ARRAY);
+          dbus_message_iter_recurse (&var_iter, &ay_iter);
+          g_assert_cmpuint (dbus_message_iter_get_arg_type (&ay_iter), ==,
+              DBUS_TYPE_BYTE);
+          dbus_message_iter_get_fixed_array (&ay_iter, &label, &len);
+          g_message ("%s of this process is %s", name, label);
+          g_assert_cmpuint (strlen (label) + 1, ==, len);
+          seen |= SEEN_LINUX_SECURITY_LABEL;
+#else
+          g_assert_not_reached ();
+#endif
         }
 
       dbus_message_iter_next (&arr_iter);
