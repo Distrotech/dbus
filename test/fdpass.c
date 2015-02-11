@@ -57,9 +57,11 @@ _DBUS_STATIC_ASSERT (MAX_MESSAGE_UNIX_FDS <= 253);
 /* Arbitrary; included here to avoid relying on the default. */
 #define MAX_INCOMING_UNIX_FDS (MAX_MESSAGE_UNIX_FDS * 4)
 
-/* Arbitrary, except that MAX_MESSAGE_UNIX_FDS * SOME_MESSAGES must be
+/* Arbitrary, except that MAX_MESSAGE_UNIX_FDS * SOME_MESSAGES should be
  * less than the process's file descriptor limit. */
-#define SOME_MESSAGES 50
+#define SOME_MESSAGES 20
+/* To cover some situations on Linux we want this to be true. */
+_DBUS_STATIC_ASSERT (MAX_MESSAGE_UNIX_FDS * SOME_MESSAGES > 256);
 
 /* Linux won't allow more than 253 fds per sendmsg(). */
 #define TOO_MANY_FDS 255
@@ -808,6 +810,25 @@ main (int argc,
     char **argv)
 {
   test_init (&argc, &argv);
+
+#ifdef HAVE_GETRLIMIT
+    {
+      struct rlimit lim;
+
+      if (getrlimit (RLIMIT_NOFILE, &lim) < 0)
+        g_error ("Failed to get RLIMIT_NOFILE limit: %s", g_strerror (errno));
+
+      if (lim.rlim_cur != RLIM_INFINITY &&
+          /* only run if we have a fairly generous margin of error
+           * for stdout, stderr, duplicates, the D-Bus connection, etc. */
+          lim.rlim_cur < 2 * MAX_MESSAGE_UNIX_FDS * SOME_MESSAGES)
+        {
+          g_message ("not enough RLIMIT_NOFILE to run this test");
+          /* Autotools exit code for "all skipped" */
+          return 77;
+        }
+    }
+#endif
 
   g_test_add ("/relay", Fixture, NULL, setup,
       test_relay, teardown);
