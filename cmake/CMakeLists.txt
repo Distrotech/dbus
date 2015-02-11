@@ -63,6 +63,8 @@ if (NOT DBUS_DATADIR)
     SET(DBUS_DATADIR ${DATADIR})
 endif()
 
+set(DBUS_PREFIX ${DBUS_INSTALL_DIR})
+
 set(prefix                   ${DBUS_INSTALL_DIR})
 set(exec_prefix              ${prefix})
 set(EXPANDED_LIBDIR          ${DBUS_INSTALL_DIR}/lib)
