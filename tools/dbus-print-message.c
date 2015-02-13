@@ -37,6 +37,8 @@
 #include <stdlib.h>
 #include "config.h"
 
+#include "tool-common.h"
+
 static const char*
 type_to_name (int message_type)
 {
@@ -65,7 +67,9 @@ indent (int depth)
 }
 
 static void
-print_hex (unsigned char *bytes, unsigned int len, int depth)
+print_hex (const unsigned char *bytes,
+           int len,
+           int depth)
 {
   unsigned int i, columns;
 
@@ -110,47 +114,45 @@ print_hex (unsigned char *bytes, unsigned int len, int depth)
 static void
 print_ay (DBusMessageIter *iter, int depth)
 {
-  /* Not using DBusString because it's not public API. It's 2009, and I'm
-   * manually growing a string chunk by chunk.
-   */
-  unsigned char *bytes = malloc (DEFAULT_SIZE + 1);
-  unsigned int len = 0;
-  unsigned int max = DEFAULT_SIZE;
+  /* True if every byte in the bytestring (so far) is printable
+   * ASCII, with one exception: the last byte is also allowed to be \0. */
   dbus_bool_t all_ascii = TRUE;
-  int current_type;
+  const unsigned char *bytes;
+  int len;
+  int i;
 
-  while ((current_type = dbus_message_iter_get_arg_type (iter))
-          != DBUS_TYPE_INVALID)
+  dbus_message_iter_get_fixed_array (iter, &bytes, &len);
+
+  for (i = 0; i < len; i++)
     {
-      unsigned char val;
-
-      dbus_message_iter_get_basic (iter, &val);
-      bytes[len] = val;
-      len++;
-
-      if (val < 32 || val > 126)
-        all_ascii = FALSE;
-
-      if (len == max)
+      if ((bytes[i] < 32 || bytes[i] > 126) &&
+          (i < len - 1 || bytes[i] != '\0'))
         {
-          max *= 2;
-          bytes = realloc (bytes, max + 1);
+          all_ascii = FALSE;
+          break;
         }
-
-      dbus_message_iter_next (iter);
     }
 
-  if (all_ascii)
+  if (all_ascii && len > 0 && bytes[len - 1] == '\0')
     {
-      bytes[len] = '\0';
-      printf ("array of bytes \"%s\"\n", bytes);
+      printf ("array of bytes \"%s\" + \\0\n", bytes);
+    }
+  else if (all_ascii)
+    {
+      unsigned char *copy = dbus_malloc (len + 1);
+
+      if (copy == NULL)
+        tool_oom ("copying bytestring");
+
+      memcpy (copy, bytes, len);
+      copy[len] = '\0';
+      printf ("array of bytes \"%s\"\n", copy);
+      dbus_free (copy);
     }
   else
     {
       print_hex (bytes, len, depth);
     }
-
-  free (bytes);
 }
 
 static void

@@ -29,7 +29,10 @@ endif
 dbus_send_SOURCES=				\
 	dbus-print-message.c			\
 	dbus-print-message.h			\
-	dbus-send.c
+	dbus-send.c \
+	tool-common.c \
+	tool-common.h \
+	$(NULL)
 
 dbus_monitor_SOURCES = \
 	dbus-monitor.c \
