@@ -185,7 +185,7 @@ print_message_profile (DBusMessage *message)
 
   if (first)
     {
-      profile_print_headers();
+      profile_print_headers ();
       first = FALSE;
     }
 
