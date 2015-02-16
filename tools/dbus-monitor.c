@@ -132,8 +132,8 @@ typedef enum
 static void
 profile_print_headers (void)
 {
-    printf ("type\tsec\tusec\tserial\tsender\tdestination\tpath\tinterface\tmember\n");
-    printf ("\t\t\t\t\t\t\tref serial\n");
+    printf ("#type\tsec\tusec\tserial\tsender\tdestination\tpath\tinterface\tmember\n");
+    printf ("#\t\t\t\t\t\t\tin_reply_to\n");
 }
 
 static void
