@@ -74,7 +74,7 @@ GetSystemTimeAsFileTime (LPFILETIME ftp)
 
 static int
 gettimeofday (struct timeval *__p,
-	      void *__t)
+              void *__t)
 {
   union {
       unsigned long long ns100; /*time since 1 Jan 1601 in 100ns units */
@@ -91,8 +91,8 @@ gettimeofday (struct timeval *__p,
 
 static DBusHandlerResult
 monitor_filter_func (DBusConnection     *connection,
-		     DBusMessage        *message,
-		     void               *user_data)
+                     DBusMessage        *message,
+                     void               *user_data)
 {
   print_message (message, FALSE);
   
@@ -176,42 +176,42 @@ print_message_profile (DBusMessage *message)
   switch (dbus_message_get_type (message))
     {
       case DBUS_MESSAGE_TYPE_METHOD_CALL:
-	profile_print_with_attrs ("mc", message, &t,
-	  PROFILE_ATTRIBUTE_FLAG_SERIAL |
-	  PROFILE_ATTRIBUTE_FLAG_SENDER |
-	  PROFILE_ATTRIBUTE_FLAG_PATH |
-	  PROFILE_ATTRIBUTE_FLAG_INTERFACE |
-	  PROFILE_ATTRIBUTE_FLAG_MEMBER);
-	break;
+        profile_print_with_attrs ("mc", message, &t,
+          PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_SENDER |
+          PROFILE_ATTRIBUTE_FLAG_PATH |
+          PROFILE_ATTRIBUTE_FLAG_INTERFACE |
+          PROFILE_ATTRIBUTE_FLAG_MEMBER);
+        break;
       case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-	profile_print_with_attrs ("mr", message, &t,
-	  PROFILE_ATTRIBUTE_FLAG_SERIAL |
-	  PROFILE_ATTRIBUTE_FLAG_DESTINATION |
-	  PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
-	break;
+        profile_print_with_attrs ("mr", message, &t,
+          PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_DESTINATION |
+          PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
+        break;
       case DBUS_MESSAGE_TYPE_ERROR:
-	profile_print_with_attrs ("err", message, &t,
-	  PROFILE_ATTRIBUTE_FLAG_SERIAL |
-	  PROFILE_ATTRIBUTE_FLAG_DESTINATION |
-	  PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
-	break;
+        profile_print_with_attrs ("err", message, &t,
+          PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_DESTINATION |
+          PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
+        break;
       case DBUS_MESSAGE_TYPE_SIGNAL:
-	profile_print_with_attrs ("sig", message, &t,
-	  PROFILE_ATTRIBUTE_FLAG_SERIAL |
-	  PROFILE_ATTRIBUTE_FLAG_PATH |
-	  PROFILE_ATTRIBUTE_FLAG_INTERFACE |
-	  PROFILE_ATTRIBUTE_FLAG_MEMBER);
-	break;
+        profile_print_with_attrs ("sig", message, &t,
+          PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_PATH |
+          PROFILE_ATTRIBUTE_FLAG_INTERFACE |
+          PROFILE_ATTRIBUTE_FLAG_MEMBER);
+        break;
       default:
-	printf (PROFILE_TIMED_FORMAT "\n", "tun", t.tv_sec, t.tv_usec);
-	break;
+        printf (PROFILE_TIMED_FORMAT "\n", "tun", t.tv_sec, t.tv_usec);
+        break;
     }
 }
 
 static DBusHandlerResult
-profile_filter_func (DBusConnection	*connection,
-		     DBusMessage	*message,
-		     void		*user_data)
+profile_filter_func (DBusConnection     *connection,
+                     DBusMessage        *message,
+                     void               *user_data)
 {
   print_message_profile (message);
 
@@ -431,7 +431,7 @@ main (int argc, char *argv[])
             usage (argv[0], 1);
         }
       else if (!strcmp (arg, "--help"))
-	usage (argv[0], 0);
+        usage (argv[0], 0);
       else if (!strcmp (arg, "--monitor"))
         {
           filter_func = monitor_filter_func;
@@ -453,9 +453,9 @@ main (int argc, char *argv[])
           binary_mode = BINARY_MODE_PCAP;
         }
       else if (!strcmp (arg, "--"))
-	continue;
+        continue;
       else if (arg[0] == '-')
-	usage (argv[0], 1);
+        usage (argv[0], 1);
       else {
           unsigned int filter_len;
           numFilters++;
@@ -483,12 +483,12 @@ main (int argc, char *argv[])
       if (connection)
         {
           if (!dbus_bus_register (connection, &error))
-      	    {
+            {
               fprintf (stderr, "Failed to register connection to bus at %s: %s\n",
-      	               address, error.message);
+                       address, error.message);
               dbus_error_free (&error);
               exit (1);
-      	    }
+            }
         }
     }
   else
@@ -548,7 +548,7 @@ main (int argc, char *argv[])
               dbus_bus_add_match (connection, filters[i] + offset, &error);
             }
 
-	  if (dbus_error_is_set (&error))
+          if (dbus_error_is_set (&error))
             {
               fprintf (stderr, "Failed to setup match \"%s\": %s\n",
                        filters[i], error.message);
