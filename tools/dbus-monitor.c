@@ -107,14 +107,6 @@ monitor_filter_func (DBusConnection     *connection,
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-#ifdef __APPLE__
-#define PROFILE_TIMED_FORMAT "%s\t%lu\t%d"
-#elif defined(__NetBSD__)
-#include <inttypes.h>
-#define PROFILE_TIMED_FORMAT "%s\t%" PRId64 "\t%d"
-#else
-#define PROFILE_TIMED_FORMAT "%s\t%lu\t%lu"
-#endif
 #define TRAP_NULL_STRING(str) ((str) ? (str) : "<none>")
 
 typedef enum
@@ -132,15 +124,15 @@ typedef enum
 static void
 profile_print_headers (void)
 {
-    printf ("#type\tsec\tusec\tserial\tsender\tdestination\tpath\tinterface\tmember\n");
-    printf ("#\t\t\t\t\t\t\tin_reply_to\n");
+  printf ("#type\ttimestamp\tserial\tsender\tdestination\tpath\tinterface\tmember\n");
+  printf ("#\t\t\t\t\t\tin_reply_to\n");
 }
 
 static void
 profile_print_with_attrs (const char *type, DBusMessage *message,
   struct timeval *t, ProfileAttributeFlags attrs)
 {
-  printf (PROFILE_TIMED_FORMAT, type, t->tv_sec, t->tv_usec);
+  printf ("%s\t%lu.%06lu", type, (unsigned long) t->tv_sec, (unsigned long) t->tv_usec);
 
   if (attrs & PROFILE_ATTRIBUTE_FLAG_SERIAL)
     printf ("\t%u", dbus_message_get_serial (message));
@@ -224,7 +216,7 @@ print_message_profile (DBusMessage *message)
           PROFILE_ATTRIBUTE_FLAG_MEMBER);
         break;
       default:
-        printf (PROFILE_TIMED_FORMAT "\n", "tun", t.tv_sec, t.tv_usec);
+        printf ("%s\t%lu.%06lu", "tun", (unsigned long) t.tv_sec, (unsigned long) t.tv_usec);
         break;
     }
 }
