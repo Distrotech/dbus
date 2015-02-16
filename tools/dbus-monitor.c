@@ -130,6 +130,13 @@ typedef enum
 } ProfileAttributeFlags;
 
 static void
+profile_print_headers (void)
+{
+    printf ("type\tsec\tusec\tserial\tsender\tdestination\tpath\tinterface\tmember\n");
+    printf ("\t\t\t\t\t\t\tref serial\n");
+}
+
+static void
 profile_print_with_attrs (const char *type, DBusMessage *message,
   struct timeval *t, ProfileAttributeFlags attrs)
 {
@@ -138,14 +145,16 @@ profile_print_with_attrs (const char *type, DBusMessage *message,
   if (attrs & PROFILE_ATTRIBUTE_FLAG_SERIAL)
     printf ("\t%u", dbus_message_get_serial (message));
 
-  if (attrs & PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL)
-    printf ("\t%u", dbus_message_get_reply_serial (message));
-
   if (attrs & PROFILE_ATTRIBUTE_FLAG_SENDER)
     printf ("\t%s", TRAP_NULL_STRING (dbus_message_get_sender (message)));
 
   if (attrs & PROFILE_ATTRIBUTE_FLAG_DESTINATION)
     printf ("\t%s", TRAP_NULL_STRING (dbus_message_get_destination (message)));
+
+  if (attrs & PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL)
+    printf ("\t%u", dbus_message_get_reply_serial (message));
+  else
+    printf ("\t");
 
   if (attrs & PROFILE_ATTRIBUTE_FLAG_PATH)
     printf ("\t%s", TRAP_NULL_STRING (dbus_message_get_path (message)));
@@ -165,6 +174,7 @@ profile_print_with_attrs (const char *type, DBusMessage *message,
 static void
 print_message_profile (DBusMessage *message)
 {
+  static dbus_bool_t first = TRUE;
   struct timeval t;
 
   if (gettimeofday (&t, NULL) < 0)
@@ -173,12 +183,19 @@ print_message_profile (DBusMessage *message)
       return;
     }
 
+  if (first)
+    {
+      profile_print_headers();
+      first = FALSE;
+    }
+
   switch (dbus_message_get_type (message))
     {
       case DBUS_MESSAGE_TYPE_METHOD_CALL:
         profile_print_with_attrs ("mc", message, &t,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
           PROFILE_ATTRIBUTE_FLAG_SENDER |
+          PROFILE_ATTRIBUTE_FLAG_DESTINATION |
           PROFILE_ATTRIBUTE_FLAG_PATH |
           PROFILE_ATTRIBUTE_FLAG_INTERFACE |
           PROFILE_ATTRIBUTE_FLAG_MEMBER);
@@ -186,18 +203,22 @@ print_message_profile (DBusMessage *message)
       case DBUS_MESSAGE_TYPE_METHOD_RETURN:
         profile_print_with_attrs ("mr", message, &t,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_SENDER |
           PROFILE_ATTRIBUTE_FLAG_DESTINATION |
           PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
         break;
       case DBUS_MESSAGE_TYPE_ERROR:
         profile_print_with_attrs ("err", message, &t,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_SENDER |
           PROFILE_ATTRIBUTE_FLAG_DESTINATION |
           PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
         break;
       case DBUS_MESSAGE_TYPE_SIGNAL:
         profile_print_with_attrs ("sig", message, &t,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
+          PROFILE_ATTRIBUTE_FLAG_SENDER |
+          PROFILE_ATTRIBUTE_FLAG_DESTINATION |
           PROFILE_ATTRIBUTE_FLAG_PATH |
           PROFILE_ATTRIBUTE_FLAG_INTERFACE |
           PROFILE_ATTRIBUTE_FLAG_MEMBER);
