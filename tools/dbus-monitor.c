@@ -125,7 +125,7 @@ static void
 profile_print_headers (void)
 {
   printf ("#type\ttimestamp\tserial\tsender\tdestination\tpath\tinterface\tmember\n");
-  printf ("#\t\t\t\t\t\tin_reply_to\n");
+  printf ("#\t\t\t\t\tin_reply_to\n");
 }
 
 static void
@@ -145,8 +145,6 @@ profile_print_with_attrs (const char *type, DBusMessage *message,
 
   if (attrs & PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL)
     printf ("\t%u", dbus_message_get_reply_serial (message));
-  else
-    printf ("\t");
 
   if (attrs & PROFILE_ATTRIBUTE_FLAG_PATH)
     printf ("\t%s", TRAP_NULL_STRING (dbus_message_get_path (message)));
