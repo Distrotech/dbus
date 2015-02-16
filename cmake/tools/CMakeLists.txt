@@ -4,6 +4,8 @@ set (dbus_send_SOURCES
 	../../tools/dbus-print-message.c			
 	../../tools/dbus-print-message.h			
 	../../tools/dbus-send.c
+	../../tools/tool-common.c
+	../../tools/tool-common.h
 )
 
 set (dbus_monitor_SOURCES
