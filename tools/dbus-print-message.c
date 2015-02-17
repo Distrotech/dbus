@@ -308,209 +308,209 @@ print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)
       int type = dbus_message_iter_get_arg_type (iter);
 
       if (type == DBUS_TYPE_INVALID)
-	break;
+        break;
       
       indent(depth);
 
       switch (type)
-	{
-	case DBUS_TYPE_STRING:
-	  {
-	    char *val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    if (!literal)
-	      printf ("string \"");
-	    printf ("%s", val);
-	    if (!literal)
-	      printf ("\"\n");
-	    break;
-	  }
+        {
+        case DBUS_TYPE_STRING:
+          {
+            char *val;
+            dbus_message_iter_get_basic (iter, &val);
+            if (!literal)
+              printf ("string \"");
+            printf ("%s", val);
+            if (!literal)
+              printf ("\"\n");
+            break;
+          }
 
-	case DBUS_TYPE_SIGNATURE:
-	  {
-	    char *val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    if (!literal)
-	      printf ("signature \"");
-	    printf ("%s", val);
-	    if (!literal)
-	      printf ("\"\n");
-	    break;
-	  }
+        case DBUS_TYPE_SIGNATURE:
+          {
+            char *val;
+            dbus_message_iter_get_basic (iter, &val);
+            if (!literal)
+              printf ("signature \"");
+            printf ("%s", val);
+            if (!literal)
+              printf ("\"\n");
+            break;
+          }
 
-	case DBUS_TYPE_OBJECT_PATH:
-	  {
-	    char *val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    if (!literal)
-	      printf ("object path \"");
-	    printf ("%s", val);
-	    if (!literal)
-	      printf ("\"\n");
-	    break;
-	  }
+        case DBUS_TYPE_OBJECT_PATH:
+          {
+            char *val;
+            dbus_message_iter_get_basic (iter, &val);
+            if (!literal)
+              printf ("object path \"");
+            printf ("%s", val);
+            if (!literal)
+              printf ("\"\n");
+            break;
+          }
 
-	case DBUS_TYPE_INT16:
-	  {
-	    dbus_int16_t val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("int16 %d\n", val);
-	    break;
-	  }
+        case DBUS_TYPE_INT16:
+          {
+            dbus_int16_t val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("int16 %d\n", val);
+            break;
+          }
 
-	case DBUS_TYPE_UINT16:
-	  {
-	    dbus_uint16_t val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("uint16 %u\n", val);
-	    break;
-	  }
+        case DBUS_TYPE_UINT16:
+          {
+            dbus_uint16_t val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("uint16 %u\n", val);
+            break;
+          }
 
-	case DBUS_TYPE_INT32:
-	  {
-	    dbus_int32_t val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("int32 %d\n", val);
-	    break;
-	  }
+        case DBUS_TYPE_INT32:
+          {
+            dbus_int32_t val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("int32 %d\n", val);
+            break;
+          }
 
-	case DBUS_TYPE_UINT32:
-	  {
-	    dbus_uint32_t val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("uint32 %u\n", val);
-	    break;
-	  }
+        case DBUS_TYPE_UINT32:
+          {
+            dbus_uint32_t val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("uint32 %u\n", val);
+            break;
+          }
 
-	case DBUS_TYPE_INT64:
-	  {
-	    dbus_int64_t val;
-	    dbus_message_iter_get_basic (iter, &val);
+        case DBUS_TYPE_INT64:
+          {
+            dbus_int64_t val;
+            dbus_message_iter_get_basic (iter, &val);
 #ifdef DBUS_INT64_PRINTF_MODIFIER
         printf ("int64 %" DBUS_INT64_PRINTF_MODIFIER "d\n", val);
 #else
         printf ("int64 (omitted)\n");
 #endif
-	    break;
-	  }
+            break;
+          }
 
-	case DBUS_TYPE_UINT64:
-	  {
-	    dbus_uint64_t val;
-	    dbus_message_iter_get_basic (iter, &val);
+        case DBUS_TYPE_UINT64:
+          {
+            dbus_uint64_t val;
+            dbus_message_iter_get_basic (iter, &val);
 #ifdef DBUS_INT64_PRINTF_MODIFIER
         printf ("uint64 %" DBUS_INT64_PRINTF_MODIFIER "u\n", val);
 #else
         printf ("uint64 (omitted)\n");
 #endif
-	    break;
-	  }
+            break;
+          }
 
-	case DBUS_TYPE_DOUBLE:
-	  {
-	    double val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("double %g\n", val);
-	    break;
-	  }
+        case DBUS_TYPE_DOUBLE:
+          {
+            double val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("double %g\n", val);
+            break;
+          }
 
-	case DBUS_TYPE_BYTE:
-	  {
-	    unsigned char val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("byte %d\n", val);
-	    break;
-	  }
+        case DBUS_TYPE_BYTE:
+          {
+            unsigned char val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("byte %d\n", val);
+            break;
+          }
 
-	case DBUS_TYPE_BOOLEAN:
-	  {
-	    dbus_bool_t val;
-	    dbus_message_iter_get_basic (iter, &val);
-	    printf ("boolean %s\n", val ? "true" : "false");
-	    break;
-	  }
+        case DBUS_TYPE_BOOLEAN:
+          {
+            dbus_bool_t val;
+            dbus_message_iter_get_basic (iter, &val);
+            printf ("boolean %s\n", val ? "true" : "false");
+            break;
+          }
 
-	case DBUS_TYPE_VARIANT:
-	  {
-	    DBusMessageIter subiter;
+        case DBUS_TYPE_VARIANT:
+          {
+            DBusMessageIter subiter;
 
-	    dbus_message_iter_recurse (iter, &subiter);
+            dbus_message_iter_recurse (iter, &subiter);
 
-	    printf ("variant ");
-	    print_iter (&subiter, literal, depth+1);
-	    break;
-	  }
-	case DBUS_TYPE_ARRAY:
-	  {
-	    int current_type;
-	    DBusMessageIter subiter;
+            printf ("variant ");
+            print_iter (&subiter, literal, depth+1);
+            break;
+          }
+        case DBUS_TYPE_ARRAY:
+          {
+            int current_type;
+            DBusMessageIter subiter;
 
-	    dbus_message_iter_recurse (iter, &subiter);
+            dbus_message_iter_recurse (iter, &subiter);
 
-	    current_type = dbus_message_iter_get_arg_type (&subiter);
+            current_type = dbus_message_iter_get_arg_type (&subiter);
 
-	    if (current_type == DBUS_TYPE_BYTE)
-	      {
-		print_ay (&subiter, depth);
-		break;
-	      }
+            if (current_type == DBUS_TYPE_BYTE)
+              {
+                print_ay (&subiter, depth);
+                break;
+              }
 
-	    printf("array [\n");
-	    while (current_type != DBUS_TYPE_INVALID)
-	      {
-		print_iter (&subiter, literal, depth+1);
+            printf("array [\n");
+            while (current_type != DBUS_TYPE_INVALID)
+              {
+                print_iter (&subiter, literal, depth+1);
 
-		dbus_message_iter_next (&subiter);
-		current_type = dbus_message_iter_get_arg_type (&subiter);
+                dbus_message_iter_next (&subiter);
+                current_type = dbus_message_iter_get_arg_type (&subiter);
 
-		if (current_type != DBUS_TYPE_INVALID)
-		  printf (",");
-	      }
-	    indent(depth);
-	    printf("]\n");
-	    break;
-	  }
-	case DBUS_TYPE_DICT_ENTRY:
-	  {
-	    DBusMessageIter subiter;
+                if (current_type != DBUS_TYPE_INVALID)
+                  printf (",");
+              }
+            indent(depth);
+            printf("]\n");
+            break;
+          }
+        case DBUS_TYPE_DICT_ENTRY:
+          {
+            DBusMessageIter subiter;
 
-	    dbus_message_iter_recurse (iter, &subiter);
+            dbus_message_iter_recurse (iter, &subiter);
 
-	    printf("dict entry(\n");
-	    print_iter (&subiter, literal, depth+1);
-	    dbus_message_iter_next (&subiter);
-	    print_iter (&subiter, literal, depth+1);
-	    indent(depth);
-	    printf(")\n");
-	    break;
-	  }
-	    
-	case DBUS_TYPE_STRUCT:
-	  {
-	    int current_type;
-	    DBusMessageIter subiter;
+            printf("dict entry(\n");
+            print_iter (&subiter, literal, depth+1);
+            dbus_message_iter_next (&subiter);
+            print_iter (&subiter, literal, depth+1);
+            indent(depth);
+            printf(")\n");
+            break;
+          }
 
-	    dbus_message_iter_recurse (iter, &subiter);
+        case DBUS_TYPE_STRUCT:
+          {
+            int current_type;
+            DBusMessageIter subiter;
 
-	    printf("struct {\n");
-	    while ((current_type = dbus_message_iter_get_arg_type (&subiter)) != DBUS_TYPE_INVALID)
-	      {
-		print_iter (&subiter, literal, depth+1);
-		dbus_message_iter_next (&subiter);
-		if (dbus_message_iter_get_arg_type (&subiter) != DBUS_TYPE_INVALID)
-		  printf (",");
-	      }
-	    indent(depth);
-	    printf("}\n");
-	    break;
-	  }
+            dbus_message_iter_recurse (iter, &subiter);
 
-	case DBUS_TYPE_UNIX_FD:
-	  {
-	    int fd;
-	    dbus_message_iter_get_basic (iter, &fd);
+            printf("struct {\n");
+            while ((current_type = dbus_message_iter_get_arg_type (&subiter)) != DBUS_TYPE_INVALID)
+              {
+                print_iter (&subiter, literal, depth+1);
+                dbus_message_iter_next (&subiter);
+                if (dbus_message_iter_get_arg_type (&subiter) != DBUS_TYPE_INVALID)
+                  printf (",");
+              }
+            indent(depth);
+            printf("}\n");
+            break;
+          }
 
-	    print_fd (fd, depth+1);
+        case DBUS_TYPE_UNIX_FD:
+          {
+            int fd;
+            dbus_message_iter_get_basic (iter, &fd);
+
+            print_fd (fd, depth+1);
 
             /* dbus_message_iter_get_basic() duplicated the fd, we need to
              * close it after use. The original fd will be closed when the
@@ -518,13 +518,13 @@ print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)
              */
             close (fd);
 
-	    break;
-	  }
+            break;
+          }
 
-	default:
-	  printf (" (dbus-monitor too dumb to decipher arg type '%c')\n", type);
-	  break;
-	}
+        default:
+          printf (" (dbus-monitor too dumb to decipher arg type '%c')\n", type);
+          break;
+        }
     } while (dbus_message_iter_next (iter));
 }
 
@@ -543,36 +543,36 @@ print_message (DBusMessage *message, dbus_bool_t literal)
   if (!literal)
     {
       printf ("%s sender=%s -> dest=%s",
-	      type_to_name (message_type),
-	      sender ? sender : "(null sender)",
-	      destination ? destination : "(null destination)");
+              type_to_name (message_type),
+              sender ? sender : "(null sender)",
+              destination ? destination : "(null destination)");
   
       switch (message_type)
-	{
-	case DBUS_MESSAGE_TYPE_METHOD_CALL:
-	case DBUS_MESSAGE_TYPE_SIGNAL:
-	  printf (" serial=%u path=%s; interface=%s; member=%s\n",
+        {
+        case DBUS_MESSAGE_TYPE_METHOD_CALL:
+        case DBUS_MESSAGE_TYPE_SIGNAL:
+          printf (" serial=%u path=%s; interface=%s; member=%s\n",
                   dbus_message_get_serial (message),
-		  dbus_message_get_path (message),
-		  dbus_message_get_interface (message),
-		  dbus_message_get_member (message));
-	  break;
+                  dbus_message_get_path (message),
+                  dbus_message_get_interface (message),
+                  dbus_message_get_member (message));
+          break;
       
-	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-	  printf (" reply_serial=%u\n",
+        case DBUS_MESSAGE_TYPE_METHOD_RETURN:
+          printf (" reply_serial=%u\n",
           dbus_message_get_reply_serial (message));
-	  break;
+          break;
 
-	case DBUS_MESSAGE_TYPE_ERROR:
-	  printf (" error_name=%s reply_serial=%u\n",
-		  dbus_message_get_error_name (message),
+        case DBUS_MESSAGE_TYPE_ERROR:
+          printf (" error_name=%s reply_serial=%u\n",
+                  dbus_message_get_error_name (message),
           dbus_message_get_reply_serial (message));
-	  break;
+          break;
 
-	default:
-	  printf ("\n");
-	  break;
-	}
+        default:
+          printf ("\n");
+          break;
+        }
     }
 
   dbus_message_iter_init (message, &iter);
