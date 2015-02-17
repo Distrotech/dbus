@@ -559,7 +559,8 @@ print_message (DBusMessage *message, dbus_bool_t literal)
           break;
       
         case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-          printf (" reply_serial=%u\n",
+          printf (" serial=%u reply_serial=%u\n",
+                  dbus_message_get_serial (message),
           dbus_message_get_reply_serial (message));
           break;
 
