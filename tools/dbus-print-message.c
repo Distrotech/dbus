@@ -544,14 +544,14 @@ print_message (DBusMessage *message, dbus_bool_t literal, long sec, long usec)
     {
       if (sec != 0 || usec != 0)
         {
-          printf ("%s time=%ld.%06ld sender=%s -> dest=%s",
+          printf ("%s time=%ld.%06ld sender=%s -> destination=%s",
                   type_to_name (message_type), sec, usec,
                   sender ? sender : "(null sender)",
                   destination ? destination : "(null destination)");
         }
       else
         {
-          printf ("%s sender=%s -> dest=%s",
+          printf ("%s sender=%s -> destination=%s",
                   type_to_name (message_type),
                   sender ? sender : "(null sender)",
                   destination ? destination : "(null destination)");
