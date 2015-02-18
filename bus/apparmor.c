@@ -106,30 +106,6 @@ bus_apparmor_confinement_new (char       *label,
 }
 
 void
-bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
-{
-#ifdef HAVE_APPARMOR
-  if (!apparmor_enabled)
-    return;
-
-  _dbus_assert (confinement != NULL);
-  _dbus_assert (confinement->refcount > 0);
-
-  confinement->refcount -= 1;
-
-  if (confinement->refcount == 0)
-    {
-      /**
-       * Do not free confinement->mode, as libapparmor does a single malloc for
-       * both confinement->label and confinement->mode.
-       */
-      free (confinement->label);
-      dbus_free (confinement);
-    }
-#endif
-}
-
-void
 bus_apparmor_audit_init (void)
 {
 #ifdef HAVE_LIBAUDIT
@@ -549,6 +525,30 @@ bus_apparmor_enabled (void)
   return apparmor_enabled;
 #else
   return FALSE;
+#endif
+}
+
+void
+bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
+{
+#ifdef HAVE_APPARMOR
+  if (!apparmor_enabled)
+    return;
+
+  _dbus_assert (confinement != NULL);
+  _dbus_assert (confinement->refcount > 0);
+
+  confinement->refcount -= 1;
+
+  if (confinement->refcount == 0)
+    {
+      /**
+       * Do not free confinement->mode, as libapparmor does a single malloc for
+       * both confinement->label and confinement->mode.
+       */
+      free (confinement->label);
+      dbus_free (confinement);
+    }
 #endif
 }
 
