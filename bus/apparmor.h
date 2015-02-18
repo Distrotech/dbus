@@ -39,7 +39,6 @@ dbus_bool_t bus_apparmor_enabled (void);
 
 void bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement);
 void bus_apparmor_confinement_ref (BusAppArmorConfinement *confinement);
-const char* bus_apparmor_confinement_get_label (BusAppArmorConfinement *confinement);
 BusAppArmorConfinement* bus_apparmor_init_connection_confinement (DBusConnection *connection,
                                                                   DBusError      *error);
 

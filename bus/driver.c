@@ -1760,91 +1760,6 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
 }
 
 static dbus_bool_t
-bus_driver_handle_get_connection_apparmor_security_context (DBusConnection *connection,
-                                                            BusTransaction *transaction,
-                                                            DBusMessage    *message,
-                                                            DBusError      *error)
-{
-  const char *service;
-  DBusString str;
-  BusRegistry *registry;
-  BusService *serv;
-  DBusConnection *primary_connection;
-  DBusMessage *reply;
-  BusAppArmorConfinement *confinement;
-  const char *label;
-
-  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
-
-  registry = bus_connection_get_registry (connection);
-
-  service = NULL;
-  reply = NULL;
-  confinement = NULL;
-
-  if (! dbus_message_get_args (message, error, DBUS_TYPE_STRING, &service,
-                               DBUS_TYPE_INVALID))
-      goto failed;
-
-  _dbus_verbose ("asked for security context of connection %s\n", service);
-
-  _dbus_string_init_const (&str, service);
-  serv = bus_registry_lookup (registry, &str);
-  if (serv == NULL)
-    {
-      dbus_set_error (error,
-                      DBUS_ERROR_NAME_HAS_NO_OWNER,
-                      "Could not get security context of name '%s': no such name", service);
-      goto failed;
-    }
-
-  primary_connection = bus_service_get_primary_owners_connection (serv);
-
-  reply = dbus_message_new_method_return (message);
-  if (reply == NULL)
-    goto oom;
-
-  confinement = bus_connection_dup_apparmor_confinement (primary_connection);
-  label = bus_apparmor_confinement_get_label (confinement);
-
-  if (label == NULL)
-    {
-      dbus_set_error (error,
-                      DBUS_ERROR_APPARMOR_SECURITY_CONTEXT_UNKNOWN,
-                      "Could not determine security context for '%s'", service);
-      goto failed;
-    }
-
-  if (!dbus_validate_utf8 (label, error))
-    goto failed;
-
-  if (! dbus_message_append_args (reply,
-                                  DBUS_TYPE_STRING,
-                                  &label,
-                                  DBUS_TYPE_INVALID))
-    goto failed;
-
-  if (! bus_transaction_send_from_driver (transaction, connection, reply))
-    goto oom;
-
-  bus_apparmor_confinement_unref (confinement);
-  dbus_message_unref (reply);
-
-  return TRUE;
-
- oom:
-  BUS_SET_OOM (error);
-
- failed:
-  _DBUS_ASSERT_ERROR_IS_SET (error);
-  if (confinement)
-    bus_apparmor_confinement_unref (confinement);
-  if (reply)
-    dbus_message_unref (reply);
-  return FALSE;
-}
-
-static dbus_bool_t
 bus_driver_handle_reload_config (DBusConnection *connection,
 				 BusTransaction *transaction,
 				 DBusMessage    *message,
@@ -2200,10 +2115,6 @@ static const MessageHandler dbus_message_handlers[] = {
     DBUS_TYPE_STRING_AS_STRING,
     DBUS_TYPE_ARRAY_AS_STRING DBUS_TYPE_BYTE_AS_STRING,
     bus_driver_handle_get_connection_selinux_security_context },
-  { "GetConnectionAppArmorSecurityContext",
-    DBUS_TYPE_STRING_AS_STRING,
-    DBUS_TYPE_STRING_AS_STRING,
-    bus_driver_handle_get_connection_apparmor_security_context },
   { "ReloadConfig",
     "",
     "",

@@ -105,21 +105,6 @@ bus_apparmor_confinement_new (char       *label,
   return confinement;
 }
 
-const char*
-bus_apparmor_confinement_get_label (BusAppArmorConfinement *confinement)
-{
-#ifdef HAVE_APPARMOR
-  if (!apparmor_enabled)
-    return NULL;
-
-  _dbus_assert (confinement != NULL);
-
-  return confinement->label;
-#else
-  return NULL;
-#endif
-}
-
 void
 bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
 {
