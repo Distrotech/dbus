@@ -66,29 +66,31 @@ static AppArmorConfigMode apparmor_config_mode = APPARMOR_ENABLED;
 static int audit_fd = -1;
 #endif
 
+/* The AppArmor context, consisting of a label and a mode. */
 struct BusAppArmorConfinement
 {
   int refcount; /* Reference count */
 
-  char *context; /* AppArmor confinement context (label) */
-  const char *mode; /* AppArmor confinement mode (freed by freeing *context) */
+  char *label; /* AppArmor confinement label */
+  const char *mode; /* AppArmor confinement mode (freed by freeing *label) */
 };
 
 static BusAppArmorConfinement *bus_con = NULL;
 
 /**
- * Callers of this function give up ownership of the *context and *mode
+ * Callers of this function give up ownership of the *label and *mode
  * pointers.
  *
- * Additionally, the responsibility of freeing *context and *mode becomes the
+ * Additionally, the responsibility of freeing *label and *mode becomes the
  * responsibility of the bus_apparmor_confinement_unref() function. However, it
  * does not free *mode because libapparmor's aa_getcon(), and libapparmor's
- * other related functions, allocate a single buffer for *context and *mode and
+ * other related functions, allocate a single buffer for *label and *mode and
  * then separate the two char arrays with a NUL char. See the aa_getcon(2) man
  * page for more details.
  */
 static BusAppArmorConfinement*
-bus_apparmor_confinement_new (char *context, const char *mode)
+bus_apparmor_confinement_new (char       *label,
+                              const char *mode)
 {
   BusAppArmorConfinement *confinement;
 
@@ -96,7 +98,7 @@ bus_apparmor_confinement_new (char *context, const char *mode)
   if (confinement != NULL)
     {
       confinement->refcount = 1;
-      confinement->context = context;
+      confinement->label = label;
       confinement->mode = mode;
     }
 
@@ -119,9 +121,9 @@ bus_apparmor_confinement_unref (BusAppArmorConfinement *confinement)
     {
       /**
        * Do not free confinement->mode, as libapparmor does a single malloc for
-       * both confinement->context and confinement->mode.
+       * both confinement->label and confinement->mode.
        */
-      free (confinement->context);
+      free (confinement->label);
       dbus_free (confinement);
     }
 #endif
@@ -468,13 +470,13 @@ bus_apparmor_set_mode_from_config (const char *mode, DBusError *error)
 /**
  * Verify that the config mode is compatible with the kernel's AppArmor
  * support. If AppArmor mediation will be enabled, determine the bus
- * confinement context.
+ * confinement label.
  */
 dbus_bool_t
 bus_apparmor_full_init (DBusError *error)
 {
 #ifdef HAVE_APPARMOR
-  char *context, *mode;
+  char *label, *mode;
 
   if (apparmor_enabled)
     {
@@ -486,7 +488,7 @@ bus_apparmor_full_init (DBusError *error)
 
       if (bus_con == NULL)
         {
-          if (aa_getcon (&context, &mode) == -1)
+          if (aa_getcon (&label, &mode) == -1)
             {
               dbus_set_error (error, DBUS_ERROR_FAILED,
                               "Error getting AppArmor context of bus: %s",
@@ -494,11 +496,11 @@ bus_apparmor_full_init (DBusError *error)
               return FALSE;
             }
 
-          bus_con = bus_apparmor_confinement_new (context, mode);
+          bus_con = bus_apparmor_confinement_new (label, mode);
           if (bus_con == NULL)
             {
               BUS_SET_OOM (error);
-              free (context);
+              free (label);
               return FALSE;
             }
         }
@@ -570,7 +572,7 @@ bus_apparmor_init_connection_confinement (DBusConnection *connection,
 {
 #ifdef HAVE_APPARMOR
   BusAppArmorConfinement *confinement;
-  char *context, *mode;
+  char *label, *mode;
   int fd;
 
   if (!apparmor_enabled)
@@ -585,7 +587,7 @@ bus_apparmor_init_connection_confinement (DBusConnection *connection,
       return NULL;
     }
 
-  if (aa_getpeercon (fd, &context, &mode) == -1)
+  if (aa_getpeercon (fd, &label, &mode) == -1)
     {
       if (errno == ENOMEM)
         BUS_SET_OOM (error);
@@ -596,11 +598,11 @@ bus_apparmor_init_connection_confinement (DBusConnection *connection,
       return NULL;
     }
 
-  confinement = bus_apparmor_confinement_new (context, mode);
+  confinement = bus_apparmor_confinement_new (label, mode);
   if (confinement == NULL)
     {
       BUS_SET_OOM (error);
-      free (context);
+      free (label);
       return NULL;
     }
 
@@ -642,7 +644,7 @@ bus_apparmor_allows_acquire_service (DBusConnection     *connection,
 
   con = bus_connection_dup_apparmor_confinement (connection);
 
-  if (is_unconfined (con->context, con->mode))
+  if (is_unconfined (con->label, con->mode))
     {
       allow = TRUE;
       audit = FALSE;
@@ -652,7 +654,7 @@ bus_apparmor_allows_acquire_service (DBusConnection     *connection,
   if (!_dbus_string_init (&qstr))
     goto oom;
 
-  if (!build_service_query (&qstr, con->context, bustype, service_name))
+  if (!build_service_query (&qstr, con->label, bustype, service_name))
     {
       _dbus_string_free (&qstr);
       goto oom;
@@ -706,7 +708,7 @@ bus_apparmor_allows_acquire_service (DBusConnection     *connection,
       !_dbus_append_pair_uint (&auxdata, "pid", pid))
     goto oom;
 
-  if (con->context && !_dbus_append_pair_str (&auxdata, "profile", con->context))
+  if (con->label && !_dbus_append_pair_str (&auxdata, "label", con->label))
     goto oom;
 
   log_message (allow, "bind", &auxdata);
@@ -808,7 +810,7 @@ bus_apparmor_allows_send (DBusConnection     *sender,
       goto out;
     }
 
-  if (is_unconfined (src_con->context, src_con->mode))
+  if (is_unconfined (src_con->label, src_con->mode))
     {
       src_allow = TRUE;
       src_audit = FALSE;
@@ -818,8 +820,8 @@ bus_apparmor_allows_send (DBusConnection     *sender,
       if (!_dbus_string_init (&qstr))
         goto oom;
 
-      if (!build_message_query (&qstr, src_con->context, bustype, destination,
-                                dst_con->context, path, interface, member))
+      if (!build_message_query (&qstr, src_con->label, bustype, destination,
+                                dst_con->label, path, interface, member))
         {
           _dbus_string_free (&qstr);
           goto oom;
@@ -838,7 +840,7 @@ bus_apparmor_allows_send (DBusConnection     *sender,
         }
     }
 
-  if (is_unconfined (dst_con->context, dst_con->mode))
+  if (is_unconfined (dst_con->label, dst_con->mode))
     {
       dst_allow = TRUE;
       dst_audit = FALSE;
@@ -848,8 +850,8 @@ bus_apparmor_allows_send (DBusConnection     *sender,
       if (!_dbus_string_init (&qstr))
         goto oom;
 
-      if (!build_message_query (&qstr, dst_con->context, bustype, source,
-                                src_con->context, path, interface, member))
+      if (!build_message_query (&qstr, dst_con->label, bustype, source,
+                                src_con->label, path, interface, member))
         {
           _dbus_string_free (&qstr);
           goto oom;
@@ -933,8 +935,8 @@ bus_apparmor_allows_send (DBusConnection     *sender,
           !_dbus_append_pair_uint (&auxdata, "pid", pid))
         goto oom;
 
-      if (src_con->context &&
-          !_dbus_append_pair_str (&auxdata, "profile", src_con->context))
+      if (src_con->label &&
+          !_dbus_append_pair_str (&auxdata, "label", src_con->label))
         goto oom;
 
       if (proposed_recipient &&
@@ -942,8 +944,8 @@ bus_apparmor_allows_send (DBusConnection     *sender,
           !_dbus_append_pair_uint (&auxdata, "peer_pid", pid))
         goto oom;
 
-      if (dst_con->context &&
-          !_dbus_append_pair_str (&auxdata, "peer_profile", dst_con->context))
+      if (dst_con->label &&
+          !_dbus_append_pair_str (&auxdata, "peer_label", dst_con->label))
         goto oom;
 
       if (src_errno && !_dbus_append_pair_str (&auxdata, "info", strerror (src_errno)))
@@ -970,16 +972,16 @@ bus_apparmor_allows_send (DBusConnection     *sender,
           !_dbus_append_pair_uint (&auxdata, "pid", pid))
         goto oom;
 
-      if (dst_con->context &&
-          !_dbus_append_pair_str (&auxdata, "profile", dst_con->context))
+      if (dst_con->label &&
+          !_dbus_append_pair_str (&auxdata, "label", dst_con->label))
         goto oom;
 
       if (sender && dbus_connection_get_unix_process_id (sender, &pid) &&
           !_dbus_append_pair_uint (&auxdata, "peer_pid", pid))
         goto oom;
 
-      if (src_con->context &&
-          !_dbus_append_pair_str (&auxdata, "peer_profile", src_con->context))
+      if (src_con->label &&
+          !_dbus_append_pair_str (&auxdata, "peer_label", src_con->label))
         goto oom;
 
       if (dst_errno && !_dbus_append_pair_str (&auxdata, "info", strerror (dst_errno)))
@@ -1041,7 +1043,7 @@ bus_apparmor_allows_eavesdropping (DBusConnection     *connection,
 
   con = bus_connection_dup_apparmor_confinement (connection);
 
-  if (is_unconfined (con->context, con->mode))
+  if (is_unconfined (con->label, con->mode))
     {
       allow = TRUE;
       audit = FALSE;
@@ -1051,7 +1053,7 @@ bus_apparmor_allows_eavesdropping (DBusConnection     *connection,
   if (!_dbus_string_init (&qstr))
     goto oom;
 
-  if (!build_eavesdrop_query (&qstr, con->context, bustype))
+  if (!build_eavesdrop_query (&qstr, con->label, bustype))
     {
       _dbus_string_free (&qstr);
       goto oom;
@@ -1101,7 +1103,7 @@ bus_apparmor_allows_eavesdropping (DBusConnection     *connection,
       !_dbus_append_pair_uint (&auxdata, "pid", pid))
     goto oom;
 
-  if (con->context && !_dbus_append_pair_str (&auxdata, "profile", con->context))
+  if (con->label && !_dbus_append_pair_str (&auxdata, "label", con->label))
     goto oom;
 
   log_message (allow, "eavesdrop", &auxdata);
