@@ -10,7 +10,8 @@ The “monster lasagna” release.
 
 Dependencies:
 
-• Ducktype and yelp-tools are now required to build complete documentation.
+• Ducktype and yelp-tools are now required to build complete documentation
+  (they are optional for normal builds).
 
 Enhancements:
 
@@ -65,7 +66,7 @@ Security fixes merged from 1.8.16:
   the actual service activation and causing an error reply
   to be sent back when service auto-activation was requested.
   This does not prevent the real service from being started,
-  so it only works while the real service is not running.
+  so the attack only works while the real service is not running.
   (CVE-2015-0245, fd.o #88811; Simon McVittie)
 
 Enhancements:
