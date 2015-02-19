@@ -49,20 +49,26 @@ static int audit_fd = -1;
  * Open the libaudit fd if appropriate.
  */
 void
-bus_audit_init(void)
+bus_audit_init (BusContext *context)
 {
 #ifdef HAVE_LIBAUDIT
   audit_fd = audit_open ();
 
   if (audit_fd < 0)
     {
+      int e = errno;
+
       /* If kernel doesn't support audit, bail out */
-      if (errno == EINVAL || errno == EPROTONOSUPPORT || errno == EAFNOSUPPORT)
+      if (e == EINVAL || e == EPROTONOSUPPORT || e == EAFNOSUPPORT)
         return;
+
       /* If user bus, bail out */
-      if (errno == EPERM && getuid() != 0)
+      if (e == EPERM && getuid () != 0)
         return;
-      _dbus_warn ("Failed opening connection to the audit subsystem");
+
+      bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
+                       "Failed to open connection to the audit subsystem: %s",
+                       _dbus_strerror (e));
     }
 #endif /* HAVE_LIBAUDIT */
 }

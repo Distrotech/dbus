@@ -973,7 +973,7 @@ bus_context_new (const DBusString *config_file,
 	  goto failed;
 	}
 
-      bus_audit_init ();
+      bus_audit_init (context);
     }
 
   dbus_server_free_data_slot (&server_data_slot);
