@@ -1,7 +1,50 @@
-D-Bus 1.9.12 (UNRELEASED)
+D-Bus 1.9.12 (2015-02-19)
 ==
 
-...
+The “monster lasagna” release.
+
+Dependencies:
+
+• Ducktype and yelp-tools are now required to build complete documentation.
+
+Enhancements:
+
+• D-Bus Specification version 0.26
+  · GetConnectionCredentials can return LinuxSecurityLabel or WindowsSID
+  · document the BecomeMonitor method
+
+• On Linux, add LinuxSecurityLabel to GetConnectionCredentials
+  (fd.o #89041; Tyler Hicks, Simon McVittie)
+
+• On Linux, add support for AppArmor mediation of message sending and
+  receiving and name ownership (paralleling existing SELinux mediation
+  support), and eavesdropping (a new check, currently AppArmor-specific)
+  (fd.o #75113; John Johansen, Tyler Hicks, Simon McVittie)
+
+• In dbus-send and dbus-monitor, pretty-print \0-terminated bytestrings
+  that have printable ASCII contents; we previously only did this for
+  unterminated bytestrings (fd.o #89109, Simon McVittie)
+
+• Add a guide to designing good D-Bus APIs (fd.o #88994, Philip Withnall)
+
+• On Windows, add WindowsSID to GetConnectionCredentials
+  (fd.o #54445, Ralf Habacker)
+
+• Improve clarity of dbus-monitor --profile output and add more columns
+  (fd.o #89165, Ralf Habacker)
+
+• Add a man page for dbus-test-tool, and build it under CMake as well
+  as Autotools (fd.o#89086, Simon McVittie)
+
+• If dbus-daemon was compiled with --enable-verbose, add a D-Bus API
+  to control it at runtime, overriding the DBUS_VERBOSE environment variable
+  (fd.o #88896, Ralf Habacker)
+
+Fixes:
+
+• Reduce the number of file descriptors used in the fd-passing test,
+  avoiding failure under the default Linux fd limit, and automatically
+  skip it if the rlimit is too small (fd.o #88998, Simon McVittie)
 
 D-Bus 1.9.10 (2015-02-09)
 ==

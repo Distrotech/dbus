@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.25</releaseinfo>
-    <date>(not yet released)</date>
+    <releaseinfo>Version 0.26</releaseinfo>
+    <date>2015-02-19</date>
     <authorgroup>
       <author>
         <firstname>Havoc</firstname>
@@ -72,10 +72,11 @@
    <revhistory>
      <revision>
        <revnumber>0.26</revnumber>
-       <date>(not yet released)</date>
-       <authorinitials>n/a</authorinitials>
+       <date>2015-02-19</date>
+       <authorinitials>smcv, rh</authorinitials>
        <revremark>
-         see <ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink>
+         GetConnectionCredentials can return LinuxSecurityLabel or
+         WindowsSID; add privileged BecomeMonitor method
        </revremark>
      </revision>
      <revision>
