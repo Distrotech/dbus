@@ -35,6 +35,7 @@
 #include "signals.h"
 #include "selinux.h"
 #include "apparmor.h"
+#include "audit.h"
 #include "dir-watch.h"
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-hash.h>
@@ -972,13 +973,7 @@ bus_context_new (const DBusString *config_file,
 	  goto failed;
 	}
 
-#ifdef HAVE_SELINUX
-      /* FIXME - why not just put this in full_init() below? */
-      bus_selinux_audit_init ();
-#endif
-#ifdef HAVE_APPARMOR
-      bus_apparmor_audit_init ();
-#endif
+      bus_audit_init ();
     }
 
   dbus_server_free_data_slot (&server_data_slot);

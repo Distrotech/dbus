@@ -43,10 +43,10 @@
 #include <unistd.h>
 
 #ifdef HAVE_LIBAUDIT
-#include <cap-ng.h>
 #include <libaudit.h>
 #endif /* HAVE_LIBAUDIT */
 
+#include "audit.h"
 #include "connection.h"
 #include "utils.h"
 
@@ -61,10 +61,6 @@ typedef enum {
 
 /* Store the value of the AppArmor mediation mode in the bus configuration */
 static AppArmorConfigMode apparmor_config_mode = APPARMOR_ENABLED;
-
-#ifdef HAVE_LIBAUDIT
-static int audit_fd = -1;
-#endif
 
 /* The AppArmor context, consisting of a label and a mode. */
 struct BusAppArmorConfinement
@@ -103,25 +99,6 @@ bus_apparmor_confinement_new (char       *label,
     }
 
   return confinement;
-}
-
-void
-bus_apparmor_audit_init (void)
-{
-#ifdef HAVE_LIBAUDIT
-  audit_fd = audit_open ();
-
-  if (audit_fd < 0)
-    {
-      /* If kernel doesn't support audit, bail out */
-      if (errno == EINVAL || errno == EPROTONOSUPPORT || errno == EAFNOSUPPORT)
-        return;
-      /* If user bus, bail out */
-      if (errno == EPERM && getuid () != 0)
-        return;
-      _dbus_warn ("Failed opening connection to the audit subsystem");
-    }
-#endif /* HAVE_LIBAUDIT */
 }
 
 /*
@@ -189,6 +166,9 @@ static void
 log_message (dbus_bool_t allow, const char *op, DBusString *data)
 {
   const char *mstr;
+#ifdef HAVE_LIBAUDIT
+  int audit_fd;
+#endif
 
   if (allow)
     mstr = "ALLOWED";
@@ -196,13 +176,11 @@ log_message (dbus_bool_t allow, const char *op, DBusString *data)
     mstr = "DENIED";
 
 #ifdef HAVE_LIBAUDIT
+  audit_fd = bus_audit_get_fd ();
+
   if (audit_fd >= 0)
   {
     DBusString avc;
-
-    capng_get_caps_process ();
-    if (!capng_have_capability (CAPNG_EFFECTIVE, CAP_AUDIT_WRITE))
-      goto syslog;
 
     if (!_dbus_string_init (&avc))
       goto syslog;
@@ -510,11 +488,6 @@ bus_apparmor_shutdown (void)
 
   bus_apparmor_confinement_unref (bus_con);
   bus_con = NULL;
-
-#ifdef HAVE_LIBAUDIT
-  audit_close (audit_fd);
-#endif /* HAVE_LIBAUDIT */
-
 #endif /* HAVE_APPARMOR */
 }
 

@@ -40,6 +40,7 @@
 #endif
 #include "selinux.h"
 #include "apparmor.h"
+#include "audit.h"
 
 static BusContext *context;
 
@@ -661,6 +662,7 @@ main (int argc, char **argv)
   bus_context_unref (context);
   bus_selinux_shutdown ();
   bus_apparmor_shutdown ();
+  bus_audit_shutdown ();
 
   return 0;
 }

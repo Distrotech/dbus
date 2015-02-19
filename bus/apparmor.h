@@ -29,7 +29,6 @@
 #include <dbus/dbus.h>
 #include "bus.h"
 
-void bus_apparmor_audit_init (void);
 dbus_bool_t bus_apparmor_pre_init (void);
 dbus_bool_t bus_apparmor_set_mode_from_config (const char *mode,
                                                DBusError *error);

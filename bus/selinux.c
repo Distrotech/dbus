@@ -28,6 +28,7 @@
 #include <dbus/dbus-userdb.h>
 #endif
 #include "selinux.h"
+#include "audit.h"
 #include "services.h"
 #include "policy.h"
 #include "utils.h"
@@ -50,7 +51,6 @@
 #include <grp.h>
 #endif /* HAVE_SELINUX */
 #ifdef HAVE_LIBAUDIT
-#include <cap-ng.h>
 #include <libaudit.h>
 #endif /* HAVE_LIBAUDIT */
 
@@ -115,53 +115,35 @@ static const struct avc_lock_callback lock_cb =
  */
 #ifdef HAVE_SELINUX
 
-#ifdef HAVE_LIBAUDIT
-static int audit_fd = -1;
-#endif
-
-void
-bus_selinux_audit_init(void)
-{
-#ifdef HAVE_LIBAUDIT  
-  audit_fd = audit_open ();
-
-  if (audit_fd < 0)
-    {
-      /* If kernel doesn't support audit, bail out */
-      if (errno == EINVAL || errno == EPROTONOSUPPORT || errno == EAFNOSUPPORT)
-        return;
-      /* If user bus, bail out */
-      if (errno == EPERM && getuid() != 0)
-        return;
-      _dbus_warn ("Failed opening connection to the audit subsystem");
-    }
-#endif /* HAVE_LIBAUDIT */
-}
-
 static void 
 log_callback (const char *fmt, ...) 
 {
   va_list ap;
+#ifdef HAVE_LIBAUDIT
+  int audit_fd;
+#endif
 
   va_start(ap, fmt);
 
 #ifdef HAVE_LIBAUDIT
+  audit_fd = bus_audit_get_fd ();
+
   if (audit_fd >= 0)
   {
-    capng_get_caps_process();
-    if (capng_have_capability(CAPNG_EFFECTIVE, CAP_AUDIT_WRITE))
-    {
-      char buf[PATH_MAX*2];
-    
-      /* FIXME: need to change this to show real user */
-      vsnprintf(buf, sizeof(buf), fmt, ap);
-      audit_log_user_avc_message(audit_fd, AUDIT_USER_AVC, buf, NULL, NULL,
-                               NULL, getuid());
-      goto out;
-    }
+    /* This should really be a DBusString, but DBusString allocates
+     * memory dynamically; before switching it, we need to check with
+     * SELinux people that it would be OK for this to fall back to
+     * syslog if OOM, like the equivalent AppArmor code does. */
+    char buf[PATH_MAX*2];
+
+    /* FIXME: need to change this to show real user */
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    audit_log_user_avc_message(audit_fd, AUDIT_USER_AVC, buf, NULL, NULL,
+                             NULL, getuid());
+    goto out;
   }
 #endif /* HAVE_LIBAUDIT */
-  
+
   vsyslog (LOG_USER | LOG_INFO, fmt, ap);
 
 out:
@@ -1031,88 +1013,6 @@ bus_selinux_shutdown (void)
       bus_avc_print_stats ();
 
       avc_destroy ();
-#ifdef HAVE_LIBAUDIT
-      audit_close (audit_fd);
-#endif /* HAVE_LIBAUDIT */
     }
 #endif /* HAVE_SELINUX */
 }
-
-/* The !HAVE_LIBAUDIT case lives in dbus-sysdeps-util-unix.c */
-#ifdef HAVE_LIBAUDIT
-/**
- * Changes the user and group the bus is running as.
- *
- * @param user the user to become
- * @param error return location for errors
- * @returns #FALSE on failure
- */
-dbus_bool_t
-_dbus_change_to_daemon_user  (const char    *user,
-                              DBusError     *error)
-{
-  dbus_uid_t uid;
-  dbus_gid_t gid;
-  DBusString u;
-
-  _dbus_string_init_const (&u, user);
-
-  if (!_dbus_get_user_id_and_primary_group (&u, &uid, &gid))
-    {
-      dbus_set_error (error, DBUS_ERROR_FAILED,
-                      "User '%s' does not appear to exist?",
-                      user);
-      return FALSE;
-    }
-
-  /* If we were root */
-  if (_dbus_geteuid () == 0)
-    {
-      int rc;
-      int have_audit_write;
-
-      have_audit_write = capng_have_capability (CAPNG_PERMITTED, CAP_AUDIT_WRITE);
-      capng_clear (CAPNG_SELECT_BOTH);
-      /* Only attempt to retain CAP_AUDIT_WRITE if we had it when
-       * starting.  See:
-       * https://bugs.freedesktop.org/show_bug.cgi?id=49062#c9
-       */
-      if (have_audit_write)
-        capng_update (CAPNG_ADD, CAPNG_EFFECTIVE | CAPNG_PERMITTED,
-                      CAP_AUDIT_WRITE);
-      rc = capng_change_id (uid, gid, CAPNG_DROP_SUPP_GRP);
-      if (rc)
-        {
-          switch (rc) {
-            default:
-              dbus_set_error (error, DBUS_ERROR_FAILED,
-                              "Failed to drop capabilities: %s\n",
-                              _dbus_strerror (errno));
-              break;
-            case -4:
-              dbus_set_error (error, _dbus_error_from_errno (errno),
-                              "Failed to set GID to %lu: %s", gid,
-                              _dbus_strerror (errno));
-              break;
-            case -5:
-              _dbus_warn ("Failed to drop supplementary groups: %s\n",
-                          _dbus_strerror (errno));
-              break;
-            case -6:
-              dbus_set_error (error, _dbus_error_from_errno (errno),
-                              "Failed to set UID to %lu: %s", uid,
-                              _dbus_strerror (errno));
-              break;
-            case -7:
-              dbus_set_error (error, _dbus_error_from_errno (errno),
-                              "Failed to unset keep-capabilities: %s\n",
-                              _dbus_strerror (errno));
-              break;
-          }
-          return FALSE;
-        }
-    }
-
- return TRUE;
-}
-#endif

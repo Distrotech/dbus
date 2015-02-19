@@ -66,7 +66,4 @@ dbus_bool_t bus_selinux_allows_send            (DBusConnection *sender,
 BusSELinuxID* bus_selinux_init_connection_id (DBusConnection *connection,
                                               DBusError      *error);
 
-
-void bus_selinux_audit_init(void);
-
 #endif /* BUS_SELINUX_H */

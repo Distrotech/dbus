@@ -41,6 +41,8 @@ set (BUS_SOURCES
 	${BUS_DIR}/activation.h				
 	${BUS_DIR}/apparmor.c
 	${BUS_DIR}/apparmor.h
+	${BUS_DIR}/audit.c
+	${BUS_DIR}/audit.h
 	${BUS_DIR}/bus.c					
 	${BUS_DIR}/bus.h					
 	${BUS_DIR}/config-parser.c				

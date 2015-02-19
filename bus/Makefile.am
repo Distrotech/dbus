@@ -78,6 +78,8 @@ BUS_SOURCES=					\
 	activation-exit-codes.h			\
 	apparmor.c				\
 	apparmor.h				\
+	audit.c					\
+	audit.h					\
 	bus.c					\
 	bus.h					\
 	config-parser.c				\
