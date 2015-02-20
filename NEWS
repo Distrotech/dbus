@@ -1,7 +1,22 @@
 D-Bus 1.9.14 (UNRELEASED)
 ==
 
-...
+Dependencies:
+
+• dbus-daemon and dbus-daemon-launch-helper now require libdbus. They
+  were previously linked to a static version of libdbus.
+
+Enhancements:
+
+• All executables are now linked dynamically to libdbus.
+  (fd.o #83115; Bertrand SIMONNET, Simon McVittie, Ralf Habacker)
+
+• On platforms that support them (GNU libc and possibly others),
+  libdbus now has versioned symbols for its public API.
+  All public symbols (visible in the header files) are currently
+  versioned as LIBDBUS_1_3; private symbols starting with _dbus or
+  dbus_internal have a version that changes with each release, and
+  must not be used by applications. (also part of fd.o #83115)
 
 D-Bus 1.9.12 (2015-02-19)
 ==
