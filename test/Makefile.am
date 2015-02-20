@@ -6,6 +6,7 @@ DIST_SUBDIRS=name-test
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	-DDBUS_COMPILATION \
 	$(GLIB_CFLAGS) \
 	$(NULL)

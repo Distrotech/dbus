@@ -4,6 +4,7 @@ configdir=$(sysconfdir)/dbus-1
 AM_CPPFLAGS = \
 	-I$(top_builddir) \
 	-I$(top_srcdir) \
+	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	$(SYSTEMD_CFLAGS) \
 	$(VALGRIND_CFLAGS) \
 	-DDBUS_COMPILATION \

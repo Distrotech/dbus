@@ -18,11 +18,11 @@ DBUS_LAUNCHER_LIBS = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	$(XML_CFLAGS) \
 	$(APPARMOR_CFLAGS) \
 	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
 	-DDBUS_COMPILATION \
-	-DDBUS_STATIC_BUILD \
 	$(NULL)
 
 # if assertions are enabled, improve backtraces
