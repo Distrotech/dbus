@@ -1580,7 +1580,7 @@ swap_test_array (void *array,
 #define DEMARSHAL_FIXED_ARRAY_AND_CHECK(typename, byte_order, literal)                  \
   do {                                                                                  \
     DEMARSHAL_FIXED_ARRAY (typename, byte_order);                                       \
-    if (memcmp (literal, v_ARRAY_##typename, sizeof (literal) != 0))                    \
+    if (memcmp (literal, v_ARRAY_##typename, sizeof (literal)) != 0)                    \
       {                                                                                 \
         _dbus_verbose ("MARSHALED DATA\n");                                             \
         _dbus_verbose_bytes_of_string (&str, dump_pos,                                  \
