@@ -33,7 +33,7 @@
 #endif
 
 void tool_millisleep (int ms);
-void tool_oom (const char *doing);
+void tool_oom (const char *doing) _DBUS_GNUC_NORETURN;
 dbus_bool_t tool_write_all (int fd, const void *buf, size_t size);
 
 #endif

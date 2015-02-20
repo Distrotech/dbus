@@ -3713,7 +3713,12 @@ _dbus_get_autolaunch_address (const char *scope,
 
   /* fd.o #19997: if $DISPLAY isn't set to something useful, then
    * dbus-launch-x11 is just going to fail. Rather than trying to
-   * run it, we might as well bail out early with a nice error. */
+   * run it, we might as well bail out early with a nice error.
+   *
+   * This is not strictly true in a world where the user bus exists,
+   * because dbus-launch --autolaunch knows how to connect to that -
+   * but if we were going to connect to the user bus, we'd have done
+   * so before trying autolaunch: in any case. */
   display = _dbus_getenv ("DISPLAY");
 
   if (display == NULL || display[0] == '\0')
