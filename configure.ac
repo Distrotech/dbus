@@ -204,7 +204,7 @@ AC_ARG_ENABLE([tests],
   [
   if test "x$enableval" = xyes; then
     AC_MSG_NOTICE([Full test coverage was requested with --enable-tests=yes])
-    AC_MSG_NOTICE([This has many dependencies (GLib, dbus-glib, Python)])
+    AC_MSG_NOTICE([This has many dependencies (GLib, Python etc.)])
   fi
   enable_embedded_tests=$enableval
   enable_modular_tests=$enableval
@@ -242,22 +242,6 @@ AS_IF([test "x$enable_modular_tests" != xno],
     fi])
   ],
   [with_glib=no])
-
-# Not required, because we can use internal APIs (but that makes the
-# "installable tests" less useful as integration tests)
-AC_ARG_WITH([dbus_glib],
-  [AS_HELP_STRING([--with-dbus-glib], [Use dbus-glib for regression tests])],
-  [],
-  [with_dbus_glib=auto])
-AS_IF([test "x$with_dbus_glib" != xno],
-  [PKG_CHECK_MODULES([DBUS_GLIB], [dbus-glib-1],
-    [],
-    [AS_IF([test "x$with_dbus_glib" = xyes],
-      dnl specifically requested, but not found
-      [AC_MSG_ERROR([$DBUS_GLIB_ERRORS])],
-      dnl else: assumed to be "auto"
-      [with_dbus_glib=no])])])
-AM_CONDITIONAL([DBUS_WITH_DBUS_GLIB], [test "x$with_dbus_glib" != xno])
 
 if test "x$enable_modular_tests" != xno; then
   AC_DEFINE([DBUS_ENABLE_MODULAR_TESTS], [1],
@@ -1896,7 +1880,6 @@ echo "
         Building embedded tests:  ${enable_embedded_tests}
         Building modular tests:   ${enable_modular_tests}
             - with GLib:          ${with_glib}
-            - with dbus-glib:     ${with_dbus_glib}
         Installing tests:         ${enable_installed_tests}
         Building verbose mode:    ${enable_verbose_mode}
         Building assertions:      ${enable_asserts}
