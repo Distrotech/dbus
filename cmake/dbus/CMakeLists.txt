@@ -285,6 +285,13 @@ else(WIN32)
     target_link_libraries(dbus-1 ${CMAKE_THREAD_LIBS_INIT} rt)
 endif(WIN32)
 
+# Assume that Linux has -Wl,--version-script and other platforms do not
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    set(SOVERSION ${DBUS_LIBRARY_MAJOR})
+    configure_file(${DBUS_DIR}/Version.in ${CMAKE_CURRENT_BINARY_DIR}/Version)
+    set_target_properties(dbus-1 PROPERTIES LINK_FLAGS -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/Version)
+endif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+
 install(TARGETS dbus-1 ${INSTALL_TARGETS_DEFAULT_ARGS})
 install_files(/include/dbus FILES ${dbusinclude_HEADERS})
 
