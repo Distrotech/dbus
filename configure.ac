@@ -71,6 +71,11 @@ COMPILER_COVERAGE
 COMPILER_OPTIMISATIONS
 PKG_PROG_PKG_CONFIG
 
+# This must come before we set up compiler warnings because it assumes
+# non-use of -Werror=missing-prototypes
+gl_VISIBILITY
+AM_CONDITIONAL([HAVE_VISIBILITY], [test "x$HAVE_VISIBILITY" = x1])
+
 # Initialize libtool
 LT_INIT([win32-dll])
 LT_LANG([Windows Resource])

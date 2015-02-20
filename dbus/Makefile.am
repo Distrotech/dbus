@@ -12,6 +12,18 @@ AM_CPPFLAGS = \
 	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\" \
 	$(NULL)
 
+AM_CFLAGS =
+
+if HAVE_VISIBILITY
+if !DBUS_WIN
+AM_CFLAGS += $(CFLAG_VISIBILITY)
+AM_CPPFLAGS += \
+	-DDBUS_EXPORT='__attribute__((__visibility__("default")))' \
+	-DDBUS_PRIVATE_EXPORT='__attribute__((__visibility__("default")))' \
+	$(NULL)
+endif
+endif
+
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
