@@ -19,6 +19,7 @@ check_include_file(signal.h     HAVE_SIGNAL_H)
 check_include_file(locale.h     HAVE_LOCALE_H)
 check_include_file(inttypes.h     HAVE_INTTYPES_H)   # dbus-pipe.h
 check_include_file(stdint.h     HAVE_STDINT_H)   # dbus-pipe.h
+check_include_file(sys/prctl.h  HAVE_SYS_PRCTL_H)
 
 check_symbol_exists(backtrace    "execinfo.h"       HAVE_BACKTRACE)          #  dbus-sysdeps.c, dbus-sysdeps-win.c
 check_symbol_exists(getgrouplist "grp.h"            HAVE_GETGROUPLIST)       #  dbus-sysdeps.c
@@ -42,6 +43,8 @@ check_symbol_exists(accept4      "sys/socket.h"             HAVE_ACCEPT4)
 check_symbol_exists(dirfd        "dirent.h"                 HAVE_DIRFD)
 check_symbol_exists(inotify_init1 "sys/inotify.h"           HAVE_INOTIFY_INIT1)
 check_symbol_exists(SCM_RIGHTS    "sys/types.h;sys/socket.h;sys/un.h" HAVE_UNIX_FD_PASSING)
+check_symbol_exists(prctl        "sys/prctl.h"              HAVE_PRCTL)
+check_symbol_exists(raise        "signal.h"                 HAVE_RAISE)
 
 check_struct_member(cmsgcred cmcred_pid "sys/types.h sys/socket.h" HAVE_CMSGCRED)   #  dbus-sysdeps.c
 
