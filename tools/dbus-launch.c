@@ -38,6 +38,9 @@
 #include <sys/select.h>
 #include <time.h>
 
+#include <dbus/dbus.h>
+#include "dbus/dbus-internals.h"
+
 #ifdef DBUS_BUILD_X11
 #include <X11/Xlib.h>
 extern Display *xdisplay;
@@ -102,50 +105,25 @@ save_machine_uuid (const char *uuid_arg)
       exit (1);
     }
 
-  machine_uuid = xstrdup (uuid_arg);
+  machine_uuid = _dbus_strdup (uuid_arg);
 }
 
 #ifdef DBUS_BUILD_X11
-#define UUID_MAXLEN 40
 /* Read the machine uuid from file if needed. Returns TRUE if machine_uuid is
  * set after this function */
 static int
 read_machine_uuid_if_needed (void)
 {
-  FILE *f;
-  char uuid[UUID_MAXLEN];
-  size_t len;
-  int ret = FALSE;
-
   if (machine_uuid != NULL)
     return TRUE;
 
-  f = fopen (DBUS_MACHINE_UUID_FILE, "r");
-  if (f == NULL)
+  machine_uuid = dbus_get_local_machine_id ();
+
+  if (machine_uuid == NULL)
     return FALSE;
 
-  if (fgets (uuid, UUID_MAXLEN, f) == NULL)
-    goto out;
-
-  len = strlen (uuid);
-  if (len < 32)
-    goto out;
-
-  /* rstrip the read uuid */
-  while (len > 31 && isspace((int) uuid[len - 1]))
-    len--;
-
-  if (len != 32)
-    goto out;
-
-  uuid[len] = '\0';
-  machine_uuid = xstrdup (uuid);
   verbose ("UID: %s\n", machine_uuid);
-  ret = TRUE;
-
-out:
-  fclose(f);
-  return ret;
+  return TRUE;
 }
 #endif /* DBUS_BUILD_X11 */
 

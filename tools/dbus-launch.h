@@ -26,6 +26,8 @@
 
 #include <sys/types.h>
 
+#include <dbus/dbus.h>
+
 #ifndef TRUE
 #define TRUE (1)
 #endif

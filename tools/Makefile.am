@@ -51,7 +51,17 @@ else
 dbus_launch_SOURCES=				\
 	dbus-launch.c				\
 	dbus-launch-x11.c			\
-	dbus-launch.h
+	dbus-launch.h \
+	tool-common.c \
+	tool-common.h \
+	$(NULL)
+dbus_launch_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
+	$(NULL)
+dbus_launch_LDADD = \
+	$(top_builddir)/dbus/libdbus-1.la \
+	$(DBUS_X_LIBS) \
+	$(NULL)
 
 dbus_run_session_SOURCES =			\
 	dbus-run-session.c
@@ -78,10 +88,6 @@ dbus_monitor_LDADD = \
 
 dbus_uuidgen_LDADD = \
 	$(top_builddir)/dbus/libdbus-1.la \
-	$(NULL)
-
-dbus_launch_LDADD = \
-	$(DBUS_X_LIBS) \
 	$(NULL)
 
 examplesdir = ${docdir}/examples
