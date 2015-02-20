@@ -1,21 +1,6 @@
 #include <config.h>
 #include "test-utils.h"
 
-#ifndef DBUS_TEST_USE_INTERNAL
-# include <dbus/dbus.h>
-# include <dbus/dbus-glib-lowlevel.h>
-#endif
-
-#ifdef DBUS_TEST_USE_INTERNAL
-# define test_assert(x) _dbus_assert(x)
-#elif defined(g_assert_true)
-# define test_assert(x) g_assert_true(x)
-#else
-# define test_assert(x) g_assert(x)
-#endif
-
-#ifdef DBUS_TEST_USE_INTERNAL
-
 typedef struct
 {
   DBusLoop *loop;
@@ -112,13 +97,10 @@ cdata_new (DBusLoop       *loop,
   return cd;
 }
 
-#endif /* DBUS_TEST_USE_INTERNAL */
-
 dbus_bool_t
 test_connection_setup (TestMainContext *ctx,
                        DBusConnection *connection)
 {
-#ifdef DBUS_TEST_USE_INTERNAL
   DBusLoop *loop = ctx;
   CData *cd;
 
@@ -167,12 +149,6 @@ test_connection_setup (TestMainContext *ctx,
   dbus_connection_set_timeout_functions (connection, NULL, NULL, NULL, NULL, NULL);
   
   return FALSE;
-#else /* !DBUS_TEST_USE_INTERNAL */
-
-  dbus_connection_setup_with_g_main (connection, ctx);
-  return TRUE;
-
-#endif /* !DBUS_TEST_USE_INTERNAL */
 }
 
 static void
@@ -202,8 +178,6 @@ test_connection_shutdown (TestMainContext *ctx,
 
   dbus_connection_set_dispatch_status_function (connection, NULL, NULL, NULL);
 }
-
-#ifdef DBUS_TEST_USE_INTERNAL
 
 typedef struct
 {
@@ -286,13 +260,10 @@ remove_server_timeout (DBusTimeout *timeout,
   _dbus_loop_remove_timeout (context->loop, timeout);
 }
 
-#endif /* DBUS_TEST_USE_INTERNAL */
-
 dbus_bool_t
 test_server_setup (TestMainContext *ctx,
                    DBusServer    *server)
 {
-#ifdef DBUS_TEST_USE_INTERNAL
   DBusLoop *loop = ctx;
   ServerData *sd;
 
@@ -331,13 +302,6 @@ test_server_setup (TestMainContext *ctx,
   test_server_shutdown (loop, server);
   
   return FALSE;
-
-#else /* !DBUS_TEST_USE_INTERNAL */
-
-  dbus_server_setup_with_g_main (server, ctx);
-  return TRUE;
-
-#endif /* !DBUS_TEST_USE_INTERNAL */
 }
 
 void
@@ -362,41 +326,24 @@ test_server_shutdown (TestMainContext  *ctx,
 TestMainContext *
 test_main_context_get (void)
 {
-#ifdef DBUS_TEST_USE_INTERNAL
   return _dbus_loop_new ();
-#else
-  /* I suspect dbus-glib relies the default main context in some places */
-  return g_main_context_ref (g_main_context_default ());
-#endif
 }
 
 TestMainContext *
 test_main_context_ref (TestMainContext *ctx)
 {
-#ifdef DBUS_TEST_USE_INTERNAL
   return _dbus_loop_ref (ctx);
-#else
-  return g_main_context_ref (ctx);
-#endif
 }
 
 void test_main_context_unref (TestMainContext *ctx)
 {
-#ifdef DBUS_TEST_USE_INTERNAL
   _dbus_loop_unref (ctx);
-#else
-  g_main_context_unref (ctx);
-#endif
 }
 
 void test_main_context_iterate (TestMainContext *ctx,
                                 dbus_bool_t      may_block)
 {
-#ifdef DBUS_TEST_USE_INTERNAL
   _dbus_loop_iterate (ctx, may_block);
-#else
-  g_main_context_iteration (ctx, may_block);
-#endif
 }
 
 void
@@ -406,5 +353,5 @@ test_pending_call_store_reply (DBusPendingCall *pc,
   DBusMessage **message_p = data;
 
   *message_p = dbus_pending_call_steal_reply (pc);
-  test_assert (*message_p != NULL);
+  _dbus_assert (*message_p != NULL);
 }
