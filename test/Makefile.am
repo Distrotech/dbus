@@ -28,9 +28,6 @@ libdbus_testutils_la_SOURCES += \
 	$(NULL)
 endif
 
-testutils_shared_if_possible_cppflags = $(AM_CPPFLAGS)
-testutils_shared_if_possible_libs = libdbus-testutils.la
-
 libdbus_testutils_la_LIBADD = \
 	$(top_builddir)/dbus/libdbus-1.la \
 	$(top_builddir)/dbus/libdbus-internal.la \
@@ -159,85 +156,74 @@ TESTS_ENVIRONMENT = \
 	$(NULL)
 
 manual_authz_SOURCES = manual-authz.c
-manual_authz_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 manual_authz_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_corrupt_SOURCES = corrupt.c
-test_corrupt_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_corrupt_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_loopback_SOURCES = loopback.c
-test_loopback_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_loopback_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_relay_SOURCES = relay.c
-test_relay_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_relay_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_dbus_daemon_SOURCES = dbus-daemon.c
-test_dbus_daemon_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_dbus_daemon_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_dbus_daemon_eavesdrop_SOURCES = dbus-daemon-eavesdrop.c
-test_dbus_daemon_eavesdrop_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_dbus_daemon_eavesdrop_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_sd_activation_SOURCES = \
     sd-activation.c \
     $(NULL)
-test_sd_activation_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_sd_activation_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_marshal_SOURCES = marshal.c
-test_marshal_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_marshal_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_monitor_SOURCES = \
     monitor.c \
     $(NULL)
-test_monitor_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_monitor_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_syntax_SOURCES = syntax.c
-test_syntax_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_syntax_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
 test_uid_permissions_SOURCES = \
     uid-permissions.c \
     $(NULL)
-test_uid_permissions_CPPFLAGS = $(testutils_shared_if_possible_cppflags)
 test_uid_permissions_LDADD = \
-    $(testutils_shared_if_possible_libs) \
+    libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
 
