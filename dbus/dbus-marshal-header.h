@@ -78,6 +78,7 @@ void          _dbus_header_set_serial             (DBusHeader        *header,
 dbus_uint32_t _dbus_header_get_serial             (DBusHeader        *header);
 void          _dbus_header_update_lengths         (DBusHeader        *header,
                                                    int                body_len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_header_set_field_basic        (DBusHeader        *header,
                                                    int                field,
                                                    int                type,
@@ -86,10 +87,12 @@ dbus_bool_t   _dbus_header_get_field_basic        (DBusHeader        *header,
                                                    int                field,
                                                    int                type,
                                                    void              *value);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_header_get_field_raw          (DBusHeader        *header,
                                                    int                field,
                                                    const DBusString **str,
                                                    int               *pos);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_header_delete_field           (DBusHeader        *header,
                                                    int                field);
 void          _dbus_header_toggle_flag            (DBusHeader        *header,
@@ -121,6 +124,7 @@ dbus_bool_t   _dbus_header_load                   (DBusHeader        *header,
                                                    int                len);
 void          _dbus_header_byteswap               (DBusHeader        *header,
                                                    int                new_order);
+DBUS_PRIVATE_EXPORT
 char          _dbus_header_get_byte_order         (const DBusHeader  *header);
 
 

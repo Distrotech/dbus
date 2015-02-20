@@ -27,6 +27,7 @@
 #include <dbus/dbus-protocol.h>
 #include <dbus/dbus-marshal-recursive.h>
 
+DBUS_PRIVATE_EXPORT
 void _dbus_marshal_byteswap (const DBusString *signature,
                              int               signature_start,
                              int               old_byte_order,

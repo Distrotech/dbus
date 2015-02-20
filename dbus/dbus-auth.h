@@ -41,23 +41,35 @@ typedef enum
   DBUS_AUTH_STATE_AUTHENTICATED
 } DBusAuthState;
 
+DBUS_PRIVATE_EXPORT
 DBusAuth*     _dbus_auth_server_new          (const DBusString       *guid);
+DBUS_PRIVATE_EXPORT
 DBusAuth*     _dbus_auth_client_new          (void);
+DBUS_PRIVATE_EXPORT
 DBusAuth*     _dbus_auth_ref                 (DBusAuth               *auth);
+DBUS_PRIVATE_EXPORT
 void          _dbus_auth_unref               (DBusAuth               *auth);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_auth_set_mechanisms      (DBusAuth               *auth,
                                               const char            **mechanisms);
+DBUS_PRIVATE_EXPORT
 DBusAuthState _dbus_auth_do_work             (DBusAuth               *auth);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_auth_get_bytes_to_send   (DBusAuth               *auth,
                                               const DBusString      **str);
+DBUS_PRIVATE_EXPORT
 void          _dbus_auth_bytes_sent          (DBusAuth               *auth,
                                               int                     bytes_sent);
+DBUS_PRIVATE_EXPORT
 void          _dbus_auth_get_buffer          (DBusAuth               *auth,
                                               DBusString            **buffer);
+DBUS_PRIVATE_EXPORT
 void          _dbus_auth_return_buffer       (DBusAuth               *auth,
                                               DBusString             *buffer);
+DBUS_PRIVATE_EXPORT
 void          _dbus_auth_get_unused_bytes    (DBusAuth               *auth,
                                               const DBusString      **str);
+DBUS_PRIVATE_EXPORT
 void          _dbus_auth_delete_unused_bytes (DBusAuth               *auth);
 dbus_bool_t   _dbus_auth_needs_encoding      (DBusAuth               *auth);
 dbus_bool_t   _dbus_auth_encode_data         (DBusAuth               *auth,
@@ -67,9 +79,12 @@ dbus_bool_t   _dbus_auth_needs_decoding      (DBusAuth               *auth);
 dbus_bool_t   _dbus_auth_decode_data         (DBusAuth               *auth,
                                               const DBusString       *encoded,
                                               DBusString             *plaintext);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_auth_set_credentials     (DBusAuth               *auth,
                                               DBusCredentials        *credentials);
+DBUS_PRIVATE_EXPORT
 DBusCredentials* _dbus_auth_get_identity     (DBusAuth               *auth);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_auth_set_context         (DBusAuth               *auth,
                                               const DBusString       *context);
 const char*   _dbus_auth_get_guid_from_server(DBusAuth               *auth);

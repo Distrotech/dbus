@@ -46,9 +46,13 @@ typedef enum
 
 typedef void (* DBusPendingFdsChangeFunction) (void *data);
 
+DBUS_PRIVATE_EXPORT
 void              _dbus_connection_lock                        (DBusConnection     *connection);
+DBUS_PRIVATE_EXPORT
 void              _dbus_connection_unlock                      (DBusConnection     *connection);
+DBUS_PRIVATE_EXPORT
 DBusConnection *  _dbus_connection_ref_unlocked                (DBusConnection     *connection);
+DBUS_PRIVATE_EXPORT
 void              _dbus_connection_unref_unlocked              (DBusConnection     *connection);
 void              _dbus_connection_queue_received_message_link (DBusConnection     *connection,
                                                                 DBusList           *link);
@@ -96,21 +100,26 @@ dbus_bool_t       _dbus_connection_send_and_unlock             (DBusConnection  
 
 void              _dbus_connection_queue_synthesized_message_link (DBusConnection *connection,
 						                   DBusList *link);
+DBUS_PRIVATE_EXPORT
 void              _dbus_connection_test_get_locks                 (DBusConnection *conn,
                                                                    DBusMutex **mutex_loc,
                                                                    DBusMutex **dispatch_mutex_loc,
                                                                    DBusMutex **io_path_mutex_loc,
                                                                    DBusCondVar **dispatch_cond_loc,
                                                                    DBusCondVar **io_path_cond_loc);
+DBUS_PRIVATE_EXPORT
 int               _dbus_connection_get_pending_fds_count          (DBusConnection *connection);
+DBUS_PRIVATE_EXPORT
 void              _dbus_connection_set_pending_fds_function       (DBusConnection *connection,
                                                                    DBusPendingFdsChangeFunction callback,
                                                                    void *data);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t       _dbus_connection_get_linux_security_label       (DBusConnection  *connection,
                                                                    char           **label_p);
 
 /* if DBUS_ENABLE_STATS */
+DBUS_PRIVATE_EXPORT
 void _dbus_connection_get_stats (DBusConnection *connection,
                                  dbus_uint32_t  *in_messages,
                                  dbus_uint32_t  *in_bytes,

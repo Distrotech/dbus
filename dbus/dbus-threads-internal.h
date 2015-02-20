@@ -48,7 +48,9 @@ typedef struct DBusCMutex DBusCMutex;
 
 DBUS_BEGIN_DECLS
 
+DBUS_PRIVATE_EXPORT
 void         _dbus_rmutex_lock               (DBusRMutex       *mutex);
+DBUS_PRIVATE_EXPORT
 void         _dbus_rmutex_unlock             (DBusRMutex       *mutex);
 void         _dbus_rmutex_new_at_location    (DBusRMutex      **location_p);
 void         _dbus_rmutex_free_at_location   (DBusRMutex      **location_p);

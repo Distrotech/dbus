@@ -35,9 +35,11 @@
 
 DBUS_BEGIN_DECLS
 
+DBUS_PRIVATE_EXPORT
 void _dbus_warn               (const char *format,
                                ...) _DBUS_GNUC_PRINTF (1, 2);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_warn_check_failed  (const char *format,
                                ...) _DBUS_GNUC_PRINTF (1, 2);
 
@@ -89,17 +91,23 @@ void _dbus_warn_check_failed  (const char *format,
 #endif
 
 #ifdef DBUS_CPP_SUPPORTS_VARIABLE_MACRO_ARGUMENTS
+DBUS_PRIVATE_EXPORT
 void _dbus_verbose_real       (const char *file, const int line, const char *function, 
                                const char *format,...) _DBUS_GNUC_PRINTF (4, 5);
 #  define _dbus_verbose(fmt,...) _dbus_verbose_real( __FILE__,__LINE__,__FUNCTION__,fmt, ## __VA_ARGS__)
 #else
+DBUS_PRIVATE_EXPORT
 void _dbus_verbose_real       (const char *format,
                                ...) _DBUS_GNUC_PRINTF (1, 2);
 #  define _dbus_verbose _dbus_verbose_real
 #endif
+DBUS_PRIVATE_EXPORT
 void _dbus_verbose_reset_real (void);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_is_verbose_real (void);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_get_verbose (void);
+DBUS_PRIVATE_EXPORT
 void _dbus_set_verbose (dbus_bool_t state);
 
 #  define _dbus_verbose_reset _dbus_verbose_reset_real
@@ -124,11 +132,13 @@ void _dbus_trace_ref (const char *obj_name,
                       const char *env_var,
                       int        *enabled);
 
+DBUS_PRIVATE_EXPORT
 const char* _dbus_strerror (int error_number);
 
 #ifdef DBUS_DISABLE_ASSERT
 #define _dbus_assert(condition) do { } while (0)
 #else
+DBUS_PRIVATE_EXPORT
 void _dbus_real_assert (dbus_bool_t  condition,
                         const char  *condition_text,
                         const char  *file,
@@ -141,6 +151,7 @@ void _dbus_real_assert (dbus_bool_t  condition,
 #ifdef DBUS_DISABLE_ASSERT
 #define _dbus_assert_not_reached(explanation) do { } while (0)
 #else
+DBUS_PRIVATE_EXPORT
 void _dbus_real_assert_not_reached (const char *explanation,
                                     const char *file,
                                     int         line) _DBUS_GNUC_NORETURN;
@@ -153,6 +164,7 @@ void _dbus_real_assert_not_reached (const char *explanation,
 #define _dbus_return_val_if_fail(condition, val)
 #else
 
+DBUS_PRIVATE_EXPORT
 extern const char *_dbus_return_if_fail_warning_format;
 
 #define _dbus_return_if_fail(condition) do {                                       \
@@ -215,9 +227,11 @@ extern const char *_dbus_return_if_fail_warning_format;
   ((void*)_DBUS_ALIGN_VALUE(this, boundary))
 
 
+DBUS_PRIVATE_EXPORT
 char*       _dbus_strdup                (const char  *str);
 void*       _dbus_memdup                (const void  *mem,
                                          size_t       n_bytes);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_string_array_contains (const char **array,
                                          const char  *str);
 char**      _dbus_dup_string_array      (const char **array);
@@ -259,12 +273,15 @@ dbus_bool_t _dbus_set_fd_nonblocking (int             fd,
 void _dbus_verbose_bytes           (const unsigned char *data,
                                     int                  len,
                                     int                  offset);
+DBUS_PRIVATE_EXPORT
 void _dbus_verbose_bytes_of_string (const DBusString    *str,
                                     int                  start,
                                     int                  len);
 
+DBUS_PRIVATE_EXPORT
 extern const char *_dbus_no_memory_message;
 #define _DBUS_SET_OOM(error) dbus_set_error_const ((error), DBUS_ERROR_NO_MEMORY, _dbus_no_memory_message)
+DBUS_PRIVATE_EXPORT
 void _dbus_set_error_valist (DBusError  *error,
                              const char *name,
                              const char *format,
@@ -278,9 +295,11 @@ void        _dbus_set_fail_alloc_failures       (int  failures_per_failure);
 int         _dbus_get_fail_alloc_failures       (void);
 dbus_bool_t _dbus_decrement_fail_alloc_counter  (void);
 dbus_bool_t _dbus_disable_mem_pools             (void);
+DBUS_PRIVATE_EXPORT
 int         _dbus_get_malloc_blocks_outstanding (void);
 
 typedef dbus_bool_t (* DBusTestMemoryFunction)  (void *data);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_test_oom_handling (const char             *description,
                                      DBusTestMemoryFunction  func,
                                      void                   *data);
@@ -297,6 +316,7 @@ dbus_bool_t _dbus_test_oom_handling (const char             *description,
 #endif /* !DBUS_ENABLE_EMBEDDED_TESTS */
 
 typedef void (* DBusShutdownFunction) (void *data);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_register_shutdown_func          (DBusShutdownFunction  function,
                                                    void                 *data);
 dbus_bool_t _dbus_register_shutdown_func_unlocked (DBusShutdownFunction  function,
@@ -335,6 +355,7 @@ void        _dbus_unlock (DBusGlobalLock lock);
 #define _DBUS_LOCK(name)                _dbus_lock   (_DBUS_LOCK_##name)
 #define _DBUS_UNLOCK(name)              _dbus_unlock (_DBUS_LOCK_##name)
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_threads_init_debug (void);
 
 dbus_bool_t   _dbus_address_append_escaped (DBusString       *escaped,
@@ -359,7 +380,9 @@ union DBusGUID
   char as_bytes[DBUS_UUID_LENGTH_BYTES];                /**< guid as 16 single-byte values */
 };
 
+DBUS_PRIVATE_EXPORT
 void        _dbus_generate_uuid  (DBusGUID         *uuid);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_uuid_encode    (const DBusGUID   *uuid,
                                   DBusString       *encoded);
 dbus_bool_t _dbus_read_uuid_file (const DBusString *filename,

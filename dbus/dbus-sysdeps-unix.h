@@ -40,11 +40,14 @@ DBUS_BEGIN_DECLS
  * @{
  */
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t
 _dbus_close     (int               fd,
                  DBusError        *error);
+DBUS_PRIVATE_EXPORT
 int _dbus_dup   (int               fd,
                  DBusError        *error);
+DBUS_PRIVATE_EXPORT
 int
 _dbus_read      (int               fd,
                  DBusString       *buffer,
@@ -131,17 +134,20 @@ dbus_bool_t _dbus_group_info_fill_gid (DBusGroupInfo    *info,
 void        _dbus_group_info_free     (DBusGroupInfo    *info);
 
 dbus_uid_t    _dbus_getuid (void);
+DBUS_PRIVATE_EXPORT
 dbus_uid_t    _dbus_geteuid (void);
 
 dbus_bool_t _dbus_parse_uid (const DBusString  *uid_str,
                              dbus_uid_t        *uid);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_close_all (void);
 
 dbus_bool_t _dbus_append_address_from_socket (int         fd,
                                               DBusString *address,
                                               DBusError  *error);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_fd_set_close_on_exec (int fd);
 
 /** @} */

@@ -133,6 +133,7 @@ struct DBusMessage
 #endif
 };
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
                                                 DBusError       *error,
                                                 int              first_arg_type,

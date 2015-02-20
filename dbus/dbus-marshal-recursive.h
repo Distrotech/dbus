@@ -96,37 +96,48 @@ struct DBusArrayLenFixup
   int new_len;           /**< the new value of the length in the written-out block */
 };
 
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_reader_init                      (DBusTypeReader        *reader,
                                                          int                    byte_order,
                                                          const DBusString      *type_str,
                                                          int                    type_pos,
                                                          const DBusString      *value_str,
                                                          int                    value_pos);
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_reader_init_types_only           (DBusTypeReader        *reader,
                                                          const DBusString      *type_str,
                                                          int                    type_pos);
+DBUS_PRIVATE_EXPORT
 int         _dbus_type_reader_get_current_type          (const DBusTypeReader  *reader);
+DBUS_PRIVATE_EXPORT
 int         _dbus_type_reader_get_element_type          (const DBusTypeReader  *reader);
 int         _dbus_type_reader_get_value_pos             (const DBusTypeReader  *reader);
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_reader_read_basic                (const DBusTypeReader  *reader,
                                                          void                  *value);
 int         _dbus_type_reader_get_array_length          (const DBusTypeReader  *reader);
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_reader_read_fixed_multi          (const DBusTypeReader  *reader,
                                                          void                  *value,
                                                          int                   *n_elements);
 void        _dbus_type_reader_read_raw                  (const DBusTypeReader  *reader,
                                                          const unsigned char  **value_location);
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_reader_recurse                   (DBusTypeReader        *reader,
                                                          DBusTypeReader        *subreader);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_reader_next                      (DBusTypeReader        *reader);
 dbus_bool_t _dbus_type_reader_has_next                  (const DBusTypeReader  *reader);
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_reader_get_signature             (const DBusTypeReader  *reader,
                                                          const DBusString     **str_p,
                                                          int                   *start_p,
                                                          int                   *len_p);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_reader_set_basic                 (DBusTypeReader        *reader,
                                                          const void            *value,
                                                          const DBusTypeReader  *realign_root);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_reader_delete                    (DBusTypeReader        *reader,
                                                          const DBusTypeReader  *realign_root);
 
@@ -136,6 +147,7 @@ dbus_bool_t _dbus_type_reader_equal_values              (const DBusTypeReader *l
 void        _dbus_type_signature_next                   (const char            *signature,
 							 int                   *type_pos);
 
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_writer_init                 (DBusTypeWriter        *writer,
                                                     int                    byte_order,
                                                     DBusString            *type_str,
@@ -150,30 +162,36 @@ void        _dbus_type_writer_add_types            (DBusTypeWriter        *write
                                                     DBusString            *type_str,
                                                     int                    type_pos);
 void        _dbus_type_writer_remove_types         (DBusTypeWriter        *writer);
+DBUS_PRIVATE_EXPORT
 void        _dbus_type_writer_init_values_only     (DBusTypeWriter        *writer,
                                                     int                    byte_order,
                                                     const DBusString      *type_str,
                                                     int                    type_pos,
                                                     DBusString            *value_str,
                                                     int                    value_pos);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_writer_write_basic          (DBusTypeWriter        *writer,
                                                     int                    type,
                                                     const void            *value);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_writer_write_fixed_multi    (DBusTypeWriter        *writer,
                                                     int                    element_type,
                                                     const void            *value,
                                                     int                    n_elements);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_writer_recurse              (DBusTypeWriter        *writer,
                                                     int                    container_type,
                                                     const DBusString      *contained_type,
                                                     int                    contained_type_start,
                                                     DBusTypeWriter        *sub);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_writer_unrecurse            (DBusTypeWriter        *writer,
                                                     DBusTypeWriter        *sub);
 dbus_bool_t _dbus_type_writer_append_array         (DBusTypeWriter        *writer,
                                                     const DBusString      *contained_type,
                                                     int                    contained_type_start,
                                                     DBusTypeWriter        *sub);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_type_writer_write_reader         (DBusTypeWriter        *writer,
                                                     DBusTypeReader        *reader);
 

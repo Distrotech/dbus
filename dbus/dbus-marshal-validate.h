@@ -116,9 +116,11 @@ typedef enum
   DBUS_VALIDITY_LAST
 } DBusValidity;
 
+DBUS_PRIVATE_EXPORT
 DBusValidity _dbus_validate_signature_with_reason (const DBusString *type_str,
                                                    int               type_pos,
                                                    int               len);
+DBUS_PRIVATE_EXPORT
 DBusValidity _dbus_validate_body_with_reason      (const DBusString *expected_signature,
                                                    int               expected_signature_start,
                                                    int               byte_order,
@@ -129,24 +131,31 @@ DBusValidity _dbus_validate_body_with_reason      (const DBusString *expected_si
 
 const char *_dbus_validity_to_error_message (DBusValidity validity);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_path       (const DBusString *str,
                                        int               start,
                                        int               len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_interface  (const DBusString *str,
                                        int               start,
                                        int               len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_member     (const DBusString *str,
                                        int               start,
                                        int               len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_error_name (const DBusString *str,
                                        int               start,
                                        int               len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_bus_name   (const DBusString *str,
                                        int               start,
                                        int               len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_bus_namespace (const DBusString  *str,
                                           int                start,
                                           int                len);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_validate_signature  (const DBusString *str,
                                        int               start,
                                        int               len);

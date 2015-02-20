@@ -32,10 +32,14 @@ DBUS_BEGIN_DECLS
 
 typedef struct DBusMemPool DBusMemPool;
 
+DBUS_PRIVATE_EXPORT
 DBusMemPool* _dbus_mem_pool_new     (int          element_size,
                                      dbus_bool_t  zero_elements);
+DBUS_PRIVATE_EXPORT
 void         _dbus_mem_pool_free    (DBusMemPool *pool);
+DBUS_PRIVATE_EXPORT
 void*        _dbus_mem_pool_alloc   (DBusMemPool *pool);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t  _dbus_mem_pool_dealloc (DBusMemPool *pool,
                                      void        *element);
 

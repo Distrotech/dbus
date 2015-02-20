@@ -40,14 +40,18 @@ typedef struct DBusTimeoutList DBusTimeoutList;
 /** function to run when the timeout is handled */
 typedef dbus_bool_t (* DBusTimeoutHandler) (void *data);
 
+DBUS_PRIVATE_EXPORT
 DBusTimeout* _dbus_timeout_new          (int                 interval,
                                          DBusTimeoutHandler  handler,
                                          void               *data,
                                          DBusFreeFunction    free_data_function);
 DBusTimeout* _dbus_timeout_ref          (DBusTimeout        *timeout);
+DBUS_PRIVATE_EXPORT
 void         _dbus_timeout_unref        (DBusTimeout        *timeout);
+DBUS_PRIVATE_EXPORT
 void         _dbus_timeout_set_interval (DBusTimeout        *timeout,
                                          int                 interval);
+DBUS_PRIVATE_EXPORT
 void         _dbus_timeout_set_enabled  (DBusTimeout        *timeout,
                                          dbus_bool_t         enabled);
 

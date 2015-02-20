@@ -91,7 +91,9 @@ typedef struct DBusPipe DBusPipe;
 void _dbus_abort (void) _DBUS_GNUC_NORETURN;
 
 dbus_bool_t _dbus_check_setuid (void);
+DBUS_PRIVATE_EXPORT
 const char* _dbus_getenv (const char *varname);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_clearenv (void);
 char **     _dbus_get_environment (void);
 
@@ -127,11 +129,14 @@ typedef unsigned long dbus_gid_t;
  * 
  */
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_close_socket     (int               fd,
                                     DBusError        *error);
+DBUS_PRIVATE_EXPORT
 int         _dbus_read_socket      (int               fd,
                                     DBusString       *buffer,
                                     int               count);
+DBUS_PRIVATE_EXPORT
 int         _dbus_write_socket     (int               fd,
                                     const DBusString *buffer,
                                     int               start,
@@ -149,6 +154,7 @@ int _dbus_read_socket_with_unix_fds      (int               fd,
                                           int               count,
                                           int              *fds,
                                           int              *n_fds);
+DBUS_PRIVATE_EXPORT
 int _dbus_write_socket_with_unix_fds     (int               fd,
                                           const DBusString *buffer,
                                           int               start,
@@ -194,6 +200,7 @@ dbus_bool_t _dbus_send_credentials_socket (int              server_fd,
 dbus_bool_t _dbus_credentials_add_from_user            (DBusCredentials  *credentials,
                                                         const DBusString *username);
 dbus_bool_t _dbus_credentials_add_from_current_process (DBusCredentials  *credentials);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_append_user_from_current_process     (DBusString        *str);
 
 dbus_bool_t _dbus_parse_unix_user_from_config   (const DBusString  *username,
@@ -317,12 +324,15 @@ typedef struct
   short revents;     /**< Events that occurred */
 } DBusPollFD;
 
+DBUS_PRIVATE_EXPORT
 int _dbus_poll (DBusPollFD *fds,
                 int         n_fds,
                 int         timeout_milliseconds);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_sleep_milliseconds (int milliseconds);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_get_monotonic_time (long *tv_sec,
                                long *tv_usec);
 
@@ -332,15 +342,19 @@ void _dbus_get_real_time (long *tv_sec,
 /**
  * directory interface
  */
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_create_directory        (const DBusString *filename,
                                               DBusError        *error);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_delete_directory        (const DBusString *filename,
 					      DBusError        *error);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_concat_dir_and_file (DBusString       *dir,
                                        const DBusString *next_component);
 dbus_bool_t _dbus_string_get_dirname  (const DBusString *filename,
                                        DBusString       *dirname);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_path_is_absolute    (const DBusString *filename);
 
 dbus_bool_t _dbus_get_standard_session_servicedirs (DBusList **dirs);
@@ -362,6 +376,7 @@ void         _dbus_directory_close         (DBusDirIter      *iter);
 dbus_bool_t  _dbus_check_dir_is_private_to_user    (DBusString *dir,
                                                     DBusError *error);
 
+DBUS_PRIVATE_EXPORT
 const char* _dbus_get_tmpdir      (void);
 
 /**
@@ -373,10 +388,13 @@ void        _dbus_generate_random_bytes_buffer (char       *buffer,
                                                 int         n_bytes);
 dbus_bool_t _dbus_generate_random_bytes        (DBusString *str,
                                                 int         n_bytes);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_generate_random_ascii        (DBusString *str,
                                                 int         n_bytes);
 
+DBUS_PRIVATE_EXPORT
 const char* _dbus_error_from_errno (int error_number);
+DBUS_PRIVATE_EXPORT
 const char* _dbus_error_from_system_errno (void);
 
 int         _dbus_save_socket_errno                  (void);
@@ -387,13 +405,15 @@ dbus_bool_t _dbus_get_is_errno_enomem                (int e);
 dbus_bool_t _dbus_get_is_errno_eintr                 (int e);
 dbus_bool_t _dbus_get_is_errno_epipe                 (int e);
 dbus_bool_t _dbus_get_is_errno_etoomanyrefs          (int e);
+DBUS_PRIVATE_EXPORT
 const char* _dbus_strerror_from_errno                (void);
 
 void _dbus_disable_sigpipe (void);
 
-
+DBUS_PRIVATE_EXPORT
 void _dbus_exit (int code) _DBUS_GNUC_NORETURN;
 
+DBUS_PRIVATE_EXPORT
 int _dbus_printf_string_upper_bound (const char *format,
                                      va_list args);
 
@@ -416,6 +436,7 @@ typedef struct
 dbus_bool_t _dbus_stat             (const DBusString *filename,
                                     DBusStat         *statbuf,
                                     DBusError        *error);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_full_duplex_pipe (int              *fd1,
                                     int              *fd2,
                                     dbus_bool_t       blocking,
@@ -532,6 +553,7 @@ void _dbus_threads_lock_platform_specific (void);
  */
 void _dbus_threads_unlock_platform_specific (void);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_split_paths_and_append (DBusString *dirs, 
                                           const char *suffix, 
                                           DBusList **dir_list);
@@ -542,11 +564,13 @@ unsigned long _dbus_pid_for_log (void);
  * the PID file handling just needs a little more abstraction
  * in the bus daemon first.
  */
+DBUS_PRIVATE_EXPORT
 dbus_pid_t    _dbus_getpid (void);
 
 dbus_bool_t _dbus_change_to_daemon_user (const char *user,
                                          DBusError  *error);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_flush_caches (void);
 
 /*

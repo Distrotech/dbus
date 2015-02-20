@@ -71,47 +71,66 @@ typedef enum
   DBUS_HASH_UINTPTR        /**< Hash keys are integer capable to hold a pointer. */
 } DBusHashType;
 
+DBUS_PRIVATE_EXPORT
 DBusHashTable* _dbus_hash_table_new                (DBusHashType      type,
                                                     DBusFreeFunction  key_free_function,
                                                     DBusFreeFunction  value_free_function);
 DBusHashTable* _dbus_hash_table_ref                (DBusHashTable    *table);
+DBUS_PRIVATE_EXPORT
 void           _dbus_hash_table_unref              (DBusHashTable    *table);
 void           _dbus_hash_table_remove_all         (DBusHashTable    *table);
+DBUS_PRIVATE_EXPORT
 void           _dbus_hash_iter_init                (DBusHashTable    *table,
                                                     DBusHashIter     *iter);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_iter_next                (DBusHashIter     *iter);
+DBUS_PRIVATE_EXPORT
 void           _dbus_hash_iter_remove_entry        (DBusHashIter     *iter);
+DBUS_PRIVATE_EXPORT
 void*          _dbus_hash_iter_get_value           (DBusHashIter     *iter);
 void           _dbus_hash_iter_set_value           (DBusHashIter     *iter,
                                                     void             *value);
+DBUS_PRIVATE_EXPORT
 int            _dbus_hash_iter_get_int_key         (DBusHashIter     *iter);
+DBUS_PRIVATE_EXPORT
 const char*    _dbus_hash_iter_get_string_key      (DBusHashIter     *iter);
+DBUS_PRIVATE_EXPORT
 uintptr_t      _dbus_hash_iter_get_uintptr_key     (DBusHashIter     *iter);
 dbus_bool_t    _dbus_hash_iter_lookup              (DBusHashTable    *table,
                                                     void             *key,
                                                     dbus_bool_t       create_if_not_found,
                                                     DBusHashIter     *iter);
+DBUS_PRIVATE_EXPORT
 void*          _dbus_hash_table_lookup_string      (DBusHashTable    *table,
                                                     const char       *key);
+DBUS_PRIVATE_EXPORT
 void*          _dbus_hash_table_lookup_int         (DBusHashTable    *table,
                                                     int               key);
+DBUS_PRIVATE_EXPORT
 void*          _dbus_hash_table_lookup_uintptr     (DBusHashTable    *table,
                                                     uintptr_t         key);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_table_remove_string      (DBusHashTable    *table,
                                                     const char       *key);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_table_remove_int         (DBusHashTable    *table,
                                                     int               key);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_table_remove_uintptr     (DBusHashTable    *table,
                                                     uintptr_t         key);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_table_insert_string      (DBusHashTable    *table,
                                                     char             *key,
                                                     void             *value);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_table_insert_int         (DBusHashTable    *table,
                                                     int               key,
                                                     void             *value);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_hash_table_insert_uintptr     (DBusHashTable    *table,
                                                     uintptr_t         key,
                                                     void             *value);
+DBUS_PRIVATE_EXPORT
 int            _dbus_hash_table_get_n_entries      (DBusHashTable    *table);
 
 /* Preallocation */
@@ -119,9 +138,12 @@ int            _dbus_hash_table_get_n_entries      (DBusHashTable    *table);
 /** A preallocated hash entry */
 typedef struct DBusPreallocatedHash DBusPreallocatedHash;
 
+DBUS_PRIVATE_EXPORT
 DBusPreallocatedHash *_dbus_hash_table_preallocate_entry          (DBusHashTable        *table);
+DBUS_PRIVATE_EXPORT
 void                  _dbus_hash_table_free_preallocated_entry    (DBusHashTable        *table,
                                                                    DBusPreallocatedHash *preallocated);
+DBUS_PRIVATE_EXPORT
 void                  _dbus_hash_table_insert_string_preallocated (DBusHashTable        *table,
                                                                    DBusPreallocatedHash *preallocated,
                                                                    char                 *key,

@@ -51,10 +51,13 @@ void             _dbus_pending_call_set_reply_serial_unlocked    (DBusPendingCal
 dbus_bool_t      _dbus_pending_call_set_timeout_error_unlocked   (DBusPendingCall    *pending,
                                                                   DBusMessage        *message,
                                                                   dbus_uint32_t       serial);
+DBUS_PRIVATE_EXPORT
 DBusPendingCall* _dbus_pending_call_new_unlocked                 (DBusConnection     *connection,
                                                                   int                 timeout_milliseconds,
                                                                   DBusTimeoutHandler  timeout_handler);
+DBUS_PRIVATE_EXPORT
 DBusPendingCall* _dbus_pending_call_ref_unlocked                 (DBusPendingCall    *pending);
+DBUS_PRIVATE_EXPORT
 void             _dbus_pending_call_unref_and_unlock             (DBusPendingCall    *pending);
 dbus_bool_t      _dbus_pending_call_set_data_unlocked            (DBusPendingCall    *pending,
                                                                   dbus_int32_t        slot,

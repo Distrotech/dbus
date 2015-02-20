@@ -50,6 +50,7 @@ typedef struct DBusMessageLoader DBusMessageLoader;
 void _dbus_message_get_network_data  (DBusMessage       *message,
 				      const DBusString **header,
 				      const DBusString **body);
+DBUS_PRIVATE_EXPORT
 void _dbus_message_get_unix_fds      (DBusMessage *message,
                                       const int **fds,
                                       unsigned *n_fds);
@@ -63,34 +64,45 @@ void        _dbus_message_add_counter_link      (DBusMessage  *message,
 void        _dbus_message_remove_counter        (DBusMessage  *message,
                                                  DBusCounter  *counter);
 
+DBUS_PRIVATE_EXPORT
 DBusMessageLoader* _dbus_message_loader_new                   (void);
+DBUS_PRIVATE_EXPORT
 DBusMessageLoader* _dbus_message_loader_ref                   (DBusMessageLoader  *loader);
+DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_unref                 (DBusMessageLoader  *loader);
 
+DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_get_buffer            (DBusMessageLoader  *loader,
                                                                DBusString        **buffer);
+DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_return_buffer         (DBusMessageLoader  *loader,
                                                                DBusString         *buffer);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t        _dbus_message_loader_get_unix_fds          (DBusMessageLoader  *loader,
                                                                int               **fds,
                                                                unsigned           *max_n_fds);
+DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_return_unix_fds       (DBusMessageLoader  *loader,
                                                                int                *fds,
                                                                unsigned            n_fds);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t        _dbus_message_loader_queue_messages        (DBusMessageLoader  *loader);
 DBusMessage*       _dbus_message_loader_peek_message          (DBusMessageLoader  *loader);
+DBUS_PRIVATE_EXPORT
 DBusMessage*       _dbus_message_loader_pop_message           (DBusMessageLoader  *loader);
 DBusList*          _dbus_message_loader_pop_message_link      (DBusMessageLoader  *loader);
 void               _dbus_message_loader_putback_message_link  (DBusMessageLoader  *loader,
                                                                DBusList           *link);
 
+DBUS_PRIVATE_EXPORT
 dbus_bool_t        _dbus_message_loader_get_is_corrupted      (DBusMessageLoader  *loader);
 DBusValidity       _dbus_message_loader_get_corruption_reason (DBusMessageLoader  *loader);
 
 void               _dbus_message_loader_set_max_message_size  (DBusMessageLoader  *loader,
                                                                long                size);
+DBUS_PRIVATE_EXPORT
 long               _dbus_message_loader_get_max_message_size  (DBusMessageLoader  *loader);
 
 void               _dbus_message_loader_set_max_message_unix_fds(DBusMessageLoader  *loader,

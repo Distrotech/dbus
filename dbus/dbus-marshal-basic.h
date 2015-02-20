@@ -148,6 +148,7 @@
 #endif
 
 #ifndef _dbus_unpack_uint16
+DBUS_PRIVATE_EXPORT
 dbus_uint16_t _dbus_unpack_uint16 (int                  byte_order,
                                    const unsigned char *data);
 #endif
@@ -156,6 +157,7 @@ void          _dbus_pack_uint32   (dbus_uint32_t        value,
                                    int                  byte_order,
                                    unsigned char       *data);
 #ifndef _dbus_unpack_uint32
+DBUS_PRIVATE_EXPORT
 dbus_uint32_t _dbus_unpack_uint32 (int                  byte_order,
                                    const unsigned char *data);
 #endif
@@ -201,18 +203,22 @@ void          _dbus_marshal_skip_array        (const DBusString *str,
                                                int               element_type,
                                                int               byte_order,
                                                int              *pos);
+DBUS_PRIVATE_EXPORT
 void          _dbus_marshal_set_uint32        (DBusString       *str,
                                                int               pos,
                                                dbus_uint32_t     value,
                                                int               byte_order);
+DBUS_PRIVATE_EXPORT
 dbus_uint32_t _dbus_marshal_read_uint32       (const DBusString *str,
                                                int               pos,
                                                int               byte_order,
                                                int              *new_pos);
 int           _dbus_type_get_alignment        (int               typecode);
 int           _dbus_type_get_alignment        (int               typecode);
+DBUS_PRIVATE_EXPORT
 const char*   _dbus_type_to_string            (int               typecode);
 
+DBUS_PRIVATE_EXPORT
 int           _dbus_first_type_in_signature   (const DBusString *str,
                                                int               pos);
 
