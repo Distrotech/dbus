@@ -393,6 +393,14 @@ time_out (gpointer data)
   return FALSE;
 }
 
+#ifdef G_OS_UNIX
+static void
+wrap_abort (int signal)
+{
+  abort ();
+}
+#endif
+
 void
 test_init (int *argcp, char ***argvp)
 {
@@ -409,5 +417,14 @@ test_init (int *argcp, char ***argvp)
   /* The GLib main loop might not be running (we don't use it in every
    * test). Die with SIGALRM shortly after if necessary. */
   alarm (TIMEOUT + 10);
+
+  /* Get a core dump from the SIGALRM. */
+    {
+      struct sigaction act = { };
+
+      act.sa_handler = wrap_abort;
+
+      sigaction (SIGALRM, &act, NULL);
+    }
 #endif
 }
