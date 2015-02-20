@@ -31,6 +31,7 @@
 
 #include <glib.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef G_OS_UNIX
@@ -108,6 +109,7 @@ static void
 oom (const gchar *doing)
 {
   g_error ("out of memory (%s)", doing);
+  abort ();
 }
 
 static void

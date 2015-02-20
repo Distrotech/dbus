@@ -30,6 +30,7 @@
 
 #include <dbus/dbus.h>
 
+#include <stdlib.h>
 #ifdef G_OS_UNIX
 #include <unistd.h>
 #include <sys/types.h>
@@ -57,6 +58,7 @@ static void
 oom (void)
 {
   g_error ("out of memory");
+  abort ();
 }
 
 static void
