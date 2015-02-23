@@ -48,53 +48,16 @@
 /* http://www.tcpdump.org/linktypes.html */
 #define LINKTYPE_DBUS 231
 
-#ifdef DBUS_WIN
-
-/* gettimeofday is not defined on windows */
-#define DBUS_SECONDS_SINCE_1601 11644473600LL
-#define DBUS_USEC_IN_SEC        1000000LL
-
-#ifdef DBUS_WINCE
-
-#ifndef _IOLBF
-#define _IOLBF 0x40
-#endif
-#ifndef _IONBF
-#define _IONBF 0x04
-#endif
-
-void
-GetSystemTimeAsFileTime (LPFILETIME ftp)
-{
-  SYSTEMTIME st;
-  GetSystemTime (&st);
-  SystemTimeToFileTime (&st, ftp);
-}
-#endif
-
-static int
-gettimeofday (struct timeval *__p,
-              void *__t)
-{
-  union {
-      unsigned long long ns100; /*time since 1 Jan 1601 in 100ns units */
-      FILETIME           ft;
-    } now;
-
-  GetSystemTimeAsFileTime (&now.ft);
-  __p->tv_usec = (long) ((now.ns100 / 10LL) % DBUS_USEC_IN_SEC);
-  __p->tv_sec  = (long)(((now.ns100 / 10LL) / DBUS_SECONDS_SINCE_1601) - DBUS_SECONDS_SINCE_1601);
-
-  return 0;
-}
-#endif
-
 static DBusHandlerResult
 monitor_filter_func (DBusConnection     *connection,
                      DBusMessage        *message,
                      void               *user_data)
 {
-  print_message (message, FALSE);
+  long sec = 0, usec = 0;
+
+  _dbus_get_real_time (&sec, &usec);
+
+  print_message (message, FALSE, sec, usec);
   
   if (dbus_message_is_signal (message,
                               DBUS_INTERFACE_LOCAL,
@@ -130,9 +93,9 @@ profile_print_headers (void)
 
 static void
 profile_print_with_attrs (const char *type, DBusMessage *message,
-  struct timeval *t, ProfileAttributeFlags attrs)
+  long sec, long usec, ProfileAttributeFlags attrs)
 {
-  printf ("%s\t%lu.%06lu", type, (unsigned long) t->tv_sec, (unsigned long) t->tv_usec);
+  printf ("%s\t%ld.%06ld", type, sec, usec);
 
   if (attrs & PROFILE_ATTRIBUTE_FLAG_SERIAL)
     printf ("\t%u", dbus_message_get_serial (message));
@@ -165,13 +128,7 @@ static void
 print_message_profile (DBusMessage *message)
 {
   static dbus_bool_t first = TRUE;
-  struct timeval t;
-
-  if (gettimeofday (&t, NULL) < 0)
-    {
-      printf ("un\n");
-      return;
-    }
+  long sec = 0, usec = 0;
 
   if (first)
     {
@@ -179,10 +136,12 @@ print_message_profile (DBusMessage *message)
       first = FALSE;
     }
 
+  _dbus_get_real_time (&sec, &usec);
+
   switch (dbus_message_get_type (message))
     {
       case DBUS_MESSAGE_TYPE_METHOD_CALL:
-        profile_print_with_attrs ("mc", message, &t,
+        profile_print_with_attrs ("mc", message, sec, usec,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
           PROFILE_ATTRIBUTE_FLAG_SENDER |
           PROFILE_ATTRIBUTE_FLAG_DESTINATION |
@@ -191,21 +150,21 @@ print_message_profile (DBusMessage *message)
           PROFILE_ATTRIBUTE_FLAG_MEMBER);
         break;
       case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-        profile_print_with_attrs ("mr", message, &t,
+        profile_print_with_attrs ("mr", message, sec, usec,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
           PROFILE_ATTRIBUTE_FLAG_SENDER |
           PROFILE_ATTRIBUTE_FLAG_DESTINATION |
           PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
         break;
       case DBUS_MESSAGE_TYPE_ERROR:
-        profile_print_with_attrs ("err", message, &t,
+        profile_print_with_attrs ("err", message, sec, usec,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
           PROFILE_ATTRIBUTE_FLAG_SENDER |
           PROFILE_ATTRIBUTE_FLAG_DESTINATION |
           PROFILE_ATTRIBUTE_FLAG_REPLY_SERIAL);
         break;
       case DBUS_MESSAGE_TYPE_SIGNAL:
-        profile_print_with_attrs ("sig", message, &t,
+        profile_print_with_attrs ("sig", message, sec, usec,
           PROFILE_ATTRIBUTE_FLAG_SERIAL |
           PROFILE_ATTRIBUTE_FLAG_SENDER |
           PROFILE_ATTRIBUTE_FLAG_DESTINATION |
@@ -214,7 +173,7 @@ print_message_profile (DBusMessage *message)
           PROFILE_ATTRIBUTE_FLAG_MEMBER);
         break;
       default:
-        printf ("%s\t%lu.%06lu", "tun", (unsigned long) t.tv_sec, (unsigned long) t.tv_usec);
+        printf ("%s\t%ld.%06ld", "tun", sec, usec);
         break;
     }
 }

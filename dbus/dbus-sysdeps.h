@@ -336,6 +336,7 @@ DBUS_PRIVATE_EXPORT
 void _dbus_get_monotonic_time (long *tv_sec,
                                long *tv_usec);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_get_real_time (long *tv_sec,
                           long *tv_usec);
 

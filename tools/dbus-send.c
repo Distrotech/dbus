@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include <dbus/dbus.h>
+#include "dbus/dbus-internals.h"
 
 #ifndef HAVE_STRTOLL
 #undef strtoll
@@ -573,7 +574,10 @@ main (int argc, char *argv[])
 
       if (reply)
         {
-          print_message (reply, print_reply_literal);
+          long sec, usec;
+
+          _dbus_get_real_time (&sec, &usec);
+          print_message (reply, print_reply_literal, sec, usec);
           dbus_message_unref (reply);
         }
     }

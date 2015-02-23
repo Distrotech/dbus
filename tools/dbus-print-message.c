@@ -529,7 +529,7 @@ print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)
 }
 
 void
-print_message (DBusMessage *message, dbus_bool_t literal)
+print_message (DBusMessage *message, dbus_bool_t literal, long sec, long usec)
 {
   DBusMessageIter iter;
   const char *sender;
@@ -542,11 +542,21 @@ print_message (DBusMessage *message, dbus_bool_t literal)
   
   if (!literal)
     {
-      printf ("%s sender=%s -> dest=%s",
-              type_to_name (message_type),
-              sender ? sender : "(null sender)",
-              destination ? destination : "(null destination)");
-  
+      if (sec != 0 || usec != 0)
+        {
+          printf ("%s time=%ld.%06ld sender=%s -> dest=%s",
+                  type_to_name (message_type), sec, usec,
+                  sender ? sender : "(null sender)",
+                  destination ? destination : "(null destination)");
+        }
+      else
+        {
+          printf ("%s sender=%s -> dest=%s",
+                  type_to_name (message_type),
+                  sender ? sender : "(null sender)",
+                  destination ? destination : "(null destination)");
+        }
+
       switch (message_type)
         {
         case DBUS_MESSAGE_TYPE_METHOD_CALL:
