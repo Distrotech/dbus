@@ -541,7 +541,8 @@ test_become_monitor (Fixture *f,
 
   while (!got_unique || !got_a || !got_b || !got_c)
     {
-      test_main_context_iterate (f->ctx, TRUE);
+      if (g_queue_is_empty (&f->monitored))
+        test_main_context_iterate (f->ctx, TRUE);
 
       while ((m = g_queue_pop_head (&f->monitored)) != NULL)
         {
@@ -596,7 +597,8 @@ test_become_monitor (Fixture *f,
 
   while (!lost_unique || !lost_a || !lost_b || !lost_c)
     {
-      test_main_context_iterate (f->ctx, TRUE);
+      if (g_queue_is_empty (&f->monitored))
+        test_main_context_iterate (f->ctx, TRUE);
 
       while ((m = g_queue_pop_head (&f->monitored)) != NULL)
         {
@@ -651,7 +653,8 @@ test_become_monitor (Fixture *f,
 
   while (TRUE)
     {
-      test_main_context_iterate (f->ctx, TRUE);
+      if (g_queue_is_empty (&f->monitored))
+        test_main_context_iterate (f->ctx, TRUE);
 
       /* When we iterate all the connection's messages, we see ourselves
        * losing all our names, then we're disconnected. */
