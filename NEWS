@@ -47,6 +47,11 @@ Enhancements:
 • Add microsecond-resolution timestamps to the default output of
   dbus-monitor and dbus-send (fd.o #88896; Ralf Habacker, Simon McVittie)
 
+Fixes:
+
+• Fix a race condition in the 'monitor' test introduced in 1.9.10
+  (fd.o #89222, Simon McVittie)
+
 D-Bus 1.9.12 (2015-02-19)
 ==
 
