@@ -6,6 +6,16 @@ Dependencies:
 • dbus-daemon and dbus-daemon-launch-helper now require libdbus. They
   were previously linked to a static version of libdbus.
 
+• The tests no longer require dbus-glib in order to exercise the libdbus
+  shared library; they are always linked to libdbus now.
+
+Build-time configuration:
+
+• The new --enable-user-session option, off by default, can be enabled
+  by OS integrators intending to use systemd to provide a session bus
+  per user (in effect, treating all concurrent graphical and non-graphical
+  login sessions as one large session)
+
 Enhancements:
 
 • All executables are now linked dynamically to libdbus.
@@ -16,7 +26,26 @@ Enhancements:
   All public symbols (visible in the header files) are currently
   versioned as LIBDBUS_1_3; private symbols starting with _dbus or
   dbus_internal have a version that changes with each release, and
-  must not be used by applications. (also part of fd.o #83115)
+  must not be used by applications. (also fd.o #83115)
+
+• New listenable address mode "unix:runtime=yes" which listens on
+  a real filesystem (non-abstract) socket $XDG_RUNTIME_DIR/bus
+  (fd.o #61303; Colin Walters, Alexander Larsson, Simon McVittie)
+
+• Add optional systemd units for a per-user bus listening on
+  $XDG_RUNTIME_DIR/bus (fd.o #61301; Simon McVittie, Colin Walters)
+
+• On Unix platforms, both libdbus and "dbus-launch --autolaunch"
+  default to connecting to $XDG_RUNTIME_DIR/bus if it is a socket
+  (also fd.o #61301)
+
+• New dbus-update-activation-environment tool uploads environment
+  variables to "dbus-daemon --session" and optionally "systemd --user",
+  primarily as a way to keep the per-user bus compatible with
+  distributions' existing X11 login scripts (also fd.o #61301)
+
+• Add microsecond-resolution timestamps to the default output of
+  dbus-monitor and dbus-send (fd.o #88896; Ralf Habacker, Simon McVittie)
 
 D-Bus 1.9.12 (2015-02-19)
 ==
