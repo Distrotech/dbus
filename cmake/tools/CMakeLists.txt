@@ -38,6 +38,8 @@ set (dbus_launch_SOURCES
 else (WIN32)
 set (dbus_launch_SOURCES
 	../../tools/dbus-launch.c
+	../../tools/tool-common.c
+	../../tools/tool-common.h
 )
 endif (WIN32)
 
@@ -65,7 +67,7 @@ target_link_libraries(dbus-update-activation-environment ${DBUS_LIBRARIES})
 install_targets(/bin dbus-update-activation-environment )
 
 add_executable(dbus-launch ${dbus_launch_SOURCES})
-target_link_libraries(dbus-launch )
+target_link_libraries(dbus-launch ${DBUS_LIBRARIES})
 if (DBUS_BUILD_X11)
   target_link_libraries(dbus-launch ${X11_LIBRARIES} )
 endif (DBUS_BUILD_X11)
