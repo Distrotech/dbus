@@ -1,4 +1,5 @@
-configdir=$(sysconfdir)/dbus-1
+dbusdatadir=$(datadir)/dbus-1
+legacydbusdatadir=$(sysconfdir)/dbus-1
 dbus_daemon_execdir = $(DBUS_DAEMONDIR)
 
 DBUS_BUS_LIBS = \
@@ -21,7 +22,7 @@ AM_CPPFLAGS = \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	$(XML_CFLAGS) \
 	$(APPARMOR_CFLAGS) \
-	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
+	-DDBUS_SYSTEM_CONFIG_FILE=\""$(dbusdatadir)/system.conf"\" \
 	-DDBUS_COMPILATION \
 	$(NULL)
 
@@ -33,15 +34,19 @@ EFENCE=
 CONFIG_IN_FILES=				\
 	session.conf.in				\
 	system.conf.in				\
+	legacy-config/session.conf.in		\
+	legacy-config/system.conf.in		\
 	org.freedesktop.dbus-session.plist.in	\
 	example-system-enable-stats.conf.in	\
 	example-session-disable-stats.conf.in	\
 	$(NULL)
 
-config_DATA = session.conf
+dbusdata_DATA = session.conf
+legacydbusdata_DATA = legacy-config/session.conf
 
 if DBUS_UNIX
-config_DATA += system.conf
+dbusdata_DATA += system.conf
+legacydbusdata_DATA += legacy-config/system.conf
 endif
 
 examplesdir = ${docdir}/examples
@@ -231,12 +236,12 @@ clean-local:
 	/bin/rm *.bb *.bbg *.da *.gcov || true
 
 install-data-hook:
-	$(mkinstalldirs) $(DESTDIR)$(configdir)/session.d
-	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/services
+	$(mkinstalldirs) $(DESTDIR)$(dbusdatadir)/session.d
+	$(mkinstalldirs) $(DESTDIR)$(dbusdatadir)/services
 if DBUS_UNIX
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/run/dbus
-	$(mkinstalldirs) $(DESTDIR)$(configdir)/system.d
-	$(mkinstalldirs) $(DESTDIR)$(datadir)/dbus-1/system-services
+	$(mkinstalldirs) $(DESTDIR)$(dbusdatadir)/system.d
+	$(mkinstalldirs) $(DESTDIR)$(dbusdatadir)/system-services
 endif
 if HAVE_SYSTEMD
 # Install dbus.socket as default implementation of a D-Bus stack.

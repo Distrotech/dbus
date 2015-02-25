@@ -459,10 +459,8 @@ if DBUS_ENABLE_INSTALLED_TESTS
 		install -d "$(DESTDIR)$(testexecdir)/$${F%/*}"; \
 		install -m644 "installable/$${F%.in}" "$(DESTDIR)$(testexecdir)/$${F%.in}"; \
 	done
-	ln -nfs $(sysconfdir)/dbus-1/session.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/session.conf
-	ln -nfs $(sysconfdir)/dbus-1/session.d $(DESTDIR)$(testexecdir)/data/valid-config-files/session.d
-	ln -nfs $(sysconfdir)/dbus-1/system.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/system.conf
-	ln -nfs $(sysconfdir)/dbus-1/system.d $(DESTDIR)$(testexecdir)/data/valid-config-files/system.d
+	ln -nfs $(datadir)/dbus-1/session.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/session.conf
+	ln -nfs $(datadir)/dbus-1/system.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/system.conf
 else
 	@:
 endif

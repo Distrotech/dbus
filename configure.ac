@@ -1689,6 +1689,11 @@ DBUS_LIBEXECDIR="$EXPANDED_LIBEXECDIR"
 AC_SUBST(DBUS_LIBEXECDIR)
 AC_DEFINE_UNQUOTED(DBUS_LIBEXECDIR,"$DBUS_LIBEXECDIR", [Directory for installing the libexec binaries])
 
+#### Directory to source sysconfdir configuration from
+DBUS_SYSCONFDIR="$EXPANDED_SYSCONFDIR"
+AC_SUBST(DBUS_SYSCONFDIR)
+AC_DEFINE_UNQUOTED(DBUS_SYSCONFDIR,"$DBUS_SYSCONFDIR", [Directory to source sysconfdir configuration from])
+
 #### Tell tests where to find certain stuff in builddir
 
 DBUS_PWD=`pwd`
@@ -1848,6 +1853,8 @@ dbus/versioninfo.rc
 dbus/dbus-arch-deps.h
 bus/system.conf
 bus/session.conf
+bus/legacy-config/system.conf
+bus/legacy-config/session.conf
 bus/example-system-enable-stats.conf
 bus/example-session-disable-stats.conf
 bus/messagebus

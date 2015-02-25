@@ -1,5 +1,3 @@
-configdir=$(sysconfdir)/dbus-1
-
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \

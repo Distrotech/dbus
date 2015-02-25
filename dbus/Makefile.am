@@ -1,5 +1,5 @@
 
-configdir=$(sysconfdir)/dbus-1
+dbusdatadir=$(datadir)/dbus-1
 
 AM_CPPFLAGS = \
 	-I$(top_builddir) \
@@ -9,8 +9,8 @@ AM_CPPFLAGS = \
 	$(VALGRIND_CFLAGS) \
 	-DDBUS_COMPILATION \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
-	-DDBUS_SYSTEM_CONFIG_FILE=\""$(configdir)/system.conf"\" \
-	-DDBUS_SESSION_CONFIG_FILE=\""$(configdir)/session.conf"\" \
+	-DDBUS_SYSTEM_CONFIG_FILE=\""$(dbusdatadir)/system.conf"\" \
+	-DDBUS_SESSION_CONFIG_FILE=\""$(dbusdatadir)/session.conf"\" \
 	$(NULL)
 
 AM_CFLAGS =
