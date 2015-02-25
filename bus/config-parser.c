@@ -2265,7 +2265,13 @@ include_dir (BusConfigParser   *parser,
   dir = _dbus_directory_open (dirname, error);
 
   if (dir == NULL)
-    goto failed;
+    {
+      if (dbus_error_has_name (error, DBUS_ERROR_FILE_NOT_FOUND))
+        {
+          dbus_error_free (error);
+          goto success;
+        }
+    }
 
   dbus_error_init (&tmp_error);
   while (_dbus_directory_get_next_file (dir, &filename, &tmp_error))
@@ -2335,6 +2341,7 @@ include_dir (BusConfigParser   *parser,
       goto failed;
     }
 
+ success:
   retval = TRUE;
   
  failed:
