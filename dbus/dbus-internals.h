@@ -202,8 +202,20 @@ extern const char *_dbus_return_if_fail_warning_format;
 #define _DBUS_ASSERT_ERROR_IS_SET(error) do { } while (0)
 #define _DBUS_ASSERT_ERROR_IS_CLEAR(error) do { } while (0)
 #else
-#define _DBUS_ASSERT_ERROR_IS_SET(error)   _dbus_assert ((error) == NULL || dbus_error_is_set ((error)))
-#define _DBUS_ASSERT_ERROR_IS_CLEAR(error) _dbus_assert ((error) == NULL || !dbus_error_is_set ((error)))
+static inline void
+_dbus_assert_error_is_set (const DBusError *error)
+{
+    _dbus_assert (error == NULL || dbus_error_is_set (error));
+}
+
+static inline void
+_dbus_assert_error_is_clear (const DBusError *error)
+{
+    _dbus_assert (error == NULL || !dbus_error_is_set (error));
+}
+
+#define _DBUS_ASSERT_ERROR_IS_SET(error) _dbus_assert_error_is_set(error)
+#define _DBUS_ASSERT_ERROR_IS_CLEAR(error) _dbus_assert_error_is_clear(error)
 #endif
 
 #define _dbus_return_if_error_is_set(error) _dbus_return_if_fail ((error) == NULL || !dbus_error_is_set ((error)))
