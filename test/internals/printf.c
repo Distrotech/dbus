@@ -62,20 +62,32 @@ do_test (int minimum,
 #define X_TIMES_512  X_TIMES_256 X_TIMES_256
 #define X_TIMES_1024 X_TIMES_512 X_TIMES_512
 
+/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int argc,
     char **argv)
 {
   char buf[] = X_TIMES_1024 X_TIMES_1024 X_TIMES_1024 X_TIMES_1024;
   int i;
+  int test_num = 0;
 
   do_test (1, "%d", 0);
+  printf ("ok %d\n", ++test_num);
+
   do_test (7, "%d", 1234567);
+  printf ("ok %d\n", ++test_num);
+
   do_test (3, "%f", 3.5);
+  printf ("ok %d\n", ++test_num);
 
   do_test (0, "%s", "");
+  printf ("ok %d\n", ++test_num);
+
   do_test (1024, "%s", X_TIMES_1024);
+  printf ("ok %d\n", ++test_num);
+
   do_test (1025, "%s", X_TIMES_1024 "Y");
+  printf ("ok %d\n", ++test_num);
 
   for (i = 4096; i > 0; i--)
     {
@@ -83,6 +95,11 @@ main (int argc,
       do_test (i, "%s", buf);
       do_test (i + 3, "%s:%d", buf, 42);
     }
+  printf ("ok %d\n", ++test_num);
 
+  /* Tell the TAP driver that we have done all the tests we plan to do.
+   * This is how it can distinguish between an unexpected exit and
+   * successful completion. */
+  printf ("1..%d\n", test_num);
   return 0;
 }

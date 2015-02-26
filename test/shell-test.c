@@ -9,8 +9,13 @@
 #include <dbus/dbus-string.h>
 #include <dbus/dbus-sysdeps.h>
 
+static int test_num = 0;
+static int num_failed = 0;
+
 static dbus_bool_t
-test_command_line (const char *arg1, ...)
+test_command_line_internal (dbus_bool_t should_work,
+    const char *arg1,
+    va_list var_args)
 {
   int i, original_argc, shell_argc;
   char **shell_argv;
@@ -18,10 +23,8 @@ test_command_line (const char *arg1, ...)
   char *command_line, *tmp;
   DBusString str;
   DBusList *list = NULL, *node;
-  va_list var_args;
   DBusError error;
 
-  va_start (var_args, arg1);
   _dbus_list_append (&list, (char *)arg1);
   do
     {
@@ -30,7 +33,6 @@ test_command_line (const char *arg1, ...)
         break;
       _dbus_list_append (&list, tmp);
     } while (tmp);
-  va_end (var_args);
 
   original_argc = _dbus_list_get_length (&list);
   original_argv = dbus_new (char *, original_argc);
@@ -46,25 +48,27 @@ test_command_line (const char *arg1, ...)
   
   _dbus_list_clear (&list);
   command_line = _dbus_string_get_data (&str);
-  printf ("\n\nTesting command line '%s'\n", command_line);
+  printf ("# Testing command line '%s'\n", command_line);
 
   dbus_error_init (&error);
   if (!_dbus_shell_parse_argv (command_line, &shell_argc, &shell_argv, &error))
     {
-      fprintf (stderr, "Error parsing command line: %s\n", error.message ? error.message : "");
+      printf ("# Error%s parsing command line: %s\n",
+          should_work ? "" : " (as expected)",
+          error.message ? error.message : "");
       dbus_free (original_argv);
-      return FALSE;
+      return !should_work;
     }
   else
     {
       if (shell_argc != original_argc)
         {
-          printf ("Number of arguments returned (%d) don't match original (%d)\n",
+          printf ("# Number of arguments returned (%d) don't match original (%d)\n",
                   shell_argc, original_argc);
           dbus_free (original_argv);
           return FALSE;
         } 
-      printf ("Number of arguments: %d\n", shell_argc);
+      printf ("# Number of arguments: %d\n", shell_argc);
       for (i = 0; i < shell_argc; i++)
         {
           char *unquoted;
@@ -86,28 +90,79 @@ test_command_line (const char *arg1, ...)
       
       dbus_free_string_array (shell_argv);
     }
-  
+
+  if (!should_work)
+    {
+      printf ("# Expected an error\n");
+      return FALSE;
+    }
+
   _dbus_string_free (&str);
   dbus_free (original_argv);
 
   return TRUE;
 }
 
+static void
+test_command_line (const char *arg1, ...)
+{
+  va_list var_args;
+
+  va_start (var_args, arg1);
+
+  if (test_command_line_internal (TRUE, arg1, var_args))
+    {
+      printf ("ok %d\n", ++test_num);
+    }
+  else
+    {
+      printf ("not ok %d\n", ++test_num);
+      num_failed++;
+    }
+
+  va_end (var_args);
+}
+
+static void
+test_command_line_fails (const char *arg1, ...)
+{
+  va_list var_args;
+
+  va_start (var_args, arg1);
+
+  if (test_command_line_internal (FALSE, arg1, var_args))
+    {
+      printf ("ok %d\n", ++test_num);
+    }
+  else
+    {
+      printf ("not ok %d\n", ++test_num);
+      num_failed++;
+    }
+
+  va_end (var_args);
+}
+
+/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int argc, char **argv)
 {
-  if (!test_command_line ("command", "-s", "--force-shutdown", "\"a string\"", "123", NULL)
-      || !test_command_line ("command", "-s", NULL)
-      || !test_command_line ("/opt/gnome/bin/service-start", NULL)
-      || !test_command_line ("grep", "-l", "-r", "-i", "'whatever'", "files*.c", NULL)
-      || !test_command_line ("/home/boston/johnp/devel-local/dbus/test/test-segfault", NULL)
-      || !test_command_line ("ls", "-l", "-a", "--colors", _dbus_get_tmpdir(), NULL)
-      || !test_command_line ("rsync-to-server", NULL)
-      || !test_command_line ("test-segfault", "--no-segfault", NULL)
-      || !test_command_line ("evolution", "mailto:pepe@cuco.com", NULL)
-      || !test_command_line ("run", "\"a \n multiline\"", NULL)
-      || test_command_line ("ls", "\"a wrong string'", NULL) /* invalid command line */ )
-    return -1;
-  
-  return 0;
+  test_command_line ("command", "-s", "--force-shutdown", "\"a string\"", "123", NULL);
+  test_command_line ("command", "-s", NULL);
+  test_command_line ("/opt/gnome/bin/service-start", NULL);
+  test_command_line ("grep", "-l", "-r", "-i", "'whatever'", "files*.c", NULL);
+  test_command_line ("/home/boston/johnp/devel-local/dbus/test/test-segfault", NULL);
+  test_command_line ("ls", "-l", "-a", "--colors", _dbus_get_tmpdir(), NULL);
+  test_command_line ("rsync-to-server", NULL);
+  test_command_line ("test-segfault", "--no-segfault", NULL);
+  test_command_line ("evolution", "mailto:pepe@cuco.com", NULL);
+  test_command_line ("run", "\"a \n multiline\"", NULL);
+  test_command_line_fails ("ls", "\"a wrong string'", NULL);
+
+  /* Tell the TAP driver that we have done all the tests we plan to do.
+   * This is how it can distinguish between an unexpected exit and
+   * successful completion. */
+  printf ("1..%d\n", test_num);
+
+  return (num_failed != 0);
 }
