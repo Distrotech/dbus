@@ -155,7 +155,7 @@ test_connect (Fixture *f,
 
   while (f->left_server_conn == NULL)
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -168,7 +168,7 @@ test_connect (Fixture *f,
 
   while (f->right_server_conn == NULL)
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -210,7 +210,7 @@ test_relay (Fixture *f,
 
   while (g_queue_get_length (&f->messages) < 2)
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 

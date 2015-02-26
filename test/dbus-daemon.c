@@ -406,7 +406,7 @@ test_creds (Fixture *f,
           g_assert_cmpuint (dbus_message_iter_get_arg_type (&var_iter), ==,
               DBUS_TYPE_UINT32);
           dbus_message_iter_get_basic (&var_iter, &u32);
-          g_message ("%s of this process is %u", name, u32);
+          g_test_message ("%s of this process is %u", name, u32);
           g_assert_cmpuint (u32, ==, geteuid ());
           seen |= SEEN_UNIX_USER;
 #else
@@ -423,7 +423,7 @@ test_creds (Fixture *f,
           g_assert_cmpuint (dbus_message_iter_get_arg_type (&var_iter), ==,
               DBUS_TYPE_STRING);
           dbus_message_iter_get_basic (&var_iter, &sid);
-          g_message ("%s of this process is %s", name, sid);
+          g_test_message ("%s of this process is %s", name, sid);
           if (_dbus_getsid (&self_sid, 0))
             {
               g_assert_cmpstr (self_sid, ==, sid);
@@ -442,7 +442,7 @@ test_creds (Fixture *f,
           g_assert_cmpuint (dbus_message_iter_get_arg_type (&var_iter), ==,
               DBUS_TYPE_UINT32);
           dbus_message_iter_get_basic (&var_iter, &u32);
-          g_message ("%s of this process is %u", name, u32);
+          g_test_message ("%s of this process is %u", name, u32);
 #ifdef G_OS_UNIX
           g_assert_cmpuint (u32, ==, getpid ());
 #elif defined(G_OS_WIN32)
@@ -466,7 +466,7 @@ test_creds (Fixture *f,
           g_assert_cmpuint (dbus_message_iter_get_arg_type (&ay_iter), ==,
               DBUS_TYPE_BYTE);
           dbus_message_iter_get_fixed_array (&ay_iter, &label, &len);
-          g_message ("%s of this process is %s", name, label);
+          g_test_message ("%s of this process is %s", name, label);
           g_assert_cmpuint (strlen (label) + 1, ==, len);
           seen |= SEEN_LINUX_SECURITY_LABEL;
 #else
@@ -533,7 +533,7 @@ test_processid (Fixture *f,
       g_assert_cmpstr (dbus_message_get_signature (m), ==, "u");
       test_assert_no_error (&error);
 
-      g_message ("GetConnectionUnixProcessID returned %u", pid);
+      g_test_message ("GetConnectionUnixProcessID returned %u", pid);
 
 #ifdef G_OS_UNIX
       g_assert_cmpuint (pid, ==, getpid ());

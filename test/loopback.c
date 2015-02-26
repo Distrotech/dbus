@@ -125,7 +125,7 @@ setup_runtime (Fixture *f,
   setup (f, addr);
 
   listening_at = dbus_server_get_address (f->server);
-  g_message ("listening at %s", listening_at);
+  g_test_message ("listening at %s", listening_at);
   g_assert (g_str_has_prefix (listening_at, "unix:path="));
   g_assert (strstr (listening_at, "dbus%3ddaemon%3dtest.") != NULL);
   g_assert (strstr (listening_at, "/bus,") != NULL ||
@@ -147,7 +147,7 @@ setup_no_runtime (Fixture *f,
   setup (f, addr);
 
   listening_at = dbus_server_get_address (f->server);
-  g_message ("listening at %s", listening_at);
+  g_test_message ("listening at %s", listening_at);
   /* we have fallen back to something in /tmp, either abstract or not */
   g_assert (g_str_has_prefix (listening_at, "unix:"));
   g_assert (strstr (listening_at, "=/tmp/") != NULL);
@@ -170,7 +170,7 @@ test_connect (Fixture *f,
 
   while (f->server_conn == NULL)
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 }
@@ -204,7 +204,7 @@ test_bad_guid (Fixture *f,
 
   while (f->server_conn == NULL)
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -212,7 +212,7 @@ test_bad_guid (Fixture *f,
 
   while (g_queue_is_empty (&f->server_messages))
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -255,7 +255,7 @@ test_message (Fixture *f,
 
   while (g_queue_is_empty (&f->server_messages))
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 

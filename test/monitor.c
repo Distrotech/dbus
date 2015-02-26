@@ -164,22 +164,22 @@ _log_message (DBusMessage *m,
     const char *file,
     int line)
 {
-  g_message ("%s:%d: message type %d (%s)", file, line,
+  g_test_message ("%s:%d: message type %d (%s)", file, line,
       dbus_message_get_type (m),
       dbus_message_type_to_string (dbus_message_get_type (m)));
-  g_message ("\tfrom: %s",
+  g_test_message ("\tfrom: %s",
       not_null2 (dbus_message_get_sender (m), "(dbus-daemon)"));
-  g_message ("\tto: %s",
+  g_test_message ("\tto: %s",
       not_null2 (dbus_message_get_destination (m), "(broadcast)"));
-  g_message ("\tpath: %s",
+  g_test_message ("\tpath: %s",
       not_null (dbus_message_get_path (m)));
-  g_message ("\tinterface: %s",
+  g_test_message ("\tinterface: %s",
       not_null (dbus_message_get_interface (m)));
-  g_message ("\tmember: %s",
+  g_test_message ("\tmember: %s",
       not_null (dbus_message_get_member (m)));
-  g_message ("\tsignature: %s",
+  g_test_message ("\tsignature: %s",
       not_null (dbus_message_get_signature (m)));
-  g_message ("\terror name: %s",
+  g_test_message ("\terror name: %s",
       not_null (dbus_message_get_error_name (m)));
 
   if (strcmp ("s", dbus_message_get_signature (m)) == 0)
@@ -191,7 +191,7 @@ _log_message (DBusMessage *m,
             DBUS_TYPE_STRING, &s,
             DBUS_TYPE_INVALID);
       test_assert_no_error (&e);
-      g_message ("\tstring payload: %s", s);
+      g_test_message ("\tstring payload: %s", s);
     }
 }
 

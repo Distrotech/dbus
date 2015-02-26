@@ -110,7 +110,7 @@ test_connect (Fixture *f,
 
   while (f->server_conn == NULL)
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -139,7 +139,7 @@ test_message (Fixture *f,
 
   while (g_queue_is_empty (&f->client_messages))
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -231,7 +231,7 @@ test_corrupt (Fixture *f,
    * rubbish, so it should disconnect */
   while (g_queue_is_empty (&f->client_messages))
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 
@@ -320,7 +320,7 @@ test_byte_order (Fixture *f,
    * message, so it should disconnect */
   while (g_queue_is_empty (&f->client_messages))
     {
-      g_print (".");
+      test_progress ('.');
       test_main_context_iterate (f->ctx, TRUE);
     }
 

@@ -81,4 +81,6 @@ void test_kill_pid (GPid pid);
 
 void test_init (int *argcp, char ***argvp);
 
+void test_progress (char symbol);
+
 #endif

@@ -45,6 +45,10 @@
 
 #include <dbus/dbus.h>
 
+#ifdef G_OS_WIN
+# define isatty(x) _isatty(x)
+#endif
+
 void
 _test_assert_no_error (const DBusError *e,
     const char *file,
@@ -427,4 +431,11 @@ test_init (int *argcp, char ***argvp)
       sigaction (SIGALRM, &act, NULL);
     }
 #endif
+}
+
+void
+test_progress (char symbol)
+{
+  if (g_test_verbose () && isatty (1))
+    g_print ("%c", symbol);
 }
