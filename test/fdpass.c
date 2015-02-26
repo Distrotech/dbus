@@ -93,14 +93,6 @@ typedef struct {
     int fd_before;
 } Fixture;
 
-#if !GLIB_CHECK_VERSION (2, 38, 0)
-#define g_test_skip(s) my_test_skip (s)
-static inline void my_test_skip (const gchar *s)
-{
-  g_message ("SKIP: %s", s);
-}
-#endif
-
 #ifdef HAVE_UNIX_FD_PASSING
 
 static void oom (const gchar *doing) G_GNUC_NORETURN;

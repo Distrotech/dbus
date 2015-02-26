@@ -118,7 +118,7 @@ spawn_dbus_daemon (const gchar *binary,
 #ifdef DBUS_UNIX
       if (getuid () != 0)
         {
-          g_message ("SKIP: cannot use alternative uid when not uid 0");
+          g_test_skip ("cannot use alternative uid when not uid 0");
           return NULL;
         }
 
@@ -132,7 +132,11 @@ spawn_dbus_daemon (const gchar *binary,
 
             if (pwd == NULL)
               {
-                g_message ("SKIP: user '%s' does not exist", DBUS_USER);
+                gchar *message = g_strdup_printf ("user '%s' does not exist",
+                    DBUS_USER);
+
+                g_test_skip (message);
+                g_free (message);
                 return NULL;
               }
 
@@ -143,7 +147,11 @@ spawn_dbus_daemon (const gchar *binary,
 
             if (pwd == NULL)
               {
-                g_message ("SKIP: user '%s' does not exist", DBUS_TEST_USER);
+                gchar *message = g_strdup_printf ("user '%s' does not exist",
+                    DBUS_TEST_USER);
+
+                g_test_skip (message);
+                g_free (message);
                 return NULL;
               }
 
@@ -153,7 +161,7 @@ spawn_dbus_daemon (const gchar *binary,
             g_assert_not_reached ();
         }
 #else
-      g_message ("SKIP: cannot use alternative uid on Windows");
+      g_test_skip ("cannot use alternative uid on Windows");
       return NULL;
 #endif
     }
@@ -222,8 +230,9 @@ test_get_dbus_daemon (const gchar *config_file,
 
       if (g_getenv ("DBUS_TEST_DATA") == NULL)
         {
-          g_message ("SKIP: set DBUS_TEST_DATA to a directory containing %s",
+          g_test_message ("set DBUS_TEST_DATA to a directory containing %s",
               config_file);
+          g_test_skip ("DBUS_TEST_DATA not set");
           return NULL;
         }
 
@@ -256,7 +265,7 @@ test_get_dbus_daemon (const gchar *config_file,
     {
       if (config_file != NULL || user != TEST_USER_ME)
         {
-          g_message ("SKIP: cannot use DBUS_TEST_DAEMON_ADDRESS for "
+          g_test_skip ("cannot use DBUS_TEST_DAEMON_ADDRESS for "
               "unusally-configured dbus-daemon");
           address = NULL;
         }
@@ -335,8 +344,9 @@ test_connect_to_bus_as_user (TestMainContext *ctx,
 
   if (ruid != 0 || euid != 0 || suid != 0)
     {
-      g_message ("SKIP: not uid 0 (ruid=%ld euid=%ld suid=%ld)",
+      g_test_message ("not uid 0 (ruid=%ld euid=%ld suid=%ld)",
           (unsigned long) ruid, (unsigned long) euid, (unsigned long) suid);
+      g_test_skip ("not uid 0");
       return NULL;
     }
 
@@ -344,7 +354,8 @@ test_connect_to_bus_as_user (TestMainContext *ctx,
 
   if (pwd == NULL)
     {
-      g_message ("SKIP: getpwnam(\"%s\"): %s", username, g_strerror (errno));
+      g_test_message ("getpwnam(\"%s\"): %s", username, g_strerror (errno));
+      g_test_skip ("not uid 0");
       return NULL;
     }
 
@@ -370,7 +381,7 @@ test_connect_to_bus_as_user (TestMainContext *ctx,
         return test_connect_to_bus (ctx, address);
 
       default:
-        g_message ("SKIP: setresuid() not available, or unsure about "
+        g_test_skip ("setresuid() not available, or unsure about "
             "credentials-passing semantics on this platform");
         return NULL;
     }

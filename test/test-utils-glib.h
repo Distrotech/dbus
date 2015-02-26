@@ -83,4 +83,12 @@ void test_init (int *argcp, char ***argvp);
 
 void test_progress (char symbol);
 
+#if !GLIB_CHECK_VERSION (2, 38, 0)
+#define g_test_skip(s) my_test_skip (s)
+static inline void my_test_skip (const gchar *s)
+{
+  g_test_message ("SKIP: %s", s);
+}
+#endif
+
 #endif
