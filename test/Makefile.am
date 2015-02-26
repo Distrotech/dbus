@@ -473,12 +473,14 @@ $(installable_test_meta): %.test: %$(EXEEXT) Makefile
 	$(AM_V_GEN) ( \
 		echo '[Test]'; \
 		echo 'Type=session'; \
-		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp $(testexecdir)/$*'; \
+		echo 'Output=TAP'; \
+		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp $(testexecdir)/$* --tap'; \
 	) > $@.tmp && mv $@.tmp $@
 
 $(installable_test_meta_with_config): %_with_config.test: %$(EXEEXT) Makefile
 	$(AM_V_GEN) ( \
 		echo '[Test]'; \
 		echo 'Type=session'; \
-		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$*'; \
+		echo 'Output=TAP'; \
+		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$* --tap'; \
 	) > $@.tmp && mv $@.tmp $@
