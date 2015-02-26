@@ -474,7 +474,7 @@ $(installable_test_meta): %.test: %$(EXEEXT) Makefile
 		echo '[Test]'; \
 		echo 'Type=session'; \
 		echo 'Output=TAP'; \
-		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp $(testexecdir)/$* --tap'; \
+		echo 'Exec=env $(testexecdir)/$* --tap'; \
 	) > $@.tmp && mv $@.tmp $@
 
 $(installable_test_meta_with_config): %_with_config.test: %$(EXEEXT) Makefile
@@ -482,5 +482,5 @@ $(installable_test_meta_with_config): %_with_config.test: %$(EXEEXT) Makefile
 		echo '[Test]'; \
 		echo 'Type=session'; \
 		echo 'Output=TAP'; \
-		echo 'Exec=env DBUS_TEST_HOME=$$(pwd)/home.tmp DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$* --tap'; \
+		echo 'Exec=env DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$* --tap'; \
 	) > $@.tmp && mv $@.tmp $@
