@@ -5,10 +5,12 @@ SET(BUS_DIR ${CMAKE_SOURCE_DIR}/../bus)
 
 # config files for installation 
 CONFIGURE_FILE( "${BUS_DIR}/session.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/session.conf" IMMEDIATE @ONLY)
+CONFIGURE_FILE( "${BUS_DIR}/legacy-config/session.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/legacy-config/session.conf" IMMEDIATE @ONLY)
 FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/session.d)
 
 if(NOT WIN32)
-    CONFIGURE_FILE( "system.conf.cmake" "${CMAKE_CURRENT_BINARY_DIR}/system.conf" IMMEDIATE @ONLY)
+    CONFIGURE_FILE( "${BUS_DIR}/system.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/system.conf" IMMEDIATE @ONLY)
+    CONFIGURE_FILE( "${BUS_DIR}/legacy-config/system.conf.in" "${CMAKE_CURRENT_BINARY_DIR}/legacy-config/system.conf" IMMEDIATE @ONLY)
     FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/system.d)
 endif()
 
@@ -91,13 +93,15 @@ set_target_properties(dbus-daemon PROPERTIES OUTPUT_NAME ${DBUS_DAEMON_NAME})
 set_target_properties(dbus-daemon PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
 install_targets(/bin dbus-daemon)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/session.conf DESTINATION etc/dbus-1)
-install(DIRECTORY DESTINATION etc/dbus-1/session.d)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/session.conf DESTINATION share/dbus-1)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/legacy-config/session.conf DESTINATION etc/dbus-1)
+install(DIRECTORY DESTINATION share/dbus-1/session.d)
 install(DIRECTORY DESTINATION share/dbus-1/services)
 
 if(NOT WIN32)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/system.conf DESTINATION etc/dbus-1)
-    install(DIRECTORY DESTINATION etc/dbus-1/system.d)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/system.conf DESTINATION share/dbus-1)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/legacy-config/system.conf DESTINATION etc/dbus-1)
+    install(DIRECTORY DESTINATION share/dbus-1/system.d)
     install(DIRECTORY DESTINATION share/dbus-1/system-services)
     install(DIRECTORY DESTINATION var/run/dbus)
 endif()
@@ -169,6 +173,7 @@ if(NOT WIN32)
    set (SOURCES ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/test-launch-helper.c)
    add_test_executable(test-bus-launch-helper "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
    set_target_properties(test-bus-launch-helper PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST -DACTIVATION_LAUNCHER_DO_OOM")
+   install_targets(/lib dbus-daemon-launch-helper)
 endif(NOT WIN32)
 
 #### Init scripts fun
