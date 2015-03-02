@@ -147,7 +147,7 @@ installcheck_environment = \
 	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
 	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
 
-TESTS_ENVIRONMENT = \
+AM_TESTS_ENVIRONMENT = \
 	XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
 	DBUS_FATAL_WARNINGS=1 \
 	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
@@ -255,7 +255,7 @@ endif DBUS_ENABLE_MODULAR_TESTS
 # do a portable equivalent of setting LD_LIBRARY_PATH.
 installcheck-local:
 	$(MAKE) check-TESTS TESTS='$$(installcheck_tests)' \
-		TESTS_ENVIRONMENT='$$(installcheck_environment)'
+		AM_TESTS_ENVIRONMENT='$$(installcheck_environment)'
 if DBUS_ENABLE_INSTALLED_TESTS
 	test -n "$(DESTDIR)" || \
 	$(installcheck_environment) \
