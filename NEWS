@@ -1,5 +1,7 @@
-D-Bus 1.9.14 (UNRELEASED)
+D-Bus 1.9.14 (2015-03-02)
 ==
+
+The “don't stand in the poison cloud” release.
 
 Dependencies:
 
@@ -43,6 +45,9 @@ Enhancements:
   variables to "dbus-daemon --session" and optionally "systemd --user",
   primarily as a way to keep the per-user bus compatible with
   distributions' existing X11 login scripts (also fd.o #61301)
+
+• <includedir/> elements in dbus-daemon configuration are now silently
+  ignored if the directory does not exist. (fd.o #89280, Dimitri John Ledkov)
 
 • Add microsecond-resolution timestamps to the default output of
   dbus-monitor and dbus-send (fd.o #88896; Ralf Habacker, Simon McVittie)
