@@ -4,6 +4,9 @@
 SUBDIRS= . name-test 
 DIST_SUBDIRS=name-test
 
+CLEANFILES =
+EXTRA_DIST =
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
@@ -33,6 +36,16 @@ libdbus_testutils_la_LIBADD = \
 	$(top_builddir)/dbus/libdbus-internal.la \
 	$(NULL)
 
+TEST_EXTENSIONS = .sh
+
+LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
+LOG_COMPILER = $(srcdir)/glib-tap-test.sh
+SH_LOG_DRIVER = $(LOG_DRIVER)
+SH_LOG_COMPILER = $(SHELL)
+EXTRA_DIST += glib-tap-test.sh
+
+TESTS =
+
 if DBUS_ENABLE_EMBEDDED_TESTS
 ## break-loader removed for now
 ## these binaries are used in tests but are not themselves tests
@@ -48,21 +61,32 @@ TEST_BINARIES = \
 
 ## These are conceptually part of directories that come earlier in SUBDIRS
 ## order, but we don't want to run them til we arrive in this directory,
-## since they depend on stuff from this directory
-TESTS = \
-	../bus/test-bus$(EXEEXT) \
-	../dbus/test-dbus$(EXEEXT) \
-	$(NULL)
+## since they depend on stuff from this directory. We wrap them in a
+## simple shell script to get TAP output.
+
+wrap_bus_tests = test-bus.sh
+wrap_dbus_tests = test-dbus.sh
 
 if DBUS_UNIX
-TESTS += ../bus/test-bus-launch-helper$(EXEEXT)
-TESTS += ../bus/test-bus-system$(EXEEXT)
+wrap_bus_tests += test-bus-launch-helper.sh
+wrap_bus_tests += test-bus-system.sh
 endif
+
+TESTS += $(wrap_bus_tests) $(wrap_dbus_tests)
+CLEANFILES += $(wrap_bus_tests) $(wrap_dbus_tests)
+EXTRA_DIST += tap-test.sh.in
+
+$(wrap_bus_tests): test-bus%.sh: ../bus/test-bus%$(EXEEXT) tap-test.sh.in Makefile
+	sed -e 's![@]RUN[@]!$<!' \
+		< $(srcdir)/tap-test.sh.in > $@
+
+$(wrap_dbus_tests): test-dbus%.sh: ../dbus/test-dbus%$(EXEEXT) tap-test.sh.in Makefile
+	sed -e 's![@]RUN[@]!$<!' \
+		< $(srcdir)/tap-test.sh.in > $@
 
 else !DBUS_ENABLE_EMBEDDED_TESTS
 
 TEST_BINARIES=
-TESTS=
 
 endif !DBUS_ENABLE_EMBEDDED_TESTS
 
@@ -95,7 +119,7 @@ manual_paths_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 manual_tcp_SOURCES = manual-tcp.c
 manual_tcp_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
-EXTRA_DIST = dbus-test-runner
+EXTRA_DIST += dbus-test-runner
 
 testexecdir = $(libexecdir)/installed-tests/dbus
 testmetadir = $(datadir)/installed-tests/dbus
@@ -460,7 +484,7 @@ imported_data = \
 	$(NULL)
 
 noinst_DATA = $(imported_data)
-CLEANFILES = \
+CLEANFILES += \
 	$(noinst_DATA) \
 	XDG_RUNTIME_DIR \
 	installable \

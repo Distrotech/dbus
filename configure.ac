@@ -73,6 +73,10 @@ COMPILER_COVERAGE
 COMPILER_OPTIMISATIONS
 PKG_PROG_PKG_CONFIG
 
+# TAP test driver support
+AC_PROG_AWK
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
+
 # This must come before we set up compiler warnings because it assumes
 # non-use of -Werror=missing-prototypes
 gl_VISIBILITY
