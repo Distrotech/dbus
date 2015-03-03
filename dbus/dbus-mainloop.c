@@ -54,8 +54,8 @@ struct DBusLoop
 typedef struct
 {
   DBusTimeout *timeout;
-  unsigned long last_tv_sec;
-  unsigned long last_tv_usec;
+  long last_tv_sec;
+  long last_tv_usec;
 } TimeoutCallback;
 
 #define TIMEOUT_CALLBACK(callback) ((TimeoutCallback*)callback)
@@ -421,15 +421,15 @@ _dbus_loop_remove_timeout (DBusLoop           *loop,
  * to do this.
  */
 static dbus_bool_t
-check_timeout (unsigned long    tv_sec,
-               unsigned long    tv_usec,
+check_timeout (long            tv_sec,
+               long            tv_usec,
                TimeoutCallback *tcb,
                int             *timeout)
 {
   long sec_remaining;
   long msec_remaining;
-  unsigned long expiration_tv_sec;
-  unsigned long expiration_tv_usec;
+  long expiration_tv_sec;
+  long expiration_tv_usec;
   long interval_seconds;
   long interval_milliseconds;
   int interval;
@@ -450,10 +450,7 @@ check_timeout (unsigned long    tv_sec,
     }
   
   sec_remaining = expiration_tv_sec - tv_sec;
-  /* need to force this to be signed, as it is intended to sometimes
-   * produce a negative result
-   */
-  msec_remaining = ((long) expiration_tv_usec - (long) tv_usec) / 1000L;
+  msec_remaining = (expiration_tv_usec - tv_usec) / 1000L;
 
 #if MAINLOOP_SPEW
   _dbus_verbose ("Interval is %ld seconds %ld msecs\n",
@@ -595,8 +592,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
   timeout = -1;
   if (loop->timeout_count > 0)
     {
-      unsigned long tv_sec;
-      unsigned long tv_usec;
+      long tv_sec;
+      long tv_usec;
       
       _dbus_get_monotonic_time (&tv_sec, &tv_usec);
 
@@ -704,8 +701,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
 
   if (loop->timeout_count > 0)
     {
-      unsigned long tv_sec;
-      unsigned long tv_usec;
+      long tv_sec;
+      long tv_usec;
 
       _dbus_get_monotonic_time (&tv_sec, &tv_usec);
 
