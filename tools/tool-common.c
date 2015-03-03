@@ -40,7 +40,7 @@
 /* a hack to avoid having to depend on the static -util version of libdbus;
  * it's useful for ancillary programs to be able to use the shared library */
 void
-tool_millisleep (int ms)
+tool_millisleep (unsigned int ms)
 {
 #ifdef DBUS_WIN
   Sleep (ms);
