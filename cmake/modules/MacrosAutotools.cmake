@@ -1,6 +1,21 @@
 #
+# cmake package for autotools support
+#
 # @Author Ralf Habacker
 # 
+
+#
+# load autotools configure file into an internal list named _configure_ac
+#
+macro(autoinit config)
+    set(_configure_ac_name ${config})
+    file(READ ${config} _configure_ac_raw)
+    # Convert file contents into a CMake list (where each element in the list
+    # is one line of the file)
+    STRING(REGEX REPLACE ";" "\\\\;" _configure_ac "${_configure_ac_raw}")
+    STRING(REGEX REPLACE "\n" ";" _configure_ac "${_configure_ac}")
+endmacro()
+
 # extracts version information from autoconf config file
 # and set related cmake variables
 # 
@@ -14,17 +29,16 @@
 #   ${prefix}_LIBRARY_REVISION
 #   ${prefix}_LIBRARY_CURRENT
 # 
-macro(autoversion config prefix)
-	file (READ ${config} _configure_ac)
-	string(TOUPPER ${prefix} prefix_upper)
-	string (REGEX REPLACE ".*${prefix}_major_version], .([0-9]+).*" "\\1" ${prefix_upper}_MAJOR_VERSION ${_configure_ac})
-	string (REGEX REPLACE ".*${prefix}_minor_version], .([0-9]+).*" "\\1" ${prefix_upper}_MINOR_VERSION ${_configure_ac})
-	string (REGEX REPLACE ".*${prefix}_micro_version], .([0-9]+).*" "\\1" ${prefix_upper}_MICRO_VERSION ${_configure_ac})
-	set (${prefix_upper}_VERSION ${${prefix_upper}_MAJOR_VERSION}.${${prefix_upper}_MINOR_VERSION}.${${prefix_upper}_MICRO_VERSION})
-	set (${prefix_upper}_VERSION_STRING "${${prefix_upper}_VERSION}")
-	string (REGEX REPLACE ".*LT_AGE=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_AGE ${_configure_ac})
-	string (REGEX REPLACE ".*LT_CURRENT=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_CURRENT ${_configure_ac})
-	string (REGEX REPLACE ".*LT_REVISION=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_REVISION ${_configure_ac})
+macro(autoversion prefix)
+    string(TOUPPER ${prefix} prefix_upper)
+    string (REGEX REPLACE ".*${prefix}_major_version], .([0-9]+).*" "\\1" ${prefix_upper}_MAJOR_VERSION ${_configure_ac_raw})
+    string (REGEX REPLACE ".*${prefix}_minor_version], .([0-9]+).*" "\\1" ${prefix_upper}_MINOR_VERSION ${_configure_ac_raw})
+    string (REGEX REPLACE ".*${prefix}_micro_version], .([0-9]+).*" "\\1" ${prefix_upper}_MICRO_VERSION ${_configure_ac_raw})
+    set (${prefix_upper}_VERSION ${${prefix_upper}_MAJOR_VERSION}.${${prefix_upper}_MINOR_VERSION}.${${prefix_upper}_MICRO_VERSION})
+    set (${prefix_upper}_VERSION_STRING "${${prefix_upper}_VERSION}")
+    string (REGEX REPLACE ".*LT_AGE=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_AGE ${_configure_ac_raw})
+    string (REGEX REPLACE ".*LT_CURRENT=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_CURRENT ${_configure_ac_raw})
+    string (REGEX REPLACE ".*LT_REVISION=([0-9]+).*" "\\1" ${prefix_upper}_LIBRARY_REVISION ${_configure_ac_raw})
 endmacro()
 
 #
@@ -86,6 +100,21 @@ macro(autopackage name version url support_url)
 #define VERSION \"@VERSION@\"
 ")
 endmacro(autopackage)
+
+#
+# define a cmake variable from autotools AC_DEFINE statement
+#
+macro(autodefine name)
+    foreach(line ${_configure_ac})
+        if(line MATCHES ".*AC_DEFINE(.*${name}.*).*")
+            string (REGEX REPLACE ".*AC_DEFINE(.*).*" "\\1" value ${line})
+            string (REGEX REPLACE ".*,(.*),.*" "\\1" value2 ${value})
+            string (REPLACE "[" "" value3 ${value2})
+            string (REPLACE "]" "" value4 ${value3})
+            set(${name} ${value4})
+        endif()
+    endforeach()
+endmacro()
 
 #
 # parses config.h template and create cmake equivalent 

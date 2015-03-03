@@ -96,6 +96,10 @@
 
 #cmakedefine DBUS_VA_COPY_AS_ARRAY @DBUS_VA_COPY_AS_ARRAY@
 
+#cmakedefine DBUS_WITH_GLIB 1
+#cmakedefine GLIB_VERSION_MIN_REQUIRED @GLIB_VERSION_MIN_REQUIRED@
+#cmakedefine GLIB_VERSION_MAX_ALLOWED  @GLIB_VERSION_MAX_ALLOWED@
+
 // headers
 /* Define to 1 if you have dirent.h */
 #cmakedefine   HAVE_DIRENT_H 1

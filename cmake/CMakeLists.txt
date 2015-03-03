@@ -15,7 +15,8 @@ endif(COMMAND cmake_policy)
 
 # detect version
 include(MacrosAutotools)
-autoversion(../configure.ac dbus)
+autoinit(../configure.ac)
+autoversion(dbus)
 # used by file version info
 set (DBUS_PATCH_VERSION "0")
 
@@ -182,6 +183,11 @@ if (UNIX AND NOT DBUS_DISABLE_ASSERT)
 	SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,--export-dynamic")
 	add_definitions(-DDBUS_BUILT_R_DYNAMIC)
 endif (UNIX AND NOT DBUS_DISABLE_ASSERT)
+
+if(DBUS_WITH_GLIB)
+    autodefine(GLIB_VERSION_MIN_REQUIRED)
+    autodefine(GLIB_VERSION_MAX_ALLOWED)
+endif()
 
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}  -D_DEBUG")
 
