@@ -602,7 +602,7 @@ static void
 close_unix_fds(int *fds, unsigned *n_fds)
 {
   DBusError e;
-  int i;
+  unsigned int i;
 
   if (*n_fds <= 0)
     return;

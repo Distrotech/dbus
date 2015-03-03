@@ -68,7 +68,7 @@ indent (int depth)
 
 static void
 print_hex (const unsigned char *bytes,
-           int len,
+           unsigned int len,
            int depth)
 {
   unsigned int i, columns;

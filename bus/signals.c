@@ -848,7 +848,8 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
 
   if (end != length)
     {
-      if ((end + strlen ("path")) == length &&
+      int len1 = strlen ("path");
+      if ((end + len1) == length &&
           _dbus_string_ends_with_c_str (&key_str, "path"))
         {
           is_path = TRUE;

@@ -155,9 +155,9 @@ dbus_test_tool_spam (int argc, char **argv)
   int i;
   int count = 1;
   int sent = 0;
-  int sent_in_this_conn = 0;
+  unsigned int sent_in_this_conn = 0;
   int received = 0;
-  int received_before_this_conn = 0;
+  unsigned int received_before_this_conn = 0;
   int queue_len = 1;
   const char *payload = NULL;
   char *payload_buf = NULL;
