@@ -80,18 +80,21 @@ tool_write_all (int fd,
 
   while (size > bytes_written)
     {
-      WriteResult this_time = write (fd, p, size - bytes_written);
+      WriteResult res = write (fd, p, size - bytes_written);
 
-      if (this_time < 0)
+      if (res < 0)
         {
           if (errno == EINTR)
             continue;
           else
             return FALSE;
         }
-
-      p += this_time;
-      bytes_written += this_time;
+      else
+        {
+          size_t this_time = (size_t) res;
+          p += this_time;
+          bytes_written += this_time;
+        }
     }
 
   return TRUE;
