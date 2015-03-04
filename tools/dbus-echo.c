@@ -30,6 +30,7 @@
 
 #include <dbus/dbus.h>
 
+#include "dbus/dbus-sysdeps.h"
 #include "test-tool.h"
 #include "tool-common.h"
 
