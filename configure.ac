@@ -7,6 +7,7 @@ m4_define([dbus_micro_version], [15])
 m4_define([dbus_version],
           [dbus_major_version.dbus_minor_version.dbus_micro_version])
 AC_INIT([dbus],[dbus_version],[https://bugs.freedesktop.org/enter_bug.cgi?product=dbus],[dbus])
+AC_CONFIG_AUX_DIR([build-aux])
 
 AC_CANONICAL_HOST
 

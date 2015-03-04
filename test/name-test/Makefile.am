@@ -9,7 +9,7 @@ AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
 TEST_EXTENSIONS = .sh
 
-SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
+SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 SH_LOG_COMPILER = $(SHELL)
 
 ## note that TESTS has special meaning (stuff to use in make check)

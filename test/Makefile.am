@@ -38,7 +38,7 @@ libdbus_testutils_la_LIBADD = \
 
 TEST_EXTENSIONS = .sh
 
-LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
+LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 LOG_COMPILER = $(srcdir)/glib-tap-test.sh
 SH_LOG_DRIVER = $(LOG_DRIVER)
 SH_LOG_COMPILER = $(SHELL)
