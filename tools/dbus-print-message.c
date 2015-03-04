@@ -505,6 +505,7 @@ print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)
             break;
           }
 
+#ifdef DBUS_UNIX
         case DBUS_TYPE_UNIX_FD:
           {
             int fd;
@@ -520,6 +521,7 @@ print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)
 
             break;
           }
+#endif
 
         default:
           printf (" (dbus-monitor too dumb to decipher arg type '%c')\n", type);
