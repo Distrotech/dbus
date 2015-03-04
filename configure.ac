@@ -1362,13 +1362,12 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl - unused-parameter is to make writing callbacks less annoying
   dnl
   dnl To be fixed one day:
-  dnl - sign-compare and pointer-sign are workarounds for fd.o #17433
+  dnl - pointer-sign is a workaround for fd.o #15522
   dnl - type-limits is probably a bug too, but having the rest of -Wextra
   dnl   is better than nothing
   [$DISABLE_UNUSED_WARNINGS \
    missing-field-initializers \
    unused-parameter \
-   sign-compare \
    pointer-sign \
    type-limits \
   ])
