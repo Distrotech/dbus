@@ -218,7 +218,7 @@ binary_filter_func (DBusConnection *connection,
     {
       case BINARY_MODE_PCAP:
           {
-            struct timeval t = { 0, 0 };
+            long tv_sec, tv_usec;
             /* seconds, microseconds, bytes captured (possibly truncated),
              * original length.
              * http://wiki.wireshark.org/Development/LibpcapFileFormat
@@ -228,15 +228,9 @@ binary_filter_func (DBusConnection *connection,
             /* If this gets padded then we'd need to write it out in pieces */
             _DBUS_STATIC_ASSERT (sizeof (header) == 16);
 
-            if (_DBUS_UNLIKELY (gettimeofday (&t, NULL) < 0))
-              {
-                /* I'm fairly sure this can't actually happen */
-                perror ("dbus-monitor: gettimeofday");
-                exit (1);
-              }
-
-            header[0] = t.tv_sec;
-            header[1] = t.tv_usec;
+            _dbus_get_real_time (&tv_sec, &tv_usec);
+            header[0] = tv_sec;
+            header[1] = tv_usec;
 
             if (!tool_write_all (STDOUT_FILENO, header, sizeof (header)))
               {
