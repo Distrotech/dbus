@@ -89,7 +89,7 @@ main (int argc, char **argv)
   wchar_t *p;
   wchar_t *daemon_name;
   int result;
-  int showConsole = 0;
+
 #ifdef DBUS_WINCE
   char *s = NULL;
 #else
@@ -102,10 +102,6 @@ main (int argc, char **argv)
   BOOL inherit = TRUE;
   DWORD flags = 0;
 
-#ifdef AUTO_ACTIVATE_CONSOLE_WHEN_VERBOSE_MODE
-  if (verbose)
-      showConsole = 1; 
-#endif
   GetModuleFileNameW (NULL, dbusDaemonPath, DIM (dbusDaemonPath));
   
   daemon_name = WCSTRINGIFY(DBUS_DAEMON_NAME) L".exe";

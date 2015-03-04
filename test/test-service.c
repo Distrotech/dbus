@@ -400,20 +400,18 @@ main (int    argc,
   int result;
   DBusConnection *connection;
   const char *name;
-  dbus_bool_t do_fork;
-
+#ifndef DBUS_WIN
+  dbus_bool_t do_fork = FALSE;
+#endif
   if (argc != 3)
     {
       name = "org.freedesktop.DBus.TestSuiteEchoService";
-      do_fork = FALSE;
     }
   else
     {
       name = argv[1];
 #ifndef DBUS_WIN
       do_fork = strcmp (argv[2], "fork") == 0;
-#else
-      do_fork = FALSE;
 #endif
     }
 
