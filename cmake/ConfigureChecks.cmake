@@ -32,7 +32,6 @@ check_symbol_exists(clearenv     "stdlib.h"         HAVE_CLEARENV)           #  
 check_symbol_exists(writev       "sys/uio.h"        HAVE_WRITEV)             #  dbus-sysdeps.c, dbus-sysdeps-win.c
 check_symbol_exists(setrlimit    "sys/resource.h"   HAVE_SETRLIMIT)          #  dbus-sysdeps.c, dbus-sysdeps-win.c, test/test-segfault.c
 check_symbol_exists(socketpair   "sys/socket.h"     HAVE_SOCKETPAIR)         #  dbus-sysdeps.c
-check_symbol_exists(socklen_t    "sys/socket.h"     HAVE_SOCKLEN_T)          #  dbus-sysdeps-unix.c
 check_symbol_exists(setlocale    "locale.h"         HAVE_SETLOCALE)          #  dbus-test-main.c
 check_symbol_exists(localeconv   "locale.h"         HAVE_LOCALECONV)         #  dbus-sysdeps.c
 check_symbol_exists(strtoll      "stdlib.h"         HAVE_STRTOLL)            #  dbus-send.c
@@ -57,6 +56,9 @@ check_type_size("int"       SIZEOF_INT)
 check_type_size("long"      SIZEOF_LONG)
 check_type_size("long long" SIZEOF_LONG_LONG)
 check_type_size("__int64"   SIZEOF___INT64)
+set(CMAKE_EXTRA_INCLUDE_FILES "sys/socket.h")
+check_type_size("socklen_t" SOCKLEN_T)          #  dbus-sysdeps-unix.c
+set(CMAKE_EXTRA_INCLUDE_FILES)
 
 # DBUS_INT64_TYPE
 if(SIZEOF_INT EQUAL 8)
