@@ -429,7 +429,7 @@ test_too_many (Fixture *f,
 {
 #ifdef HAVE_UNIX_FD_PASSING
   DBusMessage *outgoing;
-  int i;
+  unsigned int i;
 
   test_connect (f, data);
 
@@ -608,7 +608,7 @@ test_flood (Fixture *f,
     gconstpointer data)
 {
 #ifdef HAVE_UNIX_FD_PASSING
-  int i, j;
+  unsigned int i, j;
   DBusMessage *outgoing[SOME_MESSAGES];
   dbus_uint32_t serial;
 
