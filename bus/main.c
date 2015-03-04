@@ -87,7 +87,8 @@ signal_handler (int sig)
             static const char message[] =
               "Unable to write to reload pipe - buffer full?\n";
 
-            if (write (STDERR_FILENO, message, strlen (message)) != strlen (message))
+            if (write (STDERR_FILENO, message, strlen (message)) !=
+                (ssize_t) strlen (message))
               {
                 /* ignore failure to write out a warning */
               }
@@ -111,7 +112,8 @@ signal_handler (int sig)
               "Unable to write termination signal to pipe - buffer full?\n"
               "Will exit instead.\n";
 
-            if (write (STDERR_FILENO, message, strlen (message)) != strlen (message))
+            if (write (STDERR_FILENO, message, strlen (message)) !=
+                (ssize_t) strlen (message))
               {
                 /* ignore failure to write out a warning */
               }
