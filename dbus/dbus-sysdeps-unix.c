@@ -1165,7 +1165,7 @@ _dbus_listen_systemd_sockets (int       **fds,
 {
 #ifdef HAVE_SYSTEMD
   int r, n;
-  unsigned fd;
+  int fd;
   int *new_fds;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
