@@ -151,6 +151,22 @@ DBUS_PRIVATE_EXPORT
 int           _dbus_string_get_length            (const DBusString  *str);
 #endif /* !_dbus_string_get_length */
 
+/**
+ * Get the string's length as an unsigned integer, for comparison with
+ * size_t and similar unsigned types that does not trigger compiler
+ * warnings about potential value changes during conversion.
+ *
+ * DBusString lengths are signed for historical reasons, but we know that
+ * the length is always >= 0 (and DBUS_GENERIC_STRING_PREAMBLE asserts
+ * that this is the case) so we know that this cast does not change the
+ * value.
+ */
+static inline unsigned int
+_dbus_string_get_length_uint (const DBusString *str)
+{
+  return (unsigned int) _dbus_string_get_length (str);
+}
+
 DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_string_lengthen              (DBusString        *str,
                                                   int                additional_length);

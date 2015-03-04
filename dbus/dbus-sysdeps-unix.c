@@ -1689,7 +1689,7 @@ add_linux_security_label_to_credentials (int              client_fd,
       _dbus_verbose ("getsockopt failed with %s, len now %lu\n",
                      _dbus_strerror (e), (unsigned long) len);
 
-      if (e != ERANGE || len <= _dbus_string_get_length (&buf))
+      if (e != ERANGE || len <= _dbus_string_get_length_uint (&buf))
         {
           _dbus_verbose ("Failed to getsockopt(SO_PEERSEC): %s\n",
                          _dbus_strerror (e));
@@ -1714,10 +1714,10 @@ add_linux_security_label_to_credentials (int              client_fd,
       goto out;
     }
 
-  if (len > _dbus_string_get_length (&buf))
+  if (len > _dbus_string_get_length_uint (&buf))
     {
-      _dbus_verbose ("%lu > %d", (unsigned long) len,
-                     _dbus_string_get_length (&buf));
+      _dbus_verbose ("%lu > %u", (unsigned long) len,
+                     _dbus_string_get_length_uint (&buf));
       _dbus_assert_not_reached ("getsockopt(SO_PEERSEC) overflowed");
     }
 
