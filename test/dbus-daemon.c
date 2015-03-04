@@ -417,7 +417,6 @@ test_creds (Fixture *f,
         {
 #ifdef G_OS_WIN32
           gchar *sid;
-          guint32 result;
           char *self_sid;
 
           g_assert (!(seen & SEEN_WINDOWS_SID));
