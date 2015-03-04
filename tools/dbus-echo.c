@@ -89,7 +89,7 @@ filter (DBusConnection *connection,
 
   if (sleep_ms > 0)
     {
-      tool_millisleep (sleep_ms);
+      _dbus_sleep_milliseconds (sleep_ms);
     }
 
   if (!noreply)

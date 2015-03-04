@@ -37,25 +37,6 @@
 #include <unistd.h>
 #endif
 
-/* a hack to avoid having to depend on the static -util version of libdbus;
- * it's useful for ancillary programs to be able to use the shared library */
-void
-tool_millisleep (unsigned int ms)
-{
-#ifdef DBUS_WIN
-  Sleep (ms);
-#else
-  fd_set nothing;
-  struct timeval tv;
-
-  tv.tv_sec = ms / 1000;
-  tv.tv_usec = (ms % 1000) * 1000;
-
-  FD_ZERO (&nothing);
-  select (1, &nothing, &nothing, &nothing, &tv);
-#endif
-}
-
 void
 tool_oom (const char *doing)
 {

@@ -32,7 +32,6 @@
 #define VERBOSE(...) do {} while (0)
 #endif
 
-void tool_millisleep (unsigned int ms);
 void tool_oom (const char *doing) _DBUS_GNUC_NORETURN;
 dbus_bool_t tool_write_all (int fd, const void *buf, size_t size);
 
