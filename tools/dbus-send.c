@@ -230,8 +230,8 @@ main (int argc, char *argv[])
   DBusConnection *connection;
   DBusError error;
   DBusMessage *message;
-  int print_reply;
-  int print_reply_literal;
+  dbus_bool_t print_reply;
+  dbus_bool_t print_reply_literal;
   int reply_timeout;
   DBusMessageIter iter;
   int i;
