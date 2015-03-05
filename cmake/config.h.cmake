@@ -101,53 +101,79 @@
 #cmakedefine GLIB_VERSION_MAX_ALLOWED  @GLIB_VERSION_MAX_ALLOWED@
 
 // headers
+#cmakedefine HAVE_ALLOCA_H
+#cmakedefine HAVE_BYTESWAP_H
+#cmakedefine HAVE_CRT_EXTERNS_H
+
 /* Define to 1 if you have dirent.h */
 #cmakedefine   HAVE_DIRENT_H 1
 
-/* Define to 1 if you have io.h */
-#cmakedefine   HAVE_IO_H 1
-
-/* Define to 1 if you have grp.h */
-#cmakedefine   HAVE_GRP_H 1
-
-/* Define to 1 if you have sys/poll.h */
-#cmakedefine    HAVE_POLL 1
-
-/* Define to 1 if you have sys/time.h */
-#cmakedefine    HAVE_SYS_TIME 1
-
-/* Define to 1 if you have sys/wait.h */
-#cmakedefine    HAVE_SYS_WAIT 1
-
-/* Define to 1 if you have time.h */
-#cmakedefine   HAVE_TIME_H 1
-
-/* Define to 1 if you have ws2tcpip.h */
-#cmakedefine   HAVE_WS2TCPIP_H
-
-/* Define to 1 if you have unistd.h */
-#cmakedefine   HAVE_UNISTD_H 1
-
-/* Define to 1 if you have stdio.h */
-#cmakedefine   HAVE_STDIO_H 1
-
-/* Define to 1 if you have sys/syslimits.h */
-#cmakedefine   HAVE_SYS_SYSLIMITS_H 1
+#cmakedefine HAVE_DLFCN_H
 
 /* Define to 1 if you have errno.h */
 #cmakedefine   HAVE_ERRNO_H 1
 
-/* Define to 1 if you have signal.h */
-#cmakedefine   HAVE_SIGNAL_H 1
+#cmakedefine HAVE_EXECINFO_H
+#cmakedefine HAVE_EXPAT_H
 
-/* Define to 1 if you have locale.h */
-#cmakedefine   HAVE_LOCALE_H 1
+/* Define to 1 if you have grp.h */
+#cmakedefine   HAVE_GRP_H 1
 
 /* Define to 1 if you have inttypes.h */
 #cmakedefine   HAVE_INTTYPES_H 1
 
+/* Define to 1 if you have io.h */
+#cmakedefine   HAVE_IO_H 1
+
+/* Define to 1 if you have locale.h */
+#cmakedefine   HAVE_LOCALE_H 1
+
+#cmakedefine HAVE_MEMORY_H
+
+/* Define to 1 if you have sys/poll.h */
+#cmakedefine    HAVE_POLL 1
+
+/* Define to 1 if you have signal.h */
+#cmakedefine   HAVE_SIGNAL_H 1
+
 /* Define to 1 if you have stdint.h */
 #cmakedefine   HAVE_STDINT_H 1
+
+#cmakedefine HAVE_STDLIB_H
+
+/* Define to 1 if you have stdio.h */
+#cmakedefine   HAVE_STDIO_H 1
+
+#cmakedefine HAVE_STRINGS_H
+#cmakedefine HAVE_STRING_H
+#cmakedefine HAVE_SYSLOG_H
+#cmakedefine HAVE_SYS_EVENTS_H
+#cmakedefine HAVE_SYS_INOTIFY_H
+#cmakedefine HAVE_SYS_PRCTL_H
+#cmakedefine HAVE_SYS_RESOURCE_H
+#cmakedefine HAVE_SYS_STAT_H
+
+/* Define to 1 if you have sys/syslimits.h */
+#cmakedefine   HAVE_SYS_SYSLIMITS_H 1
+
+/* Define to 1 if you have sys/time.h */
+#cmakedefine    HAVE_SYS_TIME_H 1
+
+#cmakedefine HAVE_SYS_TYPES_H
+
+#cmakedefine HAVE_SYS_UIO_H
+
+/* Define to 1 if you have sys/wait.h */
+#cmakedefine    HAVE_SYS_WAIT_H 1
+
+/* Define to 1 if you have time.h */
+#cmakedefine   HAVE_TIME_H 1
+
+/* Define to 1 if you have unistd.h */
+#cmakedefine   HAVE_UNISTD_H 1
+
+/* Define to 1 if you have ws2tcpip.h */
+#cmakedefine   HAVE_WS2TCPIP_H
 
 // symbols
 /* Define to 1 if you have backtrace */
