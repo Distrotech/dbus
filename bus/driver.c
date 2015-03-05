@@ -43,6 +43,13 @@
 #include <dbus/dbus-marshal-validate.h>
 #include <string.h>
 
+static inline const char *
+nonnull (const char *maybe_null,
+         const char *if_null)
+{
+  return (maybe_null ? maybe_null : if_null);
+}
+
 static DBusConnection *
 bus_driver_get_owner_of_name (DBusConnection *connection,
                               const char     *name)
@@ -121,7 +128,10 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
 
       bus_context_log_and_set_error (bus_transaction_get_context (transaction),
           DBUS_SYSTEM_LOG_SECURITY, error, DBUS_ERROR_ACCESS_DENIED,
-          "rejected attempt to call %s by unknown uid", method);
+          "rejected attempt to call %s by connection %s (%s) with "
+          "unknown uid", method,
+          nonnull (bus_connection_get_name (connection), "(inactive)"),
+          bus_connection_get_loginfo (connection));
       return FALSE;
     }
 
@@ -142,7 +152,10 @@ bus_driver_check_caller_is_privileged (DBusConnection *connection,
 
       bus_context_log_and_set_error (bus_transaction_get_context (transaction),
           DBUS_SYSTEM_LOG_SECURITY, error, DBUS_ERROR_ACCESS_DENIED,
-          "rejected attempt to call %s by uid %lu", method, uid);
+          "rejected attempt to call %s by connection %s (%s) with "
+          "uid %lu", method,
+          nonnull (bus_connection_get_name (connection), "(inactive)"),
+          bus_connection_get_loginfo (connection), uid);
       return FALSE;
     }
 
