@@ -299,7 +299,6 @@ endif(NOT MSVC)
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     option (DBUS_BUS_ENABLE_INOTIFY "build with inotify support (linux only)" ON)
     if(DBUS_BUS_ENABLE_INOTIFY)
-        check_include_file(sys/inotify.h HAVE_SYS_INOTIFY_H)
         if(NOT HAVE_SYS_INOTIFY_H)
             message(FATAL_ERROR "sys/inotify.h not found!")
         endif(NOT HAVE_SYS_INOTIFY_H)
@@ -307,10 +306,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 elseif("${CMAKE_SYSTEM_NAME}" MATCHES ".*BSD")
     option (DBUS_BUS_ENABLE_KQUEUE "build with kqueue support (FreeBSD only)" ON)
     if(DBUS_BUS_ENABLE_KQUEUE)
-        # cmake check a header by compiling a test program with
-        # the header, sys/event.h needs stdint.h and sys/types.h
-        # to work.
-        check_include_files("stdint.h;sys/types.h;sys/event.h" HAVE_SYS_EVENT_H)
         if(NOT HAVE_SYS_EVENT_H)
             message(FATAL_ERROR "sys/event.h not found!")
         endif(NOT HAVE_SYS_EVENT_H)

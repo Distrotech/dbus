@@ -23,6 +23,7 @@ check_include_file(stdio.h      HAVE_STDIO_H)   # dbus-sysdeps.h
 check_include_file(string.h     HAVE_STRING_H)
 check_include_file(strings.h     HAVE_STRINGS_H)
 check_include_file(syslog.h     HAVE_SYSLOG_H)
+check_include_files("stdint.h;sys/types.h;sys/event.h" HAVE_SYS_EVENT_H)
 check_include_file(sys/inotify.h     HAVE_SYS_INOTIFY_H)
 check_include_file(sys/resource.h     HAVE_SYS_RESOURCE_H)
 check_include_file(sys/stat.h     HAVE_SYS_STAT_H)
