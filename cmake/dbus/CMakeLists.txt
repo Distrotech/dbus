@@ -265,10 +265,9 @@ endif()
 
 if(WIN32)
     if(DEFINED DBUS_LIBRARY_REVISION)
-        get_target_property(LEGACY_FILE_NAME dbus-1 LOCATION)
         set_target_properties(dbus-1 PROPERTIES SUFFIX "-${DBUS_LIBRARY_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
         add_custom_command(TARGET dbus-1 POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:dbus-1>" "${LEGACY_FILE_NAME}"
+            COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:dbus-1>" "$<TARGET_FILE_DIR:dbus-1>/${CMAKE_SHARED_LIBRARY_PREFIX}dbus-1${CMAKE_SHARED_LIBRARY_SUFFIX}"
             COMMENT "Create non versioned dbus-1 library for legacy applications"
         )
         install(FILES ${LEGACY_FILE_NAME} DESTINATION bin)
