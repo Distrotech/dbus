@@ -17,7 +17,7 @@ endif(COMMAND cmake_policy)
 include(MacrosAutotools)
 autoinit(../configure.ac)
 autoversion(dbus)
-autoheaderchecks(../config.h.in ConfigureChecks.cmake)
+autoheaderchecks(../config.h.in ConfigureChecks.cmake config.h.cmake)
 # used by file version info
 set (DBUS_PATCH_VERSION "0")
 
