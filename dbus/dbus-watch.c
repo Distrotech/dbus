@@ -590,6 +590,14 @@ dbus_watch_get_socket (DBusWatch *watch)
   return watch->fd;
 }
 
+DBusSocket
+_dbus_watch_get_socket (DBusWatch *watch)
+{
+  _dbus_return_val_if_fail (watch != NULL, -1);
+
+  return watch->fd;
+}
+
 /**
  * Gets flags from DBusWatchFlags indicating
  * what conditions should be monitored on the

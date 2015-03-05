@@ -51,7 +51,7 @@ struct DBusServerSocket
 {
   DBusServer base;   /**< Parent class members. */
   int n_fds;         /**< Number of active file handles */
-  int *fds;          /**< File descriptor or -1 if disconnected. */
+  DBusSocket *fds;   /**< File descriptor or DBUS_SOCKET_INVALID if disconnected. */
   DBusWatch **watch; /**< File descriptor watch. */
   char *socket_name; /**< Name of domain socket, to unlink if appropriate */
   DBusNonceFile *noncefile; /**< Nonce file used to authenticate clients */
@@ -182,11 +182,11 @@ socket_handle_watch (DBusWatch    *watch,
 
   if (flags & DBUS_WATCH_READABLE)
     {
-      int client_fd;
-      int listen_fd;
+      DBusSocket client_fd;
+      DBusSocket listen_fd;
       int saved_errno;
 
-      listen_fd = dbus_watch_get_socket (watch);
+      listen_fd = _dbus_watch_get_socket (watch);
 
       if (socket_server->noncefile)
           client_fd = _dbus_accept_with_noncefile (listen_fd, socket_server->noncefile);
@@ -195,7 +195,7 @@ socket_handle_watch (DBusWatch    *watch,
 
       saved_errno = _dbus_save_socket_errno ();
 
-      if (client_fd < 0)
+      if (client_fd == DBUS_SOCKET_INVALID)
         {
           /* EINTR handled for us */
 
@@ -243,7 +243,7 @@ socket_disconnect (DBusServer *server)
         }
 
       _dbus_close_socket (socket_server->fds[i], NULL);
-      socket_server->fds[i] = -1;
+      socket_server->fds[i] = DBUS_SOCKET_INVALID;
     }
 
   if (socket_server->socket_name != NULL)
@@ -280,7 +280,7 @@ static const DBusServerVTable socket_vtable = {
  *
  */
 DBusServer*
-_dbus_server_new_for_socket (int              *fds,
+_dbus_server_new_for_socket (DBusSocket       *fds,
                              int               n_fds,
                              const DBusString *address,
                              DBusNonceFile    *noncefile)
@@ -295,7 +295,7 @@ _dbus_server_new_for_socket (int              *fds,
 
   socket_server->noncefile = noncefile;
 
-  socket_server->fds = dbus_new (int, n_fds);
+  socket_server->fds = dbus_new (DBusSocket, n_fds);
   if (!socket_server->fds)
     goto failed_0;
 
@@ -396,7 +396,7 @@ _dbus_server_new_for_tcp_socket (const char     *host,
                                  dbus_bool_t    use_nonce)
 {
   DBusServer *server;
-  int *listen_fds = NULL;
+  DBusSocket *listen_fds = NULL;
   int nlisten_fds = 0, i;
   DBusString address;
   DBusString host_str;

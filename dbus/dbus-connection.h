@@ -31,6 +31,7 @@
 #include <dbus/dbus-memory.h>
 #include <dbus/dbus-message.h>
 #include <dbus/dbus-shared.h>
+#include <dbus/dbus-sysdeps.h>
 
 DBUS_BEGIN_DECLS
 

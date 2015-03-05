@@ -270,11 +270,11 @@ dbus_bool_t
 _dbus_loop_add_watch (DBusLoop  *loop,
                       DBusWatch *watch)
 {
-  int fd;
+  DBusSocket fd;
   DBusList **watches;
 
-  fd = dbus_watch_get_socket (watch);
-  _dbus_assert (fd != -1);
+  fd = _dbus_watch_get_socket (watch);
+  _dbus_assert (fd != DBUS_SOCKET_INVALID);
 
   watches = ensure_watch_table_entry (loop, fd);
 
@@ -323,13 +323,13 @@ _dbus_loop_remove_watch (DBusLoop         *loop,
 {
   DBusList **watches;
   DBusList *link;
-  int fd;
+  DBusSocket fd;
 
   /* This relies on people removing watches before they invalidate them,
    * which has been safe since fd.o #33336 was fixed. Assert about it
    * so we don't regress. */
-  fd = dbus_watch_get_socket (watch);
-  _dbus_assert (fd != -1);
+  fd = _dbus_watch_get_socket (watch);
+  _dbus_assert (fd != DBUS_SOCKET_INVALID);
 
   watches = _dbus_hash_table_lookup_int (loop->watches, fd);
 
