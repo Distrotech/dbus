@@ -27,6 +27,8 @@ autoversion(dbus)
 
 if(EXISTS ../config.h.in)
     autoheaderchecks(../config.h.in ConfigureChecks.cmake config.h.cmake)
+else()
+    message(STATUS "Generate config.h.in with autogen.sh to enable cmake header difference check.")
 endif()
 
 # used by file version info
