@@ -246,8 +246,7 @@ _dbus_transport_debug_pipe_new (const char     *server_name,
       return NULL;
     }
   
-  if (!_dbus_full_duplex_pipe (&client_fd, &server_fd, FALSE,
-                               NULL))
+  if (!_dbus_socketpair (&client_fd, &server_fd, FALSE, NULL))
     {
       _dbus_verbose ("failed to create full duplex pipe\n");
       dbus_set_error (error, DBUS_ERROR_FAILED, "Could not create full-duplex pipe");

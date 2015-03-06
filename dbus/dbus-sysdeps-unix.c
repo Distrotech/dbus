@@ -3275,22 +3275,22 @@ _dbus_print_backtrace (void)
 }
 
 /**
- * Creates a full-duplex pipe (as in socketpair()).
- * Sets both ends of the pipe nonblocking.
+ * Creates pair of connect sockets (as in socketpair()).
+ * Sets both ends of the pair nonblocking.
  *
  * Marks both file descriptors as close-on-exec
  *
  * @param fd1 return location for one end
  * @param fd2 return location for the other end
- * @param blocking #TRUE if pipe should be blocking
+ * @param blocking #TRUE if pair should be blocking
  * @param error error return
  * @returns #FALSE on failure (if error is set)
  */
 dbus_bool_t
-_dbus_full_duplex_pipe (int        *fd1,
-                        int        *fd2,
-                        dbus_bool_t blocking,
-                        DBusError  *error)
+_dbus_socketpair (int        *fd1,
+                  int        *fd2,
+                  dbus_bool_t blocking,
+                  DBusError  *error)
 {
 #ifdef HAVE_SOCKETPAIR
   int fds[2];
@@ -3346,9 +3346,9 @@ _dbus_full_duplex_pipe (int        *fd1,
 
   return TRUE;
 #else
-  _dbus_warn ("_dbus_full_duplex_pipe() not implemented on this OS\n");
+  _dbus_warn ("_dbus_socketpair() not implemented on this OS\n");
   dbus_set_error (error, DBUS_ERROR_FAILED,
-                  "_dbus_full_duplex_pipe() not implemented on this OS");
+                  "_dbus_socketpair() not implemented on this OS");
   return FALSE;
 #endif
 }

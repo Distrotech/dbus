@@ -1258,7 +1258,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
   if (!make_pipe (child_err_report_pipe, error))
     goto cleanup_and_fail;
 
-  if (!_dbus_full_duplex_pipe (&babysitter_pipe[0], &babysitter_pipe[1], TRUE, error))
+  if (!_dbus_socketpair (&babysitter_pipe[0], &babysitter_pipe[1], TRUE, error))
     goto cleanup_and_fail;
 
   /* Setting up the babysitter is only useful in the parent,
