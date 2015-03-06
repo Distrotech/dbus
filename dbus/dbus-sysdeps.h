@@ -438,10 +438,10 @@ dbus_bool_t _dbus_stat             (const DBusString *filename,
                                     DBusStat         *statbuf,
                                     DBusError        *error);
 DBUS_PRIVATE_EXPORT
-dbus_bool_t _dbus_full_duplex_pipe (int              *fd1,
-                                    int              *fd2,
-                                    dbus_bool_t       blocking,
-                                    DBusError        *error);
+dbus_bool_t _dbus_socketpair (int              *fd1,
+                              int              *fd2,
+                              dbus_bool_t       blocking,
+                              DBusError        *error);
 
 void        _dbus_print_backtrace  (void);
 

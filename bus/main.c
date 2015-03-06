@@ -313,8 +313,8 @@ setup_reload_pipe (DBusLoop *loop)
 
   dbus_error_init (&error);
 
-  if (!_dbus_full_duplex_pipe (&reload_pipe[0], &reload_pipe[1],
-			       TRUE, &error))
+  if (!_dbus_socketpair (&reload_pipe[0], &reload_pipe[1],
+                         TRUE, &error))
     {
       _dbus_warn ("Unable to create reload pipe: %s\n",
 		  error.message);
