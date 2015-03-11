@@ -94,8 +94,6 @@ dbus_bool_t    _dbus_watch_get_oom_last_time  (DBusWatch               *watch);
 DBUS_PRIVATE_EXPORT
 void           _dbus_watch_set_oom_last_time  (DBusWatch               *watch,
                                                dbus_bool_t              oom);
-DBUS_PRIVATE_EXPORT
-DBusSocket     _dbus_watch_get_socket         (DBusWatch               *watch);
 
 /** @} */
 

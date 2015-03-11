@@ -62,10 +62,6 @@
 #include "dbus-sysdeps-wince-glue.h"
 #endif
 
-#ifdef DBUS_WIN
-#include <ws2tcpip.h>
-#endif
-
 DBUS_BEGIN_DECLS
 
 #ifdef DBUS_WIN
@@ -132,27 +128,20 @@ typedef unsigned long dbus_gid_t;
  *        will be checked by the compiler.
  * 
  */
-#ifndef DBUS_WIN
-typedef int DBusSocket;
-# define DBUS_SOCKET_INVALID -1
-#else
-typedef SOCKET DBusSocket;
-# define DBUS_SOCKET_INVALID INVALID_SOCKET
-#endif
 
 DBUS_PRIVATE_EXPORT
-dbus_bool_t _dbus_close_socket     (DBusSocket        fd,
+dbus_bool_t _dbus_close_socket     (int               fd,
                                     DBusError        *error);
 DBUS_PRIVATE_EXPORT
-int         _dbus_read_socket      (DBusSocket        fd,
+int         _dbus_read_socket      (int               fd,
                                     DBusString       *buffer,
                                     int               count);
 DBUS_PRIVATE_EXPORT
-int         _dbus_write_socket     (DBusSocket        fd,
+int         _dbus_write_socket     (int               fd,
                                     const DBusString *buffer,
                                     int               start,
                                     int               len);
-int         _dbus_write_socket_two (DBusSocket        fd,
+int         _dbus_write_socket_two (int               fd,
                                     const DBusString *buffer1,
                                     int               start1,
                                     int               len1,
@@ -160,19 +149,19 @@ int         _dbus_write_socket_two (DBusSocket        fd,
                                     int               start2,
                                     int               len2);
 
-int _dbus_read_socket_with_unix_fds      (DBusSocket        fd,
+int _dbus_read_socket_with_unix_fds      (int               fd,
                                           DBusString       *buffer,
                                           int               count,
                                           int              *fds,
                                           int              *n_fds);
 DBUS_PRIVATE_EXPORT
-int _dbus_write_socket_with_unix_fds     (DBusSocket        fd,
+int _dbus_write_socket_with_unix_fds     (int               fd,
                                           const DBusString *buffer,
                                           int               start,
                                           int               len,
                                           const int        *fds,
                                           int               n_fds);
-int _dbus_write_socket_with_unix_fds_two (DBusSocket        fd,
+int _dbus_write_socket_with_unix_fds_two (int               fd,
                                           const DBusString *buffer1,
                                           int               start1,
                                           int               len1,
@@ -182,7 +171,7 @@ int _dbus_write_socket_with_unix_fds_two (DBusSocket        fd,
                                           const int        *fds,
                                           int               n_fds);
 
-dbus_bool_t _dbus_socket_is_invalid (DBusSocket        fd);
+dbus_bool_t _dbus_socket_is_invalid (int              fd);
 
 int _dbus_connect_tcp_socket  (const char     *host,
                                const char     *port,
@@ -197,15 +186,15 @@ int _dbus_listen_tcp_socket   (const char     *host,
                                const char     *port,
                                const char     *family,
                                DBusString     *retport,
-                               DBusSocket    **fds_p,
+                               int           **fds_p,
                                DBusError      *error);
-DBusSocket _dbus_accept       (DBusSocket      listen_fd);
+int _dbus_accept              (int             listen_fd);
 
 
-dbus_bool_t _dbus_read_credentials_socket (DBusSocket        client_fd,
+dbus_bool_t _dbus_read_credentials_socket (int               client_fd,
                                            DBusCredentials  *credentials,
                                            DBusError        *error);
-dbus_bool_t _dbus_send_credentials_socket (DBusSocket       server_fd,
+dbus_bool_t _dbus_send_credentials_socket (int              server_fd,
                                            DBusError       *error);
 
 dbus_bool_t _dbus_credentials_add_from_user            (DBusCredentials  *credentials,
@@ -235,7 +224,7 @@ dbus_bool_t _dbus_daemon_publish_session_bus_address (const char* address, const
 
 void _dbus_daemon_unpublish_session_bus_address (void);
 
-dbus_bool_t _dbus_socket_can_pass_unix_fd(DBusSocket fd);
+dbus_bool_t _dbus_socket_can_pass_unix_fd(int fd);
 
 /** Opaque type representing an atomically-modifiable integer
  * that can be used from multiple threads.
@@ -449,8 +438,8 @@ dbus_bool_t _dbus_stat             (const DBusString *filename,
                                     DBusStat         *statbuf,
                                     DBusError        *error);
 DBUS_PRIVATE_EXPORT
-dbus_bool_t _dbus_socketpair (DBusSocket       *fd1,
-                              DBusSocket       *fd2,
+dbus_bool_t _dbus_socketpair (int              *fd1,
+                              int              *fd2,
                               dbus_bool_t       blocking,
                               DBusError        *error);
 

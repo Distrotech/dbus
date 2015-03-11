@@ -274,7 +274,7 @@ _dbus_write_socket (int               fd,
  * @returns number of bytes appended to string
  */
 int
-_dbus_read_socket_with_unix_fds (DBusSocket        fd,
+_dbus_read_socket_with_unix_fds (int               fd,
                                  DBusString       *buffer,
                                  int               count,
                                  int              *fds,
@@ -1807,7 +1807,7 @@ out:
  * @returns #TRUE on success
  */
 dbus_bool_t
-_dbus_read_credentials_socket  (DBusSocket       client_fd,
+_dbus_read_credentials_socket  (int              client_fd,
                                 DBusCredentials *credentials,
                                 DBusError       *error)
 {
@@ -3287,13 +3287,13 @@ _dbus_print_backtrace (void)
  * @returns #FALSE on failure (if error is set)
  */
 dbus_bool_t
-_dbus_socketpair (DBusSocket *fd1,
-                  DBusSocket *fd2,
+_dbus_socketpair (int        *fd1,
+                  int        *fd2,
                   dbus_bool_t blocking,
                   DBusError  *error)
 {
 #ifdef HAVE_SOCKETPAIR
-  DBusSocket fds[2];
+  int fds[2];
   int retval;
 
 #ifdef SOCK_CLOEXEC

@@ -142,10 +142,10 @@ _dbus_read_nonce (const DBusString *fname, DBusString *nonce, DBusError* error)
   return TRUE;
 }
 
-DBusSocket
-_dbus_accept_with_noncefile (DBusSocket listen_fd, const DBusNonceFile *noncefile)
+int
+_dbus_accept_with_noncefile (int listen_fd, const DBusNonceFile *noncefile)
 {
-  DBusSocket fd;
+  int fd;
   DBusString nonce;
 
   _dbus_assert (noncefile != NULL);
@@ -431,7 +431,7 @@ _dbus_noncefile_get_path (const DBusNonceFile *noncefile)
  * and matches the nonce from the given nonce file
  */
 dbus_bool_t
-_dbus_noncefile_check_nonce (DBusSocket fd,
+_dbus_noncefile_check_nonce (int fd,
                              const DBusNonceFile *noncefile,
                              DBusError* error)
 {

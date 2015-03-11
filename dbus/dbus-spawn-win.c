@@ -77,8 +77,8 @@ struct DBusBabysitter
     char **envp;
 
     HANDLE child_handle;
-    DBusSocket socket_to_babysitter;	/* Connection to the babysitter thread */
-    DBusSocket socket_to_main;
+    int socket_to_babysitter;	/* Connection to the babysitter thread */
+    int socket_to_main;
 
     DBusWatchList *watches;
     DBusWatch *sitter_watch;
@@ -171,10 +171,10 @@ close_socket_to_babysitter (DBusBabysitter *sitter)
       sitter->sitter_watch = NULL;
     }
 
-  if (sitter->socket_to_babysitter != DBUS_SOCKET_INVALID)
+  if (sitter->socket_to_babysitter != -1)
     {
       _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-      sitter->socket_to_babysitter = DBUS_SOCKET_INVALID;
+      sitter->socket_to_babysitter = -1;
     }
 }
 
@@ -198,10 +198,10 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
     {
       close_socket_to_babysitter (sitter);
 
-      if (sitter->socket_to_main != DBUS_SOCKET_INVALID)
+      if (sitter->socket_to_main != -1)
         {
           _dbus_close_socket (sitter->socket_to_main, NULL);
-          sitter->socket_to_main = DBUS_SOCKET_INVALID;
+          sitter->socket_to_main = -1;
         }
 
       PING();

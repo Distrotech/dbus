@@ -211,7 +211,7 @@ _dbus_transport_debug_pipe_new (const char     *server_name,
   DBusTransport *client_transport;
   DBusTransport *server_transport;
   DBusConnection *connection;
-  DBusSocket client_fd, server_fd;
+  int client_fd, server_fd;
   DBusServer *server;
   DBusString address;
   

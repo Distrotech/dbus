@@ -52,6 +52,7 @@
 #include "dbus-credentials.h"
 
 #include <windows.h>
+#include <ws2tcpip.h>
 #include <wincrypt.h>
 #include <iphlpapi.h>
 
@@ -375,7 +376,7 @@ _dbus_win_free_error_string (char *string)
  */
 
 int
-_dbus_read_socket (DBusSocket        fd,
+_dbus_read_socket (int               fd,
                    DBusString       *buffer,
                    int               count)
 {
@@ -445,7 +446,7 @@ _dbus_read_socket (DBusSocket        fd,
  * @returns the number of bytes written or -1 on error
  */
 int
-_dbus_write_socket (DBusSocket        fd,
+_dbus_write_socket (int               fd,
                     const DBusString *buffer,
                     int               start,
                     int               len)
@@ -489,7 +490,7 @@ _dbus_write_socket (DBusSocket        fd,
  * @returns #FALSE if error set
  */
 dbus_bool_t
-_dbus_close_socket (DBusSocket fd,
+_dbus_close_socket (int        fd,
                     DBusError *error)
 {
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -579,7 +580,7 @@ _dbus_set_fd_nonblocking (int             handle,
  * @returns total bytes written from both buffers, or -1 on error
  */
 int
-_dbus_write_socket_two (DBusSocket        fd,
+_dbus_write_socket_two (int               fd,
                         const DBusString *buffer1,
                         int               start1,
                         int               len1,
@@ -643,9 +644,9 @@ _dbus_write_socket_two (DBusSocket        fd,
 }
 
 dbus_bool_t
-_dbus_socket_is_invalid (DBusSocket fd)
+_dbus_socket_is_invalid (int fd)
 {
-    return fd == DBUS_SOCKET_INVALID ? TRUE : FALSE;
+    return fd == INVALID_SOCKET ? TRUE : FALSE;
 }
 
 #if 0
@@ -1073,7 +1074,7 @@ _dbus_socketpair (int        *fd1,
     }
 
   temp = socket (AF_INET, SOCK_STREAM, 0);
-  if (temp == DBUS_SOCKET_INVALID)
+  if (temp == INVALID_SOCKET)
     {
       DBUS_SOCKET_SET_ERRNO ();
       goto out0;
@@ -1104,7 +1105,7 @@ _dbus_socketpair (int        *fd1,
     }
 
   socket1 = socket (AF_INET, SOCK_STREAM, 0);
-  if (socket1 == DBUS_SOCKET_INVALID)
+  if (socket1 == INVALID_SOCKET)
     {
       DBUS_SOCKET_SET_ERRNO ();
       goto out0;
@@ -1117,7 +1118,7 @@ _dbus_socketpair (int        *fd1,
     }
 
   socket2 = accept (temp, (struct sockaddr *) &saddr, &len);
-  if (socket2 == DBUS_SOCKET_INVALID)
+  if (socket2 == INVALID_SOCKET)
     {
       DBUS_SOCKET_SET_ERRNO ();
       goto out1;
@@ -1508,7 +1509,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
                                      const char     *noncefile,
                                      DBusError      *error)
 {
-  SOCKET fd = DBUS_SOCKET_INVALID, res;
+  int fd = -1, res;
   struct addrinfo hints;
   struct addrinfo *ai, *tmp;
 
@@ -1555,7 +1556,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
   tmp = ai;
   while (tmp)
     {
-      if ((fd = socket (tmp->ai_family, SOCK_STREAM, 0)) == DBUS_SOCKET_INVALID)
+      if ((fd = socket (tmp->ai_family, SOCK_STREAM, 0)) == INVALID_SOCKET)
         {
           DBUS_SOCKET_SET_ERRNO ();
           dbus_set_error (error,
@@ -1580,7 +1581,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
     }
   freeaddrinfo(ai);
 
-  if (fd == DBUS_SOCKET_INVALID)
+  if (fd == -1)
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (errno),
@@ -1644,11 +1645,10 @@ _dbus_listen_tcp_socket (const char     *host,
                          const char     *port,
                          const char     *family,
                          DBusString     *retport,
-                         DBusSocket    **fds_p,
+                         int           **fds_p,
                          DBusError      *error)
 {
-  DBusSocket *listen_fd = NULL;
-  int nlisten_fd = 0, res, i, port_num = -1;
+  int nlisten_fd = 0, *listen_fd = NULL, res, i, port_num = -1;
   struct addrinfo hints;
   struct addrinfo *ai, *tmp;
 
@@ -1708,8 +1708,8 @@ _dbus_listen_tcp_socket (const char     *host,
   tmp = ai;
   while (tmp)
     {
-      DBusSocket fd = DBUS_SOCKET_INVALID, *newlisten_fd;
-      if ((fd = socket (tmp->ai_family, SOCK_STREAM, 0)) == DBUS_SOCKET_INVALID)
+      int fd = -1, *newlisten_fd;
+      if ((fd = socket (tmp->ai_family, SOCK_STREAM, 0)) == INVALID_SOCKET)
         {
           DBUS_SOCKET_SET_ERRNO ();
           dbus_set_error (error,
@@ -1851,10 +1851,10 @@ _dbus_listen_tcp_socket (const char     *host,
  * @param listen_fd the listen file descriptor
  * @returns the connection fd of the client, or -1 on error
  */
-DBusSocket
-_dbus_accept  (DBusSocket listen_fd)
+int
+_dbus_accept  (int listen_fd)
 {
-  DBusSocket client_fd;
+  int client_fd;
 
  retry:
   client_fd = accept (listen_fd, NULL, NULL);
@@ -1875,8 +1875,8 @@ _dbus_accept  (DBusSocket listen_fd)
 
 
 dbus_bool_t
-_dbus_send_credentials_socket (DBusSocket      handle,
-                               DBusError      *error)
+_dbus_send_credentials_socket (int            handle,
+                        DBusError      *error)
 {
 /* FIXME: for the session bus credentials shouldn't matter (?), but
  * for the system bus they are presumably essential. A rough outline
@@ -1952,7 +1952,7 @@ again:
  * @returns #TRUE on success
  */
 dbus_bool_t
-_dbus_read_credentials_socket  (DBusSocket       handle,
+_dbus_read_credentials_socket  (int              handle,
                                 DBusCredentials *credentials,
                                 DBusError       *error)
 {
