@@ -686,9 +686,9 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
     }
 
   PING();
-  if (!_dbus_socketpair (&sitter->socket_to_babysitter,
-                         &sitter->socket_to_main,
-                         FALSE, error))
+  if (!_dbus_full_duplex_pipe (&sitter->socket_to_babysitter,
+                               &sitter->socket_to_main,
+                               FALSE, error))
     goto out0;
 
   sitter->sitter_watch = _dbus_watch_new (sitter->socket_to_babysitter,

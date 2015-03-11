@@ -1045,22 +1045,20 @@ failed:
  ************************************************************************/
 
 /**
- * Creates pair of connect sockets (as in socketpair()).
- * Sets both ends of the pair nonblocking.
- *
- * Marks both file descriptors as close-on-exec
+ * Creates a full-duplex pipe (as in socketpair()).
+ * Sets both ends of the pipe nonblocking.
  *
  * @param fd1 return location for one end
  * @param fd2 return location for the other end
- * @param blocking #TRUE if pair should be blocking
+ * @param blocking #TRUE if pipe should be blocking
  * @param error error return
  * @returns #FALSE on failure (if error is set)
-*/
+ */
 dbus_bool_t
-_dbus_socketpair (int        *fd1,
-                  int        *fd2,
-                  dbus_bool_t blocking,
-                  DBusError  *error)
+_dbus_full_duplex_pipe (int        *fd1,
+                        int        *fd2,
+                        dbus_bool_t blocking,
+                        DBusError  *error)
 {
   SOCKET temp, socket1 = -1, socket2 = -1;
   struct sockaddr_in saddr;

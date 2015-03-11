@@ -5058,10 +5058,10 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   if (!(m = dbus_message_new_signal("/", "a.b.c", "d")))
     _dbus_assert_not_reached ("could not alloc message");
 
-  if (!(_dbus_socketpair (one, one+1, TRUE, &error)))
+  if (!(_dbus_full_duplex_pipe(one, one+1, TRUE, &error)))
     _dbus_assert_not_reached("Failed to allocate pipe #1");
 
-  if (!(_dbus_socketpair (two, two+1, TRUE, &error)))
+  if (!(_dbus_full_duplex_pipe(two, two+1, TRUE, &error)))
     _dbus_assert_not_reached("Failed to allocate pipe #2");
 
   if (!dbus_message_append_args(m,
