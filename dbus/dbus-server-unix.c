@@ -199,7 +199,8 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
     }
   else if (strcmp (method, "systemd") == 0)
     {
-      int i, n, *fds;
+      int i, n;
+      DBusSocket *fds;
       DBusString address;
 
       n = _dbus_listen_systemd_sockets (&fds, error);

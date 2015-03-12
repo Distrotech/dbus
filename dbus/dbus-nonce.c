@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 static dbus_bool_t
-do_check_nonce (int fd, const DBusString *nonce, DBusError *error)
+do_check_nonce (DBusSocket fd, const DBusString *nonce, DBusError *error)
 {
   DBusString buffer;
   DBusString p;
@@ -156,17 +156,17 @@ _dbus_accept_with_noncefile (DBusSocket listen_fd, const DBusNonceFile *noncefil
 
   _dbus_assert (noncefile != NULL);
   if (!_dbus_string_init (&nonce))
-    return -1;
+    return _dbus_socket_get_invalid ();
   //PENDING(kdab): set better errors
   if (_dbus_read_nonce (_dbus_noncefile_get_path(noncefile), &nonce, NULL) != TRUE)
-    return -1;
+    return _dbus_socket_get_invalid ();
   fd = _dbus_accept (listen_fd);
-  if (_dbus_socket_is_invalid (fd))
+  if (!DBUS_SOCKET_IS_VALID (fd))
     return fd;
   if (do_check_nonce(fd, &nonce, NULL) != TRUE) {
     _dbus_verbose ("nonce check failed. Closing socket.\n");
     _dbus_close_socket(fd, NULL);
-    return -1;
+    return _dbus_socket_get_invalid ();
   }
 
   return fd;
@@ -210,7 +210,9 @@ generate_and_write_nonce (const DBusString *filename, DBusError *error)
  * indicate whether the server accepted the nonce.
  */
 dbus_bool_t
-_dbus_send_nonce (int fd, const DBusString *noncefile, DBusError *error)
+_dbus_send_nonce (DBusSocket        fd,
+                  const DBusString *noncefile,
+                  DBusError        *error)
 {
   dbus_bool_t read_result;
   int send_result;

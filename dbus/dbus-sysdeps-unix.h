@@ -77,8 +77,8 @@ int _dbus_connect_exec (const char     *path,
                         char *const    argv[],
                         DBusError      *error);
 
-int _dbus_listen_systemd_sockets (int       **fd,
-                                 DBusError *error);
+int _dbus_listen_systemd_sockets (DBusSocket  **fd,
+                                  DBusError    *error);
 
 dbus_bool_t _dbus_read_credentials (int               client_fd,
                                     DBusCredentials  *credentials,
@@ -148,7 +148,7 @@ dbus_bool_t _dbus_parse_uid (const DBusString  *uid_str,
 DBUS_PRIVATE_EXPORT
 void _dbus_close_all (void);
 
-dbus_bool_t _dbus_append_address_from_socket (int         fd,
+dbus_bool_t _dbus_append_address_from_socket (DBusSocket  fd,
                                               DBusString *address,
                                               DBusError  *error);
 

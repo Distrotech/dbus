@@ -211,15 +211,15 @@ int _dbus_write_socket_with_unix_fds_two (DBusSocket        fd,
 
 dbus_bool_t _dbus_socket_is_invalid (DBusSocket        fd);
 
-int _dbus_connect_tcp_socket  (const char     *host,
-                               const char     *port,
-                               const char     *family,
-                               DBusError      *error);
-int _dbus_connect_tcp_socket_with_nonce  (const char     *host,
-                                          const char     *port,
-                                          const char     *family,
-                                          const char     *noncefile,
-                                          DBusError      *error);
+DBusSocket _dbus_connect_tcp_socket  (const char     *host,
+                                      const char     *port,
+                                      const char     *family,
+                                      DBusError      *error);
+DBusSocket _dbus_connect_tcp_socket_with_nonce  (const char     *host,
+                                                 const char     *port,
+                                                 const char     *family,
+                                                 const char     *noncefile,
+                                                 DBusError      *error);
 int _dbus_listen_tcp_socket   (const char     *host,
                                const char     *port,
                                const char     *family,

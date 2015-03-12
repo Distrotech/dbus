@@ -267,7 +267,7 @@ _dbus_transport_debug_pipe_new (const char     *server_name,
 
   _dbus_string_free (&address);
   
-  client_fd = -1;
+  DBUS_SOCKET_INVALIDATE (client_fd);
 
   server_transport = _dbus_transport_new_for_socket (server_fd,
                                                      &server->guid_hex, NULL);
@@ -279,7 +279,7 @@ _dbus_transport_debug_pipe_new (const char     *server_name,
       return NULL;
     }
 
-  server_fd = -1;
+  DBUS_SOCKET_INVALIDATE (server_fd);
 
   if (!_dbus_transport_set_auth_mechanisms (server_transport,
                                             (const char**) server->auth_mechanisms))

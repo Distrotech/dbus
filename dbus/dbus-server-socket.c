@@ -84,14 +84,15 @@ socket_finalize (DBusServer *server)
 /* Return value is just for memory, not other failures. */
 static dbus_bool_t
 handle_new_client_fd_and_unlock (DBusServer *server,
-                                 int         client_fd)
+                                 DBusSocket  client_fd)
 {
   DBusConnection *connection;
   DBusTransport *transport;
   DBusNewConnectionFunction new_connection_function;
   void *new_connection_data;
 
-  _dbus_verbose ("Creating new client connection with fd %d\n", client_fd);
+  _dbus_verbose ("Creating new client connection with fd %" DBUS_SOCKET_FORMAT "\n",
+                 DBUS_SOCKET_PRINTABLE (client_fd));
 
   HAVE_LOCK_CHECK (server);
 
@@ -195,7 +196,7 @@ socket_handle_watch (DBusWatch    *watch,
 
       saved_errno = _dbus_save_socket_errno ();
 
-      if (client_fd == DBUS_SOCKET_INVALID)
+      if (!DBUS_SOCKET_IS_VALID (client_fd))
         {
           /* EINTR handled for us */
 
@@ -243,7 +244,7 @@ socket_disconnect (DBusServer *server)
         }
 
       _dbus_close_socket (socket_server->fds[i], NULL);
-      socket_server->fds[i] = DBUS_SOCKET_INVALID;
+      DBUS_SOCKET_INVALIDATE (socket_server->fds[i]);
     }
 
   if (socket_server->socket_name != NULL)

@@ -1492,7 +1492,7 @@ _dbus_exit (int code)
  * @param error return location for error code
  * @returns connection file descriptor or -1 on error
  */
-int
+DBusSocket
 _dbus_connect_tcp_socket (const char     *host,
                           const char     *port,
                           const char     *family,
@@ -1501,7 +1501,7 @@ _dbus_connect_tcp_socket (const char     *host,
   return _dbus_connect_tcp_socket_with_nonce (host, port, family, (const char*)NULL, error);
 }
 
-int
+DBusSocket
 _dbus_connect_tcp_socket_with_nonce (const char     *host,
                                      const char     *port,
                                      const char     *family,

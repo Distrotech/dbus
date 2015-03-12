@@ -205,7 +205,7 @@ _dbus_open_unix_socket (int              *fd,
  * @returns #FALSE if error is set
  */
 dbus_bool_t
-_dbus_close_socket (int               fd,
+_dbus_close_socket (DBusSocket        fd,
                     DBusError        *error)
 {
   return _dbus_close (fd, error);
@@ -221,7 +221,7 @@ _dbus_close_socket (int               fd,
  * @returns number of bytes appended to the string
  */
 int
-_dbus_read_socket (int               fd,
+_dbus_read_socket (DBusSocket        fd,
                    DBusString       *buffer,
                    int               count)
 {
@@ -239,7 +239,7 @@ _dbus_read_socket (int               fd,
  * @returns the number of bytes written or -1 on error
  */
 int
-_dbus_write_socket (int               fd,
+_dbus_write_socket (DBusSocket        fd,
                     const DBusString *buffer,
                     int               start,
                     int               len)
@@ -437,7 +437,7 @@ _dbus_read_socket_with_unix_fds (DBusSocket        fd,
 }
 
 int
-_dbus_write_socket_with_unix_fds(int               fd,
+_dbus_write_socket_with_unix_fds(DBusSocket        fd,
                                  const DBusString *buffer,
                                  int               start,
                                  int               len,
@@ -458,7 +458,7 @@ _dbus_write_socket_with_unix_fds(int               fd,
 }
 
 int
-_dbus_write_socket_with_unix_fds_two(int               fd,
+_dbus_write_socket_with_unix_fds_two(DBusSocket        fd,
                                      const DBusString *buffer1,
                                      int               start1,
                                      int               len1,
@@ -550,7 +550,7 @@ _dbus_write_socket_with_unix_fds_two(int               fd,
  * @returns total bytes written from both buffers, or -1 on error
  */
 int
-_dbus_write_socket_two (int               fd,
+_dbus_write_socket_two (DBusSocket        fd,
                         const DBusString *buffer1,
                         int               start1,
                         int               len1,
@@ -1163,13 +1163,13 @@ _dbus_listen_unix_socket (const char     *path,
  * @returns the number of file descriptors
  */
 int
-_dbus_listen_systemd_sockets (int       **fds,
-                              DBusError *error)
+_dbus_listen_systemd_sockets (DBusSocket **fds,
+                              DBusError   *error)
 {
 #ifdef HAVE_SYSTEMD
   int r, n;
   int fd;
-  int *new_fds;
+  DBusSocket *new_fds;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1211,7 +1211,7 @@ _dbus_listen_systemd_sockets (int       **fds,
   /* OK, the file descriptors are all good, so let's take posession of
      them then. */
 
-  new_fds = dbus_new (int, n);
+  new_fds = dbus_new (DBusSocket, n);
   if (!new_fds)
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
@@ -1262,7 +1262,7 @@ _dbus_listen_systemd_sockets (int       **fds,
  * @param error return location for error code
  * @returns connection file descriptor or -1 on error
  */
-int
+DBusSocket
 _dbus_connect_tcp_socket (const char     *host,
                           const char     *port,
                           const char     *family,
@@ -1271,7 +1271,7 @@ _dbus_connect_tcp_socket (const char     *host,
     return _dbus_connect_tcp_socket_with_nonce (host, port, family, (const char*)NULL, error);
 }
 
-int
+DBusSocket
 _dbus_connect_tcp_socket_with_nonce (const char     *host,
                                      const char     *port,
                                      const char     *family,
@@ -1391,11 +1391,12 @@ _dbus_listen_tcp_socket (const char     *host,
                          const char     *port,
                          const char     *family,
                          DBusString     *retport,
-                         int           **fds_p,
+                         DBusSocket    **fds_p,
                          DBusError      *error)
 {
   int saved_errno;
-  int nlisten_fd = 0, *listen_fd = NULL, res, i;
+  int nlisten_fd = 0, res, i;
+  DBusSocket *listen_fd = NULL;
   struct addrinfo hints;
   struct addrinfo *ai, *tmp;
   unsigned int reuseaddr;
@@ -1437,7 +1438,9 @@ _dbus_listen_tcp_socket (const char     *host,
   tmp = ai;
   while (tmp)
     {
-      int fd = -1, *newlisten_fd, tcp_nodelay_on;
+      int fd = -1, tcp_nodelay_on;
+      DBusSocket *newlisten_fd;
+
       if (!_dbus_open_socket (&fd, tmp->ai_family, SOCK_STREAM, 0, error))
         {
           _DBUS_ASSERT_ERROR_IS_SET(error);
@@ -1498,7 +1501,7 @@ _dbus_listen_tcp_socket (const char     *host,
           goto failed;
         }
 
-      newlisten_fd = dbus_realloc(listen_fd, sizeof(int)*(nlisten_fd+1));
+      newlisten_fd = dbus_realloc(listen_fd, sizeof(DBusSocket)*(nlisten_fd+1));
       if (!newlisten_fd)
         {
           saved_errno = errno;
@@ -2123,7 +2126,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
  * @returns #TRUE if the byte was sent
  */
 dbus_bool_t
-_dbus_send_credentials_socket  (int              server_fd,
+_dbus_send_credentials_socket  (DBusSocket       server_fd,
                                 DBusError       *error)
 {
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -2143,10 +2146,10 @@ _dbus_send_credentials_socket  (int              server_fd,
  * @param listen_fd the listen file descriptor
  * @returns the connection fd of the client, or -1 on error
  */
-int
-_dbus_accept  (int listen_fd)
+DBusSocket
+_dbus_accept  (DBusSocket listen_fd)
 {
-  int client_fd;
+  DBusSocket client_fd;
   struct sockaddr addr;
   socklen_t addrlen;
 #ifdef HAVE_ACCEPT4
@@ -4233,8 +4236,8 @@ _dbus_delete_directory (const DBusString *filename,
  *
  */
 dbus_bool_t
-_dbus_socket_can_pass_unix_fd(int fd) {
-
+_dbus_socket_can_pass_unix_fd (DBusSocket fd)
+{
 #ifdef SCM_RIGHTS
   union {
     struct sockaddr sa;
@@ -4385,7 +4388,7 @@ _dbus_check_setuid (void)
  * @param error return location for error code
  */
 dbus_bool_t
-_dbus_append_address_from_socket (int         fd,
+_dbus_append_address_from_socket (DBusSocket  fd,
                                   DBusString *address,
                                   DBusError  *error)
 {

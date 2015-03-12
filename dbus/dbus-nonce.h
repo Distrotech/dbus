@@ -64,7 +64,7 @@ dbus_bool_t _dbus_read_nonce (const DBusString *fname,
 
 // client
 
-dbus_bool_t _dbus_send_nonce (int fd,
+dbus_bool_t _dbus_send_nonce (DBusSocket fd,
                               const DBusString *noncefile,
                               DBusError *error);
 
