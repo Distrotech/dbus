@@ -71,7 +71,7 @@ void               _dbus_transport_set_max_received_unix_fds(DBusTransport      
 long               _dbus_transport_get_max_received_unix_fds(DBusTransport              *transport);
 
 dbus_bool_t        _dbus_transport_get_socket_fd          (DBusTransport              *transport,
-                                                           int                        *fd_p);
+                                                           DBusSocket                 *fd_p);
 dbus_bool_t        _dbus_transport_get_unix_user          (DBusTransport              *transport,
                                                            unsigned long              *uid);
 dbus_bool_t        _dbus_transport_get_unix_process_id     (DBusTransport              *transport,

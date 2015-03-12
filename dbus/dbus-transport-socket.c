@@ -49,7 +49,7 @@ typedef struct DBusTransportSocket DBusTransportSocket;
 struct DBusTransportSocket
 {
   DBusTransport base;                   /**< Parent instance */
-  int fd;                               /**< File descriptor. */
+  DBusSocket fd;                        /**< File descriptor. */
   DBusWatch *read_watch;                /**< Watch for readability. */
   DBusWatch *write_watch;               /**< Watch for writability. */
 
@@ -159,9 +159,9 @@ check_write_watch (DBusTransport *transport)
         }
     }
 
-  _dbus_verbose ("check_write_watch(): needed = %d on connection %p watch %p fd = %d outgoing messages exist %d\n",
+  _dbus_verbose ("check_write_watch(): needed = %d on connection %p watch %p fd = %" DBUS_SOCKET_FORMAT " outgoing messages exist %d\n",
                  needed, transport->connection, socket_transport->write_watch,
-                 socket_transport->fd,
+                 DBUS_SOCKET_PRINTABLE (socket_transport->fd),
                  _dbus_connection_has_messages_to_send_unlocked (transport->connection));
 
   _dbus_connection_toggle_watch_unlocked (transport->connection,
@@ -177,7 +177,8 @@ check_read_watch (DBusTransport *transport)
   DBusTransportSocket *socket_transport = (DBusTransportSocket*) transport;
   dbus_bool_t need_read_watch;
 
-  _dbus_verbose ("fd = %d\n",socket_transport->fd);
+  _dbus_verbose ("fd = %" DBUS_SOCKET_FORMAT "\n",
+                 DBUS_SOCKET_PRINTABLE (socket_transport->fd));
   
   if (transport->connection == NULL)
     return;
@@ -514,9 +515,9 @@ do_writing (DBusTransport *transport)
     }
 
 #if 1
-  _dbus_verbose ("do_writing(), have_messages = %d, fd = %d\n",
+  _dbus_verbose ("do_writing(), have_messages = %d, fd = %" DBUS_SOCKET_FORMAT "\n",
                  _dbus_connection_has_messages_to_send_unlocked (transport->connection),
-                 socket_transport->fd);
+                 DBUS_SOCKET_PRINTABLE (socket_transport->fd));
 #endif
   
   oom = FALSE;
@@ -741,7 +742,8 @@ do_reading (DBusTransport *transport)
   dbus_bool_t oom;
   int saved_errno;
 
-  _dbus_verbose ("fd = %d\n",socket_transport->fd);
+  _dbus_verbose ("fd = %" DBUS_SOCKET_FORMAT "\n",
+                 DBUS_SOCKET_PRINTABLE (socket_transport->fd));
   
   /* No messages without authentication! */
   if (!_dbus_transport_try_to_authenticate (transport))
@@ -1007,7 +1009,7 @@ socket_handle_watch (DBusTransport *transport,
         _dbus_verbose ("asked to handle write watch with non-write condition 0x%x\n",
                        flags);
       else
-        _dbus_verbose ("asked to handle watch %p on fd %d that we don't recognize\n",
+        _dbus_verbose ("asked to handle watch %p on fd %" DBUS_SOCKET_FORMAT " that we don't recognize\n",
                        watch, dbus_watch_get_socket (watch));
     }
 #endif /* DBUS_ENABLE_VERBOSE_MODE */
@@ -1025,7 +1027,7 @@ socket_disconnect (DBusTransport *transport)
   free_watches (transport);
   
   _dbus_close_socket (socket_transport->fd, NULL);
-  socket_transport->fd = -1;
+  DBUS_SOCKET_INVALIDATE (socket_transport->fd);
 }
 
 static dbus_bool_t
@@ -1076,13 +1078,13 @@ socket_do_iteration (DBusTransport *transport,
   int poll_res;
   int poll_timeout;
 
-  _dbus_verbose (" iteration flags = %s%s timeout = %d read_watch = %p write_watch = %p fd = %d\n",
+  _dbus_verbose (" iteration flags = %s%s timeout = %d read_watch = %p write_watch = %p fd = %" DBUS_SOCKET_FORMAT "\n",
                  flags & DBUS_ITERATION_DO_READING ? "read" : "",
                  flags & DBUS_ITERATION_DO_WRITING ? "write" : "",
                  timeout_milliseconds,
                  socket_transport->read_watch,
                  socket_transport->write_watch,
-                 socket_transport->fd);
+                 DBUS_SOCKET_PRINTABLE (socket_transport->fd));
   
   /* the passed in DO_READING/DO_WRITING flags indicate whether to
    * read/write messages, but regardless of those we may need to block
@@ -1090,7 +1092,7 @@ socket_do_iteration (DBusTransport *transport,
    * we don't want to read any messages yet if not given DO_READING.
    */
 
-  poll_fd.fd = socket_transport->fd;
+  poll_fd.fd = DBUS_SOCKET_GET_POLLABLE (socket_transport->fd);
   poll_fd.events = 0;
   
   if (_dbus_transport_try_to_authenticate (transport))
@@ -1239,7 +1241,7 @@ socket_live_messages_changed (DBusTransport *transport)
 
 static dbus_bool_t
 socket_get_socket_fd (DBusTransport *transport,
-                      int           *fd_p)
+                      DBusSocket    *fd_p)
 {
   DBusTransportSocket *socket_transport = (DBusTransportSocket*) transport;
   
@@ -1270,7 +1272,7 @@ static const DBusTransportVTable socket_vtable = {
  * @returns the new transport, or #NULL if no memory.
  */
 DBusTransport*
-_dbus_transport_new_for_socket (int               fd,
+_dbus_transport_new_for_socket (DBusSocket        fd,
                                 const DBusString *server_guid,
                                 const DBusString *address)
 {
@@ -1286,14 +1288,14 @@ _dbus_transport_new_for_socket (int               fd,
   if (!_dbus_string_init (&socket_transport->encoded_incoming))
     goto failed_1;
   
-  socket_transport->write_watch = _dbus_watch_new (fd,
+  socket_transport->write_watch = _dbus_watch_new (DBUS_SOCKET_GET_POLLABLE (fd),
                                                  DBUS_WATCH_WRITABLE,
                                                  FALSE,
                                                  NULL, NULL, NULL);
   if (socket_transport->write_watch == NULL)
     goto failed_2;
   
-  socket_transport->read_watch = _dbus_watch_new (fd,
+  socket_transport->read_watch = _dbus_watch_new (DBUS_SOCKET_GET_POLLABLE (fd),
                                                 DBUS_WATCH_READABLE,
                                                 FALSE,
                                                 NULL, NULL, NULL);
@@ -1351,7 +1353,7 @@ _dbus_transport_new_for_tcp_socket (const char     *host,
                                     const char     *noncefile,
                                     DBusError      *error)
 {
-  int fd;
+  DBusSocket fd;
   DBusTransport *transport;
   DBusString address;
   
@@ -1388,7 +1390,7 @@ _dbus_transport_new_for_tcp_socket (const char     *host,
     goto error;
 
   fd = _dbus_connect_tcp_socket_with_nonce (host, port, family, noncefile, error);
-  if (fd < 0)
+  if (!DBUS_SOCKET_IS_VALID (fd))
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       _dbus_string_free (&address);
@@ -1404,7 +1406,7 @@ _dbus_transport_new_for_tcp_socket (const char     *host,
     {
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       _dbus_close_socket (fd, NULL);
-      fd = -1;
+      DBUS_SOCKET_INVALIDATE (fd);
     }
 
   return transport;

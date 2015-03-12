@@ -949,7 +949,7 @@ _dbus_transport_set_connection (DBusTransport  *transport,
  */
 dbus_bool_t
 _dbus_transport_get_socket_fd (DBusTransport *transport,
-                               int           *fd_p)
+                               DBusSocket    *fd_p)
 {
   dbus_bool_t retval;
   

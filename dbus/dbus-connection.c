@@ -5149,14 +5149,19 @@ dbus_connection_get_socket(DBusConnection              *connection,
                            int                         *fd)
 {
   dbus_bool_t retval;
+  DBusSocket s = DBUS_SOCKET_INIT;
 
   _dbus_return_val_if_fail (connection != NULL, FALSE);
   _dbus_return_val_if_fail (connection->transport != NULL, FALSE);
   
   CONNECTION_LOCK (connection);
   
-  retval = _dbus_transport_get_socket_fd (connection->transport,
-                                          fd);
+  retval = _dbus_transport_get_socket_fd (connection->transport, &s);
+
+  if (retval)
+    {
+      *fd = DBUS_SOCKET_GET_INT (s);
+    }
 
   CONNECTION_UNLOCK (connection);
 
