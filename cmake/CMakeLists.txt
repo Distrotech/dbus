@@ -14,8 +14,10 @@ endif(COMMAND cmake_policy)
 
 if(CMAKE_MAJOR_VERSION GREATER 2)
     cmake_policy(SET CMP0026 NEW)
-    cmake_policy(SET CMP0053 NEW)
-    cmake_policy(SET CMP0054 NEW)
+    if (CMAKE_MAJOR_VERSION GREATER 4 OR CMAKE_MINOR_VERSION GREATER 1)
+        cmake_policy(SET CMP0053 NEW)
+        cmake_policy(SET CMP0054 NEW)
+    endif()
 endif()
 
 # detect version
