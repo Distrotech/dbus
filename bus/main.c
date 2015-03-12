@@ -45,7 +45,9 @@ static BusContext *context;
 
 #ifdef DBUS_UNIX
 
-static int reload_pipe[2];
+/* Despite its name and its unidirectional nature, this is actually
+ * a socket pair. */
+static DBusSocket reload_pipe[2];
 #define RELOAD_READ_END 0
 #define RELOAD_WRITE_END 1
 
@@ -353,10 +355,10 @@ close_reload_pipe (DBusWatch **watch)
     *watch = NULL;
 
     _dbus_close_socket (reload_pipe[RELOAD_READ_END], NULL);
-    reload_pipe[RELOAD_READ_END] = -1;
+    DBUS_SOCKET_INVALIDATE (reload_pipe[RELOAD_READ_END]);
 
     _dbus_close_socket (reload_pipe[RELOAD_WRITE_END], NULL);
-    reload_pipe[RELOAD_WRITE_END] = -1;
+    DBUS_SOCKET_INVALIDATE (reload_pipe[RELOAD_WRITE_END]);
 }
 #endif /* DBUS_UNIX */
 
