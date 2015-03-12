@@ -134,6 +134,9 @@
 
 #endif /* Solaris */
 
+static dbus_bool_t _dbus_set_fd_nonblocking (int             fd,
+                                             DBusError      *error);
+
 static dbus_bool_t
 _dbus_open_socket (int              *fd_p,
                    int               domain,
@@ -3207,6 +3210,13 @@ _dbus_dup(int        fd,
  * @returns #TRUE on success.
  */
 dbus_bool_t
+_dbus_set_socket_nonblocking (DBusSocket      fd,
+                              DBusError      *error)
+{
+  return _dbus_set_fd_nonblocking (fd, error);
+}
+
+static dbus_bool_t
 _dbus_set_fd_nonblocking (int             fd,
                           DBusError      *error)
 {

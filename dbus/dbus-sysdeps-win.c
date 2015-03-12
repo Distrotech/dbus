@@ -538,8 +538,8 @@ _dbus_win_handle_set_close_on_exec (HANDLE handle)
  * @returns #TRUE on success.
  */
 dbus_bool_t
-_dbus_set_fd_nonblocking (int             handle,
-                          DBusError      *error)
+_dbus_set_socket_nonblocking (DBusSocket      handle,
+                              DBusError      *error)
 {
   u_long one = 1;
 
@@ -1615,7 +1615,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
   /* Every SOCKET is also a HANDLE. */
   _dbus_win_handle_set_close_on_exec ((HANDLE) fd);
 
-  if (!_dbus_set_fd_nonblocking (fd, error))
+  if (!_dbus_set_socket_nonblocking (fd, error))
     {
       closesocket (fd);
       return -1;
@@ -1824,7 +1824,7 @@ _dbus_listen_tcp_socket (const char     *host,
   for (i = 0 ; i < nlisten_fd ; i++)
     {
       _dbus_win_handle_set_close_on_exec ((HANDLE) listen_fd[i]);
-      if (!_dbus_set_fd_nonblocking (listen_fd[i], error))
+      if (!_dbus_set_socket_nonblocking (listen_fd[i], error))
         {
           goto failed;
         }

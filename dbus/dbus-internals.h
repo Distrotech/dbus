@@ -279,9 +279,6 @@ char**      _dbus_dup_string_array      (const char **array);
 typedef void (* DBusForeachFunction) (void *element,
                                       void *data);
 
-dbus_bool_t _dbus_set_fd_nonblocking (int             fd,
-                                      DBusError      *error);
-
 void _dbus_verbose_bytes           (const unsigned char *data,
                                     int                  len,
                                     int                  offset);

@@ -164,6 +164,9 @@ _dbus_socket_get_invalid (void)
   return s;
 }
 
+dbus_bool_t _dbus_set_socket_nonblocking (DBusSocket      fd,
+                                          DBusError      *error);
+
 DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_close_socket     (DBusSocket        fd,
                                     DBusError        *error);
@@ -224,7 +227,6 @@ int _dbus_listen_tcp_socket   (const char     *host,
                                DBusSocket    **fds_p,
                                DBusError      *error);
 DBusSocket _dbus_accept       (DBusSocket      listen_fd);
-
 
 dbus_bool_t _dbus_read_credentials_socket (DBusSocket        client_fd,
                                            DBusCredentials  *credentials,

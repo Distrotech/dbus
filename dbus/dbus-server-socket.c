@@ -95,7 +95,7 @@ handle_new_client_fd_and_unlock (DBusServer *server,
 
   HAVE_LOCK_CHECK (server);
 
-  if (!_dbus_set_fd_nonblocking (client_fd, NULL))
+  if (!_dbus_set_socket_nonblocking (client_fd, NULL))
     {
       SERVER_UNLOCK (server);
       return TRUE;
