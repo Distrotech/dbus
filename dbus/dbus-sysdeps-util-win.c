@@ -380,7 +380,6 @@ _dbus_stat(const DBusString *filename,
   const char *filename_c;
   WIN32_FILE_ATTRIBUTE_DATA wfad;
   char *lastdot;
-  DWORD rc;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 

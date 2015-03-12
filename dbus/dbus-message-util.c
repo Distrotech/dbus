@@ -1045,8 +1045,10 @@ verify_test_message_memleak (DBusMessage *message)
   int our_string_array_len1;
   char **our_string_array2;
   int our_string_array_len2;
+#ifdef HAVE_UNIX_FD_PASSING
   int our_unix_fd1;
   int our_unix_fd2;
+#endif
   DBusInitialFDs *initial_fds;
 
   initial_fds = _dbus_check_fdleaks_enter ();

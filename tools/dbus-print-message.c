@@ -155,10 +155,10 @@ print_ay (DBusMessageIter *iter, int depth)
     }
 }
 
+#ifdef DBUS_UNIX
 static void
 print_fd (int fd, int depth)
 {
-#ifdef DBUS_UNIX
   int ret;
   struct stat statbuf = {0,};
   union {
@@ -172,7 +172,6 @@ print_fd (int fd, int depth)
   int addrlen = sizeof (addr);
   int peerlen = sizeof (peer);
   int has_peer;
-#endif
 
   /* Don't print the fd number: it is different in every process and since
    * dbus-monitor closes the fd after reading it, the same number would be
@@ -182,7 +181,6 @@ print_fd (int fd, int depth)
   if (fd == -1)
     return;
 
-#ifdef DBUS_UNIX
   ret = fstat (fd, &statbuf);
   if (ret == -1)
     return;
@@ -297,8 +295,8 @@ print_fd (int fd, int depth)
         printf ("unknown (%d)\n", addr.sa.sa_family);
         break;
     }
-#endif
 }
+#endif
 
 static void
 print_iter (DBusMessageIter *iter, dbus_bool_t literal, int depth)

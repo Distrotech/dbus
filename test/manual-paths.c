@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-dbus_bool_t print_install_root()
+static dbus_bool_t print_install_root()
 {
   char runtime_prefix[1000];
 
@@ -25,7 +25,7 @@ dbus_bool_t print_install_root()
   return TRUE;
 }
 
-dbus_bool_t print_service_dirs()
+static dbus_bool_t print_service_dirs()
 {
   DBusList *dirs;
   DBusList *link;
@@ -44,7 +44,7 @@ dbus_bool_t print_service_dirs()
   return TRUE;
 }
 
-dbus_bool_t print_replace_install_prefix(const char *s)
+static dbus_bool_t print_replace_install_prefix(const char *s)
 {
   const char *s2 = _dbus_replace_install_prefix(s);
   if (!s2)

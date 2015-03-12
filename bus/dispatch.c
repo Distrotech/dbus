@@ -1332,7 +1332,9 @@ check_get_connection_unix_process_id (BusContext     *context,
   dbus_bool_t retval;
   DBusError error;
   const char *base_service_name;
+#ifdef DBUS_UNIX
   dbus_uint32_t pid;
+#endif
 
   retval = FALSE;
   dbus_error_init (&error);
