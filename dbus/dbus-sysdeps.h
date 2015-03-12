@@ -133,12 +133,36 @@ typedef unsigned long dbus_gid_t;
  * 
  */
 #ifndef DBUS_WIN
+
 typedef int DBusSocket;
 # define DBUS_SOCKET_INVALID -1
-#else
+# define DBUS_SOCKET_FORMAT "d"
+# define DBUS_SOCKET_PRINTABLE(s) (s)
+# define DBUS_SOCKET_INIT -1
+# define DBUS_SOCKET_IS_VALID(s) ((s) >= 0)
+# define DBUS_SOCKET_INVALIDATE(s) ((s) = -1)
+# define DBUS_SOCKET_GET_INT(s) (s)
+
+#else /* DBUS_WIN */
+
 typedef SOCKET DBusSocket;
 # define DBUS_SOCKET_INVALID INVALID_SOCKET
-#endif
+# define DBUS_SOCKET_FORMAT "Iu"
+# define DBUS_SOCKET_PRINTABLE(s) (s)
+# define DBUS_SOCKET_INIT INVALID_SOCKET
+# define DBUS_SOCKET_IS_VALID(s) ((s) != INVALID_SOCKET)
+# define DBUS_SOCKET_INVALIDATE(s) ((s) = INVALID_SOCKET)
+# define DBUS_SOCKET_GET_INT(s) ((int) (s))
+
+#endif /* DBUS_WIN */
+
+static inline DBusSocket
+_dbus_socket_get_invalid (void)
+{
+  DBusSocket s = DBUS_SOCKET_INIT;
+
+  return s;
+}
 
 DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_close_socket     (DBusSocket        fd,
@@ -325,12 +349,43 @@ dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
 #define _DBUS_POLLNVAL    0x0020
 #endif
 
+#ifdef DBUS_WIN
+
+/* On Windows, you can only poll sockets. We emulate Unix poll() using
+ * select(), so it doesn't matter what precise type we put in DBusPollFD;
+ * use DBusSocket so that the compiler can check we are doing it right.
+ */
+typedef DBusSocket DBusPollable;
+# define DBUS_SOCKET_GET_POLLABLE(s) (s)
+# define DBUS_POLLABLE_FORMAT "Iu"
+# define DBUS_POLLABLE_PRINTABLE(p) (p)
+# define DBUS_POLLABLE_IS_VALID(p) (DBUS_SOCKET_IS_VALID (p))
+# define DBUS_POLLABLE_INVALIDATE(p) (DBUS_SOCKET_INVALIDATE (p))
+# define DBUS_POLLABLE_EQUALS(a, b) ((a) == (b))
+
+#else /* !DBUS_WIN */
+
+/* On Unix, you can poll sockets, pipes, etc., and we must put exactly
+ * "int" in DBusPollFD because we're relying on its layout exactly matching
+ * struct pollfd. (This is silly, and one day we should use a better
+ * abstraction.)
+ */
+typedef int DBusPollable;
+# define DBUS_SOCKET_GET_POLLABLE(s) (s)
+# define DBUS_POLLABLE_FORMAT "d"
+# define DBUS_POLLABLE_PRINTABLE(p) (p)
+# define DBUS_POLLABLE_IS_VALID(p) (p >= 0)
+# define DBUS_POLLABLE_INVALIDATE(p) ((p) = -1)
+# define DBUS_POLLABLE_EQUALS(a, b) ((a) == (b))
+
+#endif /* !DBUS_WIN */
+
 /**
  * A portable struct pollfd wrapper. 
  */
 typedef struct
 {
-  int fd;            /**< File descriptor */
+  DBusPollable fd;   /**< File descriptor */
   short events;      /**< Events to poll for */
   short revents;     /**< Events that occurred */
 } DBusPollFD;
