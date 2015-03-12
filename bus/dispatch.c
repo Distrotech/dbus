@@ -5018,7 +5018,8 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   DBusConnection *foo, *bar;
   DBusError error;
   DBusMessage *m;
-  int one[2], two[2], x, y, z;
+  DBusSocket one[2], two[2];
+  int x, y, z;
   char r;
 
   dbus_error_init (&error);
@@ -5073,9 +5074,9 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
                                 DBUS_TYPE_INVALID))
     _dbus_assert_not_reached("Failed to attach fds.");
 
-  if (!_dbus_close(one[0], &error))
+  if (!_dbus_close_socket (one[0], &error))
     _dbus_assert_not_reached("Failed to close pipe #1 ");
-  if (!_dbus_close(two[0], &error))
+  if (!_dbus_close_socket (two[0], &error))
     _dbus_assert_not_reached("Failed to close pipe #2 ");
 
   if (!(dbus_connection_can_send_type(foo, DBUS_TYPE_UNIX_FD)))
@@ -5142,9 +5143,9 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   if (read(two[1], &r, 1) != 1 || r != 'Z')
     _dbus_assert_not_reached("Failed to read value from pipe.");
 
-  if (!_dbus_close(one[1], &error))
+  if (!_dbus_close_socket (one[1], &error))
     _dbus_assert_not_reached("Failed to close pipe #1 ");
-  if (!_dbus_close(two[1], &error))
+  if (!_dbus_close_socket (two[1], &error))
     _dbus_assert_not_reached("Failed to close pipe #2 ");
 
   _dbus_verbose ("Disconnecting foo\n");
