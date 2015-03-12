@@ -307,7 +307,7 @@ _dbus_server_new_for_socket (DBusSocket       *fds,
     {
       DBusWatch *watch;
 
-      watch = _dbus_watch_new (fds[i],
+      watch = _dbus_watch_new (DBUS_SOCKET_GET_POLLABLE (fds[i]),
                                DBUS_WATCH_READABLE,
                                TRUE,
                                socket_handle_watch, socket_server,

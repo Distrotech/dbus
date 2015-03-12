@@ -29,9 +29,10 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <dbus/dbus.h>
+#include <dbus/dbus-sysdeps.h>
 
 typedef struct {
-    int fd;
+    DBusPollable fd;
     unsigned int flags;
 } DBusSocketEvent;
 
@@ -41,16 +42,16 @@ typedef struct DBusSocketSetClass DBusSocketSetClass;
 struct DBusSocketSetClass {
     void            (*free)     (DBusSocketSet   *self);
     dbus_bool_t     (*add)      (DBusSocketSet   *self,
-                                 int              fd,
+                                 DBusPollable     fd,
                                  unsigned int     flags,
                                  dbus_bool_t      enabled);
     void            (*remove)   (DBusSocketSet   *self,
-                                 int              fd);
+                                 DBusPollable     fd);
     void            (*enable)   (DBusSocketSet   *self,
-                                 int              fd,
+                                 DBusPollable     fd,
                                  unsigned int     flags);
     void            (*disable)  (DBusSocketSet   *self,
-                                 int              fd);
+                                 DBusPollable     fd);
     int             (*poll)     (DBusSocketSet   *self,
                                  DBusSocketEvent *revents,
                                  int              max_events,
@@ -71,7 +72,7 @@ _dbus_socket_set_free (DBusSocketSet *self)
 
 static inline dbus_bool_t
 _dbus_socket_set_add (DBusSocketSet *self,
-                      int            fd,
+                      DBusPollable   fd,
                       unsigned int   flags,
                       dbus_bool_t    enabled)
 {
@@ -80,14 +81,14 @@ _dbus_socket_set_add (DBusSocketSet *self,
 
 static inline void
 _dbus_socket_set_remove (DBusSocketSet *self,
-                         int            fd)
+                         DBusPollable   fd)
 {
   (self->cls->remove) (self, fd);
 }
 
 static inline void
 _dbus_socket_set_enable (DBusSocketSet *self,
-                         int            fd,
+                         DBusPollable   fd,
                          unsigned int   flags)
 {
   (self->cls->enable) (self, fd, flags);
@@ -95,7 +96,7 @@ _dbus_socket_set_enable (DBusSocketSet *self,
 
 static inline void
 _dbus_socket_set_disable (DBusSocketSet *self,
-                          int            fd)
+                          DBusPollable   fd)
 {
   (self->cls->disable) (self, fd);
 }

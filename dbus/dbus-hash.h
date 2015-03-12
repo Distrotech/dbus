@@ -149,6 +149,56 @@ void                  _dbus_hash_table_insert_string_preallocated (DBusHashTable
                                                                    char                 *key,
                                                                    void                 *value);
 
+#ifdef DBUS_WIN
+# define DBUS_HASH_POLLABLE DBUS_HASH_UINTPTR
+#else
+# define DBUS_HASH_POLLABLE DBUS_HASH_INT
+#endif
+
+static inline DBusPollable
+_dbus_hash_iter_get_pollable_key (DBusHashIter *iter)
+{
+#ifdef DBUS_WIN
+  return _dbus_hash_iter_get_uintptr_key (iter);
+#else
+  return _dbus_hash_iter_get_int_key (iter);
+#endif
+}
+
+static inline void *
+_dbus_hash_table_lookup_pollable (DBusHashTable *table,
+                                  DBusPollable   key)
+{
+#ifdef DBUS_WIN
+  return _dbus_hash_table_lookup_uintptr (table, key);
+#else
+  return _dbus_hash_table_lookup_int (table, key);
+#endif
+}
+
+static inline dbus_bool_t
+_dbus_hash_table_remove_pollable (DBusHashTable *table,
+                                  DBusPollable   key)
+{
+#ifdef DBUS_WIN
+  return _dbus_hash_table_remove_uintptr (table, key);
+#else
+  return _dbus_hash_table_remove_int (table, key);
+#endif
+}
+
+static inline dbus_bool_t
+_dbus_hash_table_insert_pollable (DBusHashTable *table,
+                                  DBusPollable   key,
+                                  void          *value)
+{
+#ifdef DBUS_WIN
+  return _dbus_hash_table_insert_uintptr (table, key, value);
+#else
+  return _dbus_hash_table_insert_int (table, key, value);
+#endif
+}
+
 /** @} */
 
 DBUS_END_DECLS

@@ -322,9 +322,9 @@ setup_reload_pipe (DBusLoop *loop)
       exit (1);
     }
 
-  watch = _dbus_watch_new (reload_pipe[RELOAD_READ_END],
-			   DBUS_WATCH_READABLE, TRUE,
-			   handle_reload_watch, NULL, NULL);
+  watch = _dbus_watch_new (DBUS_SOCKET_GET_POLLABLE (reload_pipe[RELOAD_READ_END]),
+                           DBUS_WATCH_READABLE, TRUE,
+                           handle_reload_watch, NULL, NULL);
 
   if (watch == NULL)
     {

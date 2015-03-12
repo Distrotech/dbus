@@ -136,7 +136,7 @@ epoll_events_to_watch_flags (uint32_t events)
 
 static dbus_bool_t
 socket_set_epoll_add (DBusSocketSet  *set,
-                      int             fd,
+                      DBusPollable    fd,
                       unsigned int    flags,
                       dbus_bool_t     enabled)
 {
@@ -189,7 +189,7 @@ socket_set_epoll_add (DBusSocketSet  *set,
 
 static void
 socket_set_epoll_enable (DBusSocketSet  *set,
-                         int             fd,
+                         DBusPollable    fd,
                          unsigned int    flags)
 {
   DBusSocketSetEpoll *self = socket_set_epoll_cast (set);
@@ -229,7 +229,7 @@ socket_set_epoll_enable (DBusSocketSet  *set,
 
 static void
 socket_set_epoll_disable (DBusSocketSet  *set,
-                          int             fd)
+                          DBusPollable    fd)
 {
   DBusSocketSetEpoll *self = socket_set_epoll_cast (set);
   struct epoll_event event;
@@ -264,7 +264,7 @@ socket_set_epoll_disable (DBusSocketSet  *set,
 
 static void
 socket_set_epoll_remove (DBusSocketSet  *set,
-                         int             fd)
+                         DBusPollable    fd)
 {
   DBusSocketSetEpoll *self = socket_set_epoll_cast (set);
   int err;

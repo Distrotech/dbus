@@ -37,7 +37,7 @@
 struct DBusLoop
 {
   int refcount;
-  /** fd => dbus_malloc'd DBusList ** of references to DBusWatch */
+  /** DBusPollable => dbus_malloc'd DBusList ** of references to DBusWatch */
   DBusHashTable *watches;
   DBusSocketSet *socket_set;
   DBusList *timeouts;
@@ -112,7 +112,7 @@ _dbus_loop_new (void)
   if (loop == NULL)
     return NULL;
 
-  loop->watches = _dbus_hash_table_new (DBUS_HASH_INT, NULL,
+  loop->watches = _dbus_hash_table_new (DBUS_HASH_POLLABLE, NULL,
                                         free_watch_table_entry);
 
   loop->socket_set = _dbus_socket_set_new (0);
@@ -168,12 +168,12 @@ _dbus_loop_unref (DBusLoop *loop)
 }
 
 static DBusList **
-ensure_watch_table_entry (DBusLoop *loop,
-                          int       fd)
+ensure_watch_table_entry (DBusLoop    *loop,
+                          DBusPollable fd)
 {
   DBusList **watches;
 
-  watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+  watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 
   if (watches == NULL)
     {
@@ -182,7 +182,7 @@ ensure_watch_table_entry (DBusLoop *loop,
       if (watches == NULL)
         return watches;
 
-      if (!_dbus_hash_table_insert_int (loop->watches, fd, watches))
+      if (!_dbus_hash_table_insert_pollable (loop->watches, fd, watches))
         {
           dbus_free (watches);
           watches = NULL;
@@ -193,14 +193,15 @@ ensure_watch_table_entry (DBusLoop *loop,
 }
 
 static void
-cull_watches_for_invalid_fd (DBusLoop  *loop,
-                             int        fd)
+cull_watches_for_invalid_fd (DBusLoop     *loop,
+                             DBusPollable  fd)
 {
   DBusList *link;
   DBusList **watches;
 
-  _dbus_warn ("invalid request, socket fd %d not open\n", fd);
-  watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+  _dbus_warn ("invalid request, socket fd %" DBUS_POLLABLE_FORMAT " not open\n",
+              DBUS_POLLABLE_PRINTABLE (fd));
+  watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 
   if (watches != NULL)
     {
@@ -210,13 +211,13 @@ cull_watches_for_invalid_fd (DBusLoop  *loop,
         _dbus_watch_invalidate (link->data);
     }
 
-  _dbus_hash_table_remove_int (loop->watches, fd);
+  _dbus_hash_table_remove_pollable (loop->watches, fd);
 }
 
 static dbus_bool_t
-gc_watch_table_entry (DBusLoop  *loop,
-                      DBusList **watches,
-                      int        fd)
+gc_watch_table_entry (DBusLoop      *loop,
+                      DBusList     **watches,
+                      DBusPollable   fd)
 {
   /* If watches is already NULL we have nothing to do */
   if (watches == NULL)
@@ -226,23 +227,23 @@ gc_watch_table_entry (DBusLoop  *loop,
   if (*watches != NULL)
     return FALSE;
 
-  _dbus_hash_table_remove_int (loop->watches, fd);
+  _dbus_hash_table_remove_pollable (loop->watches, fd);
   return TRUE;
 }
 
 static void
-refresh_watches_for_fd (DBusLoop  *loop,
-                        DBusList **watches,
-                        int        fd)
+refresh_watches_for_fd (DBusLoop      *loop,
+                        DBusList     **watches,
+                        DBusPollable   fd)
 {
   DBusList *link;
   unsigned int flags = 0;
   dbus_bool_t interested = FALSE;
 
-  _dbus_assert (fd != -1);
+  _dbus_assert (DBUS_POLLABLE_IS_VALID (fd));
 
   if (watches == NULL)
-    watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+    watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 
   /* we allocated this in the first _dbus_loop_add_watch for the fd, and keep
    * it until there are none left */
@@ -270,11 +271,11 @@ dbus_bool_t
 _dbus_loop_add_watch (DBusLoop  *loop,
                       DBusWatch *watch)
 {
-  DBusSocket fd;
+  DBusPollable fd;
   DBusList **watches;
 
-  fd = _dbus_watch_get_socket (watch);
-  _dbus_assert (fd != DBUS_SOCKET_INVALID);
+  fd = _dbus_watch_get_pollable (watch);
+  _dbus_assert (DBUS_POLLABLE_IS_VALID (fd));
 
   watches = ensure_watch_table_entry (loop, fd);
 
@@ -295,7 +296,7 @@ _dbus_loop_add_watch (DBusLoop  *loop,
                                  dbus_watch_get_flags (watch),
                                  dbus_watch_get_enabled (watch)))
         {
-          _dbus_hash_table_remove_int (loop->watches, fd);
+          _dbus_hash_table_remove_pollable (loop->watches, fd);
           return FALSE;
         }
     }
@@ -314,7 +315,7 @@ void
 _dbus_loop_toggle_watch (DBusLoop          *loop,
                          DBusWatch         *watch)
 {
-  refresh_watches_for_fd (loop, NULL, dbus_watch_get_socket (watch));
+  refresh_watches_for_fd (loop, NULL, _dbus_watch_get_pollable (watch));
 }
 
 void
@@ -323,15 +324,15 @@ _dbus_loop_remove_watch (DBusLoop         *loop,
 {
   DBusList **watches;
   DBusList *link;
-  DBusSocket fd;
+  DBusPollable fd;
 
   /* This relies on people removing watches before they invalidate them,
    * which has been safe since fd.o #33336 was fixed. Assert about it
    * so we don't regress. */
-  fd = _dbus_watch_get_socket (watch);
-  _dbus_assert (fd != DBUS_SOCKET_INVALID);
+  fd = _dbus_watch_get_pollable (watch);
+  _dbus_assert (DBUS_POLLABLE_IS_VALID (fd));
 
-  watches = _dbus_hash_table_lookup_int (loop->watches, fd);
+  watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 
   if (watches != NULL)
     {
@@ -669,11 +670,11 @@ _dbus_loop_iterate (DBusLoop     *loop,
       while (_dbus_hash_iter_next (&hash_iter))
         {
           DBusList **watches;
-          int fd;
+          DBusPollable fd;
           dbus_bool_t changed;
 
           changed = FALSE;
-          fd = _dbus_hash_iter_get_int_key (&hash_iter);
+          fd = _dbus_hash_iter_get_pollable_key (&hash_iter);
           watches = _dbus_hash_iter_get_value (&hash_iter);
 
           for (link = _dbus_list_get_first_link (watches);
@@ -795,8 +796,8 @@ _dbus_loop_iterate (DBusLoop     *loop,
           if (condition == 0)
             continue;
 
-          watches = _dbus_hash_table_lookup_int (loop->watches,
-                                                 ready_fds[i].fd);
+          watches = _dbus_hash_table_lookup_pollable (loop->watches,
+                                                      ready_fds[i].fd);
 
           if (watches == NULL)
             continue;
