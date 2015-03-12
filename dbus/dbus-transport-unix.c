@@ -59,7 +59,7 @@ _dbus_transport_new_for_domain_socket (const char     *path,
                                        dbus_bool_t     abstract,
                                        DBusError      *error)
 {
-  int fd;
+  DBusSocket fd = DBUS_SOCKET_INIT;
   DBusTransport *transport;
   DBusString address;
   
@@ -71,8 +71,6 @@ _dbus_transport_new_for_domain_socket (const char     *path,
       return NULL;
     }
 
-  fd = -1;
-
   if ((abstract &&
        !_dbus_string_append (&address, "unix:abstract=")) ||
       (!abstract &&
@@ -83,8 +81,8 @@ _dbus_transport_new_for_domain_socket (const char     *path,
       goto failed_0;
     }
   
-  fd = _dbus_connect_unix_socket (path, abstract, error);
-  if (fd < 0)
+  fd.fd = _dbus_connect_unix_socket (path, abstract, error);
+  if (fd.fd < 0)
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       goto failed_0;
@@ -127,7 +125,7 @@ _dbus_transport_new_for_exec (const char     *path,
                               char *const     argv[],
                               DBusError      *error)
 {
-  int fd;
+  DBusSocket fd = DBUS_SOCKET_INIT;
   DBusTransport *transport;
   DBusString address;
   unsigned i;
@@ -140,8 +138,6 @@ _dbus_transport_new_for_exec (const char     *path,
       dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       return NULL;
     }
-
-  fd = -1;
 
   escaped = dbus_address_escape_value (path);
   if (!escaped)
@@ -184,8 +180,8 @@ _dbus_transport_new_for_exec (const char     *path,
         }
     }
 
-  fd = _dbus_connect_exec (path, argv, error);
-  if (fd < 0)
+  fd.fd = _dbus_connect_exec (path, argv, error);
+  if (fd.fd < 0)
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       goto failed;
@@ -206,7 +202,7 @@ _dbus_transport_new_for_exec (const char     *path,
   return transport;
 
  failed:
-  if (fd >= 0)
+  if (fd.fd >= 0)
     _dbus_close_socket (fd, NULL);
 
   _dbus_string_free (&address);

@@ -120,7 +120,7 @@ _dbus_babysitter_new (void)
 
   sitter->child_handle = NULL;
 
-  sitter->socket_to_babysitter = sitter->socket_to_main = -1;
+  sitter->socket_to_babysitter = sitter->socket_to_main = _dbus_socket_get_invalid ();
 
   sitter->argc = 0;
   sitter->argv = NULL;
@@ -171,10 +171,10 @@ close_socket_to_babysitter (DBusBabysitter *sitter)
       sitter->sitter_watch = NULL;
     }
 
-  if (sitter->socket_to_babysitter != DBUS_SOCKET_INVALID)
+  if (sitter->socket_to_babysitter.sock != INVALID_SOCKET)
     {
       _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-      sitter->socket_to_babysitter = DBUS_SOCKET_INVALID;
+      sitter->socket_to_babysitter.sock = INVALID_SOCKET;
     }
 }
 
@@ -198,10 +198,10 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
     {
       close_socket_to_babysitter (sitter);
 
-      if (sitter->socket_to_main != DBUS_SOCKET_INVALID)
+      if (sitter->socket_to_main.sock != INVALID_SOCKET)
         {
           _dbus_close_socket (sitter->socket_to_main, NULL);
-          sitter->socket_to_main = DBUS_SOCKET_INVALID;
+          sitter->socket_to_main.sock = INVALID_SOCKET;
         }
 
       PING();
@@ -633,7 +633,7 @@ babysitter (void *parameter)
 #endif
 
   PING();
-  send (sitter->socket_to_main, " ", 1, 0);
+  send (sitter->socket_to_main.sock, " ", 1, 0);
 
   _dbus_babysitter_unref (sitter);
 

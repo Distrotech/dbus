@@ -122,37 +122,28 @@ typedef unsigned long dbus_gid_t;
 /** an appropriate printf format for dbus_gid_t */
 #define DBUS_GID_FORMAT "%lu"
 
-
 /**
  * Socket interface
- *
- *  @todo Use for the file descriptors a struct
- *           - struct DBusSocket{ int d; }; -
- *        instead of int to get type-safety which 
- *        will be checked by the compiler.
- * 
  */
 #ifndef DBUS_WIN
 
-typedef int DBusSocket;
-# define DBUS_SOCKET_INVALID -1
+typedef struct { int fd; } DBusSocket;
 # define DBUS_SOCKET_FORMAT "d"
-# define DBUS_SOCKET_PRINTABLE(s) (s)
-# define DBUS_SOCKET_INIT -1
-# define DBUS_SOCKET_IS_VALID(s) ((s) >= 0)
-# define DBUS_SOCKET_INVALIDATE(s) ((s) = -1)
-# define DBUS_SOCKET_GET_INT(s) (s)
+# define DBUS_SOCKET_PRINTABLE(s) ((s).fd)
+# define DBUS_SOCKET_INIT { -1 }
+# define DBUS_SOCKET_IS_VALID(s) ((s).fd >= 0)
+# define DBUS_SOCKET_INVALIDATE(s) ((s).fd = -1)
+# define DBUS_SOCKET_GET_INT(s) ((s).fd)
 
 #else /* DBUS_WIN */
 
-typedef SOCKET DBusSocket;
-# define DBUS_SOCKET_INVALID INVALID_SOCKET
+typedef struct { SOCKET sock; } DBusSocket;
 # define DBUS_SOCKET_FORMAT "Iu"
-# define DBUS_SOCKET_PRINTABLE(s) (s)
-# define DBUS_SOCKET_INIT INVALID_SOCKET
-# define DBUS_SOCKET_IS_VALID(s) ((s) != INVALID_SOCKET)
-# define DBUS_SOCKET_INVALIDATE(s) ((s) = INVALID_SOCKET)
-# define DBUS_SOCKET_GET_INT(s) ((int) (s))
+# define DBUS_SOCKET_PRINTABLE(s) ((s).sock)
+# define DBUS_SOCKET_INIT { INVALID_SOCKET }
+# define DBUS_SOCKET_IS_VALID(s) ((s).sock != INVALID_SOCKET)
+# define DBUS_SOCKET_INVALIDATE(s) ((s).sock = INVALID_SOCKET)
+# define DBUS_SOCKET_GET_INT(s) ((int) (s).sock)
 
 #endif /* DBUS_WIN */
 
@@ -358,10 +349,10 @@ dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
 typedef DBusSocket DBusPollable;
 # define DBUS_SOCKET_GET_POLLABLE(s) (s)
 # define DBUS_POLLABLE_FORMAT "Iu"
-# define DBUS_POLLABLE_PRINTABLE(p) (p)
+# define DBUS_POLLABLE_PRINTABLE(p) (p.sock)
 # define DBUS_POLLABLE_IS_VALID(p) (DBUS_SOCKET_IS_VALID (p))
 # define DBUS_POLLABLE_INVALIDATE(p) (DBUS_SOCKET_INVALIDATE (p))
-# define DBUS_POLLABLE_EQUALS(a, b) ((a) == (b))
+# define DBUS_POLLABLE_EQUALS(a, b) ((a).sock == (b).sock)
 
 #else /* !DBUS_WIN */
 
@@ -371,7 +362,7 @@ typedef DBusSocket DBusPollable;
  * abstraction.)
  */
 typedef int DBusPollable;
-# define DBUS_SOCKET_GET_POLLABLE(s) (s)
+# define DBUS_SOCKET_GET_POLLABLE(s) (s.fd)
 # define DBUS_POLLABLE_FORMAT "d"
 # define DBUS_POLLABLE_PRINTABLE(p) (p)
 # define DBUS_POLLABLE_IS_VALID(p) (p >= 0)

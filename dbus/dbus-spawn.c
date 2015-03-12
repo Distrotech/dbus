@@ -243,7 +243,7 @@ struct DBusBabysitter
   char *log_name; /**< the name under which to log messages about this
 		    process being spawned */
   
-  int socket_to_babysitter; /**< Connection to the babysitter process */
+  DBusSocket socket_to_babysitter; /**< Connection to the babysitter process */
   int error_pipe_from_child; /**< Connection to the process that does the exec() */
   
   pid_t sitter_pid;  /**< PID Of the babysitter */
@@ -275,7 +275,7 @@ _dbus_babysitter_new (void)
 
   sitter->refcount = 1;
 
-  sitter->socket_to_babysitter = -1;
+  sitter->socket_to_babysitter.fd = -1;
   sitter->error_pipe_from_child = -1;
   
   sitter->sitter_pid = -1;
@@ -538,10 +538,10 @@ close_socket_to_babysitter (DBusBabysitter *sitter)
       sitter->sitter_watch = NULL;
     }
 
-  if (sitter->socket_to_babysitter >= 0)
+  if (sitter->socket_to_babysitter.fd >= 0)
     {
       _dbus_close_socket (sitter->socket_to_babysitter, NULL);
-      sitter->socket_to_babysitter = -1;
+      sitter->socket_to_babysitter.fd = -1;
     }
 }
 
@@ -561,7 +561,7 @@ close_error_pipe_from_child (DBusBabysitter *sitter)
 
   if (sitter->error_pipe_from_child >= 0)
     {
-      _dbus_close_socket (sitter->error_pipe_from_child, NULL);
+      _dbus_close (sitter->error_pipe_from_child, NULL);
       sitter->error_pipe_from_child = -1;
     }
 }
@@ -577,7 +577,7 @@ handle_babysitter_socket (DBusBabysitter *sitter,
   if (revents & _DBUS_POLLIN)
     {
       _dbus_verbose ("Reading data from babysitter\n");
-      if (read_data (sitter, sitter->socket_to_babysitter) != READ_STATUS_OK)
+      if (read_data (sitter, sitter->socket_to_babysitter.fd) != READ_STATUS_OK)
         close_socket_to_babysitter (sitter);
     }
   else if (revents & (_DBUS_POLLERR | _DBUS_POLLHUP))
@@ -623,9 +623,9 @@ babysitter_iteration (DBusBabysitter *sitter,
       ++i;
     }
   
-  if (sitter->socket_to_babysitter >= 0)
+  if (sitter->socket_to_babysitter.fd >= 0)
     {
-      fds[i].fd = sitter->socket_to_babysitter;
+      fds[i].fd = sitter->socket_to_babysitter.fd;
       fds[i].events = _DBUS_POLLIN;
       fds[i].revents = 0;
       ++i;
@@ -659,7 +659,7 @@ babysitter_iteration (DBusBabysitter *sitter,
               --i;
               if (fds[i].fd == sitter->error_pipe_from_child)
                 handle_error_pipe (sitter, fds[i].revents);
-              else if (fds[i].fd == sitter->socket_to_babysitter)
+              else if (fds[i].fd == sitter->socket_to_babysitter.fd)
                 handle_babysitter_socket (sitter, fds[i].revents);
             }
         }
@@ -672,7 +672,7 @@ babysitter_iteration (DBusBabysitter *sitter,
  * Macro returns #TRUE if the babysitter still has live sockets open to the
  * babysitter child or the grandchild.
  */
-#define LIVE_CHILDREN(sitter) ((sitter)->socket_to_babysitter >= 0 || (sitter)->error_pipe_from_child >= 0)
+#define LIVE_CHILDREN(sitter) ((sitter)->socket_to_babysitter.fd >= 0 || (sitter)->error_pipe_from_child >= 0)
 
 /**
  * Blocks until the babysitter process gives us the PID of the spawned grandchild,
@@ -712,7 +712,7 @@ _dbus_babysitter_get_child_exited (DBusBabysitter *sitter)
     ;
 
   /* We will have exited the babysitter when the child has exited */
-  return sitter->socket_to_babysitter < 0;
+  return sitter->socket_to_babysitter.fd < 0;
 }
 
 /**
@@ -846,7 +846,7 @@ handle_watch (DBusWatch       *watch,
 
   if (fd == sitter->error_pipe_from_child)
     handle_error_pipe (sitter, revents);
-  else if (fd == sitter->socket_to_babysitter)
+  else if (fd == sitter->socket_to_babysitter.fd)
     handle_babysitter_socket (sitter, revents);
 
   while (LIVE_CHILDREN (sitter) &&
@@ -855,7 +855,7 @@ handle_watch (DBusWatch       *watch,
 
   /* fd.o #32992: if the handle_* methods closed their sockets, they previously
    * didn't always remove the watches. Check that we don't regress. */
-  _dbus_assert (sitter->socket_to_babysitter != -1 || sitter->sitter_watch == NULL);
+  _dbus_assert (sitter->socket_to_babysitter.fd != -1 || sitter->sitter_watch == NULL);
   _dbus_assert (sitter->error_pipe_from_child != -1 || sitter->error_watch == NULL);
 
   if (_dbus_babysitter_get_child_exited (sitter) &&
@@ -893,7 +893,7 @@ close_and_invalidate (int *fd)
     return -1;
   else
     {
-      ret = _dbus_close_socket (*fd, NULL);
+      ret = _dbus_close (*fd, NULL);
       *fd = -1;
     }
 
@@ -1217,7 +1217,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
 {
   DBusBabysitter *sitter;
   int child_err_report_pipe[2] = { -1, -1 };
-  int babysitter_pipe[2] = { -1, -1 };
+  DBusSocket babysitter_pipe[2] = { DBUS_SOCKET_INIT, DBUS_SOCKET_INIT };
   pid_t pid;
 #ifdef HAVE_SYSTEMD
   int fd_out = -1;
@@ -1287,7 +1287,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
       goto cleanup_and_fail;
     }
       
-  sitter->sitter_watch = _dbus_watch_new (babysitter_pipe[0],
+  sitter->sitter_watch = _dbus_watch_new (babysitter_pipe[0].fd,
                                           DBUS_WATCH_READABLE,
                                           TRUE, handle_watch, sitter, NULL);
   if (sitter->sitter_watch == NULL)
@@ -1341,14 +1341,14 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
 
       /* Close the parent's end of the pipes. */
       close_and_invalidate (&child_err_report_pipe[READ_END]);
-      close_and_invalidate (&babysitter_pipe[0]);
+      close_and_invalidate (&babysitter_pipe[0].fd);
       
       /* Create the child that will exec () */
       grandchild_pid = fork ();
       
       if (grandchild_pid < 0)
 	{
-	  write_err_and_exit (babysitter_pipe[1],
+	  write_err_and_exit (babysitter_pipe[1].fd,
 			      CHILD_FORK_FAILED);
           _dbus_assert_not_reached ("Got to code after write_err_and_exit()");
 	}
@@ -1358,7 +1358,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
            */
           signal (SIGPIPE, SIG_IGN);
 
-          close_and_invalidate (&babysitter_pipe[1]);
+          close_and_invalidate (&babysitter_pipe[1].fd);
 #ifdef HAVE_SYSTEMD
 	  /* log to systemd journal if possible */
 	  if (fd_out >= 0)
@@ -1381,7 +1381,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
           close_and_invalidate (&fd_out);
           close_and_invalidate (&fd_err);
 #endif
-          babysit (grandchild_pid, babysitter_pipe[1]);
+          babysit (grandchild_pid, babysitter_pipe[1].fd);
           _dbus_assert_not_reached ("Got to code after babysit()");
 	}
     }
@@ -1389,14 +1389,14 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
     {      
       /* Close the uncared-about ends of the pipes */
       close_and_invalidate (&child_err_report_pipe[WRITE_END]);
-      close_and_invalidate (&babysitter_pipe[1]);
+      close_and_invalidate (&babysitter_pipe[1].fd);
 #ifdef HAVE_SYSTEMD
       close_and_invalidate (&fd_out);
       close_and_invalidate (&fd_err);
 #endif
 
       sitter->socket_to_babysitter = babysitter_pipe[0];
-      babysitter_pipe[0] = -1;
+      babysitter_pipe[0].fd = -1;
       
       sitter->error_pipe_from_child = child_err_report_pipe[READ_END];
       child_err_report_pipe[READ_END] = -1;
@@ -1421,8 +1421,8 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
   
   close_and_invalidate (&child_err_report_pipe[READ_END]);
   close_and_invalidate (&child_err_report_pipe[WRITE_END]);
-  close_and_invalidate (&babysitter_pipe[0]);
-  close_and_invalidate (&babysitter_pipe[1]);
+  close_and_invalidate (&babysitter_pipe[0].fd);
+  close_and_invalidate (&babysitter_pipe[1].fd);
 #ifdef HAVE_SYSTEMD
   close_and_invalidate (&fd_out);
   close_and_invalidate (&fd_err);

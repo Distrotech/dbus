@@ -469,7 +469,7 @@ test_too_many_split (Fixture *f,
 #ifdef HAVE_UNIX_FD_PASSING
   DBusMessage *outgoing;
   int i;
-  int left_client_socket;
+  DBusSocket left_client_socket;
   char *payload;
   int payload_len;
   DBusString buffer;
@@ -532,7 +532,8 @@ test_too_many_split (Fixture *f,
   /* This is blatant cheating, and the API documentation specifically
    * tells you not use this function in this way. Never do this
    * in application code. */
-  if (!dbus_connection_get_socket (f->left_client_conn, &left_client_socket))
+  if (!dbus_connection_get_socket (f->left_client_conn,
+                                   &left_client_socket.fd))
     g_error ("'unix:' DBusConnection should have had a socket");
 
   /* Just to be sure that we're at a message boundary. */

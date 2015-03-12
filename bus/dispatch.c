@@ -5136,11 +5136,11 @@ bus_unix_fds_passing_test(const DBusString *test_data_dir)
   if (!_dbus_close(z, &error))
     _dbus_assert_not_reached("Failed to close pipe #2/other size 2nd fd ");
 
-  if (read(one[1], &r, 1) != 1 || r != 'X')
+  if (read(one[1].fd, &r, 1) != 1 || r != 'X')
     _dbus_assert_not_reached("Failed to read value from pipe.");
-  if (read(two[1], &r, 1) != 1 || r != 'Y')
+  if (read(two[1].fd, &r, 1) != 1 || r != 'Y')
     _dbus_assert_not_reached("Failed to read value from pipe.");
-  if (read(two[1], &r, 1) != 1 || r != 'Z')
+  if (read(two[1].fd, &r, 1) != 1 || r != 'Z')
     _dbus_assert_not_reached("Failed to read value from pipe.");
 
   if (!_dbus_close_socket (one[1], &error))

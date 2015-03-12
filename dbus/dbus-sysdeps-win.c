@@ -397,8 +397,8 @@ _dbus_read_socket (DBusSocket        fd,
 
  again:
  
-  _dbus_verbose ("recv: count=%d fd=%d\n", count, fd);
-  bytes_read = recv (fd, data, count, 0);
+  _dbus_verbose ("recv: count=%d fd=%Iu\n", count, fd.sock);
+  bytes_read = recv (fd.sock, data, count, 0);
   
   if (bytes_read == SOCKET_ERROR)
 	{
@@ -457,8 +457,8 @@ _dbus_write_socket (DBusSocket        fd,
 
  again:
 
-  _dbus_verbose ("send: len=%d fd=%d\n", len, fd);
-  bytes_written = send (fd, data, len, 0);
+  _dbus_verbose ("send: len=%d fd=%Iu\n", len, fd.sock);
+  bytes_written = send (fd.sock, data, len, 0);
 
   if (bytes_written == SOCKET_ERROR)
     {
@@ -495,7 +495,7 @@ _dbus_close_socket (DBusSocket fd,
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
  again:
-  if (closesocket (fd) == SOCKET_ERROR)
+  if (closesocket (fd.sock) == SOCKET_ERROR)
     {
       DBUS_SOCKET_SET_ERRNO ();
       
@@ -503,11 +503,11 @@ _dbus_close_socket (DBusSocket fd,
         goto again;
         
       dbus_set_error (error, _dbus_error_from_errno (errno),
-                      "Could not close socket: socket=%d, , %s",
-                      fd, _dbus_strerror_from_errno ());
+                      "Could not close socket: socket=%Iu, , %s",
+                      fd.sock, _dbus_strerror_from_errno ());
       return FALSE;
     }
-  _dbus_verbose ("_dbus_close_socket: socket=%d, \n", fd);
+  _dbus_verbose ("_dbus_close_socket: socket=%Iu, \n", fd.sock);
 
   return TRUE;
 }
@@ -545,12 +545,12 @@ _dbus_set_socket_nonblocking (DBusSocket      handle,
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  if (ioctlsocket (handle, FIONBIO, &one) == SOCKET_ERROR)
+  if (ioctlsocket (handle.sock, FIONBIO, &one) == SOCKET_ERROR)
     {
       DBUS_SOCKET_SET_ERRNO ();
       dbus_set_error (error, _dbus_error_from_errno (errno),
-                      "Failed to set socket %d:%d to nonblocking: %s", handle,
-                      _dbus_strerror_from_errno ());
+                      "Failed to set socket %Iu to nonblocking: %s",
+                      handle.sock, _dbus_strerror_from_errno ());
       return FALSE;
     }
 
@@ -618,8 +618,8 @@ _dbus_write_socket_two (DBusSocket        fd,
 
  again:
  
-  _dbus_verbose ("WSASend: len1+2=%d+%d fd=%d\n", len1, len2, fd);
-  rc = WSASend (fd, 
+  _dbus_verbose ("WSASend: len1+2=%d+%d fd=%Iu\n", len1, len2, fd.sock);
+  rc = WSASend (fd.sock,
                 vectors,
                 data2 ? 2 : 1, 
                 &bytes_written,
@@ -1067,7 +1067,7 @@ _dbus_socketpair (DBusSocket *fd1,
     }
 
   temp = socket (AF_INET, SOCK_STREAM, 0);
-  if (temp == DBUS_SOCKET_INVALID)
+  if (temp == INVALID_SOCKET)
     {
       DBUS_SOCKET_SET_ERRNO ();
       goto out0;
@@ -1098,7 +1098,7 @@ _dbus_socketpair (DBusSocket *fd1,
     }
 
   socket1 = socket (AF_INET, SOCK_STREAM, 0);
-  if (socket1 == DBUS_SOCKET_INVALID)
+  if (socket1 == INVALID_SOCKET)
     {
       DBUS_SOCKET_SET_ERRNO ();
       goto out0;
@@ -1111,7 +1111,7 @@ _dbus_socketpair (DBusSocket *fd1,
     }
 
   socket2 = accept (temp, (struct sockaddr *) &saddr, &len);
-  if (socket2 == DBUS_SOCKET_INVALID)
+  if (socket2 == INVALID_SOCKET)
     {
       DBUS_SOCKET_SET_ERRNO ();
       goto out1;
@@ -1134,11 +1134,11 @@ _dbus_socketpair (DBusSocket *fd1,
         }
     }
 
-  *fd1 = socket1;
-  *fd2 = socket2;
+  fd1->sock = socket1;
+  fd2->sock = socket2;
 
-  _dbus_verbose ("full-duplex pipe %d:%d <-> %d:%d\n",
-                 *fd1, socket1, *fd2, socket2);
+  _dbus_verbose ("full-duplex pipe %Iu:%Iu <-> %Iu:%Iu\n",
+                 fd1->sock, socket1, fd2->sock, socket2);
 
   closesocket (temp);
 
@@ -1202,12 +1202,12 @@ _dbus_poll (DBusPollFD *fds,
 
 
       if (fdp->events & _DBUS_POLLIN)
-        msgp += sprintf (msgp, "R:%d ", fdp->fd);
+        msgp += sprintf (msgp, "R:%Iu ", fdp->fd.sock);
 
       if (fdp->events & _DBUS_POLLOUT)
-        msgp += sprintf (msgp, "W:%d ", fdp->fd);
+        msgp += sprintf (msgp, "W:%Iu ", fdp->fd.sock);
 
-      msgp += sprintf (msgp, "E:%d\n\t", fdp->fd);
+      msgp += sprintf (msgp, "E:%Iu\n\t", fdp->fd.sock);
 
       // FIXME: more robust code for long  msg
       //        create on heap when msg[] becomes too small
@@ -1234,7 +1234,7 @@ _dbus_poll (DBusPollFD *fds,
       if (fdp->events & _DBUS_POLLOUT)
         lNetworkEvents |= FD_WRITE | FD_CONNECT;
 
-      WSAEventSelect(fdp->fd, ev, lNetworkEvents);
+      WSAEventSelect(fdp->fd.sock, ev, lNetworkEvents);
 
       pEvents[i] = ev;
     }
@@ -1266,7 +1266,7 @@ _dbus_poll (DBusPollFD *fds,
 
           fdp->revents = 0;
 
-          WSAEnumNetworkEvents(fdp->fd, pEvents[i], &ne);
+          WSAEnumNetworkEvents(fdp->fd.sock, pEvents[i], &ne);
 
           if (ne.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
             fdp->revents |= _DBUS_POLLIN;
@@ -1278,20 +1278,20 @@ _dbus_poll (DBusPollFD *fds,
             fdp->revents |= _DBUS_POLLERR;
 
           if (ne.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
-              msgp += sprintf (msgp, "R:%d ", fdp->fd);
+              msgp += sprintf (msgp, "R:%Iu ", fdp->fd.sock);
 
           if (ne.lNetworkEvents & (FD_WRITE | FD_CONNECT))
-              msgp += sprintf (msgp, "W:%d ", fdp->fd);
+              msgp += sprintf (msgp, "W:%Iu ", fdp->fd.sock);
 
           if (ne.lNetworkEvents & (FD_OOB))
-              msgp += sprintf (msgp, "E:%d ", fdp->fd);
+              msgp += sprintf (msgp, "E:%Iu ", fdp->fd.sock);
 
           msgp += sprintf (msgp, "lNetworkEvents:%d ", ne.lNetworkEvents);
 
           if(ne.lNetworkEvents)
             ret++;
 
-          WSAEventSelect(fdp->fd, pEvents[i], 0);
+          WSAEventSelect(fdp->fd.sock, pEvents[i], 0);
         }
 
       msgp += sprintf (msgp, "\n");
@@ -1320,7 +1320,7 @@ _dbus_poll (DBusPollFD *fds,
   char *msgp;
 
   fd_set read_set, write_set, err_set;
-  int max_fd = 0;
+  SOCKET max_fd = 0;
   int i;
   struct timeval tv;
   int ready;
@@ -1339,12 +1339,12 @@ _dbus_poll (DBusPollFD *fds,
 
 
       if (fdp->events & _DBUS_POLLIN)
-        msgp += sprintf (msgp, "R:%d ", fdp->fd);
+        msgp += sprintf (msgp, "R:%Iu ", fdp->fd.sock);
 
       if (fdp->events & _DBUS_POLLOUT)
-        msgp += sprintf (msgp, "W:%d ", fdp->fd);
+        msgp += sprintf (msgp, "W:%Iu ", fdp->fd.sock);
 
-      msgp += sprintf (msgp, "E:%d\n\t", fdp->fd);
+      msgp += sprintf (msgp, "E:%Iu\n\t", fdp->fd.sock);
 
       // FIXME: more robust code for long  msg
       //        create on heap when msg[] becomes too small
@@ -1362,14 +1362,14 @@ _dbus_poll (DBusPollFD *fds,
       DBusPollFD *fdp = &fds[i]; 
 
       if (fdp->events & _DBUS_POLLIN)
-        FD_SET (fdp->fd, &read_set);
+        FD_SET (fdp->fd.sock, &read_set);
 
       if (fdp->events & _DBUS_POLLOUT)
-        FD_SET (fdp->fd, &write_set);
+        FD_SET (fdp->fd.sock, &write_set);
 
-      FD_SET (fdp->fd, &err_set);
+      FD_SET (fdp->fd.sock, &err_set);
 
-      max_fd = MAX (max_fd, fdp->fd);
+      max_fd = MAX (max_fd, fdp->fd.sock);
     }
 
   // Avoid random lockups with send(), for lack of a better solution so far
@@ -1397,14 +1397,14 @@ _dbus_poll (DBusPollFD *fds,
           {
             DBusPollFD *fdp = &fds[i];
 
-            if (FD_ISSET (fdp->fd, &read_set))
-              msgp += sprintf (msgp, "R:%d ", fdp->fd);
+            if (FD_ISSET (fdp->fd.sock, &read_set))
+              msgp += sprintf (msgp, "R:%Iu ", fdp->fd.sock);
 
-            if (FD_ISSET (fdp->fd, &write_set))
-              msgp += sprintf (msgp, "W:%d ", fdp->fd);
+            if (FD_ISSET (fdp->fd.sock, &write_set))
+              msgp += sprintf (msgp, "W:%Iu ", fdp->fd.sock);
 
-            if (FD_ISSET (fdp->fd, &err_set))
-              msgp += sprintf (msgp, "E:%d\n\t", fdp->fd);
+            if (FD_ISSET (fdp->fd.sock, &err_set))
+              msgp += sprintf (msgp, "E:%Iu\n\t", fdp->fd.sock);
           }
         msgp += sprintf (msgp, "\n");
         _dbus_verbose ("%s",msg);
@@ -1416,13 +1416,13 @@ _dbus_poll (DBusPollFD *fds,
 
             fdp->revents = 0;
 
-            if (FD_ISSET (fdp->fd, &read_set))
+            if (FD_ISSET (fdp->fd.sock, &read_set))
               fdp->revents |= _DBUS_POLLIN;
 
-            if (FD_ISSET (fdp->fd, &write_set))
+            if (FD_ISSET (fdp->fd.sock, &write_set))
               fdp->revents |= _DBUS_POLLOUT;
 
-            if (FD_ISSET (fdp->fd, &err_set))
+            if (FD_ISSET (fdp->fd.sock, &err_set))
               fdp->revents |= _DBUS_POLLERR;
           }
       }
@@ -1502,7 +1502,8 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
                                      const char     *noncefile,
                                      DBusError      *error)
 {
-  SOCKET fd = DBUS_SOCKET_INVALID, res;
+  DBusSocket fd = DBUS_SOCKET_INIT;
+  int res;
   struct addrinfo hints;
   struct addrinfo *ai, *tmp;
 
@@ -1511,7 +1512,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
   if (!_dbus_win_startup_winsock ())
     {
       _DBUS_SET_OOM (error);
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
 
   _DBUS_ZERO (hints);
@@ -1527,7 +1528,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
       dbus_set_error (error,
                       DBUS_ERROR_INVALID_ARGS,
                       "Unknown address family %s", family);
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
   hints.ai_protocol = IPPROTO_TCP;
   hints.ai_socktype = SOCK_STREAM;
@@ -1543,13 +1544,13 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
                       _dbus_error_from_errno (res),
                       "Failed to lookup host/port: \"%s:%s\": %s (%d)",
                       host, port, _dbus_strerror(res), res);
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
 
   tmp = ai;
   while (tmp)
     {
-      if ((fd = socket (tmp->ai_family, SOCK_STREAM, 0)) == DBUS_SOCKET_INVALID)
+      if ((fd.sock = socket (tmp->ai_family, SOCK_STREAM, 0)) == INVALID_SOCKET)
         {
           DBUS_SOCKET_SET_ERRNO ();
           dbus_set_error (error,
@@ -1557,15 +1558,15 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
                           "Failed to open socket: %s",
                           _dbus_strerror_from_errno ());
           freeaddrinfo(ai);
-          return -1;
+          return _dbus_socket_get_invalid ();
         }
       _DBUS_ASSERT_ERROR_IS_CLEAR(error);
 
-      if (connect (fd, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) == SOCKET_ERROR)
+      if (connect (fd.sock, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) == SOCKET_ERROR)
         {
           DBUS_SOCKET_SET_ERRNO ();
-          closesocket(fd);
-          fd = -1;
+          closesocket(fd.sock);
+          fd.sock = INVALID_SOCKET;
           tmp = tmp->ai_next;
           continue;
         }
@@ -1574,13 +1575,13 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
     }
   freeaddrinfo(ai);
 
-  if (fd == DBUS_SOCKET_INVALID)
+  if (!DBUS_SOCKET_IS_VALID (fd))
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (errno),
                       "Failed to connect to socket \"%s:%s\" %s",
                       host, port, _dbus_strerror_from_errno ());
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
 
   if (noncefile != NULL)
@@ -1590,9 +1591,9 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
       if (!_dbus_string_init (&noncefileStr) ||
           !_dbus_string_append(&noncefileStr, noncefile))
         {
-          closesocket (fd);
+          closesocket (fd.sock);
           dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
-          return -1;
+          return _dbus_socket_get_invalid ();
         }
 
       ret = _dbus_send_nonce (fd, &noncefileStr, error);
@@ -1601,18 +1602,18 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
 
       if (!ret)
         {
-          closesocket (fd);
-          return -1;
+          closesocket (fd.sock);
+          return _dbus_socket_get_invalid ();
         }
     }
 
   /* Every SOCKET is also a HANDLE. */
-  _dbus_win_handle_set_close_on_exec ((HANDLE) fd);
+  _dbus_win_handle_set_close_on_exec ((HANDLE) fd.sock);
 
   if (!_dbus_set_socket_nonblocking (fd, error))
     {
-      closesocket (fd);
-      return -1;
+      closesocket (fd.sock);
+      return _dbus_socket_get_invalid ();
     }
 
   return fd;
@@ -1702,8 +1703,8 @@ _dbus_listen_tcp_socket (const char     *host,
   tmp = ai;
   while (tmp)
     {
-      DBusSocket fd = DBUS_SOCKET_INVALID, *newlisten_fd;
-      if ((fd = socket (tmp->ai_family, SOCK_STREAM, 0)) == DBUS_SOCKET_INVALID)
+      DBusSocket fd = DBUS_SOCKET_INIT, *newlisten_fd;
+      if ((fd.sock = socket (tmp->ai_family, SOCK_STREAM, 0)) == INVALID_SOCKET)
         {
           DBUS_SOCKET_SET_ERRNO ();
           dbus_set_error (error,
@@ -1714,10 +1715,10 @@ _dbus_listen_tcp_socket (const char     *host,
         }
       _DBUS_ASSERT_ERROR_IS_CLEAR(error);
 
-      if (bind (fd, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) == SOCKET_ERROR)
+      if (bind (fd.sock, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) == SOCKET_ERROR)
         {
           DBUS_SOCKET_SET_ERRNO ();
-          closesocket (fd);
+          closesocket (fd.sock);
           if (errno == WSAEADDRINUSE)
           {
               /* Calling this function with port=0 tries to
@@ -1733,20 +1734,20 @@ _dbus_listen_tcp_socket (const char     *host,
           goto failed;
     }
 
-      if (listen (fd, 30 /* backlog */) == SOCKET_ERROR)
+      if (listen (fd.sock, 30 /* backlog */) == SOCKET_ERROR)
         {
           DBUS_SOCKET_SET_ERRNO ();
           dbus_set_error (error, _dbus_error_from_errno (errno),
                           "Failed to listen on socket \"%s:%s\": %s",
                           host ? host : "*", port, _dbus_strerror_from_errno ());
-          closesocket (fd);
+          closesocket (fd.sock);
           goto failed;
         }
 
-      newlisten_fd = dbus_realloc(listen_fd, sizeof(int)*(nlisten_fd+1));
+      newlisten_fd = dbus_realloc(listen_fd, sizeof(DBusSocket)*(nlisten_fd+1));
       if (!newlisten_fd)
         {
-          closesocket (fd);
+          closesocket (fd.sock);
           dbus_set_error (error, DBUS_ERROR_NO_MEMORY,
                           "Failed to allocate file handle array");
           goto failed;
@@ -1767,7 +1768,7 @@ _dbus_listen_tcp_socket (const char     *host,
               socklen_t addrlen = sizeof(addr);
               char portbuf[NI_MAXSERV];
 
-              if (getsockname(fd, &addr.Address, &addrlen) == SOCKET_ERROR ||
+              if (getsockname(fd.sock, &addr.Address, &addrlen) == SOCKET_ERROR ||
                 (res = getnameinfo (&addr.Address, addrlen, NULL, 0,
                                     portbuf, sizeof(portbuf),
                                     NI_NUMERICSERV)) != 0)
@@ -1817,7 +1818,7 @@ _dbus_listen_tcp_socket (const char     *host,
 
   for (i = 0 ; i < nlisten_fd ; i++)
     {
-      _dbus_win_handle_set_close_on_exec ((HANDLE) listen_fd[i]);
+      _dbus_win_handle_set_close_on_exec ((HANDLE) listen_fd[i].sock);
       if (!_dbus_set_socket_nonblocking (listen_fd[i], error))
         {
           goto failed;
@@ -1832,7 +1833,7 @@ _dbus_listen_tcp_socket (const char     *host,
   if (ai)
     freeaddrinfo(ai);
   for (i = 0 ; i < nlisten_fd ; i++)
-    closesocket (listen_fd[i]);
+    closesocket (listen_fd[i].sock);
   dbus_free(listen_fd);
   return -1;
 }
@@ -1851,7 +1852,7 @@ _dbus_accept  (DBusSocket listen_fd)
   DBusSocket client_fd;
 
  retry:
-  client_fd = accept (listen_fd, NULL, NULL);
+  client_fd.sock = accept (listen_fd.sock, NULL, NULL);
 
   if (!DBUS_SOCKET_IS_VALID (client_fd))
     {
@@ -1860,7 +1861,7 @@ _dbus_accept  (DBusSocket listen_fd)
         goto retry;
     }
 
-  _dbus_verbose ("client fd %d accepted\n", client_fd);
+  _dbus_verbose ("client fd %Iu accepted\n", client_fd.sock);
   
   return client_fd;
 }
@@ -1968,7 +1969,7 @@ _dbus_read_credentials_socket  (DBusSocket       handle,
       _dbus_string_free (&buf);
     }
 
-  pid = _dbus_get_peer_pid_from_tcp_handle (handle);
+  pid = _dbus_get_peer_pid_from_tcp_handle (handle.sock);
   if (pid == 0)
     return TRUE;
 

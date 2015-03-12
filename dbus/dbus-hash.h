@@ -159,7 +159,10 @@ static inline DBusPollable
 _dbus_hash_iter_get_pollable_key (DBusHashIter *iter)
 {
 #ifdef DBUS_WIN
-  return _dbus_hash_iter_get_uintptr_key (iter);
+  DBusSocket s;
+
+  s.sock = _dbus_hash_iter_get_uintptr_key (iter);
+  return s;
 #else
   return _dbus_hash_iter_get_int_key (iter);
 #endif
@@ -170,7 +173,7 @@ _dbus_hash_table_lookup_pollable (DBusHashTable *table,
                                   DBusPollable   key)
 {
 #ifdef DBUS_WIN
-  return _dbus_hash_table_lookup_uintptr (table, key);
+  return _dbus_hash_table_lookup_uintptr (table, key.sock);
 #else
   return _dbus_hash_table_lookup_int (table, key);
 #endif
@@ -181,7 +184,7 @@ _dbus_hash_table_remove_pollable (DBusHashTable *table,
                                   DBusPollable   key)
 {
 #ifdef DBUS_WIN
-  return _dbus_hash_table_remove_uintptr (table, key);
+  return _dbus_hash_table_remove_uintptr (table, key.sock);
 #else
   return _dbus_hash_table_remove_int (table, key);
 #endif
@@ -193,7 +196,7 @@ _dbus_hash_table_insert_pollable (DBusHashTable *table,
                                   void          *value)
 {
 #ifdef DBUS_WIN
-  return _dbus_hash_table_insert_uintptr (table, key, value);
+  return _dbus_hash_table_insert_uintptr (table, key.sock, value);
 #else
   return _dbus_hash_table_insert_int (table, key, value);
 #endif

@@ -328,9 +328,9 @@ _dbus_server_new_for_domain_socket (const char     *path,
         }
     }
 
-  listen_fd = _dbus_listen_unix_socket (path, abstract, error);
+  listen_fd.fd = _dbus_listen_unix_socket (path, abstract, error);
 
-  if (listen_fd < 0)
+  if (listen_fd.fd < 0)
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       goto failed_1;

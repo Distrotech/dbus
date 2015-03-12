@@ -208,7 +208,7 @@ dbus_bool_t
 _dbus_close_socket (DBusSocket        fd,
                     DBusError        *error)
 {
-  return _dbus_close (fd, error);
+  return _dbus_close (fd.fd, error);
 }
 
 /**
@@ -225,7 +225,7 @@ _dbus_read_socket (DBusSocket        fd,
                    DBusString       *buffer,
                    int               count)
 {
-  return _dbus_read (fd, buffer, count);
+  return _dbus_read (fd.fd, buffer, count);
 }
 
 /**
@@ -252,7 +252,7 @@ _dbus_write_socket (DBusSocket        fd,
 
  again:
 
-  bytes_written = send (fd, data, len, MSG_NOSIGNAL);
+  bytes_written = send (fd.fd, data, len, MSG_NOSIGNAL);
 
   if (bytes_written < 0 && errno == EINTR)
     goto again;
@@ -260,7 +260,7 @@ _dbus_write_socket (DBusSocket        fd,
   return bytes_written;
 
 #else
-  return _dbus_write (fd, buffer, start, len);
+  return _dbus_write (fd.fd, buffer, start, len);
 #endif
 }
 
@@ -335,7 +335,7 @@ _dbus_read_socket_with_unix_fds (DBusSocket        fd,
 
  again:
 
-  bytes_read = recvmsg(fd, &m, 0
+  bytes_read = recvmsg (fd.fd, &m, 0
 #ifdef MSG_CMSG_CLOEXEC
                        |MSG_CMSG_CLOEXEC
 #endif
@@ -518,7 +518,7 @@ _dbus_write_socket_with_unix_fds_two(DBusSocket        fd,
 
  again:
 
-  bytes_written = sendmsg (fd, &m, 0
+  bytes_written = sendmsg (fd.fd, &m, 0
 #if HAVE_DECL_MSG_NOSIGNAL
                            |MSG_NOSIGNAL
 #endif
@@ -593,7 +593,7 @@ _dbus_write_socket_two (DBusSocket        fd,
 
  again:
 
-  bytes_written = sendmsg (fd, &m, MSG_NOSIGNAL);
+  bytes_written = sendmsg (fd.fd, &m, MSG_NOSIGNAL);
 
   if (bytes_written < 0 && errno == EINTR)
     goto again;
@@ -601,7 +601,7 @@ _dbus_write_socket_two (DBusSocket        fd,
   return bytes_written;
 
 #else
-  return _dbus_write_two (fd, buffer1, start1, len1,
+  return _dbus_write_two (fd.fd, buffer1, start1, len1,
                           buffer2, start2, len2);
 #endif
 }
@@ -1221,7 +1221,7 @@ _dbus_listen_systemd_sockets (DBusSocket **fds,
           goto fail;
         }
 
-      new_fds[fd - SD_LISTEN_FDS_START] = fd;
+      new_fds[fd - SD_LISTEN_FDS_START].fd = fd;
     }
 
   *fds = new_fds;
@@ -1273,7 +1273,8 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
                                      DBusError      *error)
 {
   int saved_errno = 0;
-  int fd = -1, res;
+  DBusSocket fd = DBUS_SOCKET_INIT;
+  int res;
   struct addrinfo hints;
   struct addrinfo *ai, *tmp;
 
@@ -1292,7 +1293,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
       dbus_set_error (error,
                       DBUS_ERROR_BAD_ADDRESS,
                       "Unknown address family %s", family);
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
   hints.ai_protocol = IPPROTO_TCP;
   hints.ai_socktype = SOCK_STREAM;
@@ -1304,25 +1305,25 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
                       _dbus_error_from_errno (errno),
                       "Failed to lookup host/port: \"%s:%s\": %s (%d)",
                       host, port, gai_strerror(res), res);
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
 
   tmp = ai;
   while (tmp)
     {
-      if (!_dbus_open_socket (&fd, tmp->ai_family, SOCK_STREAM, 0, error))
+      if (!_dbus_open_socket (&fd.fd, tmp->ai_family, SOCK_STREAM, 0, error))
         {
           freeaddrinfo(ai);
           _DBUS_ASSERT_ERROR_IS_SET(error);
-          return -1;
+          return _dbus_socket_get_invalid ();
         }
       _DBUS_ASSERT_ERROR_IS_CLEAR(error);
 
-      if (connect (fd, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) < 0)
+      if (connect (fd.fd, (struct sockaddr*) tmp->ai_addr, tmp->ai_addrlen) < 0)
         {
           saved_errno = errno;
-          _dbus_close(fd, NULL);
-          fd = -1;
+          _dbus_close (fd.fd, NULL);
+          fd.fd = -1;
           tmp = tmp->ai_next;
           continue;
         }
@@ -1331,13 +1332,13 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
     }
   freeaddrinfo(ai);
 
-  if (fd == -1)
+  if (fd.fd == -1)
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (saved_errno),
                       "Failed to connect to socket \"%s:%s\" %s",
                       host, port, _dbus_strerror(saved_errno));
-      return -1;
+      return _dbus_socket_get_invalid ();
     }
 
   if (noncefile != NULL)
@@ -1349,16 +1350,16 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
       _dbus_string_free (&noncefileStr);
 
       if (!ret)
-    {
-      _dbus_close (fd, NULL);
-          return -1;
+        {
+          _dbus_close (fd.fd, NULL);
+          return _dbus_socket_get_invalid ();
         }
     }
 
-  if (!_dbus_set_fd_nonblocking (fd, error))
+  if (!_dbus_set_fd_nonblocking (fd.fd, error))
     {
-      _dbus_close (fd, NULL);
-      return -1;
+      _dbus_close (fd.fd, NULL);
+      return _dbus_socket_get_invalid ();
     }
 
   return fd;
@@ -1506,7 +1507,7 @@ _dbus_listen_tcp_socket (const char     *host,
           goto failed;
         }
       listen_fd = newlisten_fd;
-      listen_fd[nlisten_fd] = fd;
+      listen_fd[nlisten_fd].fd = fd;
       nlisten_fd++;
 
       if (!_dbus_string_get_length(retport))
@@ -1572,7 +1573,7 @@ _dbus_listen_tcp_socket (const char     *host,
 
   for (i = 0 ; i < nlisten_fd ; i++)
     {
-      if (!_dbus_set_fd_nonblocking (listen_fd[i], error))
+      if (!_dbus_set_fd_nonblocking (listen_fd[i].fd, error))
         {
           goto failed;
         }
@@ -1586,7 +1587,7 @@ _dbus_listen_tcp_socket (const char     *host,
   if (ai)
     freeaddrinfo(ai);
   for (i = 0 ; i < nlisten_fd ; i++)
-    _dbus_close(listen_fd[i], NULL);
+    _dbus_close(listen_fd[i].fd, NULL);
   dbus_free(listen_fd);
   return -1;
 }
@@ -1854,7 +1855,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
 #endif
 
  again:
-  bytes_read = recvmsg (client_fd, &msg, 0);
+  bytes_read = recvmsg (client_fd.fd, &msg, 0);
 
   if (bytes_read < 0)
     {
@@ -1906,7 +1907,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
 #endif
     int cr_len = sizeof (cr);
 
-    if (getsockopt (client_fd, SOL_SOCKET, SO_PEERCRED, &cr, &cr_len) != 0)
+    if (getsockopt (client_fd.fd, SOL_SOCKET, SO_PEERCRED, &cr, &cr_len) != 0)
       {
         _dbus_verbose ("Failed to getsockopt(SO_PEERCRED): %s\n",
                        _dbus_strerror (errno));
@@ -1927,7 +1928,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
     struct unpcbid cr;
     socklen_t cr_len = sizeof (cr);
 
-    if (getsockopt (client_fd, 0, LOCAL_PEEREID, &cr, &cr_len) != 0)
+    if (getsockopt (client_fd.fd, 0, LOCAL_PEEREID, &cr, &cr_len) != 0)
       {
         _dbus_verbose ("Failed to getsockopt(LOCAL_PEEREID): %s\n",
                        _dbus_strerror (errno));
@@ -1974,7 +1975,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
      * up this list, because it carries the pid and we use this code path
      * for audit data. */
     ucred_t * ucred = NULL;
-    if (getpeerucred (client_fd, &ucred) == 0)
+    if (getpeerucred (client_fd.fd, &ucred) == 0)
       {
         pid_read = ucred_getpid (ucred);
         uid_read = ucred_geteuid (ucred);
@@ -2040,7 +2041,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
      */
     uid_t euid;
     gid_t egid;
-    if (getpeereid (client_fd, &euid, &egid) == 0)
+    if (getpeereid (client_fd.fd, &euid, &egid) == 0)
       {
         uid_read = euid;
       }
@@ -2093,7 +2094,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
         }
     }
 
-  if (!add_linux_security_label_to_credentials (client_fd, credentials))
+  if (!add_linux_security_label_to_credentials (client_fd.fd, credentials))
     {
       _DBUS_SET_OOM (error);
       return FALSE;
@@ -2125,7 +2126,7 @@ _dbus_send_credentials_socket  (DBusSocket       server_fd,
 {
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
-  if (write_credentials_byte (server_fd, error))
+  if (write_credentials_byte (server_fd.fd, error))
     return TRUE;
   else
     return FALSE;
@@ -2160,28 +2161,28 @@ _dbus_accept  (DBusSocket listen_fd)
    * libc headers, SOCK_CLOEXEC is too. At runtime, it is still
    * not necessarily true that either is supported by the running kernel.
    */
-  client_fd = accept4 (listen_fd, &addr, &addrlen, SOCK_CLOEXEC);
-  cloexec_done = client_fd >= 0;
+  client_fd.fd = accept4 (listen_fd.fd, &addr, &addrlen, SOCK_CLOEXEC);
+  cloexec_done = client_fd.fd >= 0;
 
-  if (client_fd < 0 && (errno == ENOSYS || errno == EINVAL))
+  if (client_fd.fd < 0 && (errno == ENOSYS || errno == EINVAL))
 #endif
     {
-      client_fd = accept (listen_fd, &addr, &addrlen);
+      client_fd.fd = accept (listen_fd.fd, &addr, &addrlen);
     }
 
-  if (client_fd < 0)
+  if (client_fd.fd < 0)
     {
       if (errno == EINTR)
         goto retry;
     }
 
-  _dbus_verbose ("client fd %d accepted\n", client_fd);
+  _dbus_verbose ("client fd %d accepted\n", client_fd.fd);
 
 #ifdef HAVE_ACCEPT4
   if (!cloexec_done)
 #endif
     {
-      _dbus_fd_set_close_on_exec(client_fd);
+      _dbus_fd_set_close_on_exec(client_fd.fd);
     }
 
   return client_fd;
@@ -3210,7 +3211,7 @@ dbus_bool_t
 _dbus_set_socket_nonblocking (DBusSocket      fd,
                               DBusError      *error)
 {
-  return _dbus_set_fd_nonblocking (fd, error);
+  return _dbus_set_fd_nonblocking (fd.fd, error);
 }
 
 static dbus_bool_t
@@ -3300,7 +3301,7 @@ _dbus_socketpair (DBusSocket *fd1,
                   DBusError  *error)
 {
 #ifdef HAVE_SOCKETPAIR
-  DBusSocket fds[2];
+  int fds[2];
   int retval;
 
 #ifdef SOCK_CLOEXEC
@@ -3345,11 +3346,11 @@ _dbus_socketpair (DBusSocket *fd1,
       return FALSE;
     }
 
-  *fd1 = fds[0];
-  *fd2 = fds[1];
+  fd1->fd = fds[0];
+  fd2->fd = fds[1];
 
   _dbus_verbose ("full-duplex pipe %d <-> %d\n",
-                 *fd1, *fd2);
+                 fd1->fd, fd2->fd);
 
   return TRUE;
 #else
@@ -4243,7 +4244,7 @@ _dbus_socket_can_pass_unix_fd (DBusSocket fd)
 
   _DBUS_ZERO(sa_buf);
 
-  if (getsockname(fd, &sa_buf.sa, &sa_len) < 0)
+  if (getsockname(fd.fd, &sa_buf.sa, &sa_len) < 0)
     return FALSE;
 
   return sa_buf.sa.sa_family == AF_UNIX;
@@ -4397,7 +4398,7 @@ _dbus_append_address_from_socket (DBusSocket  fd,
   int size = sizeof (socket);
   DBusString path_str;
 
-  if (getsockname (fd, &socket.sa, &size))
+  if (getsockname (fd.fd, &socket.sa, &size))
     goto err;
 
   switch (socket.sa.sa_family)

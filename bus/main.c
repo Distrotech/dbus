@@ -70,7 +70,7 @@ signal_handler (int sig)
         char action[2] = { ACTION_RELOAD, '\0' };
 
         _dbus_string_init_const (&str, action);
-        if ((reload_pipe[RELOAD_WRITE_END] > 0) &&
+        if ((reload_pipe[RELOAD_WRITE_END].fd > 0) &&
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
             /* If we receive SIGHUP often enough to fill the pipe buffer (4096
@@ -103,7 +103,7 @@ signal_handler (int sig)
         DBusString str;
         char action[2] = { ACTION_QUIT, '\0' };
         _dbus_string_init_const (&str, action);
-        if ((reload_pipe[RELOAD_WRITE_END] < 0) ||
+        if ((reload_pipe[RELOAD_WRITE_END].fd < 0) ||
             !_dbus_write_socket (reload_pipe[RELOAD_WRITE_END], &str, 0, 1))
           {
             /* If we can't write to the socket, dying seems a more
@@ -248,7 +248,7 @@ handle_reload_watch (DBusWatch    *watch,
   while (!_dbus_string_init (&str))
     _dbus_wait_for_memory ();
 
-  if ((reload_pipe[RELOAD_READ_END] > 0) &&
+  if ((reload_pipe[RELOAD_READ_END].fd > 0) &&
       _dbus_read_socket (reload_pipe[RELOAD_READ_END], &str, 1) != 1)
     {
       _dbus_warn ("Couldn't read from reload pipe.\n");

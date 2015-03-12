@@ -595,15 +595,27 @@ dbus_watch_get_socket (DBusWatch *watch)
 {
   _dbus_return_val_if_fail (watch != NULL, -1);
 
+#ifdef DBUS_UNIX
   return watch->fd;
+#else
+  return DBUS_SOCKET_GET_INT (watch->fd);
+#endif
 }
 
 DBusSocket
 _dbus_watch_get_socket (DBusWatch *watch)
 {
+  DBusSocket s;
+
   _dbus_assert (watch != NULL);
 
-  return watch->fd;
+#ifdef DBUS_UNIX
+  s.fd = watch->fd;
+#else
+  s = watch->fd;
+#endif
+
+  return s;
 }
 
 DBusPollable
