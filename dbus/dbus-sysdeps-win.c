@@ -1859,7 +1859,7 @@ _dbus_accept  (DBusSocket listen_fd)
  retry:
   client_fd = accept (listen_fd, NULL, NULL);
 
-  if (DBUS_SOCKET_IS_INVALID (client_fd))
+  if (!DBUS_SOCKET_IS_VALID (client_fd))
     {
       DBUS_SOCKET_SET_ERRNO ();
       if (errno == EINTR)

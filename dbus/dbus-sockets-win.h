@@ -41,25 +41,12 @@
 #include <errno.h>
 #endif
 
-#define DBUS_SOCKET_IS_INVALID(s) ((SOCKET)(s) == INVALID_SOCKET)
 #define DBUS_SOCKET_API_RETURNS_ERROR(n) ((n) == SOCKET_ERROR)
 #define DBUS_SOCKET_SET_ERRNO() (_dbus_win_set_errno (WSAGetLastError()))
 
-#define DBUS_CLOSE_SOCKET(s) closesocket(s)
-
 #else
 
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <errno.h>
-
-#define DBUS_SOCKET_IS_INVALID(s) ((s) < 0)
-#define DBUS_SOCKET_API_RETURNS_ERROR(n) ((n) < 0)
-#define DBUS_SOCKET_SET_ERRNO()	/* empty */
-
-#define DBUS_CLOSE_SOCKET(s) close(s)
+#error "dbus-sockets-win.h should not be included on non-Windows"
 
 #endif /* !Win32 */
 
