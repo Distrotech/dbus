@@ -606,12 +606,6 @@ _dbus_write_socket_two (DBusSocket        fd,
 #endif
 }
 
-dbus_bool_t
-_dbus_socket_is_invalid (int fd)
-{
-    return fd < 0 ? TRUE : FALSE;
-}
-
 /**
  * Thin wrapper around the read() system call that appends
  * the data it reads to the DBusString buffer. It appends

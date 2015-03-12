@@ -209,8 +209,6 @@ int _dbus_write_socket_with_unix_fds_two (DBusSocket        fd,
                                           const int        *fds,
                                           int               n_fds);
 
-dbus_bool_t _dbus_socket_is_invalid (DBusSocket        fd);
-
 DBusSocket _dbus_connect_tcp_socket  (const char     *host,
                                       const char     *port,
                                       const char     *family,

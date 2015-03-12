@@ -642,12 +642,6 @@ _dbus_write_socket_two (DBusSocket        fd,
   return bytes_written;
 }
 
-dbus_bool_t
-_dbus_socket_is_invalid (DBusSocket fd)
-{
-    return fd == DBUS_SOCKET_INVALID ? TRUE : FALSE;
-}
-
 #if 0
 
 /**
