@@ -522,7 +522,7 @@ GET_FILENAME_COMPONENT(C_COMPILER ${CMAKE_C_COMPILER} NAME)
 GET_FILENAME_COMPONENT(CXX_COMPILER ${CMAKE_CXX_COMPILER} NAME)
 
 message("                  D-BUS ${DBUS_VERSION}                               ")
-message("                  ===========                                         ")
+message("                  ============                                        ")
 message("                                                                      ")
 message("        install prefix:           ${prefix}                           ")
 message("        install exec_prefix:      ${exec_prefix}                      ")
