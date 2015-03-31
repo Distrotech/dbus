@@ -289,7 +289,7 @@ _dbus_server_new_for_domain_socket (const char     *path,
                                     DBusError      *error)
 {
   DBusServer *server;
-  int listen_fd;
+  DBusSocket listen_fd;
   DBusString address;
   char *path_copy;
   DBusString path_str;

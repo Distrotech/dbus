@@ -27,6 +27,7 @@
 #include <dbus/dbus-types.h>
 #include <dbus/dbus-errors.h>
 #include <dbus/dbus-string.h>
+#include <dbus/dbus-sysdeps.h>
 
 DBUS_BEGIN_DECLS
 
@@ -46,13 +47,13 @@ dbus_bool_t _dbus_noncefile_create (DBusNonceFile *noncefile,
 dbus_bool_t _dbus_noncefile_delete (DBusNonceFile *noncefile,
                                     DBusError *error);
 
-dbus_bool_t _dbus_noncefile_check_nonce (int fd,
+dbus_bool_t _dbus_noncefile_check_nonce (DBusSocket fd,
                                          const DBusNonceFile *noncefile,
                                          DBusError *error);
 
 const DBusString* _dbus_noncefile_get_path (const DBusNonceFile *noncefile);
 
-int _dbus_accept_with_noncefile (int listen_fd,
+DBusSocket _dbus_accept_with_noncefile(DBusSocket listen_fd,
                                  const DBusNonceFile *noncefile);
 
 // shared
