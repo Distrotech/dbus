@@ -15,7 +15,7 @@ if test -z "$DBUS_TEST_NAME_IN_RUN_TEST"; then
 fi 
 
 if test -n "$DBUS_TEST_MONITOR"; then
-  dbus-monitor --session &
+  dbus-monitor --session >&2 &
 fi
 
 XDG_RUNTIME_DIR="$DBUS_TOP_BUILDDIR"/test/XDG_RUNTIME_DIR
@@ -23,31 +23,60 @@ test -d "$XDG_RUNTIME_DIR" || mkdir "$XDG_RUNTIME_DIR"
 chmod 0700 "$XDG_RUNTIME_DIR"
 export XDG_RUNTIME_DIR
 
-echo "running test-ids"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-ids || die "test-ids failed"
+# Translate a command and exit status into TAP syntax.
+# Usage: interpret_result $? description-of-test
+# Uses global variable $test_num.
+interpret_result () {
+  e="$1"
+  shift
+  case "$e" in
+    (0)
+      echo "ok $test_num $*"
+      ;;
+    (77)
+      echo "ok $test_num # SKIP $*"
+      ;;
+    (*)
+      echo "not ok $test_num $*"
+      ;;
+  esac
+  test_num=$(( $test_num + 1 ))
+}
 
-echo "running test-pending-call-dispatch"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-pending-call-dispatch || die "test-pending-call-dispatch failed"
+c_test () {
+  t="$1"
+  shift
+  e=0
+  echo "# running test $t"
+  if ! "${DBUS_TOP_BUILDDIR}/libtool" --mode=execute $DEBUG "$DBUS_TOP_BUILDDIR/test/name-test/$t" "$@" >&2; then
+    e=$?
+    echo "# exit status $e"
+  fi
+  interpret_result "$e" "$t" "$@"
+}
 
-echo "running test-pending-call-timeout"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-pending-call-timeout || die "test-pending-call-timeout failed"
+py_test () {
+  t="$1"
+  shift
+  if test "x$PYTHON" = "x:"; then
+    interpret_result 77 "$t" "(Python interpreter not found)"
+  else
+    e=0
+    echo "# running test $t"
+    $PYTHON "$DBUS_TOP_SRCDIR/test/name-test/$t" "$@" >&2 || e=$?
+    interpret_result "$e" "$t" "$@"
+  fi
+}
 
-echo "running test-threads-init"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-threads-init || die "test-threads-init failed"
+test_num=1
+# TAP test plan: we will run 8 tests
+echo "1..8"
 
-echo "running test-privserver-client"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-privserver-client || die "test-privserver-client failed"
-
-echo "running test-shutdown"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-shutdown || die "test-shutdown failed"
-
-echo "running test activation forking"
-if test "x$PYTHON" = "x:"; then
-  echo "Skipped test-activation-forking: Python interpreter not found"
-elif ! $PYTHON $DBUS_TOP_SRCDIR/test/name-test/test-activation-forking.py; then
-  echo "Failed test-activation-forking"
-  exit 1
-fi
-
-echo "running test-autolaunch"
-${DBUS_TOP_BUILDDIR}/libtool --mode=execute $DEBUG $DBUS_TOP_BUILDDIR/test/name-test/test-autolaunch || die "test-autolaunch failed"
+c_test test-ids
+c_test test-pending-call-dispatch
+c_test test-pending-call-timeout
+c_test test-threads-init
+c_test test-privserver-client
+c_test test-shutdown
+py_test test-activation-forking.py
+c_test test-autolaunch

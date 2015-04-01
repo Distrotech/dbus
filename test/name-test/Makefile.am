@@ -7,6 +7,11 @@ AM_CPPFLAGS = \
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
+TEST_EXTENSIONS = .sh
+
+SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
+SH_LOG_COMPILER = $(SHELL)
+
 ## note that TESTS has special meaning (stuff to use in make check)
 ## so if adding tests not to be run in make check, don't add them to 
 ## TESTS
