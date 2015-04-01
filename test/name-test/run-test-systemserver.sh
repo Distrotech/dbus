@@ -1,14 +1,4 @@
 #! /bin/sh
-die()
-{
-    if ! test -z "$DBUS_SESSION_BUS_PID" ; then
-        echo "killing message bus "$DBUS_SESSION_BUS_PID >&2
-        kill -9 $DBUS_SESSION_BUS_PID
-    fi
-    echo $SCRIPTNAME: $* >&2
-
-    exit 1
-}
 
 SCRIPTNAME=$0
 MODE=$1
