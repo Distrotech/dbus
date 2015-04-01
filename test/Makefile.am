@@ -142,17 +142,18 @@ installable_test_meta_with_config = $(installable_tests:=_with_config.test)
 
 installcheck_tests =
 installcheck_environment = \
-	XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
-	DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT) \
-	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
-	DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir)
+	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
+	export DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT); \
+	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
+	export DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir); \
+	${NULL}
 
 AM_TESTS_ENVIRONMENT = \
-	XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
-	DBUS_FATAL_WARNINGS=1 \
-	DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
-	DBUS_TEST_DATA=@abs_top_builddir@/test/data \
-	DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus \
+	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
+	export DBUS_FATAL_WARNINGS=1; \
+	export DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT); \
+	export DBUS_TEST_DATA=@abs_top_builddir@/test/data; \
+	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
 	$(NULL)
 
 manual_authz_SOURCES = manual-authz.c
@@ -257,11 +258,11 @@ installcheck-local:
 	$(MAKE) check-TESTS TESTS='$$(installcheck_tests)' \
 		AM_TESTS_ENVIRONMENT='$$(installcheck_environment)'
 if DBUS_ENABLE_INSTALLED_TESTS
-	test -n "$(DESTDIR)" || \
+	test -n "$(DESTDIR)" || { \
 	$(installcheck_environment) \
 		$(srcdir)/dbus-test-runner \
 		$(testexecdir) \
-		$(testexec_PROGRAMS)
+		$(testexec_PROGRAMS) }
 endif DBUS_ENABLE_INSTALLED_TESTS
 
 in_data = \
