@@ -63,8 +63,9 @@ or relying on there already being a D-Bus session active, for instance:</para>
 <citerefentry><refentrytitle>automake</refentrytitle><manvolnum>1</manvolnum></citerefentry>):</para>
 
 <literallayout remap='.nf'>
-    TESTS_ENVIRONMENT = MY_DEBUG=all dbus-run-session --
-
+  AM_TESTS_ENVIRONMENT = export MY_DEBUG=all;
+  LOG_COMPILER = dbus-run-session
+  AM_LOG_FLAGS = --
 </literallayout></refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
