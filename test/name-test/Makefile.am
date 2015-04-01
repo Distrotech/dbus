@@ -11,13 +11,13 @@ AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 ## so if adding tests not to be run in make check, don't add them to 
 ## TESTS
 if DBUS_ENABLE_EMBEDDED_TESTS
-TESTS_ENVIRONMENT = \
-        DBUS_TOP_BUILDDIR=@abs_top_builddir@ \
-        DBUS_TOP_SRCDIR=@abs_top_srcdir@ \
-        PYTHON=@PYTHON@ \
-        DBUS_TEST_DATA=@abs_top_builddir@/test/data \
-        DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT) \
-        XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR \
+AM_TESTS_ENVIRONMENT = \
+        export DBUS_TOP_BUILDDIR=@abs_top_builddir@; \
+        export DBUS_TOP_SRCDIR=@abs_top_srcdir@; \
+        export PYTHON=@PYTHON@; \
+        export DBUS_TEST_DATA=@abs_top_builddir@/test/data; \
+        export DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT); \
+        export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
         $(NULL)
 
 TESTS=run-test.sh run-test-systemserver.sh
