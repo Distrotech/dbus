@@ -499,7 +499,7 @@ _dbus_trace_ref (const char *obj_name,
         {
           VALGRIND_PRINTF_BACKTRACE ("%s %p ref stolen (%s)",
                                      obj_name, obj, why);
-          _dbus_verbose ("%s %p ref stolen (%s)",
+          _dbus_verbose ("%s %p ref stolen (%s)\n",
                          obj_name, obj, why);
         }
       else
@@ -507,7 +507,7 @@ _dbus_trace_ref (const char *obj_name,
           VALGRIND_PRINTF_BACKTRACE ("%s %p %d -> %d refs (%s)",
                                      obj_name, obj,
                                      old_refcount, new_refcount, why);
-          _dbus_verbose ("%s %p %d -> %d refs (%s)",
+          _dbus_verbose ("%s %p %d -> %d refs (%s)\n",
                          obj_name, obj, old_refcount, new_refcount, why);
         }
     }
