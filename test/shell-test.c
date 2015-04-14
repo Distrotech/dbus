@@ -52,6 +52,7 @@ test_command_line (const char *arg1, ...)
   if (!_dbus_shell_parse_argv (command_line, &shell_argc, &shell_argv, &error))
     {
       fprintf (stderr, "Error parsing command line: %s\n", error.message ? error.message : "");
+      dbus_free (original_argv);
       return FALSE;
     }
   else
@@ -60,6 +61,7 @@ test_command_line (const char *arg1, ...)
         {
           printf ("Number of arguments returned (%d) don't match original (%d)\n",
                   shell_argc, original_argc);
+          dbus_free (original_argv);
           return FALSE;
         } 
       printf ("Number of arguments: %d\n", shell_argc);
@@ -74,6 +76,7 @@ test_command_line (const char *arg1, ...)
               printf ("Position %d, returned argument (%s) does not match original (%s)\n",
                       i, shell_argv[i], unquoted);
               dbus_free (unquoted);
+              dbus_free (original_argv);
               return FALSE;
             }
           dbus_free (unquoted);
@@ -85,7 +88,8 @@ test_command_line (const char *arg1, ...)
     }
   
   _dbus_string_free (&str);
-  
+  dbus_free (original_argv);
+
   return TRUE;
 }
 
