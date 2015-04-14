@@ -35,6 +35,7 @@
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-timeout.h>
 #include <dbus/dbus-connection-internal.h>
+#include <dbus/dbus-internals.h>
 
 /* Trim executed commands to this length; we want to keep logs readable */
 #define MAX_LOG_COMMAND_LEN 50
@@ -134,6 +135,7 @@ connection_get_loop (DBusConnection *connection)
   BusConnectionData *d;
 
   d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert(d != NULL);
 
   return bus_context_get_loop (d->connections->context);
 }
@@ -638,9 +640,12 @@ static void
 check_pending_fds_cb (DBusConnection *connection)
 {
   BusConnectionData *d = BUS_CONNECTION_DATA (connection);
-  int n_pending_unix_fds_old = d->n_pending_unix_fds;
+  int n_pending_unix_fds_old;
   int n_pending_unix_fds_new;
 
+  _dbus_assert(d != NULL);
+
+  n_pending_unix_fds_old = d->n_pending_unix_fds;
   n_pending_unix_fds_new = _dbus_connection_get_pending_fds_count (connection);
 
   _dbus_verbose ("Pending fds count changed on connection %p: %d -> %d\n",
@@ -1012,6 +1017,7 @@ bus_connection_get_loginfo (DBusConnection        *connection)
   BusConnectionData *d;
     
   d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert(d != NULL);
 
   if (!bus_connection_is_active (connection))
     return "inactive";
@@ -1248,8 +1254,9 @@ bus_connection_is_active (DBusConnection *connection)
   BusConnectionData *d;
 
   d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert(d != NULL);
   
-  return d != NULL && d->name != NULL;
+  return d->name != NULL;
 }
 
 dbus_bool_t
@@ -2649,6 +2656,8 @@ bus_connection_get_peak_match_rules (DBusConnection *connection)
   BusConnectionData *d;
 
   d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert(d != NULL);
+
   return d->peak_match_rules;
 }
 
@@ -2658,6 +2667,8 @@ bus_connection_get_peak_bus_names (DBusConnection *connection)
   BusConnectionData *d;
 
   d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert(d != NULL);
+
   return d->peak_bus_names;
 }
 #endif /* DBUS_ENABLE_STATS */
@@ -2668,8 +2679,9 @@ bus_connection_is_monitor (DBusConnection *connection)
   BusConnectionData *d;
 
   d = BUS_CONNECTION_DATA (connection);
+  _dbus_assert(d != NULL);
 
-  return d != NULL && d->link_in_monitors != NULL;
+  return d->link_in_monitors != NULL;
 }
 
 static dbus_bool_t
