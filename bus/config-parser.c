@@ -2271,6 +2271,8 @@ include_dir (BusConfigParser   *parser,
           dbus_error_free (error);
           goto success;
         }
+      else
+        goto failed;
     }
 
   dbus_error_init (&tmp_error);
