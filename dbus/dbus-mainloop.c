@@ -200,7 +200,7 @@ cull_watches_for_invalid_fd (DBusLoop     *loop,
   DBusList **watches;
 
   _dbus_warn ("invalid request, socket fd %" DBUS_POLLABLE_FORMAT " not open\n",
-              DBUS_POLLABLE_PRINTABLE (fd));
+              _dbus_pollable_printable (fd));
   watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 
   if (watches != NULL)
@@ -240,7 +240,7 @@ refresh_watches_for_fd (DBusLoop      *loop,
   unsigned int flags = 0;
   dbus_bool_t interested = FALSE;
 
-  _dbus_assert (DBUS_POLLABLE_IS_VALID (fd));
+  _dbus_assert (_dbus_pollable_is_valid (fd));
 
   if (watches == NULL)
     watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
@@ -275,7 +275,7 @@ _dbus_loop_add_watch (DBusLoop  *loop,
   DBusList **watches;
 
   fd = _dbus_watch_get_pollable (watch);
-  _dbus_assert (DBUS_POLLABLE_IS_VALID (fd));
+  _dbus_assert (_dbus_pollable_is_valid (fd));
 
   watches = ensure_watch_table_entry (loop, fd);
 
@@ -330,7 +330,7 @@ _dbus_loop_remove_watch (DBusLoop         *loop,
    * which has been safe since fd.o #33336 was fixed. Assert about it
    * so we don't regress. */
   fd = _dbus_watch_get_pollable (watch);
-  _dbus_assert (DBUS_POLLABLE_IS_VALID (fd));
+  _dbus_assert (_dbus_pollable_is_valid (fd));
 
   watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 

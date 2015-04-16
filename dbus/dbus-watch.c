@@ -143,7 +143,7 @@ _dbus_watch_unref (DBusWatch *watch)
   watch->refcount -= 1;
   if (watch->refcount == 0)
     {
-      if (DBUS_POLLABLE_IS_VALID (watch->fd))
+      if (_dbus_pollable_is_valid (watch->fd))
         _dbus_warn ("this watch should have been invalidated");
 
       dbus_watch_set_data (watch, NULL, NULL); /* call free_data_function */
@@ -168,7 +168,7 @@ _dbus_watch_unref (DBusWatch *watch)
 void
 _dbus_watch_invalidate (DBusWatch *watch)
 {
-  DBUS_POLLABLE_INVALIDATE (watch->fd);
+  _dbus_pollable_invalidate (&watch->fd);
   watch->flags = 0;
 }
 
@@ -315,7 +315,7 @@ _dbus_watch_list_set_functions (DBusWatchList           *watch_list,
 
           _dbus_verbose ("Adding a %s watch on fd %" DBUS_POLLABLE_FORMAT " using newly-set add watch function\n",
                          watch_flags_to_string (dbus_watch_get_flags (link->data)),
-                         DBUS_POLLABLE_PRINTABLE (watch->fd));
+                         _dbus_pollable_printable (watch->fd));
 #endif
           
           if (!(* add_function) (link->data, data))
@@ -332,7 +332,7 @@ _dbus_watch_list_set_functions (DBusWatchList           *watch_list,
                   DBusWatch *watch2 = link2->data;
                   
                   _dbus_verbose ("Removing watch on fd %" DBUS_POLLABLE_FORMAT " using newly-set remove function because initial add failed\n",
-                                 DBUS_POLLABLE_PRINTABLE (watch2->fd));
+                                 _dbus_pollable_printable (watch2->fd));
 #endif
                   
                   (* remove_function) (link2->data, data);
@@ -390,7 +390,7 @@ _dbus_watch_list_add_watch (DBusWatchList *watch_list,
   if (watch_list->add_watch_function != NULL)
     {
       _dbus_verbose ("Adding watch on fd %" DBUS_POLLABLE_FORMAT "\n",
-                     DBUS_POLLABLE_PRINTABLE (watch->fd));
+                     _dbus_pollable_printable (watch->fd));
       
       if (!(* watch_list->add_watch_function) (watch,
                                                watch_list->watch_data))
@@ -421,7 +421,7 @@ _dbus_watch_list_remove_watch  (DBusWatchList *watch_list,
   if (watch_list->remove_watch_function != NULL)
     {
       _dbus_verbose ("Removing watch on fd %" DBUS_POLLABLE_FORMAT "\n",
-                     DBUS_POLLABLE_PRINTABLE (watch->fd));
+                     _dbus_pollable_printable (watch->fd));
       
       (* watch_list->remove_watch_function) (watch,
                                              watch_list->watch_data);
@@ -454,7 +454,7 @@ _dbus_watch_list_toggle_watch (DBusWatchList           *watch_list,
     {
       _dbus_verbose ("Toggling watch %p on fd %" DBUS_POLLABLE_FORMAT " to %d\n",
                      watch,
-                     DBUS_POLLABLE_PRINTABLE (watch->fd),
+                     _dbus_pollable_printable (watch->fd),
                      watch->enabled);
       
       (* watch_list->watch_toggled_function) (watch,
@@ -598,7 +598,7 @@ dbus_watch_get_socket (DBusWatch *watch)
 #ifdef DBUS_UNIX
   return watch->fd;
 #else
-  return DBUS_SOCKET_GET_INT (watch->fd);
+  return _dbus_socket_get_int (watch->fd);
 #endif
 }
 
@@ -682,7 +682,7 @@ dbus_watch_set_data (DBusWatch        *watch,
   _dbus_return_if_fail (watch != NULL);
 
   _dbus_verbose ("Setting watch fd %" DBUS_POLLABLE_FORMAT " data to data = %p function = %p from data = %p function = %p\n",
-                 DBUS_POLLABLE_PRINTABLE (watch->fd),
+                 _dbus_pollable_printable (watch->fd),
                  data, free_data_function, watch->data, watch->free_data_function);
   
   if (watch->free_data_function != NULL)
@@ -737,21 +737,21 @@ dbus_watch_handle (DBusWatch    *watch,
   _dbus_return_val_if_fail (watch != NULL, FALSE);
 
 #ifndef DBUS_DISABLE_CHECKS
-  if (!DBUS_POLLABLE_IS_VALID (watch->fd) || watch->flags == 0)
+  if (!_dbus_pollable_is_valid (watch->fd) || watch->flags == 0)
     {
       _dbus_warn_check_failed ("Watch is invalid, it should have been removed\n");
       return TRUE;
     }
 #endif
     
-  _dbus_return_val_if_fail (DBUS_POLLABLE_IS_VALID (watch->fd) /* fails if watch was removed */, TRUE);
+  _dbus_return_val_if_fail (_dbus_pollable_is_valid (watch->fd) /* fails if watch was removed */, TRUE);
   
   _dbus_watch_sanitize_condition (watch, &flags);
 
   if (flags == 0)
     {
       _dbus_verbose ("After sanitization, watch flags on fd %" DBUS_POLLABLE_FORMAT " were 0\n",
-                     DBUS_POLLABLE_PRINTABLE (watch->fd));
+                     _dbus_pollable_printable (watch->fd));
       return TRUE;
     }
   else

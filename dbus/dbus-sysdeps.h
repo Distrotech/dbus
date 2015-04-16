@@ -129,21 +129,37 @@ typedef unsigned long dbus_gid_t;
 
 typedef struct { int fd; } DBusSocket;
 # define DBUS_SOCKET_FORMAT "d"
-# define DBUS_SOCKET_PRINTABLE(s) ((s).fd)
 # define DBUS_SOCKET_INIT { -1 }
-# define DBUS_SOCKET_IS_VALID(s) ((s).fd >= 0)
-# define DBUS_SOCKET_INVALIDATE(s) ((s).fd = -1)
-# define DBUS_SOCKET_GET_INT(s) ((s).fd)
+
+static inline int
+_dbus_socket_printable (DBusSocket s) { return s.fd; }
+
+static inline dbus_bool_t
+_dbus_socket_is_valid (DBusSocket s) { return s.fd >= 0; }
+
+static inline void
+_dbus_socket_invalidate (DBusSocket *s) { s->fd = -1; }
+
+static inline int
+_dbus_socket_get_int (DBusSocket s) { return s.fd; }
 
 #else /* DBUS_WIN */
 
 typedef struct { SOCKET sock; } DBusSocket;
 # define DBUS_SOCKET_FORMAT "Iu"
-# define DBUS_SOCKET_PRINTABLE(s) ((s).sock)
 # define DBUS_SOCKET_INIT { INVALID_SOCKET }
-# define DBUS_SOCKET_IS_VALID(s) ((s).sock != INVALID_SOCKET)
-# define DBUS_SOCKET_INVALIDATE(s) ((s).sock = INVALID_SOCKET)
-# define DBUS_SOCKET_GET_INT(s) ((int) (s).sock)
+
+static inline SOCKET
+_dbus_socket_printable (DBusSocket s) { return s.sock; }
+
+static inline dbus_bool_t
+_dbus_socket_is_valid (DBusSocket s) { return s.sock != INVALID_SOCKET; }
+
+static inline void
+_dbus_socket_invalidate (DBusSocket *s) { s->sock = INVALID_SOCKET; }
+
+static inline int
+_dbus_socket_get_int (DBusSocket s) { return (int)s.sock; }
 
 #endif /* DBUS_WIN */
 
@@ -347,12 +363,22 @@ dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
  * use DBusSocket so that the compiler can check we are doing it right.
  */
 typedef DBusSocket DBusPollable;
-# define DBUS_SOCKET_GET_POLLABLE(s) (s)
 # define DBUS_POLLABLE_FORMAT "Iu"
-# define DBUS_POLLABLE_PRINTABLE(p) (p.sock)
-# define DBUS_POLLABLE_IS_VALID(p) (DBUS_SOCKET_IS_VALID (p))
-# define DBUS_POLLABLE_INVALIDATE(p) (DBUS_SOCKET_INVALIDATE (p))
-# define DBUS_POLLABLE_EQUALS(a, b) ((a).sock == (b).sock)
+
+static inline DBusPollable
+_dbus_socket_get_pollable (DBusSocket s) { return s; }
+
+static inline SOCKET
+_dbus_pollable_printable (DBusPollable p) { return p.sock; }
+
+static inline dbus_bool_t
+_dbus_pollable_is_valid (DBusPollable p) { return _dbus_socket_is_valid (p); }
+
+static inline void
+_dbus_pollable_invalidate (DBusPollable *p) { _dbus_socket_invalidate (p); }
+
+static inline dbus_bool_t
+_dbus_pollable_equals (DBusPollable a, DBusPollable b) { return a.sock == b.sock; }
 
 #else /* !DBUS_WIN */
 
@@ -362,12 +388,22 @@ typedef DBusSocket DBusPollable;
  * abstraction.)
  */
 typedef int DBusPollable;
-# define DBUS_SOCKET_GET_POLLABLE(s) (s.fd)
 # define DBUS_POLLABLE_FORMAT "d"
-# define DBUS_POLLABLE_PRINTABLE(p) (p)
-# define DBUS_POLLABLE_IS_VALID(p) (p >= 0)
-# define DBUS_POLLABLE_INVALIDATE(p) ((p) = -1)
-# define DBUS_POLLABLE_EQUALS(a, b) ((a) == (b))
+
+static inline DBusPollable
+_dbus_socket_get_pollable (DBusSocket s) { return s.fd; }
+
+static inline int
+_dbus_pollable_printable (DBusPollable p) { return p; }
+
+static inline dbus_bool_t
+_dbus_pollable_is_valid (DBusPollable p) { return p >= 0; }
+
+static inline void
+_dbus_pollable_invalidate (DBusPollable *p) { *p = -1; }
+
+static inline dbus_bool_t
+_dbus_pollable_equals (DBusPollable a, DBusPollable b) { return a == b; }
 
 #endif /* !DBUS_WIN */
 

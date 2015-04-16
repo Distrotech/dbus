@@ -1575,7 +1575,7 @@ _dbus_connect_tcp_socket_with_nonce (const char     *host,
     }
   freeaddrinfo(ai);
 
-  if (!DBUS_SOCKET_IS_VALID (fd))
+  if (!_dbus_socket_is_valid (fd))
     {
       dbus_set_error (error,
                       _dbus_error_from_errno (errno),
@@ -1854,7 +1854,7 @@ _dbus_accept  (DBusSocket listen_fd)
  retry:
   client_fd.sock = accept (listen_fd.sock, NULL, NULL);
 
-  if (!DBUS_SOCKET_IS_VALID (client_fd))
+  if (!_dbus_socket_is_valid (client_fd))
     {
       DBUS_SOCKET_SET_ERRNO ();
       if (errno == EINTR)

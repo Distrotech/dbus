@@ -324,7 +324,7 @@ setup_reload_pipe (DBusLoop *loop)
       exit (1);
     }
 
-  watch = _dbus_watch_new (DBUS_SOCKET_GET_POLLABLE (reload_pipe[RELOAD_READ_END]),
+  watch = _dbus_watch_new (_dbus_socket_get_pollable (reload_pipe[RELOAD_READ_END]),
                            DBUS_WATCH_READABLE, TRUE,
                            handle_reload_watch, NULL, NULL);
 
@@ -355,10 +355,10 @@ close_reload_pipe (DBusWatch **watch)
     *watch = NULL;
 
     _dbus_close_socket (reload_pipe[RELOAD_READ_END], NULL);
-    DBUS_SOCKET_INVALIDATE (reload_pipe[RELOAD_READ_END]);
+    _dbus_socket_invalidate (&reload_pipe[RELOAD_READ_END]);
 
     _dbus_close_socket (reload_pipe[RELOAD_WRITE_END], NULL);
-    DBUS_SOCKET_INVALIDATE (reload_pipe[RELOAD_WRITE_END]);
+    _dbus_socket_invalidate (&reload_pipe[RELOAD_WRITE_END]);
 }
 #endif /* DBUS_UNIX */
 

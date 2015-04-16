@@ -5160,7 +5160,7 @@ dbus_connection_get_socket(DBusConnection              *connection,
 
   if (retval)
     {
-      *fd = DBUS_SOCKET_GET_INT (s);
+      *fd = _dbus_socket_get_int (s);
     }
 
   CONNECTION_UNLOCK (connection);

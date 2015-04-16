@@ -123,7 +123,7 @@ socket_set_poll_add (DBusSocketSet  *set,
   int i;
 
   for (i = 0; i < self->n_fds; i++)
-    _dbus_assert (!DBUS_POLLABLE_EQUALS (self->fds[i].fd, fd));
+    _dbus_assert (!_dbus_pollable_equals (self->fds[i].fd, fd));
 #endif
 
   if (self->n_reserved >= self->n_allocated)
@@ -143,7 +143,7 @@ socket_set_poll_add (DBusSocketSet  *set,
     }
 
   _dbus_verbose ("before adding fd %" DBUS_POLLABLE_FORMAT " to %p, %d en/%d res/%d alloc\n",
-                 DBUS_POLLABLE_PRINTABLE (fd), self, self->n_fds, self->n_reserved, self->n_allocated);
+                 _dbus_pollable_printable (fd), self, self->n_fds, self->n_reserved, self->n_allocated);
   _dbus_assert (self->n_reserved >= self->n_fds);
   _dbus_assert (self->n_allocated > self->n_reserved);
 
@@ -169,7 +169,7 @@ socket_set_poll_enable (DBusSocketSet *set,
 
   for (i = 0; i < self->n_fds; i++)
     {
-      if (DBUS_POLLABLE_EQUALS (self->fds[i].fd, fd))
+      if (_dbus_pollable_equals (self->fds[i].fd, fd))
         {
           self->fds[i].events = watch_flags_to_poll_events (flags);
           return;
@@ -194,7 +194,7 @@ socket_set_poll_disable (DBusSocketSet *set,
 
   for (i = 0; i < self->n_fds; i++)
     {
-      if (DBUS_POLLABLE_EQUALS (self->fds[i].fd, fd))
+      if (_dbus_pollable_equals (self->fds[i].fd, fd))
         {
           if (i != self->n_fds - 1)
             {
@@ -218,7 +218,7 @@ socket_set_poll_remove (DBusSocketSet *set,
   self->n_reserved--;
 
   _dbus_verbose ("after removing fd %" DBUS_POLLABLE_FORMAT " from %p, %d en/%d res/%d alloc\n",
-                 DBUS_POLLABLE_PRINTABLE (fd), self, self->n_fds, self->n_reserved, self->n_allocated);
+                 _dbus_pollable_printable (fd), self, self->n_fds, self->n_reserved, self->n_allocated);
   _dbus_assert (self->n_fds <= self->n_reserved);
   _dbus_assert (self->n_reserved <= self->n_allocated);
 

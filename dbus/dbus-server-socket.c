@@ -92,7 +92,7 @@ handle_new_client_fd_and_unlock (DBusServer *server,
   void *new_connection_data;
 
   _dbus_verbose ("Creating new client connection with fd %" DBUS_SOCKET_FORMAT "\n",
-                 DBUS_SOCKET_PRINTABLE (client_fd));
+                 _dbus_socket_printable (client_fd));
 
   HAVE_LOCK_CHECK (server);
 
@@ -196,7 +196,7 @@ socket_handle_watch (DBusWatch    *watch,
 
       saved_errno = _dbus_save_socket_errno ();
 
-      if (!DBUS_SOCKET_IS_VALID (client_fd))
+      if (!_dbus_socket_is_valid (client_fd))
         {
           /* EINTR handled for us */
 
@@ -244,7 +244,7 @@ socket_disconnect (DBusServer *server)
         }
 
       _dbus_close_socket (socket_server->fds[i], NULL);
-      DBUS_SOCKET_INVALIDATE (socket_server->fds[i]);
+      _dbus_socket_invalidate (&socket_server->fds[i]);
     }
 
   if (socket_server->socket_name != NULL)
@@ -308,7 +308,7 @@ _dbus_server_new_for_socket (DBusSocket       *fds,
     {
       DBusWatch *watch;
 
-      watch = _dbus_watch_new (DBUS_SOCKET_GET_POLLABLE (fds[i]),
+      watch = _dbus_watch_new (_dbus_socket_get_pollable (fds[i]),
                                DBUS_WATCH_READABLE,
                                TRUE,
                                socket_handle_watch, socket_server,
