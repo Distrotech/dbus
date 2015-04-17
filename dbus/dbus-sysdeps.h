@@ -125,25 +125,7 @@ typedef unsigned long dbus_gid_t;
 /**
  * Socket interface
  */
-#ifndef DBUS_WIN
-
-typedef struct { int fd; } DBusSocket;
-# define DBUS_SOCKET_FORMAT "d"
-# define DBUS_SOCKET_INIT { -1 }
-
-static inline int
-_dbus_socket_printable (DBusSocket s) { return s.fd; }
-
-static inline dbus_bool_t
-_dbus_socket_is_valid (DBusSocket s) { return s.fd >= 0; }
-
-static inline void
-_dbus_socket_invalidate (DBusSocket *s) { s->fd = -1; }
-
-static inline int
-_dbus_socket_get_int (DBusSocket s) { return s.fd; }
-
-#else /* DBUS_WIN */
+#ifdef DBUS_WIN
 
 typedef struct { SOCKET sock; } DBusSocket;
 # define DBUS_SOCKET_FORMAT "Iu"
@@ -161,7 +143,25 @@ _dbus_socket_invalidate (DBusSocket *s) { s->sock = INVALID_SOCKET; }
 static inline int
 _dbus_socket_get_int (DBusSocket s) { return (int)s.sock; }
 
-#endif /* DBUS_WIN */
+#else /* not DBUS_WIN */
+
+typedef struct { int fd; } DBusSocket;
+# define DBUS_SOCKET_FORMAT "d"
+# define DBUS_SOCKET_INIT { -1 }
+
+static inline int
+_dbus_socket_printable (DBusSocket s) { return s.fd; }
+
+static inline dbus_bool_t
+_dbus_socket_is_valid (DBusSocket s) { return s.fd >= 0; }
+
+static inline void
+_dbus_socket_invalidate (DBusSocket *s) { s->fd = -1; }
+
+static inline int
+_dbus_socket_get_int (DBusSocket s) { return s.fd; }
+
+#endif /* not DBUS_WIN */
 
 static inline DBusSocket
 _dbus_socket_get_invalid (void)
