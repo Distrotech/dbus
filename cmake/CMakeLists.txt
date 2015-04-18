@@ -202,8 +202,13 @@ if(DBUS_WITH_GLIB)
 endif()
 
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}  -D_DEBUG")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wsign-compare")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wsign-compare")
+if(MSVC)
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  /w14018")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w14018")
+else()
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wsign-compare")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wsign-compare")
+endif()
 
 #########################################################################
 # Windows CE (>= 5.0.0)
