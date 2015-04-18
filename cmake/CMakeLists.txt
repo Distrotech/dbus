@@ -24,7 +24,11 @@ endif()
 include(MacrosAutotools)
 autoinit(../configure.ac)
 autoversion(dbus)
-autoheaderchecks(../config.h.in ConfigureChecks.cmake config.h.cmake)
+
+if(EXISTS ../config.h.in)
+    autoheaderchecks(../config.h.in ConfigureChecks.cmake config.h.cmake)
+endif()
+
 # used by file version info
 set (DBUS_PATCH_VERSION "0")
 
