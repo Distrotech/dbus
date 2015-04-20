@@ -2397,6 +2397,7 @@ test_remove_directory (DBusString *dir)
       if (!test_remove_service_file (dir, _dbus_string_get_const_data (&filename)))
         {
           ret_val = FALSE;
+          _dbus_directory_close (iter);
           goto out;
         }
     }
