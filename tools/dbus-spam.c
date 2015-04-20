@@ -368,6 +368,7 @@ dbus_test_tool_spam (int argc, char **argv)
                        error.name, error.message);
               dbus_error_free (&error);
               dbus_free (random_sizes);
+              dbus_free (payload_buf);
               return 1;
             }
 
