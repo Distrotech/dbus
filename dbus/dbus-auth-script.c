@@ -527,7 +527,7 @@ _dbus_auth_script_run (const DBusString *filename)
                     goto out;
                   }
 
-                _dbus_string_delete (&to_send, where, strlen ("USERID_HEX"));
+                _dbus_string_delete (&to_send, where, (int) strlen ("USERID_HEX"));
                 
                 if (!_dbus_string_hex_encode (&username, 0,
 					      &to_send, where))
@@ -560,7 +560,7 @@ _dbus_auth_script_run (const DBusString *filename)
                     goto out;
                   }
 
-                _dbus_string_delete (&to_send, where, strlen ("USERNAME_HEX"));
+                _dbus_string_delete (&to_send, where, (int) strlen ("USERNAME_HEX"));
                 
                 if (!_dbus_string_hex_encode (&username, 0,
 					      &to_send, where))
