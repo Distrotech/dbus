@@ -367,6 +367,7 @@ dbus_test_tool_spam (int argc, char **argv)
               fprintf (stderr, "Failed to connect to bus: %s: %s\n",
                        error.name, error.message);
               dbus_error_free (&error);
+              dbus_free (random_sizes);
               return 1;
             }
 
@@ -512,6 +513,7 @@ dbus_test_tool_spam (int argc, char **argv)
   VERBOSE (stderr, "Done\n");
 
   dbus_free (payload_buf);
+  dbus_free (random_sizes);
 
   if (template != NULL)
     dbus_message_unref (template);
