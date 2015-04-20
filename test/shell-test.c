@@ -66,6 +66,7 @@ test_command_line_internal (dbus_bool_t should_work,
           printf ("# Number of arguments returned (%d) don't match original (%d)\n",
                   shell_argc, original_argc);
           dbus_free (original_argv);
+          dbus_free_string_array (shell_argv);
           return FALSE;
         } 
       printf ("# Number of arguments: %d\n", shell_argc);
@@ -81,6 +82,7 @@ test_command_line_internal (dbus_bool_t should_work,
                       i, shell_argv[i], unquoted);
               dbus_free (unquoted);
               dbus_free (original_argv);
+              dbus_free_string_array (shell_argv);
               return FALSE;
             }
           dbus_free (unquoted);
