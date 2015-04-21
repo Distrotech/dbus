@@ -93,14 +93,14 @@ test_command_line_internal (dbus_bool_t should_work,
       dbus_free_string_array (shell_argv);
     }
 
+  _dbus_string_free (&str);
+  dbus_free (original_argv);
+
   if (!should_work)
     {
       printf ("# Expected an error\n");
       return FALSE;
     }
-
-  _dbus_string_free (&str);
-  dbus_free (original_argv);
 
   return TRUE;
 }
