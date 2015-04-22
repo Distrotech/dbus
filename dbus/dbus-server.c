@@ -1043,7 +1043,10 @@ dbus_server_set_auth_mechanisms (DBusServer  *server,
     {
       copy = _dbus_dup_string_array (mechanisms);
       if (copy == NULL)
-        return FALSE;
+        {
+          SERVER_UNLOCK (server);
+          return FALSE;
+        }
     }
   else
     copy = NULL;
