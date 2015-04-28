@@ -26,7 +26,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <dbus/dbus.h>
 
@@ -231,7 +233,7 @@ dbus_test_tool_black_hole (int argc, char **argv)
   if (noread)
     {
       while (1)
-        sleep (3600);
+        _dbus_sleep_milliseconds (3600);
     }
 
   noreply = TRUE;

@@ -59,8 +59,14 @@
 # define EX_OSERR 71
 #endif
 
-/* apparently this is the portable way to get the entire environment... */
+#ifdef DBUS_WIN
+/* The Windows C runtime uses a different name */
+#define environ _environ
+#else
+/* apparently this is the portable way to get the entire environment...
+ * GNU platforms also put it in unistd.h but that's not portable */
 extern char **environ;
+#endif
 
 /* we don't really have anything useful to say about the stage at which we
  * failed */
