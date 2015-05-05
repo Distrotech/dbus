@@ -1,7 +1,22 @@
 D-Bus 1.9.16 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Add locking to DBusCounter's reference count and notify function
+  (fd.o #89297, Adrian Szyndela)
+
+• Ensure that DBusTransport's reference count is protected by the
+  corresponding DBusConnection's lock (fd.o #90312, Adrian Szyndela)
+
+• Correctly release DBusServer mutex before early-return if we run out
+  of memory while copying authentication mechanisms (fd.o #90004,
+  Ralf Habacker)
+
+• Fix some missing \n in verbose (debug log) messages (fd.o #90004,
+  Ralf Habacker)
+
+• Clean up some memory leaks in test code (fd.o #90004, Ralf Habacker)
 
 D-Bus 1.9.14 (2015-03-02)
 ==
