@@ -221,7 +221,10 @@ auth_set_unix_credentials(DBusAuth  *auth,
     _dbus_assert_not_reached ("no memory");
 
   if (uid != DBUS_UID_UNSET)
-    _dbus_credentials_add_unix_uid (credentials, uid);
+    {
+      if (!_dbus_credentials_add_unix_uid (credentials, uid))
+        _dbus_assert_not_reached ("no memory");
+    }
   if (pid != DBUS_PID_UNSET)
     _dbus_credentials_add_pid (credentials, pid);
 
