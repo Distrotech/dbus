@@ -63,6 +63,7 @@ live_messages_notify (DBusCounter *counter,
 {
   DBusTransport *transport = user_data;
 
+  _dbus_connection_lock (transport->connection);
   _dbus_transport_ref (transport);
 
 #if 0
@@ -77,12 +78,11 @@ live_messages_notify (DBusCounter *counter,
    */
   if (transport->vtable->live_messages_changed)
     {
-      _dbus_connection_lock (transport->connection);
       (* transport->vtable->live_messages_changed) (transport);
-      _dbus_connection_unlock (transport->connection);
     }
 
   _dbus_transport_unref (transport);
+  _dbus_connection_unlock (transport->connection);
 }
 
 /**
