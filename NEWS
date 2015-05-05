@@ -13,10 +13,14 @@ Fixes:
   of memory while copying authentication mechanisms (fd.o #90004,
   Ralf Habacker)
 
+• Make dbus-test-tool and dbus-update-activation-environment portable
+  to Windows (fd.o #90004, Ralf Habacker)
+
 • Fix some missing \n in verbose (debug log) messages (fd.o #90004,
   Ralf Habacker)
 
-• Clean up some memory leaks in test code (fd.o #90004, Ralf Habacker)
+• Clean up some memory and fd leaks in test code and tools
+  (fd.o #90004, Ralf Habacker)
 
 D-Bus 1.9.14 (2015-03-02)
 ==
