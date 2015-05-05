@@ -1,7 +1,26 @@
 D-Bus 1.8.18 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Add locking to DBusCounter's reference count and notify function
+  (fd.o #89297, Adrian Szyndela)
+
+• Ensure that DBusTransport's reference count is protected by the
+  corresponding DBusConnection's lock (fd.o #90312, Adrian Szyndela)
+
+• On Windows, listen on the same port for IPv4 and IPv6 (previously
+  broken by an endianness mistake), and fix a failure to bind TCP
+  sockets on approximately 1 attempt in 256 (fd.o #87999, Ralf Habacker)
+
+• Correctly release DBusServer mutex before early-return if we run out
+  of memory while copying authentication mechanisms (fd.o #90004,
+  Ralf Habacker)
+
+• Fix some missing \n in verbose (debug log) messages (fd.o #90004,
+  Ralf Habacker)
+
+• Clean up some memory leaks in test code (fd.o #90004, Ralf Habacker)
 
 D-Bus 1.8.16 (2015-02-09)
 ==
