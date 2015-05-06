@@ -4796,7 +4796,10 @@ dbus_message_demarshal (const char *str,
     return NULL;
 
   _dbus_message_loader_get_buffer (loader, &buffer);
-  _dbus_string_append_len (buffer, str, len);
+
+  if (!_dbus_string_append_len (buffer, str, len))
+    goto fail_oom;
+
   _dbus_message_loader_return_buffer (loader, buffer);
 
   if (!_dbus_message_loader_queue_messages (loader))
