@@ -74,7 +74,13 @@ do_check_nonce (int fd, const DBusString *nonce, DBusError *error)
         }
       else
         {
-          _dbus_string_append_len(&buffer, _dbus_string_get_const_data (&p), n);
+          if (!_dbus_string_append_len (&buffer, _dbus_string_get_const_data (&p), n))
+            {
+              dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+              _dbus_string_free (&p);
+              _dbus_string_free (&buffer);
+              return FALSE;
+            }
           nleft -= n;
         }
     }
