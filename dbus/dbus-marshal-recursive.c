@@ -149,7 +149,6 @@ reader_init (DBusTypeReader    *reader,
              const DBusString  *value_str,
              int                value_pos)
 {
-  _DBUS_ZERO (*reader);
   reader->byte_order = byte_order;
   reader->finished = FALSE;
   reader->type_str = type_str;
@@ -737,10 +736,10 @@ _dbus_type_reader_init (DBusTypeReader    *reader,
                         const DBusString  *value_str,
                         int                value_pos)
 {
+  reader->klass = &body_reader_class;
+
   reader_init (reader, byte_order, type_str, type_pos,
                value_str, value_pos);
-
-  reader->klass = &body_reader_class;
 
 #if RECURSIVE_MARSHAL_READ_TRACE
   _dbus_verbose ("  type reader %p init type_pos = %d value_pos = %d remaining sig '%s'\n",
@@ -762,10 +761,10 @@ _dbus_type_reader_init_types_only (DBusTypeReader    *reader,
                                    const DBusString  *type_str,
                                    int                type_pos)
 {
+  reader->klass = &body_types_only_reader_class;
+
   reader_init (reader, DBUS_COMPILER_BYTE_ORDER /* irrelevant */,
                type_str, type_pos, NULL, _DBUS_INT_MAX /* crashes if we screw up */);
-
-  reader->klass = &body_types_only_reader_class;
 
 #if RECURSIVE_MARSHAL_READ_TRACE
   _dbus_verbose ("  type reader %p init types only type_pos = %d remaining sig '%s'\n",
