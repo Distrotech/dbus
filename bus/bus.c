@@ -766,7 +766,8 @@ bus_context_new (const DBusString *config_file,
     }
   context->refcount = 1;
 
-  _dbus_generate_uuid (&context->uuid);
+  if (!_dbus_generate_uuid (&context->uuid, error))
+    goto failed;
 
   if (!_dbus_string_copy_data (config_file, &context->config_file))
     {

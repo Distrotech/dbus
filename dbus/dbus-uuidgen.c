@@ -111,20 +111,20 @@ dbus_internal_do_not_use_get_uuid (const char *filename,
 }
 
 /**
- * For use by the dbus-uuidgen binary ONLY, do not call this.
- * We can and will change this function without modifying
- * the libdbus soname.
- *
  * @param uuid_p out param to return the uuid
- * @returns #FALSE if no memory
+ * @param error location to store reason for failure
+ * @returns #TRUE on success
  */
 dbus_bool_t
-dbus_internal_do_not_use_create_uuid (char      **uuid_p)
+_dbus_create_uuid (char      **uuid_p,
+                   DBusError  *error)
 {
   DBusGUID uuid;
 
-  _dbus_generate_uuid (&uuid);
-  return return_uuid (&uuid, uuid_p, NULL);
+  if (!_dbus_generate_uuid (&uuid, error))
+    return FALSE;
+
+  return return_uuid (&uuid, uuid_p, error);
 }
 
 /** @} */

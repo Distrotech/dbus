@@ -137,7 +137,8 @@ _dbus_server_init_base (DBusServer             *server,
       return FALSE;
     }
 
-  _dbus_generate_uuid (&server->guid);
+  if (!_dbus_generate_uuid (&server->guid, error))
+    goto failed;
 
   if (!_dbus_uuid_encode (&server->guid, &server->guid_hex))
     goto oom;
@@ -167,6 +168,7 @@ _dbus_server_init_base (DBusServer             *server,
 
  oom:
   _DBUS_SET_OOM (error);
+ failed:
   _dbus_rmutex_free_at_location (&server->mutex);
   server->mutex = NULL;
   if (server->watches)

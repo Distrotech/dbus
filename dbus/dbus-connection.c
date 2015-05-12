@@ -4436,15 +4436,24 @@ _dbus_connection_peer_filter_unlocked_no_update (DBusConnection *connection,
                                         "GetMachineId"))
     {
       DBusString uuid;
-      
-      ret = dbus_message_new_method_return (message);
-      if (ret == NULL)
+      DBusError error = DBUS_ERROR_INIT;
+
+      if (!_dbus_string_init (&uuid))
         goto out;
 
-      _dbus_string_init (&uuid);
-      if (_dbus_get_local_machine_uuid_encoded (&uuid))
+      if (_dbus_get_local_machine_uuid_encoded (&uuid, &error))
         {
-          const char *v_STRING = _dbus_string_get_const_data (&uuid);
+          const char *v_STRING;
+
+          ret = dbus_message_new_method_return (message);
+
+          if (ret == NULL)
+            {
+              _dbus_string_free (&uuid);
+              goto out;
+            }
+
+          v_STRING = _dbus_string_get_const_data (&uuid);
           if (dbus_message_append_args (ret,
                                         DBUS_TYPE_STRING, &v_STRING,
                                         DBUS_TYPE_INVALID))
@@ -4452,6 +4461,23 @@ _dbus_connection_peer_filter_unlocked_no_update (DBusConnection *connection,
               sent = _dbus_connection_send_unlocked_no_update (connection, ret, NULL);
             }
         }
+      else if (dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY))
+        {
+          dbus_error_free (&error);
+          goto out;
+        }
+      else
+        {
+          ret = dbus_message_new_error (message, error.name, error.message);
+          dbus_error_free (&error);
+
+          if (ret == NULL)
+            goto out;
+
+          sent = _dbus_connection_send_unlocked_no_update (connection, ret,
+                                                           NULL);
+        }
+
       _dbus_string_free (&uuid);
     }
   else

@@ -137,14 +137,11 @@ main (int argc, char *argv[])
   else
     {
       char *uuid;
-      if (dbus_internal_do_not_use_create_uuid (&uuid))
+
+      if (_dbus_create_uuid (&uuid, &error))
         {
           printf ("%s\n", uuid);
           dbus_free (uuid);
-        }
-      else
-        {
-          dbus_set_error (&error, DBUS_ERROR_NO_MEMORY, "No memory");
         }
     }
 

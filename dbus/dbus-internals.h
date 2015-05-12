@@ -389,8 +389,9 @@ union DBusGUID
   char as_bytes[DBUS_UUID_LENGTH_BYTES];                /**< guid as 16 single-byte values */
 };
 
-DBUS_PRIVATE_EXPORT
-void        _dbus_generate_uuid  (DBusGUID         *uuid);
+DBUS_PRIVATE_EXPORT _DBUS_GNUC_WARN_UNUSED_RESULT
+dbus_bool_t _dbus_generate_uuid  (DBusGUID         *uuid,
+                                  DBusError        *error);
 DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_uuid_encode    (const DBusGUID   *uuid,
                                   DBusString       *encoded);
@@ -403,7 +404,8 @@ dbus_bool_t _dbus_write_uuid_file (const DBusString *filename,
                                    const DBusGUID   *uuid,
                                    DBusError        *error);
 
-dbus_bool_t _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str);
+dbus_bool_t _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str,
+                                                  DBusError  *error);
 
 #define _DBUS_PASTE2(a, b) a ## b
 #define _DBUS_PASTE(a, b) _DBUS_PASTE2 (a, b)

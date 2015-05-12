@@ -3742,9 +3742,8 @@ _dbus_get_autolaunch_address (const char *scope,
       return FALSE;
     }
 
-  if (!_dbus_get_local_machine_uuid_encoded (&uuid))
+  if (!_dbus_get_local_machine_uuid_encoded (&uuid, error))
     {
-      _DBUS_SET_OOM (error);
       goto out;
     }
 
@@ -3844,7 +3843,10 @@ _dbus_read_local_machine_uuid (DBusGUID   *machine_id,
   /* if none found, try to make a new one */
   dbus_error_free (error);
   _dbus_string_init_const (&filename, DBUS_MACHINE_UUID_FILE);
-  _dbus_generate_uuid (machine_id);
+
+  if (!_dbus_generate_uuid (machine_id, error))
+    return FALSE;
+
   return _dbus_write_uuid_file (&filename, machine_id, error);
 }
 
