@@ -452,6 +452,7 @@ if (WIN32)
   # bus-test expects a non empty string
   set (DBUS_USER "Administrator")
   set (DBUS_TEST_USER "guest")
+  set (DBUS_SESSION_CONF_MAYBE_AUTH_EXTERNAL "<!--<auth>EXTERNAL</auth>-->")
 else (WIN32)
   set (DBUS_SESSION_BUS_LISTEN_ADDRESS "unix:tmpdir=${DBUS_SESSION_SOCKET_DIR}" CACHE STRING "session bus default listening address")
   set (DBUS_SESSION_BUS_CONNECT_ADDRESS "autolaunch:" CACHE STRING "session bus fallback address for clients")
@@ -461,6 +462,9 @@ else (WIN32)
   set (DBUS_SESSION_CONFIG_FILE ${configdir}/session.conf)
   set (DBUS_USER "messagebus")
   set (DBUS_TEST_USER "nobody")
+  # For best security, assume that all non-Windows platforms can do
+  # credentials-passing.
+  set (DBUS_SESSION_CONF_MAYBE_AUTH_EXTERNAL "<auth>EXTERNAL</auth>")
 endif (WIN32)
 
 set (DBUS_DAEMON_NAME "dbus-daemon" CACHE STRING "The name of the dbus daemon executable")
