@@ -122,6 +122,13 @@ if test "$dbus_cygwin" = yes; then
     AC_DEFINE(DBUS_CYGWIN,1,[Defined if we run on a cygwin API based system])
 fi
 
+# For best security, assume that all non-Windows platforms can do
+# credentials-passing.
+AS_IF([test "$dbus_win" = yes],
+    [DBUS_SESSION_CONF_MAYBE_AUTH_EXTERNAL="<!--<auth>EXTERNAL</auth>-->"],
+    [DBUS_SESSION_CONF_MAYBE_AUTH_EXTERNAL="<auth>EXTERNAL</auth>"])
+AC_SUBST([DBUS_SESSION_CONF_MAYBE_AUTH_EXTERNAL])
+
 AM_CONDITIONAL(DBUS_WIN, test "$dbus_win" = yes)
 AM_CONDITIONAL(DBUS_WINCE, test "$dbus_wince" = yes)
 AM_CONDITIONAL(DBUS_UNIX, test "$dbus_unix" = yes)
