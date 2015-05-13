@@ -1,6 +1,17 @@
 D-Bus 1.9.16 (UNRELEASED)
 ==
 
+Enhancements:
+
+• Add dbus_message_iter_get_element_count()
+  (fd.o #30350; Christian Dywan, Simon McVittie)
+
+• Introduce new internal DBusSocket and DBusPollable types so we can
+  stop treating the Windows SOCKET type as if it was int. DBusSocket
+  is specifically a socket, cross-platform. DBusPollable is whatever
+  _dbus_poll() can act on, i.e. a fd on Unix or a SOCKET on Windows.
+  (fd.o #89444; Ralf Habacker, Simon McVittie)
+
 Fixes:
 
 • Add locking to DBusCounter's reference count and notify function
