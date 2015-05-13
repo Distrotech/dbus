@@ -2960,8 +2960,11 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
     }
 
   // create shm
+  dbus_uint64_t len = strlen( address ) + 1;
+
   hDBusSharedMem = CreateFileMappingA( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
-                                       0, strlen( address ) + 1, _dbus_string_get_const_data(&shm_name) );
+                                       len >> 32, len & 0xffffffffu,
+                                       _dbus_string_get_const_data(&shm_name) );
   _dbus_assert( hDBusSharedMem );
 
   shared_addr = MapViewOfFile( hDBusSharedMem, FILE_MAP_WRITE, 0, 0, 0 );
