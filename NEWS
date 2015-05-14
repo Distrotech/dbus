@@ -1,6 +1,13 @@
 D-Bus 1.9.16 (2015-05-14)
 ==
 
+The “titanium barns” release.
+
+Dependencies:
+
+• Automake 1.13 is now required when compiling from git or modifying
+  the build system.
+
 Security hardening:
 
 • On Unix platforms, change the default configuration for the session bus
@@ -35,6 +42,18 @@ Enhancements:
   _dbus_poll() can act on, i.e. a fd on Unix or a SOCKET on Windows.
   (fd.o #89444; Ralf Habacker, Simon McVittie)
 
+• All regression tests now output TAP <https://testanything.org/>
+  (fd.o #89846, Simon McVittie)
+
+• Internal APIs consistently use signed values for timestamps
+  (fd.o #18494, Peter McCurdy)
+
+• Improve diagnostics when UpdateActivationEnvironment calls are rejected
+  (fd.o #88812, Simon McVittie)
+
+• Clean up a lot of compiler warnings
+  (fd.o #17289, fd.o #89284; Ralf Habacker, Simon McVittie)
+
 Fixes:
 
 • Add locking to DBusCounter's reference count and notify function
@@ -58,6 +77,12 @@ Fixes:
 
 • Clean up some memory and fd leaks in test code and tools
   (fd.o #90021, Ralf Habacker)
+
+• Fix a NULL dereference if the dbus-daemon cannot read a configuration
+  directory for a reason that is not ENOENT (fd.o #90021, Ralf Habacker)
+
+• CMake generates a versioned shared library even if the revision is 0,
+  as it usually is on the development branch. (fd.o #89450, Ralf Habacker)
 
 D-Bus 1.9.14 (2015-03-02)
 ==
