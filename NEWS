@@ -42,13 +42,16 @@ Other fixes:
   sockets on approximately 1 attempt in 256 (fd.o #87999, Ralf Habacker)
 
 • Correctly release DBusServer mutex before early-return if we run out
-  of memory while copying authentication mechanisms (fd.o #90004,
+  of memory while copying authentication mechanisms (fd.o #90021,
   Ralf Habacker)
+
+• Correctly initialize all fields of DBusTypeReader (fd.o #90021;
+  Ralf Habacker, Simon McVittie)
 
 • Fix some missing \n in verbose (debug log) messages (fd.o #90004,
   Ralf Habacker)
 
-• Clean up some memory leaks in test code (fd.o #90004, Ralf Habacker)
+• Clean up some memory leaks in test code (fd.o #90021, Ralf Habacker)
 
 D-Bus 1.8.16 (2015-02-09)
 ==
