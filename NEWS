@@ -1,4 +1,4 @@
-D-Bus 1.9.16 (UNRELEASED)
+D-Bus 1.9.16 (2015-05-14)
 ==
 
 Security hardening:
@@ -8,11 +8,7 @@ Security hardening:
   credentials-passing), as was already done for the system bus.
 
   This avoids falling back to DBUS_COOKIE_SHA1, which relies on strongly
-  unpredictable pseudo-random numbers; under certain circumstances
-  (/dev/urandom unreadable or malloc() returns NULL), dbus could
-  fall back to using rand(), which does not have the desired unpredictability.
-  The fallback to rand() has not been changed in this stable-branch since
-  the necessary code changes for correct error-handling are rather intrusive.
+  unpredictable pseudo-random numbers.
 
   If you are using D-Bus over the (unencrypted!) tcp: or nonce-tcp: transport,
   in conjunction with DBUS_COOKIE_SHA1 and a shared home directory using
@@ -21,6 +17,12 @@ Security hardening:
   is not recommended.
 
   (fd.o #90414, Simon McVittie)
+
+• When asked for random numbers for DBUS_COOKIE_SHA1, the nonce-tcp:
+  transport, UUIDs or any other reason, fail if we cannot obtain entropy
+  (from /dev/urandom or CryptGenRandom()) or an out-of-memory condition
+  occurs, instead of silently falling back to low-entropy pseudorandom
+  numbers from rand(). (fd.o #90414; Simon McVittie, Ralf Habacker)
 
 Enhancements:
 
