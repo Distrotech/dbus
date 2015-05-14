@@ -277,14 +277,16 @@ static const DBusServerVTable socket_vtable = {
  * @param n_fds number of file descriptors
  * @param address the server's address
  * @param noncefile to be used for authentication (NULL if not needed)
- * @returns the new server, or #NULL if no memory.
+ * @param error location to store reason for failure
+ * @returns the new server, or #NULL on OOM or other error.
  *
  */
 DBusServer*
 _dbus_server_new_for_socket (DBusSocket       *fds,
                              int               n_fds,
                              const DBusString *address,
-                             DBusNonceFile    *noncefile)
+                             DBusNonceFile    *noncefile,
+                             DBusError        *error)
 {
   DBusServerSocket *socket_server;
   DBusServer *server;
@@ -292,7 +294,7 @@ _dbus_server_new_for_socket (DBusSocket       *fds,
 
   socket_server = dbus_new0 (DBusServerSocket, 1);
   if (socket_server == NULL)
-    return NULL;
+    goto failed_0;
 
   socket_server->noncefile = noncefile;
 
@@ -366,6 +368,10 @@ _dbus_server_new_for_socket (DBusSocket       *fds,
 
  failed_0:
   dbus_free (socket_server);
+
+  if (error != NULL && !dbus_error_is_set (error))
+    _DBUS_SET_OOM (error);
+
   return NULL;
 }
 
@@ -478,10 +484,9 @@ _dbus_server_new_for_tcp_socket (const char     *host,
 
     }
 
-  server = _dbus_server_new_for_socket (listen_fds, nlisten_fds, &address, noncefile);
+  server = _dbus_server_new_for_socket (listen_fds, nlisten_fds, &address, noncefile, error);
   if (server == NULL)
     {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       if (noncefile != NULL)
         goto failed_4;
       else

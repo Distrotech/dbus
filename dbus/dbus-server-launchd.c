@@ -185,11 +185,9 @@ _dbus_server_new_for_launchd (const char *launchd_env_var, DBusError * error)
 
       }
 
-    server = _dbus_server_new_for_socket (&launchd_fd, 1, &address, 0);
+    server = _dbus_server_new_for_socket (&launchd_fd, 1, &address, 0, error);
     if (server == NULL)
       {
-        dbus_set_error (error, DBUS_ERROR_NO_SERVER,
-                        "Unable to listen on launchd fd %d.", launchd_fd);
         goto l_failed_0;
       }
 

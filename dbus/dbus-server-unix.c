@@ -224,13 +224,14 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
             goto systemd_err;
         }
 
-      *server_p = _dbus_server_new_for_socket (fds, n, &address, NULL);
+      *server_p = _dbus_server_new_for_socket (fds, n, &address, NULL, error);
       if (*server_p == NULL)
-        goto systemd_oom;
+        goto systemd_err;
 
       dbus_free (fds);
 
       return DBUS_SERVER_LISTEN_OK;
+
   systemd_oom:
       _DBUS_SET_OOM (error);
   systemd_err:
@@ -336,10 +337,9 @@ _dbus_server_new_for_domain_socket (const char     *path,
       goto failed_1;
     }
 
-  server = _dbus_server_new_for_socket (&listen_fd, 1, &address, 0);
+  server = _dbus_server_new_for_socket (&listen_fd, 1, &address, 0, error);
   if (server == NULL)
     {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       goto failed_2;
     }
 
