@@ -105,12 +105,14 @@ copy_address_with_guid_appended (const DBusString *address,
  * @param server the server.
  * @param vtable the vtable for the subclass.
  * @param address the server's address
+ * @param error location to store reason for failure
  * @returns #TRUE on success.
  */
 dbus_bool_t
 _dbus_server_init_base (DBusServer             *server,
                         const DBusServerVTable *vtable,
-                        const DBusString       *address)
+                        const DBusString       *address,
+                        DBusError              *error)
 {
   server->vtable = vtable;
 
@@ -130,29 +132,32 @@ _dbus_server_init_base (DBusServer             *server,
   server->published_address = FALSE;
 
   if (!_dbus_string_init (&server->guid_hex))
-    return FALSE;
+    {
+      _DBUS_SET_OOM (error);
+      return FALSE;
+    }
 
   _dbus_generate_uuid (&server->guid);
 
   if (!_dbus_uuid_encode (&server->guid, &server->guid_hex))
-    goto failed;
+    goto oom;
   
   server->address = copy_address_with_guid_appended (address,
                                                      &server->guid_hex);
   if (server->address == NULL)
-    goto failed;
+    goto oom;
   
   _dbus_rmutex_new_at_location (&server->mutex);
   if (server->mutex == NULL)
-    goto failed;
+    goto oom;
   
   server->watches = _dbus_watch_list_new ();
   if (server->watches == NULL)
-    goto failed;
+    goto oom;
 
   server->timeouts = _dbus_timeout_list_new ();
   if (server->timeouts == NULL)
-    goto failed;
+    goto oom;
 
   _dbus_data_slot_list_init (&server->slot_list);
 
@@ -160,7 +165,8 @@ _dbus_server_init_base (DBusServer             *server,
   
   return TRUE;
 
- failed:
+ oom:
+  _DBUS_SET_OOM (error);
   _dbus_rmutex_free_at_location (&server->mutex);
   server->mutex = NULL;
   if (server->watches)

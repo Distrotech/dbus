@@ -93,7 +93,8 @@ struct DBusServer
 
 dbus_bool_t _dbus_server_init_base      (DBusServer             *server,
                                          const DBusServerVTable *vtable,
-                                         const DBusString       *address);
+                                         const DBusString       *address,
+                                         DBusError              *error);
 void        _dbus_server_finalize_base  (DBusServer             *server);
 dbus_bool_t _dbus_server_add_watch      (DBusServer             *server,
                                          DBusWatch              *watch);

@@ -166,8 +166,9 @@ _dbus_server_debug_pipe_new (const char     *server_name,
     goto nomem_2;
   
   if (!_dbus_server_init_base (&debug_server->base,
-			       &debug_vtable, &address))
-    goto nomem_3;
+			       &debug_vtable, &address,
+                               error))
+    goto fail_3;
 
   if (!_dbus_hash_table_insert_string (server_pipe_hash,
 				       debug_server->name,
@@ -183,7 +184,7 @@ _dbus_server_debug_pipe_new (const char     *server_name,
 
  nomem_4:
   _dbus_server_finalize_base (&debug_server->base);
- nomem_3:
+ fail_3:
   dbus_free (debug_server->name);
  nomem_2:
   _dbus_string_free (&address);
@@ -191,7 +192,8 @@ _dbus_server_debug_pipe_new (const char     *server_name,
   dbus_free (debug_server);
  nomem_0:
   pipe_hash_unref ();
-  dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+  if (error != NULL && !dbus_error_is_set (error))
+    _DBUS_SET_OOM (error);
   return NULL;
 }
 

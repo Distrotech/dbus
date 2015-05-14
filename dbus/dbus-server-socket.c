@@ -324,7 +324,8 @@ _dbus_server_new_for_socket (DBusSocket       *fds,
     }
 
   if (!_dbus_server_init_base (&socket_server->base,
-                               &socket_vtable, address))
+                               &socket_vtable, address,
+                               error))
     goto failed_2;
 
   server = (DBusServer*)socket_server;
