@@ -149,6 +149,7 @@ reader_init (DBusTypeReader    *reader,
              const DBusString  *value_str,
              int                value_pos)
 {
+  _DBUS_ZERO (*reader);
   reader->byte_order = byte_order;
   reader->finished = FALSE;
   reader->type_str = type_str;
@@ -736,10 +737,10 @@ _dbus_type_reader_init (DBusTypeReader    *reader,
                         const DBusString  *value_str,
                         int                value_pos)
 {
-  reader->klass = &body_reader_class;
-
   reader_init (reader, byte_order, type_str, type_pos,
                value_str, value_pos);
+
+  reader->klass = &body_reader_class;
 
 #if RECURSIVE_MARSHAL_READ_TRACE
   _dbus_verbose ("  type reader %p init type_pos = %d value_pos = %d remaining sig '%s'\n",
@@ -761,10 +762,10 @@ _dbus_type_reader_init_types_only (DBusTypeReader    *reader,
                                    const DBusString  *type_str,
                                    int                type_pos)
 {
-  reader->klass = &body_types_only_reader_class;
-
   reader_init (reader, DBUS_COMPILER_BYTE_ORDER /* irrelevant */,
                type_str, type_pos, NULL, _DBUS_INT_MAX /* crashes if we screw up */);
+
+  reader->klass = &body_types_only_reader_class;
 
 #if RECURSIVE_MARSHAL_READ_TRACE
   _dbus_verbose ("  type reader %p init types only type_pos = %d remaining sig '%s'\n",
@@ -988,6 +989,7 @@ void
 _dbus_type_reader_recurse (DBusTypeReader *reader,
                            DBusTypeReader *sub)
 {
+  const DBusTypeReaderClass *klass;
   int t;
 
   t = _dbus_first_type_in_signature (reader->type_str, reader->type_pos);
@@ -996,27 +998,27 @@ _dbus_type_reader_recurse (DBusTypeReader *reader,
     {
     case DBUS_TYPE_STRUCT:
       if (reader->klass->types_only)
-        sub->klass = &struct_types_only_reader_class;
+        klass = &struct_types_only_reader_class;
       else
-        sub->klass = &struct_reader_class;
+        klass = &struct_reader_class;
       break;
     case DBUS_TYPE_DICT_ENTRY:
       if (reader->klass->types_only)
-        sub->klass = &dict_entry_types_only_reader_class;
+        klass = &dict_entry_types_only_reader_class;
       else
-        sub->klass = &dict_entry_reader_class;
+        klass = &dict_entry_reader_class;
       break;
     case DBUS_TYPE_ARRAY:
       if (reader->klass->types_only)
-        sub->klass = &array_types_only_reader_class;
+        klass = &array_types_only_reader_class;
       else
-        sub->klass = &array_reader_class;
+        klass = &array_reader_class;
       break;
     case DBUS_TYPE_VARIANT:
       if (reader->klass->types_only)
         _dbus_assert_not_reached ("can't recurse into variant typecode");
       else
-        sub->klass = &variant_reader_class;
+        klass = &variant_reader_class;
       break;
     default:
       _dbus_verbose ("recursing into type %s\n", _dbus_type_to_string (t));
@@ -1028,9 +1030,10 @@ _dbus_type_reader_recurse (DBusTypeReader *reader,
       _dbus_assert_not_reached ("don't yet handle recursing into this type");
     }
 
-  _dbus_assert (sub->klass == all_reader_classes[sub->klass->id]);
+  _dbus_assert (klass == all_reader_classes[klass->id]);
 
-  (* sub->klass->recurse) (sub, reader);
+  (* klass->recurse) (sub, reader);
+  sub->klass = klass;
 
 #if RECURSIVE_MARSHAL_READ_TRACE
   _dbus_verbose ("  type reader %p RECURSED type_pos = %d value_pos = %d remaining sig '%s'\n",
