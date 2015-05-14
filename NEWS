@@ -1,7 +1,30 @@
-D-Bus 1.8.18 (UNRELEASED)
+D-Bus 1.8.18 (2015-05-14)
 ==
 
-Fixes:
+The “unicorn rifts” release.
+
+Security hardening:
+
+• On Unix platforms, change the default configuration for the session bus
+  to only allow EXTERNAL authentication (secure kernel-mediated
+  credentials-passing), as was already done for the system bus.
+
+  This avoids falling back to DBUS_COOKIE_SHA1, which relies on strongly
+  unpredictable pseudo-random numbers; under certain circumstances
+  (/dev/urandom unreadable or malloc() returns NULL), dbus could
+  fall back to using rand(), which does not have the desired unpredictability.
+  The fallback to rand() has not been changed in this stable-branch since
+  the necessary code changes for correct error-handling are rather intrusive.
+
+  If you are using D-Bus over the (unencrypted!) tcp: or nonce-tcp: transport,
+  in conjunction with DBUS_COOKIE_SHA1 and a shared home directory using
+  NFS or similar, you will need to reconfigure the session bus to accept
+  DBUS_COOKIE_SHA1 by commenting out the <auth> element. This configuration
+  is not recommended.
+
+  (fd.o #90414, Simon McVittie)
+
+Other fixes:
 
 • Add locking to DBusCounter's reference count and notify function
   (fd.o #89297, Adrian Szyndela)
