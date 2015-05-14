@@ -2253,11 +2253,13 @@ _dbus_create_directory (const DBusString *filename,
  *
  * @param str the string
  * @param n_bytes the number of random bytes to append to string
- * @returns #TRUE on success, #FALSE if no memory
+ * @param error location to store reason for failure
+ * @returns #TRUE on success
  */
 dbus_bool_t
 _dbus_generate_random_bytes (DBusString *str,
-                             int         n_bytes)
+                             int         n_bytes,
+                             DBusError  *error)
 {
   int old_len;
   char *p;
@@ -2266,15 +2268,22 @@ _dbus_generate_random_bytes (DBusString *str,
   old_len = _dbus_string_get_length (str);
 
   if (!_dbus_string_lengthen (str, n_bytes))
-    return FALSE;
+    {
+      _DBUS_SET_OOM (error);
+      return FALSE;
+    }
 
   p = _dbus_string_get_data_len (str, old_len, n_bytes);
 
   if (!CryptAcquireContext (&hprov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
-    return FALSE;
+    {
+      _DBUS_SET_OOM (error);
+      return FALSE;
+    }
 
   if (!CryptGenRandom (hprov, n_bytes, p))
     {
+      _DBUS_SET_OOM (error);
       CryptReleaseContext (hprov, 0);
       return FALSE;
     }

@@ -304,11 +304,8 @@ add_new_key (DBusKey  **keys_p,
   /* Generate an integer ID and then the actual key. */
  retry:
       
-  if (!_dbus_generate_random_bytes (&bytes, 4))
-    {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
-      goto out;
-    }
+  if (!_dbus_generate_random_bytes (&bytes, 4, error))
+    goto out;
 
   s = (const unsigned char*) _dbus_string_get_const_data (&bytes);
       
@@ -329,9 +326,8 @@ add_new_key (DBusKey  **keys_p,
       
 #define KEY_LENGTH_BYTES 24
   _dbus_string_set_length (&bytes, 0);
-  if (!_dbus_generate_random_bytes (&bytes, KEY_LENGTH_BYTES))
+  if (!_dbus_generate_random_bytes (&bytes, KEY_LENGTH_BYTES, error))
     {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       goto out;
     }
 

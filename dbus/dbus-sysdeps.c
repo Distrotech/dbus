@@ -504,63 +504,37 @@ _dbus_string_parse_uint (const DBusString *str,
  * @{
  */
 
-void
-_dbus_generate_pseudorandom_bytes_buffer (char *buffer,
-                                          int   n_bytes)
-{
-  long tv_usec;
-  int i;
-  
-  /* fall back to pseudorandom */
-  _dbus_verbose ("Falling back to pseudorandom for %d bytes\n",
-                 n_bytes);
-  
-  _dbus_get_real_time (NULL, &tv_usec);
-  srand (tv_usec);
-  
-  i = 0;
-  while (i < n_bytes)
-    {
-      double r;
-      unsigned int b;
-          
-      r = rand ();
-      b = (r / (double) RAND_MAX) * 255.0;
-
-      buffer[i] = b;
-
-      ++i;
-    }
-}
-
 /**
  * Fills n_bytes of the given buffer with random bytes.
  *
  * @param buffer an allocated buffer
  * @param n_bytes the number of bytes in buffer to write to
+ * @param error location to store reason for failure
+ * @returns #TRUE on success
  */
-void
-_dbus_generate_random_bytes_buffer (char *buffer,
-                                    int   n_bytes)
+dbus_bool_t
+_dbus_generate_random_bytes_buffer (char      *buffer,
+                                    int        n_bytes,
+                                    DBusError *error)
 {
   DBusString str;
 
   if (!_dbus_string_init (&str))
     {
-      _dbus_generate_pseudorandom_bytes_buffer (buffer, n_bytes);
-      return;
+      _DBUS_SET_OOM (error);
+      return FALSE;
     }
 
-  if (!_dbus_generate_random_bytes (&str, n_bytes))
+  if (!_dbus_generate_random_bytes (&str, n_bytes, error))
     {
       _dbus_string_free (&str);
-      _dbus_generate_pseudorandom_bytes_buffer (buffer, n_bytes);
-      return;
+      return FALSE;
     }
 
   _dbus_string_copy_to_buffer (&str, buffer, n_bytes);
 
   _dbus_string_free (&str);
+  return TRUE;
 }
 
 /**
@@ -569,18 +543,20 @@ _dbus_generate_random_bytes_buffer (char *buffer,
  *
  * @param str the string
  * @param n_bytes the number of random ASCII bytes to append to string
+ * @param error location to store reason for failure
  * @returns #TRUE on success, #FALSE if no memory or other failure
  */
 dbus_bool_t
 _dbus_generate_random_ascii (DBusString *str,
-                             int         n_bytes)
+                             int         n_bytes,
+                             DBusError  *error)
 {
   static const char letters[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
   int i;
   int len;
   
-  if (!_dbus_generate_random_bytes (str, n_bytes))
+  if (!_dbus_generate_random_bytes (str, n_bytes, error))
     return FALSE;
   
   len = _dbus_string_get_length (str);

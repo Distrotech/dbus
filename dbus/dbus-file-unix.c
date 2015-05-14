@@ -202,9 +202,9 @@ _dbus_string_save_to_file (const DBusString *str,
     }
 
 #define N_TMP_FILENAME_RANDOM_BYTES 8
-  if (!_dbus_generate_random_ascii (&tmp_filename, N_TMP_FILENAME_RANDOM_BYTES))
+  if (!_dbus_generate_random_ascii (&tmp_filename, N_TMP_FILENAME_RANDOM_BYTES,
+                                    error))
     {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       _dbus_string_free (&tmp_filename);
       return FALSE;
     }

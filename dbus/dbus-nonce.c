@@ -186,9 +186,8 @@ generate_and_write_nonce (const DBusString *filename, DBusError *error)
       return FALSE;
     }
 
-  if (!_dbus_generate_random_bytes (&nonce, 16))
+  if (!_dbus_generate_random_bytes (&nonce, 16, error))
     {
-      dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
       _dbus_string_free (&nonce);
       return FALSE;
     }
@@ -272,9 +271,8 @@ do_noncefile_create (DBusNonceFile *noncefile,
         goto on_error;
       }
 
-    if (!_dbus_generate_random_ascii (&randomStr, 8))
+    if (!_dbus_generate_random_ascii (&randomStr, 8, error))
       {
-        dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
         goto on_error;
       }
 

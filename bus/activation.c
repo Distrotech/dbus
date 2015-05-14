@@ -2608,7 +2608,7 @@ bus_activation_service_reload_test (const DBusString *test_data_dir)
     return FALSE;
 
   if (!_dbus_string_append (&directory, "/dbus-reload-test-") ||
-      !_dbus_generate_random_ascii (&directory, 6))
+      !_dbus_generate_random_ascii (&directory, 6, NULL))
      {
        return FALSE;
      }

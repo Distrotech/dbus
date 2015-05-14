@@ -152,10 +152,22 @@ _dbus_server_listen_platform_specific (DBusAddressEntry *entry,
               return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
             }
 
-          if (!_dbus_string_append (&filename,
-                                    "dbus-") ||
-              !_dbus_generate_random_ascii (&filename, 10) ||
-              !_dbus_string_append (&full_path, tmpdir) ||
+          if (!_dbus_string_append (&filename, "dbus-"))
+            {
+              _dbus_string_free (&full_path);
+              _dbus_string_free (&filename);
+              dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
+              return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
+            }
+
+          if (!_dbus_generate_random_ascii (&filename, 10, error))
+            {
+              _dbus_string_free (&full_path);
+              _dbus_string_free (&filename);
+              return DBUS_SERVER_LISTEN_DID_NOT_CONNECT;
+            }
+
+          if (!_dbus_string_append (&full_path, tmpdir) ||
               !_dbus_concat_dir_and_file (&full_path, &filename))
             {
               _dbus_string_free (&full_path);

@@ -653,7 +653,10 @@ dbus_bool_t
 _dbus_generate_uuid (DBusGUID  *uuid,
                      DBusError *error)
 {
+  DBusError rand_error;
   long now;
+
+  dbus_error_init (&rand_error);
 
   /* don't use monotonic time because the UUID may be saved to disk, e.g.
    * it may persist across reboots
@@ -662,7 +665,16 @@ _dbus_generate_uuid (DBusGUID  *uuid,
 
   uuid->as_uint32s[DBUS_UUID_LENGTH_WORDS - 1] = DBUS_UINT32_TO_BE (now);
   
-  _dbus_generate_random_bytes_buffer (uuid->as_bytes, DBUS_UUID_LENGTH_BYTES - 4);
+  if (!_dbus_generate_random_bytes_buffer (uuid->as_bytes,
+                                           DBUS_UUID_LENGTH_BYTES - 4,
+                                           &rand_error))
+    {
+      dbus_set_error (error, rand_error.name,
+                      "Failed to generate UUID: %s", rand_error.message);
+      dbus_error_free (&rand_error);
+      return FALSE;
+    }
+
   return TRUE;
 }
 

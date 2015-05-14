@@ -476,15 +476,17 @@ const char* _dbus_get_tmpdir      (void);
 /**
  * Random numbers 
  */
-void        _dbus_generate_pseudorandom_bytes_buffer (char *buffer,
-                                                      int   n_bytes);
-void        _dbus_generate_random_bytes_buffer (char       *buffer,
-                                                int         n_bytes);
+_DBUS_GNUC_WARN_UNUSED_RESULT
+dbus_bool_t _dbus_generate_random_bytes_buffer (char       *buffer,
+                                                int         n_bytes,
+                                                DBusError  *error);
 dbus_bool_t _dbus_generate_random_bytes        (DBusString *str,
-                                                int         n_bytes);
+                                                int         n_bytes,
+                                                DBusError  *error);
 DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_generate_random_ascii        (DBusString *str,
-                                                int         n_bytes);
+                                                int         n_bytes,
+                                                DBusError  *error);
 
 DBUS_PRIVATE_EXPORT
 const char* _dbus_error_from_errno (int error_number);
