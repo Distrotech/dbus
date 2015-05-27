@@ -50,9 +50,9 @@ per-user-login-session message bus (started each time a user logs in).
 a different configuration file.</para>
 
 <para>The --session option is equivalent to
-"--config-file=@EXPANDED_SYSCONFDIR@/dbus-1/session.conf" and the --system
+"--config-file=@EXPANDED_DATADIR@/dbus-1/session.conf" and the --system
 option is equivalent to
-"--config-file=@EXPANDED_SYSCONFDIR@/dbus-1/system.conf". By creating
+"--config-file=@EXPANDED_DATADIR@/dbus-1/system.conf". By creating
 additional configuration files and using the --config-file option,
 additional special-purpose message bus daemons could be created.</para>
 
@@ -181,9 +181,10 @@ specification and its backward compatibility is not guaranteed; this
 document is documentation, not specification.</para>
 
 <para>The standard systemwide and per-session message bus setups are
-configured in the files "@EXPANDED_SYSCONFDIR@/dbus-1/system.conf" and
-"@EXPANDED_SYSCONFDIR@/dbus-1/session.conf".  These files normally
-&lt;include&gt; a system-local.conf or session-local.conf; you can put local
+configured in the files "@EXPANDED_DATADIR@/dbus-1/system.conf" and
+"@EXPANDED_DATADIR@/dbus-1/session.conf".  These files normally
+&lt;include&gt; a system-local.conf or session-local.conf in
+@EXPANDED_SYSCONFDIR@/dbus-1; you can put local
 overrides in those files to avoid modifying the primary configuration
 files.</para>
 
@@ -270,6 +271,7 @@ Only files ending in ".conf" are included.</para>
 <para>This is intended to allow extension of the system bus by particular
 packages. For example, if CUPS wants to be able to send out
 notification of printer queue changes, it could install a file to
+@EXPANDED_DATADIR@/dbus-1/system.d or
 @EXPANDED_SYSCONFDIR@/dbus-1/system.d that allowed all apps to receive
 this message and allowed the printer daemon user to send it.</para>
 
@@ -478,7 +480,7 @@ This option defaults to @EXPANDED_DATADIR@/dbus-1/system-services.</para>
 
 <para>The &lt;standard_system_servicedirs/&gt; option is only relevant to the
 per-system bus daemon defined in
-@EXPANDED_SYSCONFDIR@/dbus-1/system.conf. Putting it in any other
+@EXPANDED_DATADIR@/dbus-1/system.conf. Putting it in any other
 configuration file would probably be nonsense.</para>
 
 <itemizedlist remap='TP'>
@@ -494,7 +496,7 @@ the dbus-daemon-launch-helper executable in located in libexec.</para>
 
 
 <para>The &lt;servicehelper/&gt; option is only relevant to the per-system bus daemon
-defined in @EXPANDED_SYSCONFDIR@/dbus-1/system.conf. Putting it in any other
+defined in @EXPANDED_DATADIR@/dbus-1/system.conf. Putting it in any other
 configuration file would probably be nonsense.</para>
 
 <itemizedlist remap='TP'>
