@@ -1,7 +1,31 @@
 D-Bus 1.9.18 (UNRELEASED)
 ==
 
-...
+Configuration changes:
+
+• The basic setup for the well-known system and session buses is now done
+  in read-only files in ${datadir}, moving a step closer to systems
+  that can operate with an empty /etc directory. In increasing order
+  of precedence:
+
+  · ${datadir}/dbus-1/s*.conf now perform the basic setup such as setting
+    the default message policies.
+  · ${sysconfdir}/dbus-1/s*.conf are now optional. By default
+    dbus still installs a trivial version of each, for documentation
+    purposes; putting configuration directives in these files is deprecated.
+  · ${datadir}/dbus-1/s*.d/ are now available for third-party software
+    to install "drop-in" configuration snippets (any packages
+    using those directories should explicitly depend on at least this
+    version of dbus).
+  · ${sysconfdir}/dbus-1/s*.d/ are also still available for sysadmins
+    or third-party software to install "drop-in" configuration snippets
+  · ${sysconfdir}/dbus-1/s*-local.conf are still available for sysadmins'
+    overrides
+
+  ${datadir} is normally /usr/share, ${sysconfdir} is normally /etc,
+  and "s*" refers to either system or session as appropriate.
+
+  (fd.o #89280, Dimitri John Ledkov)
 
 D-Bus 1.9.16 (2015-05-14)
 ==
