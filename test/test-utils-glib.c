@@ -240,10 +240,10 @@ test_get_dbus_daemon (const gchar *config_file,
           "--config-file=%s/%s",
           g_getenv ("DBUS_TEST_DATA"), config_file);
     }
-  else if (g_getenv ("DBUS_TEST_SYSCONFDIR") != NULL)
+  else if (g_getenv ("DBUS_TEST_DATADIR") != NULL)
     {
       arg = g_strdup_printf ("--config-file=%s/dbus-1/session.conf",
-          g_getenv ("DBUS_TEST_SYSCONFDIR"));
+          g_getenv ("DBUS_TEST_DATADIR"));
     }
   else if (g_getenv ("DBUS_TEST_DATA") != NULL)
     {

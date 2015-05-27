@@ -169,7 +169,7 @@ installcheck_environment = \
 	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
 	export DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT); \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
-	export DBUS_TEST_SYSCONFDIR=$(DESTDIR)$(sysconfdir); \
+	export DBUS_TEST_DATADIR=$(DESTDIR)$(datadir); \
 	${NULL}
 
 AM_TESTS_ENVIRONMENT = \
