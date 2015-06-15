@@ -67,10 +67,6 @@ bus_audit_init (BusContext *context)
       if (e == EINVAL || e == EPROTONOSUPPORT || e == EAFNOSUPPORT)
         return;
 
-      /* If user bus, bail out */
-      if (e == EPERM && getuid () != 0)
-        return;
-
       bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
                        "Failed to open connection to the audit subsystem: %s",
                        _dbus_strerror (e));
