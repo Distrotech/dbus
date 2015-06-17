@@ -1613,6 +1613,8 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
       goto oom;
     }
 
+  dbus_message_unref (reply);
+
   return TRUE;
 
  oom:
