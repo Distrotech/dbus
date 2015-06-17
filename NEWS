@@ -27,6 +27,11 @@ Configuration changes:
 
   (fd.o #89280, Dimitri John Ledkov)
 
+Fixes:
+
+• Fix a memory leak when GetConnectionCredentials() succeeds
+  (fd.o #91008, Jacek Bukarewicz)
+
 D-Bus 1.9.16 (2015-05-14)
 ==
 
