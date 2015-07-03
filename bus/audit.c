@@ -52,6 +52,11 @@ void
 bus_audit_init (BusContext *context)
 {
 #ifdef HAVE_LIBAUDIT
+  capng_get_caps_process ();
+
+  if (!capng_have_capability (CAPNG_EFFECTIVE, CAP_AUDIT_WRITE))
+    return;
+
   audit_fd = audit_open ();
 
   if (audit_fd < 0)
@@ -83,11 +88,6 @@ bus_audit_get_fd (void)
 #ifdef HAVE_LIBAUDIT
   if (audit_fd >= 0)
   {
-    capng_get_caps_process ();
-
-    if (!capng_have_capability (CAPNG_EFFECTIVE, CAP_AUDIT_WRITE))
-      return -1;
-
     return audit_fd;
   }
 #endif
