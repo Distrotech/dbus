@@ -454,6 +454,8 @@ become_monitor (Fixture *f)
   int i;
   dbus_uint32_t zero = 0;
 
+  dbus_connection_set_route_peer_messages (f->monitor, TRUE);
+
   if (f->config != NULL && f->config->match_rules != NULL)
     match_rules = f->config->match_rules;
   else
@@ -927,6 +929,28 @@ test_method_call (Fixture *f,
     return;
 
   become_monitor (f);
+
+  /* regression test for
+   * https://bugs.freedesktop.org/show_bug.cgi?id=90952 */
+  m = dbus_message_new_method_call (f->recipient_name, "/foo",
+      DBUS_INTERFACE_PEER, "Ping");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  while (g_queue_get_length (&f->monitored) < 2)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = g_queue_pop_head (&f->monitored);
+  assert_method_call (m, f->sender_name, f->recipient_name, "/foo",
+      DBUS_INTERFACE_PEER, "Ping", "");
+  dbus_message_unref (m);
+
+  m = g_queue_pop_head (&f->monitored);
+  assert_method_reply (m, f->recipient_name, f->sender_name, "");
+  dbus_message_unref (m);
+
+  m = g_queue_pop_head (&f->monitored);
+  g_assert (m == NULL);
 
   m = dbus_message_new_method_call (f->recipient_name, "/foo", "com.example.bar",
       "Call1");
