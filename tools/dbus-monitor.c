@@ -483,6 +483,11 @@ main (int argc, char *argv[])
       exit (1);
     }
 
+  /* Receive o.fd.Peer messages as normal messages, rather than having
+   * libdbus handle them internally, which is the wrong thing for
+   * a monitor */
+  dbus_connection_set_route_peer_messages (connection, TRUE);
+
   if (!dbus_connection_add_filter (connection, filter_func,
                                    _DBUS_INT_TO_POINTER (binary_mode), NULL))
     {
