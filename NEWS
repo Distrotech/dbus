@@ -32,6 +32,9 @@ Fixes:
 • Fix a memory leak when GetConnectionCredentials() succeeds
   (fd.o #91008, Jacek Bukarewicz)
 
+• Ensure that dbus-monitor does not reply to messages intended for others
+  (fd.o #90952, Simon McVittie)
+
 D-Bus 1.9.16 (2015-05-14)
 ==
 
