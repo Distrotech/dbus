@@ -1,5 +1,7 @@
-D-Bus 1.9.18 (UNRELEASED)
+D-Bus 1.9.18 (2015-07-21)
 ==
+
+The “Pirate Elite” release.
 
 Configuration changes:
 
@@ -32,8 +34,8 @@ Fixes:
 • Fix a memory leak when GetConnectionCredentials() succeeds
   (fd.o #91008, Jacek Bukarewicz)
 
-• Ensure that dbus-monitor does not reply to messages intended for others
-  (fd.o #90952, Simon McVittie)
+• Ensure that dbus-monitor does not reply to messages intended for others,
+  resulting in its own disconnection (fd.o #90952, Simon McVittie)
 
 D-Bus 1.9.16 (2015-05-14)
 ==
