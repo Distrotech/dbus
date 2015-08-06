@@ -1,5 +1,73 @@
-D-Bus 1.9.20 (UNRELEASED)
+D-Bus 1.10.0 (UNRELEASED)
 ==
+
+Summary of major changes since 1.8.0:
+
+• The basic setup for the well-known system and session buses is
+  now done in read-only files in ${datadir} (normally /usr/share).
+  See the NEWS entry for 1.9.18 for details.
+
+• AppArmor integration has been merged, with features similar to the
+  pre-existing SELinux integration. It is mostly compatible with the
+  patches previously shipped by Ubuntu, with one significant change:
+  Ubuntu's GetConnectionAppArmorSecurityContext method has been superseded
+  by GetConnectionCredentials and was not included.
+
+• The --enable-user-session configure option can be enabled
+  by OS integrators intending to use systemd to provide a session bus
+  per user (in effect, treating all concurrent graphical and non-graphical
+  login sessions as one large session).
+
+• The new listenable address mode "unix:runtime=yes" listens on
+  $XDG_RUNTIME_DIR/bus, the same AF_UNIX socket used by the systemd
+  user session. libdbus and "dbus-launch --autolaunch" will connect to
+  this address by default. GLib ≥ 2.45.3 and sd-bus ≥ 209 have a
+  matching default.
+
+• All executables are now dynamically linked to libdbus-1.
+  Previously, some executables, most notably dbus-daemon, were statically
+  linked to a specially-compiled variant of libdbus. This results in
+  various private functions in the _dbus namespace being exposed by the
+  shared library. These are not API, and must not be used outside
+  the dbus source tree.
+
+• On platforms with ELF symbol versioning, all public symbols
+  are versioned LIBDBUS_1_3.
+
+New bus APIs:
+
+• org.freedesktop.DBus.GetConnectionCredentials returns
+  LinuxSecurityLabel where supported
+• org.freedesktop.DBus.Monitoring interface (privileged)
+  · BecomeMonitor method supersedes match rules with eavesdrop=true,
+    which are now deprecated
+• org.freedesktop.DBus.Stats interface (semi-privileged)
+  · now enabled by default
+  · new GetAllMatchRules method
+
+New executables:
+
+• dbus-test-tool
+• dbus-update-activation-environment
+
+New optional dependencies:
+
+• The systemd: pseudo-transport requires libsystemd or libsd-daemon
+• Complete documentation requires Ducktype and yelp-tools
+• Full test coverage requires GLib 2.36 and PyGI
+• AppArmor integration requires libapparmor and optionally libaudit
+
+Dependencies removed:
+
+• dbus-glib
+
+D-Bus 1.9.20 (2015-08-06)
+==
+
+The “Remember Tomorrow” release.
+
+This is a release-candidate for D-Bus 1.10.0. OS distribution vendors
+should test it.
 
 Fixes:
 
