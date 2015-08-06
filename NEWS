@@ -1,7 +1,18 @@
 D-Bus 1.9.20 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Don't second-guess what the ABI of poll() is, allowing it to be used
+  on Integrity RTOS and other unusual platforms (fd.o #90314;
+  Rolland Dudemaine, Simon McVittie)
+
+• Don't duplicate audit subsystem integration if AppArmor and SELinux are
+  both enabled (fd.o #89225, Simon McVittie)
+
+• Log audit events for AppArmor/SELinux policy violations whenever
+  we have CAP_AUDIT_WRITE, even if not the system bus
+  (fd.o #83856, Laurent Bigonville)
 
 D-Bus 1.9.18 (2015-07-21)
 ==
