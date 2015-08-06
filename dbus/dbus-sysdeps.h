@@ -299,63 +299,6 @@ dbus_int32_t _dbus_atomic_inc (DBusAtomic *atomic);
 dbus_int32_t _dbus_atomic_dec (DBusAtomic *atomic);
 dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
 
-
-/* AIX uses different values for poll */
-
-#ifdef _AIX
-/** There is data to read */
-#define _DBUS_POLLIN      0x0001
-/** There is urgent data to read */
-#define _DBUS_POLLPRI     0x0004
-/** Writing now will not block */
-#define _DBUS_POLLOUT     0x0002
-/** Error condition */
-#define _DBUS_POLLERR     0x4000
-/** Hung up */
-#define _DBUS_POLLHUP     0x2000
-/** Invalid request: fd not open */
-#define _DBUS_POLLNVAL    0x8000
-#elif defined(__HAIKU__)
-/** There is data to read */
-#define _DBUS_POLLIN      0x0001
-/** Writing now will not block */
-#define _DBUS_POLLOUT     0x0002
-/** Error condition */
-#define _DBUS_POLLERR     0x0004
-/** There is urgent data to read */
-#define _DBUS_POLLPRI     0x0020
-/** Hung up */
-#define _DBUS_POLLHUP     0x0080
-/** Invalid request: fd not open */
-#define _DBUS_POLLNVAL    0x1000
-#elif defined(__QNX__)
-/** Writing now will not block */
-#define _DBUS_POLLOUT     0x0002
-/** There is data to read */
-#define _DBUS_POLLIN      0x0005
-/** There is urgent data to read */
-#define _DBUS_POLLPRI     0x0008
-/** Error condition */
-#define _DBUS_POLLERR     0x0020
-/** Hung up */
-#define _DBUS_POLLHUP     0x0040
-/** Invalid request: fd not open */
-#define _DBUS_POLLNVAL    0x1000
-#else
-/** There is data to read */
-#define _DBUS_POLLIN      0x0001
-/** There is urgent data to read */
-#define _DBUS_POLLPRI     0x0002
-/** Writing now will not block */
-#define _DBUS_POLLOUT     0x0004
-/** Error condition */
-#define _DBUS_POLLERR     0x0008
-/** Hung up */
-#define _DBUS_POLLHUP     0x0010
-/** Invalid request: fd not open */
-#define _DBUS_POLLNVAL    0x0020
-#endif
-
 #ifdef DBUS_WIN
 
 /* On Windows, you can only poll sockets. We emulate Unix poll() using
@@ -407,15 +350,50 @@ _dbus_pollable_equals (DBusPollable a, DBusPollable b) { return a == b; }
 
 #endif /* !DBUS_WIN */
 
+#if defined(HAVE_POLL) && !defined(BROKEN_POLL)
 /**
- * A portable struct pollfd wrapper. 
+ * A portable struct pollfd wrapper, or an emulation of struct pollfd
+ * on platforms where poll() is missing or broken.
  */
+typedef struct pollfd DBusPollFD;
+
+/** There is data to read */
+#define _DBUS_POLLIN      POLLIN
+/** There is urgent data to read */
+#define _DBUS_POLLPRI     POLLPRI
+/** Writing now will not block */
+#define _DBUS_POLLOUT     POLLOUT
+/** Error condition */
+#define _DBUS_POLLERR     POLLERR
+/** Hung up */
+#define _DBUS_POLLHUP     POLLHUP
+/** Invalid request: fd not open */
+#define _DBUS_POLLNVAL    POLLNVAL
+#else
+/* Emulate poll() via select(). Because we aren't really going to call
+ * poll(), any similarly-shaped struct is acceptable, and any power of 2
+ * will do for the events/revents; these values happen to match Linux
+ * and *BSD. */
 typedef struct
 {
   DBusPollable fd;   /**< File descriptor */
   short events;      /**< Events to poll for */
   short revents;     /**< Events that occurred */
 } DBusPollFD;
+
+/** There is data to read */
+#define _DBUS_POLLIN      0x0001
+/** There is urgent data to read */
+#define _DBUS_POLLPRI     0x0002
+/** Writing now will not block */
+#define _DBUS_POLLOUT     0x0004
+/** Error condition */
+#define _DBUS_POLLERR     0x0008
+/** Hung up */
+#define _DBUS_POLLHUP     0x0010
+/** Invalid request: fd not open */
+#define _DBUS_POLLNVAL    0x0020
+#endif
 
 DBUS_PRIVATE_EXPORT
 int _dbus_poll (DBusPollFD *fds,

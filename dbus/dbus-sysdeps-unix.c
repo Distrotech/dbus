@@ -2752,43 +2752,17 @@ _dbus_poll (DBusPollFD *fds,
             int         timeout_milliseconds)
 {
 #if defined(HAVE_POLL) && !defined(BROKEN_POLL)
-  /* This big thing is a constant expression and should get optimized
-   * out of existence. So it's more robust than a configure check at
-   * no cost.
-   */
-  if (_DBUS_POLLIN == POLLIN &&
-      _DBUS_POLLPRI == POLLPRI &&
-      _DBUS_POLLOUT == POLLOUT &&
-      _DBUS_POLLERR == POLLERR &&
-      _DBUS_POLLHUP == POLLHUP &&
-      _DBUS_POLLNVAL == POLLNVAL &&
-      sizeof (DBusPollFD) == sizeof (struct pollfd) &&
-      _DBUS_STRUCT_OFFSET (DBusPollFD, fd) ==
-      _DBUS_STRUCT_OFFSET (struct pollfd, fd) &&
-      _DBUS_STRUCT_OFFSET (DBusPollFD, events) ==
-      _DBUS_STRUCT_OFFSET (struct pollfd, events) &&
-      _DBUS_STRUCT_OFFSET (DBusPollFD, revents) ==
-      _DBUS_STRUCT_OFFSET (struct pollfd, revents))
+  /* DBusPollFD is a struct pollfd in this code path, so we can just poll() */
+  if (timeout_milliseconds < -1)
     {
-      if (timeout_milliseconds < -1)
-        {
-          timeout_milliseconds = -1;
-        }
+      timeout_milliseconds = -1;
+    }
 
-      return poll ((struct pollfd*) fds,
-                   n_fds,
-                   timeout_milliseconds);
-    }
-  else
-    {
-      /* We have to convert the DBusPollFD to an array of
-       * struct pollfd, poll, and convert back.
-       */
-      _dbus_warn ("didn't implement poll() properly for this system yet\n");
-      return -1;
-    }
+  return poll (fds,
+               n_fds,
+               timeout_milliseconds);
 #else /* ! HAVE_POLL */
-
+  /* Emulate poll() in terms of select() */
   fd_set read_set, write_set, err_set;
   int max_fd = 0;
   int i;
