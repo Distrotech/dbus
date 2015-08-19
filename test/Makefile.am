@@ -43,6 +43,7 @@ LOG_COMPILER = $(srcdir)/glib-tap-test.sh
 SH_LOG_DRIVER = $(LOG_DRIVER)
 SH_LOG_COMPILER = $(SHELL)
 EXTRA_DIST += glib-tap-test.sh
+EXTRA_DIST += tap-test.sh.in
 
 TESTS =
 
@@ -74,7 +75,6 @@ endif
 
 TESTS += $(wrap_bus_tests) $(wrap_dbus_tests)
 CLEANFILES += $(wrap_bus_tests) $(wrap_dbus_tests)
-EXTRA_DIST += tap-test.sh.in
 
 $(wrap_bus_tests): test-bus%.sh: ../bus/test-bus%$(EXEEXT) tap-test.sh.in Makefile
 	sed -e 's![@]RUN[@]!$<!' \
