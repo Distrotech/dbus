@@ -52,7 +52,14 @@ void
 bus_audit_init (BusContext *context)
 {
 #ifdef HAVE_LIBAUDIT
+  int i;
+
   capng_get_caps_process ();
+
+  /* Work around a bug in libcap-ng < 0.7.7: it leaks a fd, which isn't
+   * close-on-exec. Assume it will be one of the first few fds. */
+  for (i = 3; i < 42; i++)
+    _dbus_fd_set_close_on_exec (i);
 
   if (!capng_have_capability (CAPNG_EFFECTIVE, CAP_AUDIT_WRITE))
     return;
