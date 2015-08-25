@@ -277,13 +277,13 @@
         </listitem>
         <listitem>
           <para>
-            A "session bus" used to implement desktop environments such as 
+            A "session bus" used to implement desktop environments such as
             GNOME and KDE.
           </para>
         </listitem>
       </itemizedlist>
-      D-Bus is not intended to be a generic IPC system for any possible 
-      application, and intentionally omits many features found in other 
+      D-Bus is not intended to be a generic IPC system for any possible
+      application, and intentionally omits many features found in other
       IPC systems for this reason.
     </para>
 
@@ -291,7 +291,7 @@
       At the same time, the bus daemons offer a number of features not found in
       other IPC systems, such as single-owner "bus names" (similar to X
       selections), on-demand startup of services, and security policies.
-      In many ways, these features are the primary motivation for developing 
+      In many ways, these features are the primary motivation for developing
       D-Bus; other systems would have sufficed if IPC were the only goal.
     </para>
 
@@ -322,17 +322,17 @@
         reference implementation's behavior.
       </para>
       <para>
-        Until this work is complete, any attempt to reimplement D-Bus will 
+        Until this work is complete, any attempt to reimplement D-Bus will
         probably require looking at the reference implementation and/or asking
-        questions on the D-Bus mailing list about intended behavior. 
+        questions on the D-Bus mailing list about intended behavior.
         Questions on the list are very welcome.
       </para>
       <para>
-        Nonetheless, this document should be a useful starting point and is 
+        Nonetheless, this document should be a useful starting point and is
         to our knowledge accurate, though incomplete.
       </para>
     </sect2>
-    
+
   </sect1>
 
   <sect1 id="type-system">
@@ -413,7 +413,7 @@
 
       <para>
         As a simple example, the type code for 32-bit integer (<literal>INT32</literal>) is
-        the ASCII character 'i'. So the signature for a block of values 
+        the ASCII character 'i'. So the signature for a block of values
         containing a single <literal>INT32</literal> would be:
         <programlisting>
           "i"
@@ -421,7 +421,7 @@
         A block of values containing two <literal>INT32</literal> would have this signature:
         <programlisting>
           "ii"
-        </programlisting>        
+        </programlisting>
       </para>
 
       <para>
@@ -686,21 +686,21 @@
       <title>Container types</title>
 
       <para>
-        In addition to basic types, there are four <firstterm>container</firstterm> 
-        types: <literal>STRUCT</literal>, <literal>ARRAY</literal>, <literal>VARIANT</literal>, 
+        In addition to basic types, there are four <firstterm>container</firstterm>
+        types: <literal>STRUCT</literal>, <literal>ARRAY</literal>, <literal>VARIANT</literal>,
         and <literal>DICT_ENTRY</literal>.
       </para>
 
       <para>
-        <literal>STRUCT</literal> has a type code, ASCII character 'r', but this type 
+        <literal>STRUCT</literal> has a type code, ASCII character 'r', but this type
         code does not appear in signatures. Instead, ASCII characters
         '(' and ')' are used to mark the beginning and end of the struct.
-        So for example, a struct containing two integers would have this 
+        So for example, a struct containing two integers would have this
         signature:
         <programlisting>
           "(ii)"
         </programlisting>
-        Structs can be nested, so for example a struct containing 
+        Structs can be nested, so for example a struct containing
         an integer and another struct:
         <programlisting>
           "(i(ii))"
@@ -712,7 +712,7 @@
 
       <para>
         The <literal>STRUCT</literal> type code 'r' is not currently used in the D-Bus protocol,
-        but is useful in code that implements the protocol. This type code 
+        but is useful in code that implements the protocol. This type code
         is specified to allow such code to interoperate in non-protocol contexts.
       </para>
 
@@ -729,7 +729,7 @@
         <programlisting>
           "ai"
         </programlisting>
-        which is an array of 32-bit integers. But an array can be of any type, 
+        which is an array of 32-bit integers. But an array can be of any type,
         such as this array-of-struct-with-two-int32-fields:
         <programlisting>
           "a(ii)"
@@ -766,7 +766,7 @@
         fields, and must not accept dict entries with non-basic-typed keys. A
         dict entry is always a key-value pair.
       </para>
-      
+
       <para>
         The first field in the <literal>DICT_ENTRY</literal> is always the key.
         A message is considered corrupt if the same key occurs twice in the same
@@ -775,7 +775,7 @@
       </para>
 
       <para>
-        In most languages, an array of dict entry would be represented as a 
+        In most languages, an array of dict entry would be represented as a
         map, hash table, or dict object.
       </para>
     </sect2>
@@ -1121,9 +1121,9 @@
                 <entry>8</entry>
               </row><row>
                 <entry><literal>STRING</literal></entry>
-                <entry>A <literal>UINT32</literal> indicating the string's 
-                  length in bytes excluding its terminating nul, followed by 
-                  non-nul string data of the given length, followed by a terminating nul 
+                <entry>A <literal>UINT32</literal> indicating the string's
+                  length in bytes excluding its terminating nul, followed by
+                  non-nul string data of the given length, followed by a terminating nul
                   byte.
                 </entry>
                 <entry>
@@ -1131,7 +1131,7 @@
                 </entry>
               </row><row>
                 <entry><literal>OBJECT_PATH</literal></entry>
-                <entry>Exactly the same as <literal>STRING</literal> except the 
+                <entry>Exactly the same as <literal>STRING</literal> except the
                   content must be a valid object path (see above).
                 </entry>
                 <entry>
@@ -1139,7 +1139,7 @@
                 </entry>
               </row><row>
                 <entry><literal>SIGNATURE</literal></entry>
-                <entry>The same as <literal>STRING</literal> except the length is a single 
+                <entry>The same as <literal>STRING</literal> except the length is a single
                   byte (thus signatures have a maximum length of 255)
                   and the content must be a valid signature (see above).
                 </entry>
@@ -1149,7 +1149,7 @@
               </row><row>
                 <entry><literal>ARRAY</literal></entry>
                 <entry>
-                  A <literal>UINT32</literal> giving the length of the array data in bytes, followed by 
+                  A <literal>UINT32</literal> giving the length of the array data in bytes, followed by
                   alignment padding to the alignment boundary of the array element type,
                   followed by each array element.
                 </entry>
@@ -1215,7 +1215,7 @@
       information to figure out where to send the message and how to interpret
       it; the recipient interprets the body of the message.
     </para>
-    
+
     <para>
       The body of the message is made up of zero or more
       <firstterm>arguments</firstterm>, which are typed values, such as an
@@ -1239,7 +1239,7 @@
       <para>
         The length of the header must be a multiple of 8, allowing the body to
         begin on an 8-byte boundary when storing the entire message in a single
-        buffer. If the header does not naturally end on an 8-byte boundary 
+        buffer. If the header does not naturally end on an 8-byte boundary
         up to 7 bytes of nul-initialized alignment padding must be added.
       </para>
 
@@ -1248,11 +1248,11 @@
       </para>
 
       <para>
-        The maximum length of a message, including header, header alignment padding, 
+        The maximum length of a message, including header, header alignment padding,
         and body is 2 to the 27th power or 134217728 (128 MiB).
         Implementations must not send or accept messages exceeding this size.
       </para>
-      
+
       <para>
         The signature of the header is:
         <programlisting>
@@ -1277,13 +1277,13 @@
             <tbody>
               <row>
                 <entry>1st <literal>BYTE</literal></entry>
-                <entry>Endianness flag; ASCII 'l' for little-endian 
-                  or ASCII 'B' for big-endian. Both header and body are 
+                <entry>Endianness flag; ASCII 'l' for little-endian
+                  or ASCII 'B' for big-endian. Both header and body are
                 in this endianness.</entry>
               </row>
               <row>
                 <entry>2nd <literal>BYTE</literal></entry>
-                <entry><firstterm>Message type</firstterm>. Unknown types must be ignored. 
+                <entry><firstterm>Message type</firstterm>. Unknown types must be ignored.
                   Currently-defined types are described below.
                 </entry>
               </row>
@@ -1304,23 +1304,23 @@
               </row>
               <row>
                 <entry>1st <literal>UINT32</literal></entry>
-                <entry>Length in bytes of the message body, starting 
-                  from the end of the header. The header ends after 
+                <entry>Length in bytes of the message body, starting
+                  from the end of the header. The header ends after
                   its alignment padding to an 8-boundary.
                 </entry>
               </row>
               <row>
                 <entry>2nd <literal>UINT32</literal></entry>
-                <entry>The serial of this message, used as a cookie 
+                <entry>The serial of this message, used as a cookie
                   by the sender to identify the reply corresponding
                   to this request. This must not be zero.
                 </entry>
-              </row>      
+              </row>
               <row>
                 <entry><literal>ARRAY</literal> of <literal>STRUCT</literal> of (<literal>BYTE</literal>,<literal>VARIANT</literal>)</entry>
                 <entry>An array of zero or more <firstterm>header
                   fields</firstterm> where the byte is the field code, and the
-                  variant is the field value. The message type determines 
+                  variant is the field value. The message type determines
                   which fields are required.
                 </entry>
               </row>
@@ -1493,8 +1493,8 @@
         <para>
           Again, if an implementation sees a header field code that it does not
           expect, it must ignore that field, as it will be part of a new
-          (but compatible) version of this specification. This also applies 
-          to known header fields appearing in unexpected messages, for 
+          (but compatible) version of this specification. This also applies
+          to known header fields appearing in unexpected messages, for
           example: if a signal has a reply serial it must be ignored
           even though it has no meaning as of this version of the spec.
         </para>
@@ -1547,8 +1547,8 @@
                   <entry><literal>STRING</literal></entry>
                   <entry><literal>SIGNAL</literal></entry>
                   <entry>
-                    The interface to invoke a method call on, or 
-                    that a signal is emitted from. Optional for 
+                    The interface to invoke a method call on, or
+                    that a signal is emitted from. Optional for
                     method calls, required for signals.
                     The special interface
                     <literal>org.freedesktop.DBus.Local</literal> is reserved;
@@ -1586,7 +1586,7 @@
                   <entry><literal>STRING</literal></entry>
                   <entry>optional</entry>
                   <entry>The name of the connection this message is intended for.
-                    Only used in combination with the message bus, see 
+                    Only used in combination with the message bus, see
                     <xref linkend="message-bus"/>.</entry>
                 </row>
                 <row>
@@ -1604,7 +1604,7 @@
                   <entry><literal>SIGNATURE</literal></entry>
                   <entry>optional</entry>
                   <entry>The signature of the message body.
-                  If omitted, it is assumed to be the 
+                  If omitted, it is assumed to be the
                   empty signature "" (i.e. the body must be 0-length).</entry>
                 </row>
                 <row>
@@ -1636,23 +1636,23 @@
         The various names in D-Bus messages have some restrictions.
       </para>
       <para>
-        There is a <firstterm>maximum name length</firstterm> 
-        of 255 which applies to bus names, interfaces, and members. 
+        There is a <firstterm>maximum name length</firstterm>
+        of 255 which applies to bus names, interfaces, and members.
       </para>
       <sect3 id="message-protocol-names-interface">
         <title>Interface names</title>
         <para>
-          Interfaces have names with type <literal>STRING</literal>, meaning that 
-          they must be valid UTF-8. However, there are also some 
-          additional restrictions that apply to interface names 
+          Interfaces have names with type <literal>STRING</literal>, meaning that
+          they must be valid UTF-8. However, there are also some
+          additional restrictions that apply to interface names
           specifically:
           <itemizedlist>
             <listitem><para>Interface names are composed of 1 or more elements separated by
-                a period ('.') character. All elements must contain at least 
+                a period ('.') character. All elements must contain at least
                 one character.
                 </para>
             </listitem>
-            <listitem><para>Each element must only contain the ASCII characters 
+            <listitem><para>Each element must only contain the ASCII characters
                 "[A-Z][a-z][0-9]_" and must not begin with a digit.
                 </para>
             </listitem>
@@ -1701,7 +1701,7 @@
           with the connection for its entire lifetime.
           A bus name is of type <literal>STRING</literal>,
           meaning that it must be valid UTF-8. However, there are also
-          some additional restrictions that apply to bus names 
+          some additional restrictions that apply to bus names
           specifically:
           <itemizedlist>
             <listitem><para>Bus names that start with a colon (':')
@@ -1710,11 +1710,11 @@
                 </para>
             </listitem>
             <listitem><para>Bus names are composed of 1 or more elements separated by
-                a period ('.') character. All elements must contain at least 
+                a period ('.') character. All elements must contain at least
                 one character.
                 </para>
             </listitem>
-            <listitem><para>Each element must only contain the ASCII characters 
+            <listitem><para>Each element must only contain the ASCII characters
                 "[A-Z][a-z][0-9]_-". Only elements that are part of a unique
                 connection name may begin with a digit, elements in
                 other bus names must not begin with a digit.
@@ -1851,19 +1851,19 @@
           reply can have one of two types; either <literal>METHOD_RETURN</literal> or <literal>ERROR</literal>.
         </para>
         <para>
-          If the reply has type <literal>METHOD_RETURN</literal>, the arguments to the reply message 
-          are the return value(s) or "out parameters" of the method call. 
-          If the reply has type <literal>ERROR</literal>, then an "exception" has been thrown, 
-          and the call fails; no return value will be provided. It makes 
+          If the reply has type <literal>METHOD_RETURN</literal>, the arguments to the reply message
+          are the return value(s) or "out parameters" of the method call.
+          If the reply has type <literal>ERROR</literal>, then an "exception" has been thrown,
+          and the call fails; no return value will be provided. It makes
           no sense to send multiple replies to the same method call.
         </para>
         <para>
-          Even if a method call has no return values, a <literal>METHOD_RETURN</literal> 
-          reply is required, so the caller will know the method 
+          Even if a method call has no return values, a <literal>METHOD_RETURN</literal>
+          reply is required, so the caller will know the method
           was successfully processed.
         </para>
         <para>
-          The <literal>METHOD_RETURN</literal> or <literal>ERROR</literal> reply message must have the <literal>REPLY_SERIAL</literal> 
+          The <literal>METHOD_RETURN</literal> or <literal>ERROR</literal> reply message must have the <literal>REPLY_SERIAL</literal>
           header field.
         </para>
         <para>
@@ -1904,8 +1904,8 @@
             in order. "out" arguments are not represented in the caller's message.
           </para>
           <para>
-            The recipient constructs a reply by appending first the return value 
-            if any, then each "out" or "inout" argument, in order. 
+            The recipient constructs a reply by appending first the return value
+            if any, then each "out" or "inout" argument, in order.
             "in" arguments are not represented in the reply message.
           </para>
           <para>
@@ -1913,19 +1913,19 @@
             exceptions.
           </para>
           <para>
-            In converting from native APIs to D-Bus, it is perhaps nice to 
-            map D-Bus naming conventions ("FooBar") to native conventions 
-            such as "fooBar" or "foo_bar" automatically. This is OK 
-            as long as you can say that the native API is one that 
+            In converting from native APIs to D-Bus, it is perhaps nice to
+            map D-Bus naming conventions ("FooBar") to native conventions
+            such as "fooBar" or "foo_bar" automatically. This is OK
+            as long as you can say that the native API is one that
             was specifically written for D-Bus. It makes the most sense
-            when writing object implementations that will be exported 
-            over the bus. Object proxies used to invoke remote D-Bus 
+            when writing object implementations that will be exported
+            over the bus. Object proxies used to invoke remote D-Bus
             objects probably need the ability to call any D-Bus method,
             and thus a magic name mapping like this could be a problem.
           </para>
           <para>
             This specification doesn't require anything of native API bindings;
-            the preceding is only a suggested convention for consistency 
+            the preceding is only a suggested convention for consistency
             among bindings.
           </para>
         </sect4>
@@ -1934,9 +1934,9 @@
       <sect3 id="message-protocol-types-signal">
         <title>Signal Emission</title>
         <para>
-          Unlike method calls, signal emissions have no replies. 
+          Unlike method calls, signal emissions have no replies.
           A signal emission is simply a single message of type <literal>SIGNAL</literal>.
-          It must have three header fields: <literal>PATH</literal> giving the object 
+          It must have three header fields: <literal>PATH</literal> giving the object
           the signal was emitted from, plus <literal>INTERFACE</literal> and <literal>MEMBER</literal> giving
           the fully-qualified name of the signal. The <literal>INTERFACE</literal> header is required
           for signals, though it is optional for method calls.
@@ -1946,14 +1946,14 @@
       <sect3 id="message-protocol-types-errors">
         <title>Errors</title>
         <para>
-          Messages of type <literal>ERROR</literal> are most commonly replies 
-          to a <literal>METHOD_CALL</literal>, but may be returned in reply 
+          Messages of type <literal>ERROR</literal> are most commonly replies
+          to a <literal>METHOD_CALL</literal>, but may be returned in reply
           to any kind of message. The message bus for example
-          will return an <literal>ERROR</literal> in reply to a signal emission if 
+          will return an <literal>ERROR</literal> in reply to a signal emission if
           the bus does not have enough memory to send the signal.
         </para>
         <para>
-          An <literal>ERROR</literal> may have any arguments, but if the first 
+          An <literal>ERROR</literal> may have any arguments, but if the first
           argument is a <literal>STRING</literal>, it must be an error message.
           The error message may be logged or shown to the user
           in some way.
@@ -1963,13 +1963,13 @@
       <sect3 id="message-protocol-types-notation">
         <title>Notation in this document</title>
         <para>
-          This document uses a simple pseudo-IDL to describe particular method 
+          This document uses a simple pseudo-IDL to describe particular method
           calls and signals. Here is an example of a method call:
           <programlisting>
             org.freedesktop.DBus.StartServiceByName (in STRING name, in UINT32 flags,
                                                      out UINT32 resultcode)
           </programlisting>
-          This means <literal>INTERFACE</literal> = org.freedesktop.DBus, <literal>MEMBER</literal> = StartServiceByName, 
+          This means <literal>INTERFACE</literal> = org.freedesktop.DBus, <literal>MEMBER</literal> = StartServiceByName,
           <literal>METHOD_CALL</literal> arguments are <literal>STRING</literal> and <literal>UINT32</literal>, <literal>METHOD_RETURN</literal> argument
           is <literal>UINT32</literal>. Remember that the <literal>MEMBER</literal> field can't contain any '.' (period)
           characters so it's known that the last part of the name in
@@ -1983,12 +1983,12 @@
           </programlisting>
           or equally valid, the return value could be done as an argument:
           <programlisting>
-            void org::freedesktop::DBus::StartServiceByName (const char   *name, 
+            void org::freedesktop::DBus::StartServiceByName (const char   *name,
                                                              unsigned int  flags,
                                                              unsigned int *resultcode);
           </programlisting>
-          It's really up to the API designer how they want to make 
-          this look. You could design an API where the namespace wasn't used 
+          It's really up to the API designer how they want to make
+          this look. You could design an API where the namespace wasn't used
           in C++, using STL or Qt, using varargs, or whatever you wanted.
         </para>
         <para>
@@ -1996,7 +1996,7 @@
           <programlisting>
             org.freedesktop.DBus.NameLost (STRING name)
           </programlisting>
-          Signals don't specify "in" vs. "out" because only 
+          Signals don't specify "in" vs. "out" because only
           a single direction is possible.
         </para>
         <para>
@@ -2009,7 +2009,7 @@
 
     <sect2 id="message-protocol-handling-invalid">
       <title>Invalid Protocol and Spec Extensions</title>
-      
+
       <para>
         For security reasons, the D-Bus protocol should be strictly parsed and
         validated, with the exception of defined extension points. Any invalid
@@ -2023,8 +2023,8 @@
       </para>
 
       <para>
-        Generally speaking violations of the "must" requirements in this spec 
-        should be considered possible attempts to exploit security, and violations 
+        Generally speaking violations of the "must" requirements in this spec
+        should be considered possible attempts to exploit security, and violations
         of the "should" suggestions should be considered legitimate (though perhaps
         they should generate an error in some cases).
       </para>
@@ -2040,9 +2040,9 @@
         <itemizedlist>
           <listitem>
             <para>
-              In the authentication protocol (see <xref linkend="auth-protocol"/>) unknown 
-                commands result in an ERROR rather than a disconnect. This enables 
-                future extensions to the protocol. Commands starting with EXTENSION_ are 
+              In the authentication protocol (see <xref linkend="auth-protocol"/>) unknown
+                commands result in an ERROR rather than a disconnect. This enables
+                future extensions to the protocol. Commands starting with EXTENSION_ are
                 reserved for third parties.
             </para>
           </listitem>
@@ -2061,15 +2061,15 @@
             <para>
               Messages with an unknown type (something other than
               <literal>METHOD_CALL</literal>, <literal>METHOD_RETURN</literal>,
-              <literal>ERROR</literal>, <literal>SIGNAL</literal>) are ignored. 
-              Unknown-type messages must still be well-formed in the same way 
-              as the known messages, however. They still have the normal 
+              <literal>ERROR</literal>, <literal>SIGNAL</literal>) are ignored.
+              Unknown-type messages must still be well-formed in the same way
+              as the known messages, however. They still have the normal
               header and body.
             </para>
           </listitem>
           <listitem>
             <para>
-              Header fields with an unknown or unexpected field code must be ignored, 
+              Header fields with an unknown or unexpected field code must be ignored,
               though again they must still be well-formed.
             </para>
           </listitem>
@@ -2129,7 +2129,7 @@
         </itemizedlist>
       </para>
       <para>
-        Unofficial extensions to the command set must begin with the letters 
+        Unofficial extensions to the command set must begin with the letters
         "EXTENSION_", to avoid conflicts with future official commands.
         For example, "EXTENSION_COM_MYDOMAIN_DO_STUFF".
       </para>
@@ -2145,15 +2145,15 @@
         socket, and even on operating systems that do not require a byte to be
         sent in order to transmit credentials. The text protocol described in
         this document begins after the single nul byte. If the first byte
-        received from the client is not a nul byte, the server may disconnect 
+        received from the client is not a nul byte, the server may disconnect
         that client.
       </para>
       <para>
-        A nul byte in any context other than the initial byte is an error; 
+        A nul byte in any context other than the initial byte is an error;
         the protocol is ASCII-only.
       </para>
       <para>
-        The credentials sent along with the nul byte may be used with the 
+        The credentials sent along with the nul byte may be used with the
         SASL mechanism EXTERNAL.
       </para>
     </sect2>
@@ -2183,7 +2183,7 @@
         REJECTED.
       </para>
       <para>
-        If authentication succeeds after exchanging DATA commands, 
+        If authentication succeeds after exchanging DATA commands,
         an OK command must be sent to the client.
       </para>
       <para>
@@ -2210,21 +2210,21 @@
     <sect2 id="auth-command-data">
       <title>DATA Command</title>
       <para>
-        The DATA command may come from either client or server, and simply 
-        contains a hex-encoded block of data to be interpreted 
+        The DATA command may come from either client or server, and simply
+        contains a hex-encoded block of data to be interpreted
         according to the SASL mechanism in use.
       </para>
       <para>
-        Some SASL mechanisms support sending an "empty string"; 
+        Some SASL mechanisms support sending an "empty string";
         FIXME we need some way to do this.
       </para>
     </sect2>
     <sect2 id="auth-command-begin">
       <title>BEGIN Command</title>
       <para>
-        The BEGIN command acknowledges that the client has received an 
+        The BEGIN command acknowledges that the client has received an
         OK command from the server, and that the stream of messages
-        is about to begin. 
+        is about to begin.
       </para>
       <para>
         The first octet received by the server after the \r\n of the BEGIN
@@ -2242,8 +2242,8 @@
       </para><para>
         Optionally, the REJECTED command has a space-separated list of
         available auth mechanisms as arguments. If a server ever provides
-        a list of supported mechanisms, it must provide the same list 
-        each time it sends a REJECTED message. Clients are free to 
+        a list of supported mechanisms, it must provide the same list
+        each time it sends a REJECTED message. Clients are free to
         ignore all lists received after the first.
       </para>
     </sect2>
@@ -2288,8 +2288,8 @@
       <para>
         If an ERROR is sent, the server or client that sent the
         error must continue as if the command causing the ERROR had never been
-        received. However, the the server or client receiving the error 
-        should try something other than whatever caused the error; 
+        received. However, the the server or client receiving the error
+        should try something other than whatever caused the error;
         if only canceling/rejecting the authentication.
       </para>
       <para>
@@ -2353,7 +2353,7 @@
     </sect2>
     <sect2 id="auth-examples">
       <title>Authentication examples</title>
-      
+
       <para>
         <figure>
           <title>Example of successful magic cookie authentication</title>
@@ -2459,16 +2459,16 @@
     </sect2>
     <sect2 id="auth-states">
       <title>Authentication state diagrams</title>
-      
+
       <para>
-        This section documents the auth protocol in terms of 
-        a state machine for the client and the server. This is 
+        This section documents the auth protocol in terms of
+        a state machine for the client and the server. This is
         probably the most robust way to implement the protocol.
       </para>
 
       <sect3 id="auth-states-client">
         <title>Client states</title>
-        
+
         <para>
           To more precisely describe the interaction between the
           protocol state machine and the authentication mechanisms the
@@ -2499,10 +2499,10 @@
               </para>
             </listitem>
           </itemizedlist>
-          
+
           Both RESP and CHALL may be empty.
         </para>
-        
+
         <para>
           The Client starts by getting an initial response from the
           default mechanism and sends AUTH MECH RESP, or AUTH MECH if
@@ -2512,7 +2512,7 @@
           returns OK the client starts in state
           <emphasis>WaitingForOK</emphasis>.
         </para>
-        
+
         <para>
           The client should keep track of available mechanisms and
           which it mechanisms it has already attempted. This list is
@@ -2648,7 +2648,7 @@
 
       <sect3 id="auth-states-server">
         <title>Server states</title>
- 
+
         <para>
           For the server MECH(RESP) means that the client response
           RESP was fed to the the mechanism MECH, which returns one of
@@ -2750,7 +2750,7 @@
           </para>
         </formalpara>
 
-       
+
         <formalpara>
           <title><emphasis>WaitingForData</emphasis></title>
           <para>
@@ -2846,7 +2846,7 @@
         </formalpara>
 
       </sect3>
-      
+
     </sect2>
     <sect2 id="auth-mechanisms">
       <title>Authentication mechanisms</title>
@@ -2860,8 +2860,8 @@
           The DBUS_COOKIE_SHA1 mechanism is designed to establish that a client
           has the ability to read a private file owned by the user being
           authenticated. If the client can prove that it has access to a secret
-          cookie stored in this file, then the client is authenticated. 
-          Thus the security of DBUS_COOKIE_SHA1 depends on a secure home 
+          cookie stored in this file, then the client is authenticated.
+          Thus the security of DBUS_COOKIE_SHA1 depends on a secure home
           directory.
         </para>
         <para>
@@ -2874,7 +2874,7 @@
           <itemizedlist>
             <listitem>
               <para>
-                The client sends the username it would like to authenticate 
+                The client sends the username it would like to authenticate
                 as, hex-encoded.
               </para>
             </listitem>
@@ -2920,13 +2920,13 @@
         </para>
         <para>
           Cookies are stored in a user's home directory, in the directory
-          <filename>~/.dbus-keyrings/</filename>. This directory must 
-          not be readable or writable by other users. If it is, 
-          clients and servers must ignore it. The directory 
+          <filename>~/.dbus-keyrings/</filename>. This directory must
+          not be readable or writable by other users. If it is,
+          clients and servers must ignore it. The directory
           contains cookie files named after the cookie context.
         </para>
         <para>
-          A cookie file contains one cookie per line. Each line 
+          A cookie file contains one cookie per line. Each line
           has three space-separated fields:
           <itemizedlist>
             <listitem>
@@ -2944,7 +2944,7 @@
             <listitem>
               <para>
                 The cookie itself, a hex-encoded random block of bytes. The cookie
-                may be of any length, though obviously security increases 
+                may be of any length, though obviously security increases
                 as the length increases.
               </para>
             </listitem>
@@ -2973,16 +2973,16 @@
                 Once the lockfile has been created, the server loads the cookie
                 file. It should then delete any cookies that are old (the
                 timeout can be fairly short), or more than a reasonable
-                time in the future (so that cookies never accidentally 
-                become permanent, if the clock was set far into the future 
-                at some point). If no recent keys remain, the 
+                time in the future (so that cookies never accidentally
+                become permanent, if the clock was set far into the future
+                at some point). If no recent keys remain, the
                 server may generate a new key.
               </para>
             </listitem>
             <listitem>
               <para>
-                The pruned and possibly added-to cookie file 
-                must be resaved atomically (using a temporary 
+                The pruned and possibly added-to cookie file
+                must be resaved atomically (using a temporary
                 file which is rename()'d).
               </para>
             </listitem>
@@ -2994,8 +2994,8 @@
           </itemizedlist>
         </para>
         <para>
-          Clients need not lock the file in order to load it, 
-          because servers are required to save the file atomically.          
+          Clients need not lock the file in order to load it,
+          because servers are required to save the file atomically.
         </para>
       </sect3>
     </sect2>
@@ -3008,7 +3008,7 @@
       Each value is escaped.
     </para>
     <para>
-      For example: 
+      For example:
       <programlisting>unix:path=/tmp/dbus-test</programlisting>
       Which is the address to a unix socket with the path /tmp/dbus-test.
     </para>
@@ -3036,7 +3036,7 @@
           </para>
         </listitem>
       </itemizedlist>
-      The set of optionally-escaped bytes is intended to preserve address 
+      The set of optionally-escaped bytes is intended to preserve address
       readability and convenience.
     </para>
 
@@ -3051,7 +3051,7 @@
       those two connections are equivalent post-connection but should have
       distinct UUIDs to distinguish the kinds of connection.
     </para>
-    
+
     <para>
       The intent of the address UUID feature is to allow a client to avoid
       opening multiple identical connections to the same server, by allowing the
@@ -3063,12 +3063,12 @@
     </para>
 
     <para>
-      Note that the address key is <literal>guid</literal> even though the 
+      Note that the address key is <literal>guid</literal> even though the
       rest of the API and documentation says "UUID," for historical reasons.
     </para>
 
     <para>
-      [FIXME clarify if attempting to connect to each is a requirement 
+      [FIXME clarify if attempting to connect to each is a requirement
       or just a suggestion]
       When connecting to a server, multiple server addresses can be
       separated by a semi-colon. The library will then try to connect
@@ -3110,28 +3110,28 @@
       <literal>unix:path=/run/user/1234/bus</literal>.
     </para>
   </sect1>
-  
+
   <sect1 id="transports">
     <title>Transports</title>
     <para>
       [FIXME we need to specify in detail each transport and its possible arguments]
-    
-      Current transports include: unix domain sockets (including 
+
+      Current transports include: unix domain sockets (including
       abstract namespace on linux), launchd, systemd, TCP/IP, an executed subprocess and a debug/testing transport
       using in-process pipes. Future possible transports include one that
       tunnels over X11 protocol.
     </para>
-  
+
     <sect2 id="transports-unix-domain-sockets">
       <title>Unix Domain Sockets</title>
       <para>
-        Unix domain sockets can be either paths in the file system or on Linux 
+        Unix domain sockets can be either paths in the file system or on Linux
         kernels, they can be abstract which are similar to paths but
         do not show up in the file system.
       </para>
 
       <para>
-        When a socket is opened by the D-Bus library it truncates the path 
+        When a socket is opened by the D-Bus library it truncates the path
         name right before the first trailing Nul byte.  This is true for both
         normal paths and abstract paths.  Note that this is a departure from
         previous versions of D-Bus that would create sockets with a fixed
@@ -3153,8 +3153,8 @@
       </para>
       <sect3 id="transports-unix-domain-sockets-addresses">
         <title>Server Address Format</title>
-        <para> 
-          Unix domain socket addresses are identified by the "unix:" prefix 
+        <para>
+          Unix domain socket addresses are identified by the "unix:" prefix
           and support the following key/value pairs:
         </para>
         <informaltable>
@@ -3280,13 +3280,13 @@
       <title>TCP Sockets</title>
       <para>
         The tcp transport provides TCP/IP based connections between clients
-        located on the same or different hosts. 
+        located on the same or different hosts.
       </para>
       <para>
-        Using tcp transport without any additional secure authentification mechanismus 
-        over a network is unsecure. 
+        Using tcp transport without any additional secure authentification mechanismus
+        over a network is unsecure.
       </para>
-      <para>  
+      <para>
         On Windows and most Unix platforms, the TCP stack is unable to transfer
         credentials over a TCP connection, so the EXTERNAL authentication
         mechanism does not work for this transport.
@@ -3300,8 +3300,8 @@
       </para>
       <sect3 id="transports-tcp-sockets-addresses">
         <title>Server Address Format</title>
-        <para> 
-         TCP/IP socket addresses are identified by the "tcp:" prefix 
+        <para>
+         TCP/IP socket addresses are identified by the "tcp:" prefix
          and support the following key/value pairs:
         </para>
         <informaltable>
@@ -3333,9 +3333,9 @@
           <row>
            <entry>port</entry>
            <entry>(number)</entry>
-           <entry>The tcp port the server will open. A zero value let the server 
-            choose a free port provided from the underlaying operating system. 
-            libdbus is able to retrieve the real used port from the server.  
+           <entry>The tcp port the server will open. A zero value let the server
+            choose a free port provided from the underlaying operating system.
+            libdbus is able to retrieve the real used port from the server.
            </entry>
           </row>
           <row>
@@ -3387,8 +3387,8 @@
       </para>
       <sect3 id="transports-nonce-tcp-sockets-addresses">
         <title>Server Address Format</title>
-        <para> 
-         Nonce TCP/IP socket addresses uses the "nonce-tcp:" prefix 
+        <para>
+         Nonce TCP/IP socket addresses uses the "nonce-tcp:" prefix
          and support the following key/value pairs:
         </para>
         <informaltable>
@@ -3415,9 +3415,9 @@
           <row>
            <entry>port</entry>
            <entry>(number)</entry>
-           <entry>The tcp port the server will open. A zero value let the server 
-            choose a free port provided from the underlaying operating system. 
-            libdbus is able to retrieve the real used port from the server.  
+           <entry>The tcp port the server will open. A zero value let the server
+            choose a free port provided from the underlaying operating system.
+            libdbus is able to retrieve the real used port from the server.
            </entry>
           </row>
           <row>
@@ -3606,7 +3606,7 @@
     <title>UUIDs</title>
     <para>
       A working D-Bus implementation uses universally-unique IDs in two places.
-      First, each server address has a UUID identifying the address, 
+      First, each server address has a UUID identifying the address,
       as described in <xref linkend="addresses"/>. Second, each operating
       system kernel instance running a D-Bus client or server has a UUID
       identifying that kernel, retrieved by invoking the method
@@ -3638,18 +3638,18 @@
       of the UUID.
     </para>
   </sect1>
-    
+
   <sect1 id="standard-interfaces">
     <title>Standard Interfaces</title>
     <para>
-      See <xref linkend="message-protocol-types-notation"/> for details on 
+      See <xref linkend="message-protocol-types-notation"/> for details on
        the notation used in this section. There are some standard interfaces
       that may be useful across various D-Bus applications.
     </para>
     <sect2 id="standard-interfaces-peer">
       <title><literal>org.freedesktop.DBus.Peer</literal></title>
       <para>
-        The <literal>org.freedesktop.DBus.Peer</literal> interface 
+        The <literal>org.freedesktop.DBus.Peer</literal> interface
         has two methods:
         <programlisting>
           org.freedesktop.DBus.Peer.Ping ()
@@ -3665,12 +3665,12 @@
       </para>
       <para>
         On receipt of the <literal>METHOD_CALL</literal> message
-        <literal>org.freedesktop.DBus.Peer.GetMachineId</literal>, an application should 
-        reply with a <literal>METHOD_RETURN</literal> containing a hex-encoded 
+        <literal>org.freedesktop.DBus.Peer.GetMachineId</literal>, an application should
+        reply with a <literal>METHOD_RETURN</literal> containing a hex-encoded
         UUID representing the identity of the machine the process is running on.
         This UUID must be the same for all processes on a single system at least
-        until that system next reboots. It should be the same across reboots 
-        if possible, but this is not always possible to implement and is not 
+        until that system next reboots. It should be the same across reboots
+        if possible, but this is not always possible to implement and is not
         guaranteed.
         It does not matter which object path a GetMachineId is sent to.  The
         reference implementation handles this method automatically.
@@ -3679,11 +3679,11 @@
         The UUID is intended to be per-instance-of-the-operating-system, so may represent
         a virtual machine running on a hypervisor, rather than a physical machine.
         Basically if two processes see the same UUID, they should also see the same
-        shared memory, UNIX domain sockets, process IDs, and other features that require 
+        shared memory, UNIX domain sockets, process IDs, and other features that require
         a running OS kernel in common between the processes.
       </para>
       <para>
-        The UUID is often used where other programs might use a hostname. Hostnames 
+        The UUID is often used where other programs might use a hostname. Hostnames
         can change without rebooting, however, or just be "localhost" - so the UUID
         is more robust.
       </para>
@@ -3713,8 +3713,8 @@
     <sect2 id="standard-interfaces-properties">
       <title><literal>org.freedesktop.DBus.Properties</literal></title>
       <para>
-        Many native APIs will have a concept of object <firstterm>properties</firstterm> 
-        or <firstterm>attributes</firstterm>. These can be exposed via the 
+        Many native APIs will have a concept of object <firstterm>properties</firstterm>
+        or <firstterm>attributes</firstterm>. These can be exposed via the
         <literal>org.freedesktop.DBus.Properties</literal> interface.
       </para>
       <para>
@@ -3751,10 +3751,10 @@
         see <xref linkend="standard-interfaces-introspectable"/>.
       </para>
       <para>
-        An empty string may be provided for the interface name; in this case, 
-        if there are multiple properties on an object with the same name, 
-        the results are undefined (picking one by according to an arbitrary 
-        deterministic rule, or returning an error, are the reasonable 
+        An empty string may be provided for the interface name; in this case,
+        if there are multiple properties on an object with the same name,
+        the results are undefined (picking one by according to an arbitrary
+        deterministic rule, or returning an error, are the reasonable
         possibilities).
       </para>
       <para>
@@ -3904,10 +3904,10 @@
   <sect1 id="introspection-format">
     <title>Introspection Data Format</title>
     <para>
-      As described in <xref linkend="standard-interfaces-introspectable"/>, 
-      objects may be introspected at runtime, returning an XML string 
-      that describes the object. The same XML format may be used in 
-      other contexts as well, for example as an "IDL" for generating 
+      As described in <xref linkend="standard-interfaces-introspectable"/>,
+      objects may be introspected at runtime, returning an XML string
+      that describes the object. The same XML format may be used in
+      other contexts as well, for example as an "IDL" for generating
       static language bindings.
     </para>
     <para>
@@ -3954,39 +3954,39 @@
         </listitem>
         <listitem>
           <para>
-            If a child &lt;node&gt; has any sub-elements, then they 
+            If a child &lt;node&gt; has any sub-elements, then they
             must represent a complete introspection of the child.
-            If a child &lt;node&gt; is empty, then it may or may 
+            If a child &lt;node&gt; is empty, then it may or may
             not have sub-elements; the child must be introspected
-            in order to find out. The intent is that if an object 
+            in order to find out. The intent is that if an object
             knows that its children are "fast" to introspect
-            it can go ahead and return their information, but 
+            it can go ahead and return their information, but
             otherwise it can omit it.
           </para>
         </listitem>
         <listitem>
           <para>
-            The direction element on &lt;arg&gt; may be omitted, 
-            in which case it defaults to "in" for method calls 
-            and "out" for signals. Signals only allow "out" 
+            The direction element on &lt;arg&gt; may be omitted,
+            in which case it defaults to "in" for method calls
+            and "out" for signals. Signals only allow "out"
             so while direction may be specified, it's pointless.
           </para>
         </listitem>
         <listitem>
           <para>
-            The possible directions are "in" and "out", 
+            The possible directions are "in" and "out",
             unlike CORBA there is no "inout"
           </para>
         </listitem>
         <listitem>
           <para>
-            The possible property access flags are 
+            The possible property access flags are
             "readwrite", "read", and "write"
           </para>
         </listitem>
         <listitem>
           <para>
-            Multiple interfaces can of course be listed for 
+            Multiple interfaces can of course be listed for
             one &lt;node&gt;.
           </para>
         </listitem>
@@ -4083,8 +4083,8 @@
     <sect2 id="message-bus-overview">
       <title>Message Bus Overview</title>
       <para>
-        The message bus accepts connections from one or more applications. 
-        Once connected, applications can exchange messages with other 
+        The message bus accepts connections from one or more applications.
+        Once connected, applications can exchange messages with other
         applications that are also connected to the bus.
       </para>
       <para>
@@ -4108,7 +4108,7 @@
       <para>
         Each name may have <firstterm>queued owners</firstterm>.  When an
         application requests a name for a connection and the name is already in
-        use, the bus will optionally add the connection to a queue waiting for 
+        use, the bus will optionally add the connection to a queue waiting for
         the name. If the current owner of the name disconnects or releases
         the name, the next connection in the queue will become the new owner.
       </para>
@@ -4116,7 +4116,7 @@
       <para>
         This feature causes the right thing to happen if you start two text
         editors for example; the first one may request "com.example.TextEditor",
-        and the second will be queued as a possible owner of that name. When 
+        and the second will be queued as a possible owner of that name. When
         the first exits, the second will take over.
       </para>
 
@@ -4139,9 +4139,9 @@
         connections to the same bus.
       </para>
       <para>
-        Ownership of a unique name is a prerequisite for interaction with 
-        the message bus. It logically follows that the unique name is always 
-        the first name that an application comes to own, and the last 
+        Ownership of a unique name is a prerequisite for interaction with
+        the message bus. It logically follows that the unique name is always
+        the first name that an application comes to own, and the last
         one that it loses ownership of.
       </para>
       <para>
@@ -4229,7 +4229,7 @@
               <para>
                 If the method caller is currently the primary owner of the name,
                 the DBUS_NAME_FLAG_ALLOW_REPLACEMENT and DBUS_NAME_FLAG_DO_NOT_QUEUE
-                values are updated with the values from the new RequestName call, 
+                values are updated with the values from the new RequestName call,
                 and nothing further happens.
               </para>
             </listitem>
@@ -4241,8 +4241,8 @@
                 invocation has the DBUS_NAME_FLAG_REPLACE_EXISTING flag, then
                 the caller of RequestName replaces the current primary owner at
                 the head of the queue and the current primary owner moves to the
-                second position in the queue. If the caller of RequestName was 
-                in the queue previously its flags are updated with the values from 
+                second position in the queue. If the caller of RequestName was
+                in the queue previously its flags are updated with the values from
                 the new RequestName in addition to moving it to the head of the queue.
               </para>
             </listitem>
@@ -4285,7 +4285,7 @@
           automatically replace the new primary owner. In other words,
           DBUS_NAME_FLAG_REPLACE_EXISTING is not saved, it is only used at the
           time RequestName is called. This is deliberate to avoid an infinite loop
-          anytime two applications are both DBUS_NAME_FLAG_ALLOW_REPLACEMENT 
+          anytime two applications are both DBUS_NAME_FLAG_ALLOW_REPLACEMENT
           and DBUS_NAME_FLAG_REPLACE_EXISTING.
         </para>
         <para>
@@ -4685,13 +4685,13 @@
           if the security policy of the message bus allows it.
         </para>
         <para>
-          Match rules are added using the AddMatch bus method 
+          Match rules are added using the AddMatch bus method
           (see <xref linkend="bus-messages-add-match"/>).  Rules are
-          specified as a string of comma separated key/value pairs. 
-          Excluding a key from the rule indicates a wildcard match.  
-          For instance excluding the the member from a match rule but 
+          specified as a string of comma separated key/value pairs.
+          Excluding a key from the rule indicates a wildcard match.
+          For instance excluding the the member from a match rule but
           adding a sender would let all messages from that sender through.
-          An example of a complete rule would be 
+          An example of a complete rule would be
           "type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='Foo',path='/bar/foo',destination=':452345.34',arg2='bar'"
         </para>
         <para>
@@ -4721,7 +4721,7 @@
           </footnote>.
         </para>
         <para>
-          The following table describes the keys that can be used to create 
+          The following table describes the keys that can be used to create
           a match rule.
           <informaltable>
             <tgroup cols="3">
@@ -4751,7 +4751,7 @@
                   <entry>An interface name (see <xref linkend="message-protocol-names-interface"/>)</entry>
                   <entry>Match messages sent over or to a particular interface.  An example of an
                   interface match is interface='org.freedesktop.Hal.Manager'.
-                  If a message omits the interface header, it must not match any rule 
+                  If a message omits the interface header, it must not match any rule
                   that specifies this key.</entry>
                 </row>
                 <row>
@@ -4812,10 +4812,10 @@
                 <row>
                   <entry><literal>arg[0, 1, 2, 3, ...]</literal></entry>
                   <entry>Any string</entry>
-                  <entry>Arg matches are special and are used for further restricting the 
+                  <entry>Arg matches are special and are used for further restricting the
                   match based on the arguments in the body of a message. Only arguments of type
-                  STRING can be matched in this way. An example of an argument match 
-                  would be arg3='Foo'. Only argument indexes from 0 to 63 should be 
+                  STRING can be matched in this way. An example of an argument match
+                  would be arg3='Foo'. Only argument indexes from 0 to 63 should be
                   accepted.</entry>
                 </row>
                 <row>
@@ -4927,7 +4927,7 @@
         well-known name, such as <literal>com.example.TextEditor</literal>.
         This implies a contract documented along with the name
         <literal>com.example.TextEditor</literal> for which object
-        the owner of that name will provide, and what interfaces those 
+        the owner of that name will provide, and what interfaces those
         objects will have.
       </para>
       <para>
@@ -5067,9 +5067,9 @@
           only by name.
         </para>
         <para>
-          Contrast this with a per-display scope. To achieve that, we would 
+          Contrast this with a per-display scope. To achieve that, we would
           want a single bus spanning all sessions using a given display.
-          So we might set a <literal>_DBUS_DISPLAY_BUS_ADDRESS</literal> 
+          So we might set a <literal>_DBUS_DISPLAY_BUS_ADDRESS</literal>
           property on screen 0 of the display, pointing to this bus.
         </para>
       </sect3>
@@ -5078,7 +5078,7 @@
     <sect2 id="message-bus-types">
       <title>Well-known Message Bus Instances</title>
       <para>
-        Two standard message bus instances are defined here, along with how 
+        Two standard message bus instances are defined here, along with how
         to locate them and where their service files live.
       </para>
       <sect3 id="message-bus-types-login">
@@ -5089,13 +5089,13 @@
           session may interact with one another using this message bus.
         </para>
         <para>
-          The address of the login session message bus is given 
-          in the <literal>DBUS_SESSION_BUS_ADDRESS</literal> environment 
-          variable. If that variable is not set, applications may 
-          also try to read the address from the X Window System root 
+          The address of the login session message bus is given
+          in the <literal>DBUS_SESSION_BUS_ADDRESS</literal> environment
+          variable. If that variable is not set, applications may
+          also try to read the address from the X Window System root
           window property <literal>_DBUS_SESSION_BUS_ADDRESS</literal>.
           The root window property must have type <literal>STRING</literal>.
-          The environment variable should have precedence over the 
+          The environment variable should have precedence over the
           root window property.
         </para>
         <para>The address of the login session message bus is given in the
@@ -5335,19 +5335,19 @@
         <para>
           A computer may have a <firstterm>system message bus</firstterm>,
           accessible to all applications on the system. This message bus may be
-          used to broadcast system events, such as adding new hardware devices, 
+          used to broadcast system events, such as adding new hardware devices,
           changes in the printer queue, and so forth.
         </para>
         <para>
-          The address of the system message bus is given 
-          in the <literal>DBUS_SYSTEM_BUS_ADDRESS</literal> environment 
-          variable. If that variable is not set, applications should try 
+          The address of the system message bus is given
+          in the <literal>DBUS_SYSTEM_BUS_ADDRESS</literal> environment
+          variable. If that variable is not set, applications should try
           to connect to the well-known address
           <literal>unix:path=/var/run/dbus/system_bus_socket</literal>.
           <footnote>
             <para>
-              The D-Bus reference implementation actually honors the 
-              <literal>$(localstatedir)</literal> configure option 
+              The D-Bus reference implementation actually honors the
+              <literal>$(localstatedir)</literal> configure option
               for this address, on both client and server side.
             </para>
           </footnote>
@@ -5428,7 +5428,7 @@
         </para>
         <para>
           There is no corresponding "disconnect" request; if a client wishes to
-          disconnect from the bus, it simply closes the socket (or other 
+          disconnect from the bus, it simply closes the socket (or other
           communication channel).
         </para>
       </sect3>
@@ -5584,7 +5584,7 @@
         </para>
         <para>
           This signal indicates that the owner of a name has changed.
-          It's also the signal to use to detect the appearance of 
+          It's also the signal to use to detect the appearance of
           new names on the bus.
         </para>
       </sect3>
@@ -6234,7 +6234,7 @@
               </tbody>
             </tgroup>
           </informaltable>
-        Adds a match rule to match messages going through the message bus (see <xref linkend='message-bus-routing-match-rules'/>). 
+        Adds a match rule to match messages going through the message bus (see <xref linkend='message-bus-routing-match-rules'/>).
         If the bus does not have enough resources the <literal>org.freedesktop.DBus.Error.OOM</literal>
         error is returned.
        </para>
@@ -6265,7 +6265,7 @@
               </tbody>
             </tgroup>
           </informaltable>
-        Removes the first rule that matches (see <xref linkend='message-bus-routing-match-rules'/>). 
+        Removes the first rule that matches (see <xref linkend='message-bus-routing-match-rules'/>).
         If the rule is not found the <literal>org.freedesktop.DBus.Error.MatchRuleNotFound</literal>
         error is returned.
        </para>
@@ -6297,9 +6297,9 @@
             </tbody>
           </tgroup>
         </informaltable>
-        Gets the unique ID of the bus. The unique ID here is shared among all addresses the 
-        bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in 
-        <xref linkend="uuids"/>. Each address the bus is listening on also has its own unique 
+        Gets the unique ID of the bus. The unique ID here is shared among all addresses the
+        bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in
+        <xref linkend="uuids"/>. Each address the bus is listening on also has its own unique
         ID, as described in <xref linkend="addresses"/>. The per-bus and per-address IDs are not related.
         There is also a per-machine ID, described in <xref linkend="standard-interfaces-peer"/> and returned
         by org.freedesktop.DBus.Peer.GetMachineId().
@@ -6428,9 +6428,9 @@
           name if the message bus has associated the application's connection
           with the name.  Names may also have <firstterm>queued
           owners</firstterm> (see <xref linkend="term-queued-owner"/>).
-            The bus assigns a unique name to each connection, 
-            see <xref linkend="term-unique-name"/>. Other names 
-              can be thought of as "well-known names" and are 
+            The bus assigns a unique name to each connection,
+            see <xref linkend="term-unique-name"/>. Other names
+              can be thought of as "well-known names" and are
               used to find applications that offer specific functionality.
         </para>
 
@@ -6440,7 +6440,7 @@
         </para>
       </glossdef>
     </glossentry>
-      
+
     <glossentry id="term-message"><glossterm>Message</glossterm>
       <glossdef>
         <para>
@@ -6455,9 +6455,9 @@
     <glossentry id="term-message-bus"><glossterm>Message Bus</glossterm>
       <glossdef>
         <para>
-          The message bus is a special application that forwards 
+          The message bus is a special application that forwards
           or routes messages between a group of applications
-          connected to the message bus. It also manages 
+          connected to the message bus. It also manages
           <firstterm>names</firstterm> used for routing
           messages.
         </para>
@@ -6467,7 +6467,7 @@
     <glossentry id="term-name"><glossterm>Name</glossterm>
       <glossdef>
         <para>
-          See <xref linkend="term-bus-name"/>. "Name" may 
+          See <xref linkend="term-bus-name"/>. "Name" may
             also be used to refer to some of the other names
             in D-Bus, such as interface names.
         </para>
