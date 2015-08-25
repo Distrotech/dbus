@@ -1,5 +1,15 @@
-D-Bus 1.10.0 (UNRELEASED)
+D-Bus 1.10.0 (2015-08-25)
 ==
+
+The “0x20” release.
+
+This is a new stable branch, recommended for use in OS distributions.
+
+Fixes since 1.9.20:
+
+• distribute test/tap-test.sh.in, even if the tarball was built without
+  tests enabled (fd.o #91684, Simon McVittie)
+• work around a fd leak in libcap-ng < 0.7.7 (fd.o #91684, Simon McVittie)
 
 Summary of major changes since 1.8.0:
 
