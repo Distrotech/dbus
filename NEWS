@@ -59,6 +59,8 @@ New bus APIs:
 • org.freedesktop.DBus.Stats interface (semi-privileged)
   · now enabled by default
   · new GetAllMatchRules method
+• org.freedesktop.DBus.Verbose interface (not normally compiled)
+  · toggles the effect of DBUS_VERBOSE
 
 New executables:
 
