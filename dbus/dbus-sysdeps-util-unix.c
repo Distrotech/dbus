@@ -1424,27 +1424,31 @@ _dbus_get_standard_system_servicedirs (DBusList **dirs)
 }
 
 /**
- * Append the absolute path of the system.conf file
+ * Get the absolute path of the system.conf file
  * (there is no system bus on Windows so this can just
  * return FALSE and print a warning or something)
  *
- * @param str the string to append to
+ * @param str the string to append to, which must be empty on entry
  * @returns #FALSE if no memory
  */
 dbus_bool_t
-_dbus_append_system_config_file (DBusString *str)
+_dbus_get_system_config_file (DBusString *str)
 {
+  _dbus_assert (_dbus_string_get_length (str) == 0);
+
   return _dbus_string_append (str, DBUS_SYSTEM_CONFIG_FILE);
 }
 
 /**
- * Append the absolute path of the session.conf file.
+ * Get the absolute path of the session.conf file.
  *
- * @param str the string to append to
+ * @param str the string to append to, which must be empty on entry
  * @returns #FALSE if no memory
  */
 dbus_bool_t
-_dbus_append_session_config_file (DBusString *str)
+_dbus_get_session_config_file (DBusString *str)
 {
+  _dbus_assert (_dbus_string_get_length (str) == 0);
+
   return _dbus_string_append (str, DBUS_SESSION_CONFIG_FILE);
 }

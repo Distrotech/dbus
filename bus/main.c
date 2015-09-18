@@ -440,14 +440,14 @@ main (int argc, char **argv)
         {
           check_two_config_files (&config_file, "system");
 
-          if (!_dbus_append_system_config_file (&config_file))
+          if (!_dbus_get_system_config_file (&config_file))
             exit (1);
         }
       else if (strcmp (arg, "--session") == 0)
         {
           check_two_config_files (&config_file, "session");
 
-          if (!_dbus_append_session_config_file (&config_file))
+          if (!_dbus_get_session_config_file (&config_file))
             exit (1);
         }
       else if (strstr (arg, "--config-file=") == arg)

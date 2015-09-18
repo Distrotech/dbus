@@ -432,8 +432,8 @@ dbus_bool_t _dbus_path_is_absolute    (const DBusString *filename);
 dbus_bool_t _dbus_get_standard_session_servicedirs (DBusList **dirs);
 dbus_bool_t _dbus_get_standard_system_servicedirs (DBusList **dirs);
 
-dbus_bool_t _dbus_append_system_config_file  (DBusString *str);
-dbus_bool_t _dbus_append_session_config_file (DBusString *str);
+dbus_bool_t _dbus_get_system_config_file  (DBusString *str);
+dbus_bool_t _dbus_get_session_config_file (DBusString *str);
 
 /** Opaque type for reading a directory listing */
 typedef struct DBusDirIter DBusDirIter;
