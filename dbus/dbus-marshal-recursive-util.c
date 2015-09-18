@@ -31,6 +31,10 @@
 #include "dbus-internals.h"
 #include <string.h>
 
+#if !defined(PRIx64) && defined(DBUS_WIN)
+#define PRIx64 "I64x"
+#endif
+
 static void
 basic_value_zero (DBusBasicValue *value)
 {
@@ -2644,12 +2648,10 @@ double_read_value (TestTypeNode   *node,
 
   if (!_DBUS_DOUBLES_BITWISE_EQUAL (v, expected))
     {
-#ifdef DBUS_INT64_PRINTF_MODIFIER
-      _dbus_warn ("Expected double %g got %g\n bits = 0x%" DBUS_INT64_PRINTF_MODIFIER "x vs.\n bits = 0x%" DBUS_INT64_PRINTF_MODIFIER "x)\n",
+      _dbus_warn ("Expected double %g got %g\n bits = 0x%" PRIx64 " vs.\n bits = 0x%" PRIx64 ")\n",
                   expected, v,
                   *(dbus_uint64_t*)(char*)&expected,
                   *(dbus_uint64_t*)(char*)&v);
-#endif
       _dbus_assert_not_reached ("test failed");
     }
 

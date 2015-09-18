@@ -29,6 +29,10 @@
 
 #include <string.h>
 
+#if !defined(PRIx64) && defined(DBUS_WIN)
+#define PRIx64 "I64x"
+#endif
+
 #if defined(__GNUC__) && (__GNUC__ >= 4)
 # define _DBUS_ASSERT_ALIGNMENT(type, op, val) \
   _DBUS_STATIC_ASSERT (__extension__ __alignof__ (type) op val)
@@ -1334,10 +1338,8 @@ _dbus_verbose_bytes (const unsigned char *data,
           if (i > 7 &&
               _DBUS_ALIGN_ADDRESS (&data[i], 8) == &data[i])
             {
-#ifdef DBUS_INT64_PRINTF_MODIFIER
-              _dbus_verbose (" u64: 0x%" DBUS_INT64_PRINTF_MODIFIER "x",
+              _dbus_verbose (" u64: 0x%" PRIx64,
                              *(dbus_uint64_t*)&data[i-8]);
-#endif
               _dbus_verbose (" dbl: %g",
                              *(double*)&data[i-8]);
             }

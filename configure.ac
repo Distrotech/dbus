@@ -337,31 +337,6 @@ if test x$enable_compiler_coverage = xyes; then
      AC_DEFINE_UNQUOTED(DBUS_GCOV_ENABLED, 1, [Defined if gcov is enabled to force a rebuild due to config.h changing])
 fi
 
-# glibc21.m4 serial 3
-dnl Copyright (C) 2000-2002, 2004 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
-
-# Test for the GNU C Library, version 2.1 or newer.
-# From Bruno Haible.
-
-AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
-  ac_cv_gnu_library_2_1,
-  [AC_EGREP_CPP([Lucky GNU user],
-    [
-#include <features.h>
-#ifdef __GNU_LIBRARY__
- #if (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 1) || (__GLIBC__ > 2)
-  Lucky GNU user
- #endif
-#endif
-    ],
-    ac_cv_gnu_library_2_1=yes,
-    ac_cv_gnu_library_2_1=no)
-  ]
-)
-
 #### Integer sizes
 
 AC_CHECK_SIZEOF(char)
@@ -380,32 +355,21 @@ $ac_cv_sizeof_int)
   dbusint64=int
   dbusint64_constant='(val)'
   dbusuint64_constant='(val)'
-  dbusint64_printf_modifier='""'
   ;;
 $ac_cv_sizeof_long)
   dbusint64=long
   dbusint64_constant='(val##L)'
   dbusuint64_constant='(val##UL)'
-  dbusint64_printf_modifier='"l"'
   ;;
 $ac_cv_sizeof_long_long)
   dbusint64='long long'
   dbusint64_constant='(val##LL)'
   dbusuint64_constant='(val##ULL)'
-  # Ideally we discover what the format is, but this is
-  # only used in verbose mode, so eh...
-  if test x"$ac_cv_gnu_library_2_1" = xyes; then
-    dbusint64_printf_modifier='"ll"'
-  fi
   ;;
 $ac_cv_sizeof___int64)
   dbusint64=__int64
   dbusint64_constant='(val##i64)'
   dbusuint64_constant='(val##ui64)'
-  # See above case
-  if test x"$ac_cv_gnu_library_2_1" = xyes; then
-    dbusint64_printf_modifier='"ll"'
-  fi
   ;;
 esac
 
@@ -423,9 +387,6 @@ Please report a bug here with details of your platform and compiler:
         DBUS_INT64_TYPE="$dbusint64"
         DBUS_INT64_CONSTANT="$dbusint64_constant"
         DBUS_UINT64_CONSTANT="$dbusuint64_constant"
-	if test x"$dbusint64_printf_modifier" != x; then
-		AC_DEFINE_UNQUOTED(DBUS_INT64_PRINTF_MODIFIER, [$dbusint64_printf_modifier], [Define to printf modifier for 64 bit integer type])
-	fi
         AC_MSG_RESULT($DBUS_INT64_TYPE)
   ])
 
