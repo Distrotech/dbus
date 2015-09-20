@@ -1647,6 +1647,28 @@ _dbus_get_standard_system_servicedirs (DBusList **dirs)
   return TRUE;
 }
 
+static dbus_bool_t
+_dbus_get_config_file_name (DBusString *str,
+                            const char *basename)
+{
+  DBusString tmp;
+
+  if (!_dbus_string_append (str, _dbus_windows_get_datadir ()))
+    return FALSE;
+
+  _dbus_string_init_const (&tmp, "dbus-1");
+
+  if (!_dbus_concat_dir_and_file (str, &tmp))
+    return FALSE;
+
+  _dbus_string_init_const (&tmp, basename);
+
+  if (!_dbus_concat_dir_and_file (str, &tmp))
+    return FALSE;
+
+  return TRUE;
+}
+
 /**
  * Append the absolute path of the system.conf file
  * (there is no system bus on Windows so this can just
