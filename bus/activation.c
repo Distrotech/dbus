@@ -1933,10 +1933,7 @@ bus_activation_activate_service (BusActivation  *activation,
     {
       _dbus_verbose ("Failed to add pending activation cancel hook to transaction\n");
       BUS_SET_OOM (error);
-      _dbus_hash_table_remove_string (activation->pending_activations,
-                                      pending_activation->service_name);
-
-      return FALSE;
+      goto cancel_pending_activation;
     }
 
   if (was_pending_activation)
@@ -1974,7 +1971,7 @@ bus_activation_activate_service (BusActivation  *activation,
             {
               _dbus_verbose ("No memory to create activation message\n");
               BUS_SET_OOM (error);
-              return FALSE;
+              goto cancel_pending_activation;
             }
 
           if (!dbus_message_set_sender (message, DBUS_SERVICE_DBUS) ||
@@ -1986,7 +1983,7 @@ bus_activation_activate_service (BusActivation  *activation,
               _dbus_verbose ("No memory to set args of activation message\n");
               dbus_message_unref (message);
               BUS_SET_OOM (error);
-              return FALSE;
+              goto cancel_pending_activation;
             }
 
           /* Create our transaction */
@@ -1996,7 +1993,7 @@ bus_activation_activate_service (BusActivation  *activation,
               _dbus_verbose ("No memory to create activation transaction\n");
               dbus_message_unref (message);
               BUS_SET_OOM (error);
-              return FALSE;
+              goto cancel_pending_activation;
             }
 
           /* Check whether systemd is already connected */
@@ -2012,7 +2009,7 @@ bus_activation_activate_service (BusActivation  *activation,
             {
               dbus_message_unref (message);
               BUS_SET_OOM (error);
-              return FALSE;
+              goto cancel_pending_activation;
             }
 
           if (service != NULL)
@@ -2047,7 +2044,7 @@ bus_activation_activate_service (BusActivation  *activation,
               _DBUS_ASSERT_ERROR_IS_SET (error);
               _dbus_verbose ("failed to send activation message: %s\n", error->name);
               bus_transaction_cancel_and_free (activation_transaction);
-              return FALSE;
+              goto cancel_pending_activation;
             }
 
           bus_transaction_execute_and_free (activation_transaction);
@@ -2062,7 +2059,7 @@ bus_activation_activate_service (BusActivation  *activation,
   if (!_dbus_string_init (&command))
     {
       BUS_SET_OOM (error);
-      return FALSE;
+      goto cancel_pending_activation;
     }
 
   /* does the bus use a helper? */
@@ -2074,7 +2071,7 @@ bus_activation_activate_service (BusActivation  *activation,
           _dbus_string_free (&command);
           dbus_set_error (error, DBUS_ERROR_SPAWN_FILE_INVALID,
                           "Cannot do system-bus activation with no user\n");
-          return FALSE;
+          goto cancel_pending_activation;
         }
 
       /* join the helper path and the service name */
@@ -2082,19 +2079,19 @@ bus_activation_activate_service (BusActivation  *activation,
         {
           _dbus_string_free (&command);
           BUS_SET_OOM (error);
-          return FALSE;
+          goto cancel_pending_activation;
         }
       if (!_dbus_string_append (&command, " "))
         {
           _dbus_string_free (&command);
           BUS_SET_OOM (error);
-          return FALSE;
+          goto cancel_pending_activation;
         }
       if (!_dbus_string_append (&command, service_name))
         {
           _dbus_string_free (&command);
           BUS_SET_OOM (error);
-          return FALSE;
+          goto cancel_pending_activation;
         }
     }
   else
@@ -2104,7 +2101,7 @@ bus_activation_activate_service (BusActivation  *activation,
         {
           _dbus_string_free (&command);
           BUS_SET_OOM (error);
-          return FALSE;
+          goto cancel_pending_activation;
         }
     }
 
@@ -2113,12 +2110,8 @@ bus_activation_activate_service (BusActivation  *activation,
     {
       _dbus_verbose ("Failed to parse command line: %s\n", entry->exec);
       _DBUS_ASSERT_ERROR_IS_SET (error);
-
-      _dbus_hash_table_remove_string (activation->pending_activations,
-                                      pending_activation->service_name);
-
       _dbus_string_free (&command);
-      return FALSE;
+      goto cancel_pending_activation;
     }
   _dbus_string_free (&command);
 
@@ -2126,7 +2119,7 @@ bus_activation_activate_service (BusActivation  *activation,
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
       dbus_free_string_array (argv);
-      return FALSE;
+      goto cancel_pending_activation;
     }
 
   envp = bus_activation_get_environment (activation);
@@ -2135,7 +2128,7 @@ bus_activation_activate_service (BusActivation  *activation,
     {
       BUS_SET_OOM (error);
       dbus_free_string_array (argv);
-      return FALSE;
+      goto cancel_pending_activation;
     }
 
   _dbus_verbose ("Spawning %s ...\n", argv[0]);
@@ -2167,8 +2160,7 @@ bus_activation_activate_service (BusActivation  *activation,
       dbus_move_error (&tmp_error, error);
       dbus_free_string_array (argv);
       dbus_free_string_array (envp);
-
-      return FALSE;
+      goto cancel_pending_activation;
     }
 
   dbus_free_string_array (argv);
@@ -2189,10 +2181,16 @@ bus_activation_activate_service (BusActivation  *activation,
     {
       BUS_SET_OOM (error);
       _dbus_verbose ("Failed to set babysitter watch functions\n");
-      return FALSE;
+      goto cancel_pending_activation;
     }
 
   return TRUE;
+
+cancel_pending_activation:
+  _DBUS_ASSERT_ERROR_IS_SET (error);
+  _dbus_hash_table_remove_string (activation->pending_activations,
+                                  pending_activation->service_name);
+  return FALSE;
 }
 
 dbus_bool_t
