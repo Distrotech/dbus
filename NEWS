@@ -1,7 +1,14 @@
 D-Bus 1.11.0 (UNRELEASED)
 ==
 
+Dependencies:
+
+• On non-Windows platforms, D-Bus requires an <inttypes.h> that defines
+  C99 constants such as PRId64 and PRIu64.
+
 Fixes:
+
+• Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
 
 • On Windows, fix the logic for replacing the installation prefix
   in service files' Exec lines (fd.o #83539; Milan Crha, Simon McVittie)
