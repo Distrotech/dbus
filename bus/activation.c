@@ -261,6 +261,7 @@ update_desktop_file_entry (BusActivation       *activation,
   DBusString file_path;
   DBusError tmp_error;
   dbus_bool_t retval;
+  DBusString str;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -308,9 +309,18 @@ update_desktop_file_entry (BusActivation       *activation,
                                     error))
     goto out;
 
-  exec = _dbus_strdup (_dbus_replace_install_prefix (exec_tmp));
-  dbus_free (exec_tmp);
-  exec_tmp = NULL;
+  if (!_dbus_string_init (&str))
+    goto out;
+
+  if (!_dbus_string_append (&str, exec_tmp) ||
+      !_dbus_replace_install_prefix (&str) ||
+      !_dbus_string_steal_data (&str, &exec))
+    {
+      _dbus_string_free (&str);
+      goto out;
+    }
+
+  _dbus_string_free (&str);
 
   /* user is not _required_ unless we are using system activation */
   if (!bus_desktop_file_get_string (desktop_file,
@@ -466,6 +476,7 @@ update_desktop_file_entry (BusActivation       *activation,
 
 out:
   /* if these have been transferred into entry, the variables will be NULL */
+  dbus_free (exec_tmp);
   dbus_free (name);
   dbus_free (exec);
   dbus_free (user);

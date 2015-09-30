@@ -1272,17 +1272,18 @@ fail:
   return FALSE;
 }
 
-/*
- * replaces the term DBUS_PREFIX in configure_time_path by the
- * current dbus installation directory. On unix this function is a noop
+/**
+ * Replace the DBUS_PREFIX in the given path, in-place, by the
+ * current D-Bus installation directory. On Unix this function
+ * does nothing, successfully.
  *
- * @param configure_time_path
- * @return real path
+ * @param path path to edit
+ * @return #FALSE on OOM
  */
-const char *
-_dbus_replace_install_prefix (const char *configure_time_path)
+dbus_bool_t
+_dbus_replace_install_prefix (DBusString *path)
 {
-  return configure_time_path;
+  return TRUE;
 }
 
 #define DBUS_UNIX_STANDARD_SESSION_SERVICEDIR "/dbus-1/services"

@@ -1469,72 +1469,67 @@ _dbus_command_for_pid (unsigned long  pid,
   return FALSE;
 }
 
-/*
- * replaces the term DBUS_PREFIX in configure_time_path by the
- * current dbus installation directory. On unix this function is a noop
+/**
+ * Replace the DBUS_PREFIX in the given path, in-place, by the
+ * current D-Bus installation directory. On Unix this function
+ * does nothing, successfully.
  *
- * @param configure_time_path
- * @return real path
+ * @param path path to edit
+ * @return #FALSE on OOM
  */
-const char *
-_dbus_replace_install_prefix (const char *configure_time_path)
+dbus_bool_t
+_dbus_replace_install_prefix (DBusString *path)
 {
 #ifndef DBUS_PREFIX
-  return configure_time_path;
+  /* leave path unchanged */
+  return TRUE;
 #else
-  static char retval[1000];
-  static char runtime_prefix[1000];
-  int len = 1000;
+  DBusString runtime_prefix;
   int i;
 
-  if (!configure_time_path)
-    return NULL;
+  if (!_dbus_string_init (&runtime_prefix))
+    return FALSE;
 
-  if ((!_dbus_get_install_root(runtime_prefix, len) ||
-       strncmp (configure_time_path, DBUS_PREFIX "/",
-                strlen (DBUS_PREFIX) + 1))) {
-     strncpy (retval, configure_time_path, sizeof (retval) - 1);
-     /* strncpy does not guarantee to 0-terminate the string */
-     retval[sizeof (retval) - 1] = '\0';
-  } else {
-     size_t remaining;
+  if (!_dbus_get_install_root (&runtime_prefix))
+    {
+      _dbus_string_free (&runtime_prefix);
+      return FALSE;
+    }
 
-     strncpy (retval, runtime_prefix, sizeof (retval) - 1);
-     retval[sizeof (retval) - 1] = '\0';
-     remaining = sizeof (retval) - 1 - strlen (retval);
-     strncat (retval,
-         configure_time_path + strlen (DBUS_PREFIX) + 1,
-         remaining);
-  }
+  if (_dbus_string_get_length (&runtime_prefix) == 0)
+    {
+      /* cannot determine install root, leave path unchanged */
+      _dbus_string_free (&runtime_prefix);
+      return TRUE;
+    }
+
+  if (_dbus_string_starts_with_c_str (path, DBUS_PREFIX "/"))
+    {
+      /* Replace DBUS_PREFIX "/" with runtime_prefix.
+       * Note unusual calling convention: source is first, then dest */
+      if (!_dbus_string_replace_len (
+            &runtime_prefix, 0, _dbus_string_get_length (&runtime_prefix),
+            path, 0, strlen (DBUS_PREFIX) + 1))
+        {
+          _dbus_string_free (&runtime_prefix);
+          return FALSE;
+        }
+    }
 
   /* Somehow, in some situations, backslashes get collapsed in the string.
    * Since windows C library accepts both forward and backslashes as
    * path separators, convert all backslashes to forward slashes.
    */
 
-  for(i = 0; retval[i] != '\0'; i++) {
-    if(retval[i] == '\\')
-      retval[i] = '/';
-  }
-  return retval;
+  for (i = 0; i < _dbus_string_get_length (path); i++)
+    {
+      if (_dbus_string_get_byte (path, i) == '\\')
+        _dbus_string_set_byte (path, i, '/');
+    }
+
+  return TRUE;
 #endif
 }
-
-/**
- * return the relocated DATADIR
- *
- * @returns relocated DATADIR static string
- */
-
-static const char *
-_dbus_windows_get_datadir (void)
-{
-	return _dbus_replace_install_prefix(DBUS_DATADIR);
-}
-
-#undef DBUS_DATADIR
-#define DBUS_DATADIR _dbus_windows_get_datadir ()
-
 
 #define DBUS_STANDARD_SESSION_SERVICEDIR "/dbus-1/services"
 #define DBUS_STANDARD_SYSTEM_SERVICEDIR "/dbus-1/system-services"
@@ -1583,23 +1578,40 @@ _dbus_get_standard_session_servicedirs (DBusList **dirs)
  the code for accessing services requires absolute base pathes
  in case DBUS_DATADIR is relative make it absolute
 */
-#ifdef DBUS_WIN
   {
     DBusString p;
 
-    _dbus_string_init_const (&p, DBUS_DATADIR);
+    if (!_dbus_string_init (&p))
+      goto oom;
+
+    if (!_dbus_string_append (&p, DBUS_DATADIR) ||
+        !_dbus_replace_install_prefix (&p))
+      {
+        _dbus_string_free (&p);
+        goto oom;
+      }
 
     if (!_dbus_path_is_absolute (&p))
       {
-        char install_root[1000];
-        if (_dbus_get_install_root (install_root, sizeof(install_root)))
-          if (!_dbus_string_append (&servicedir_path, install_root))
+        /* this only works because this is the first thing in the
+         * servicedir_path; if it wasn't, we'd have to use a temporary
+         * string and copy it in */
+        if (!_dbus_get_install_root (&servicedir_path))
+          {
+            _dbus_string_free (&p);
             goto oom;
+          }
       }
+
+    if (!_dbus_string_append (&servicedir_path,
+          _dbus_string_get_const_data (&p)))
+      {
+        _dbus_string_free (&p);
+        goto oom;
+      }
+
+    _dbus_string_free (&p);
   }
-#endif
-  if (!_dbus_string_append (&servicedir_path, DBUS_DATADIR))
-    goto oom;
 
   if (!_dbus_string_append (&servicedir_path, _DBUS_PATH_SEPARATOR))
     goto oom;
@@ -1660,7 +1672,8 @@ _dbus_get_config_file_name (DBusString *str,
 {
   DBusString tmp;
 
-  if (!_dbus_string_append (str, _dbus_windows_get_datadir ()))
+  if (!_dbus_string_append (str, DBUS_DATADIR) ||
+      !_dbus_replace_install_prefix (str))
     return FALSE;
 
   _dbus_string_init_const (&tmp, "dbus-1");

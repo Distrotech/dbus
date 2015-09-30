@@ -14,14 +14,31 @@
 
 static dbus_bool_t print_install_root()
 {
-  char runtime_prefix[1000];
+  DBusString runtime_prefix;
 
-  if (!_dbus_get_install_root(runtime_prefix, sizeof(runtime_prefix)))
+  if (!_dbus_string_init (&runtime_prefix))
     {
-      fprintf(stderr, "dbus_get_install_root() failed\n");
+      _dbus_assert_not_reached ("out of memory");
       return FALSE;
     }
-  fprintf(stdout, "dbus_get_install_root() returned '%s'\n", runtime_prefix);
+
+  if (!_dbus_get_install_root (&runtime_prefix))
+    {
+      _dbus_assert_not_reached ("out of memory");
+      _dbus_string_free (&runtime_prefix);
+      return FALSE;
+    }
+
+  if (_dbus_string_get_length (&runtime_prefix) == 0)
+    {
+      fprintf (stderr, "_dbus_get_install_root() failed\n");
+      _dbus_string_free (&runtime_prefix);
+      return FALSE;
+    }
+
+  fprintf (stdout, "_dbus_get_install_root() returned '%s'\n",
+      _dbus_string_get_const_data (&runtime_prefix));
+  _dbus_string_free (&runtime_prefix);
   return TRUE;
 }
 
@@ -46,11 +63,25 @@ static dbus_bool_t print_service_dirs()
 
 static dbus_bool_t print_replace_install_prefix(const char *s)
 {
-  const char *s2 = _dbus_replace_install_prefix(s);
-  if (!s2)
-    return FALSE;
+  DBusString str;
 
-  fprintf(stdout, "replaced '%s' by '%s'\n", s, s2);
+  if (!_dbus_string_init (&str))
+    {
+      _dbus_assert_not_reached ("out of memory");
+      return FALSE;
+    }
+
+  if (!_dbus_string_append (&str, s) ||
+      !_dbus_replace_install_prefix (&str))
+    {
+      _dbus_assert_not_reached ("out of memory");
+      _dbus_string_free (&str);
+      return FALSE;
+    }
+
+  fprintf(stdout, "replaced '%s' by '%s'\n", s,
+      _dbus_string_get_const_data (&str));
+  _dbus_string_free (&str);
   return TRUE;
 }
 

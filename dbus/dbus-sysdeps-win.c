@@ -2812,14 +2812,11 @@ _dbus_get_install_root_as_hash(DBusString *out)
 {
     DBusString install_path;
 
-    char path[MAX_PATH*2];
-    int path_size = sizeof(path);
-
-    if (!_dbus_get_install_root(path,path_size))
-        return FALSE;
-
     _dbus_string_init(&install_path);
-    _dbus_string_append(&install_path,path);
+
+    if (!_dbus_get_install_root (&install_path) ||
+        _dbus_string_get_length (&install_path) == 0)
+        return FALSE;
 
     _dbus_string_init(out);
     _dbus_string_tolower_ascii(&install_path,0,_dbus_string_get_length(&install_path));
@@ -3288,34 +3285,73 @@ _dbus_get_is_errno_eagain_or_ewouldblock (int e)
 }
 
 /**
- * return the absolute path of the dbus installation 
+ * Fill str with the absolute path of the D-Bus installation, or truncate str
+ * to zero length if we cannot determine it.
  *
- * @param prefix buffer for installation path
- * @param len length of buffer
- * @returns #FALSE on failure
+ * @param str buffer for installation path
+ * @returns #FALSE on OOM, #TRUE if not OOM
  */
 dbus_bool_t
-_dbus_get_install_root(char *prefix, int len)
+_dbus_get_install_root (DBusString *str)
 {
-    //To find the prefix, we cut the filename and also \bin\ if present
-    DWORD pathLength;
+    /* this is just an initial guess */
+    DWORD pathLength = MAX_PATH;
     char *lastSlash;
-    SetLastError( 0 );
-    pathLength = GetModuleFileNameA(_dbus_win_get_dll_hmodule(), prefix, len);
-    if ( pathLength == 0 || GetLastError() != 0 ) {
-        *prefix = '\0';
-        return FALSE;
-    }
+    char *prefix;
+
+    do
+      {
+        /* allocate enough space for our best guess at the length */
+        if (!_dbus_string_set_length (str, pathLength))
+          {
+            _dbus_string_set_length (str, 0);
+            return FALSE;
+          }
+
+        SetLastError (0);
+        pathLength = GetModuleFileNameA (_dbus_win_get_dll_hmodule (),
+            _dbus_string_get_data (str), _dbus_string_get_length (str));
+
+        if (pathLength == 0 || GetLastError () != 0)
+          {
+            /* failed, but not OOM */
+            _dbus_string_set_length (str, 0);
+            return TRUE;
+          }
+
+        /* if the return is strictly less than the buffer size, it has
+         * not been truncated, so we can continue */
+        if (pathLength < (DWORD) _dbus_string_get_length (str))
+          {
+            /* reduce the length to match what Windows filled in */
+            if (!_dbus_string_set_length (str, pathLength))
+              {
+                _dbus_string_set_length (str, 0);
+                return FALSE;
+              }
+
+            break;
+          }
+
+        /* else it may have been truncated; try with a larger buffer */
+        pathLength *= 2;
+      }
+    while (TRUE);
+
+    /* the rest of this function works by direct byte manipulation of the
+     * underlying buffer */
+    prefix = _dbus_string_get_data (str);
+
     lastSlash = _mbsrchr(prefix, '\\');
     if (lastSlash == NULL) {
-        *prefix = '\0';
-        return FALSE;
+        /* failed, but not OOM */
+        _dbus_string_set_length (str, 0);
+        return TRUE;
     }
     //cut off binary name
     lastSlash[1] = 0;
 
     //cut possible "\\bin"
-
     //this fails if we are in a double-byte system codepage and the
     //folder's name happens to end with the *bytes*
     //"\\bin"... (I.e. the second byte of some Han character and then
@@ -3326,6 +3362,9 @@ _dbus_get_install_root(char *prefix, int len)
         lastSlash[-9] = 0;
     else if (lastSlash - prefix >= 12 && strnicmp(lastSlash - 12, "\\bin\\release", 12) == 0)
         lastSlash[-11] = 0;
+
+    /* fix up the length to match the byte-manipulation */
+    _dbus_string_set_length (str, strlen (prefix));
 
     return TRUE;
 }
