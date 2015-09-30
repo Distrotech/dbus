@@ -1493,12 +1493,19 @@ _dbus_replace_install_prefix (const char *configure_time_path)
   if ((!_dbus_get_install_root(runtime_prefix, len) ||
        strncmp (configure_time_path, DBUS_PREFIX "/",
                 strlen (DBUS_PREFIX) + 1))) {
-     strcat (retval, configure_time_path);
-     return retval;
-  }
+     strncpy (retval, configure_time_path, sizeof (retval) - 1);
+     /* strncpy does not guarantee to 0-terminate the string */
+     retval[sizeof (retval) - 1] = '\0';
+  } else {
+     size_t remaining;
 
-  strcpy (retval, runtime_prefix);
-  strcat (retval, configure_time_path + strlen (DBUS_PREFIX) + 1);
+     strncpy (retval, runtime_prefix, sizeof (retval) - 1);
+     retval[sizeof (retval) - 1] = '\0';
+     remaining = sizeof (retval) - 1 - strlen (retval);
+     strncat (retval,
+         configure_time_path + strlen (DBUS_PREFIX) + 1,
+         remaining);
+  }
 
   /* Somehow, in some situations, backslashes get collapsed in the string.
    * Since windows C library accepts both forward and backslashes as
@@ -1644,6 +1651,28 @@ dbus_bool_t
 _dbus_get_standard_system_servicedirs (DBusList **dirs)
 {
   *dirs = NULL;
+  return TRUE;
+}
+
+static dbus_bool_t
+_dbus_get_config_file_name (DBusString *str,
+                            const char *basename)
+{
+  DBusString tmp;
+
+  if (!_dbus_string_append (str, _dbus_windows_get_datadir ()))
+    return FALSE;
+
+  _dbus_string_init_const (&tmp, "dbus-1");
+
+  if (!_dbus_concat_dir_and_file (str, &tmp))
+    return FALSE;
+
+  _dbus_string_init_const (&tmp, basename);
+
+  if (!_dbus_concat_dir_and_file (str, &tmp))
+    return FALSE;
+
   return TRUE;
 }
 

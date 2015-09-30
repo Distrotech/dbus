@@ -85,10 +85,6 @@ _dbus_win_sid_to_name_and_domain (dbus_uid_t uid,
 dbus_bool_t _dbus_file_exists (const char *filename);
 
 DBUS_PRIVATE_EXPORT
-dbus_bool_t _dbus_get_config_file_name(DBusString *config_file, 
-                                       char *s);
-
-DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_get_install_root(char *prefix, int len);
 
 void        _dbus_threads_windows_init_global (void);

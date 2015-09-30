@@ -1,7 +1,10 @@
 D-Bus 1.11.0 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• On Windows, fix the logic for replacing the installation prefix
+  in service files' Exec lines (fd.o #83539; Milan Crha, Simon McVittie)
 
 D-Bus 1.10.0 (2015-08-25)
 ==
