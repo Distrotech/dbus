@@ -2122,7 +2122,8 @@ make_full_path (const DBusString *basedir,
 {
   if (_dbus_path_is_absolute (filename))
     {
-      return _dbus_string_copy (filename, 0, full_path, 0);
+      if (!_dbus_string_copy (filename, 0, full_path, 0))
+        return FALSE;
     }
   else
     {
@@ -2131,9 +2132,12 @@ make_full_path (const DBusString *basedir,
       
       if (!_dbus_concat_dir_and_file (full_path, filename))
         return FALSE;
-
-      return TRUE;
     }
+
+  if (!_dbus_replace_install_prefix (full_path))
+    return FALSE;
+
+  return TRUE;
 }
 
 static dbus_bool_t
