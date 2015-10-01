@@ -92,7 +92,20 @@ set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_DIR}/lib/dbus/machine-id)
 set(DBUS_BINDIR              ${EXPANDED_BINDIR})
 set(DBUS_DAEMONDIR           ${EXPANDED_BINDIR})
 set(DBUS_LOCALSTATEDIR       ${EXPANDED_LOCALSTATEDIR})
-set(DBUS_SYSCONFDIR          ${EXPANDED_SYSCONFDIR})
+
+# On Windows this is relative to where we put the bus setup, in
+# ${datadir}/dbus-1. For simplicity, we only do this if
+# ${sysconfdir} = ${prefix}/etc and ${datadir} = ${prefix}/share.
+#
+# On Unix, or on Windows with weird install layouts, it's the absolute path.
+if(WIN32 AND ${EXPANDED_SYSCONFDIR} STREQUAL ${prefix}/etc AND ${EXPANDED_DATADIR} STREQUAL ${prefix}/share)
+set(SYSCONFDIR_FROM_PKGDATADIR ../../etc)
+set(DATADIR_FROM_PKGSYSCONFDIR ../../share)
+else()
+set(SYSCONFDIR_FROM_PKGDATADIR ${EXPANDED_SYSCONFDIR})
+set(DATADIR_FROM_PKGSYSCONFDIR ${EXPANDED_DATADIR})
+endif()
+
 set(DBUS_LIBEXECDIR          ${EXPANDED_LIBDIR})
 set(DBUS_DATADIR             ${EXPANDED_DATADIR})
 
