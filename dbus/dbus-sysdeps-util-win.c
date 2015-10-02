@@ -1574,33 +1574,19 @@ _dbus_get_standard_session_servicedirs (DBusList **dirs)
       }
   }
 #else
-/*
- the code for accessing services requires absolute base pathes
- in case DBUS_DATADIR is relative make it absolute
-*/
   {
     DBusString p;
 
     if (!_dbus_string_init (&p))
       goto oom;
 
+    /* DBUS_DATADIR is assumed to be absolute; the build systems should
+     * ensure that. */
     if (!_dbus_string_append (&p, DBUS_DATADIR) ||
         !_dbus_replace_install_prefix (&p))
       {
         _dbus_string_free (&p);
         goto oom;
-      }
-
-    if (!_dbus_path_is_absolute (&p))
-      {
-        /* this only works because this is the first thing in the
-         * servicedir_path; if it wasn't, we'd have to use a temporary
-         * string and copy it in */
-        if (!_dbus_get_install_root (&servicedir_path))
-          {
-            _dbus_string_free (&p);
-            goto oom;
-          }
       }
 
     if (!_dbus_string_append (&servicedir_path,

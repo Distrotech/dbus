@@ -3413,17 +3413,13 @@ test_default_session_servicedirs (void)
   DBusString install_root_based;
 
   if (!_dbus_string_init (&install_root_based) ||
-      !_dbus_get_install_root (&install_root_based))
-    _dbus_assert_not_reached ("OOM getting install root");
+      !_dbus_string_append (&install_root_based, DBUS_DATADIR) ||
+      !_dbus_replace_install_prefix (&install_root_based))
+    _dbus_assert_not_reached ("OOM getting relocated DBUS_DATADIR");
 
-  if (_dbus_string_get_length (&install_root_based) > 0)
-    {
-      if (!_dbus_string_append (&install_root_based, DBUS_DATADIR) ||
-          !_dbus_string_append (&install_root_based, "/dbus-1/services"))
-        _dbus_assert_not_reached ("OOM appending to install root");
+  _dbus_assert (_dbus_path_is_absolute (&install_root_based));
 
-      test_session_service_dir_matches[0] = _dbus_string_get_const_data (&install_root_based);
-    }
+  test_session_service_dir_matches[0] = _dbus_string_get_const_data (&install_root_based);
 
 #endif
 
