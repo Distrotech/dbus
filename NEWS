@@ -3,8 +3,17 @@ D-Bus 1.10.2 (UNRELEASED)
 
 Fixes:
 
+• Correct error handling for activation: if there are multiple attempts
+  to activate the same service and it fails immediately, the first attempt
+  would get the correct reply, but the rest would time out. We now send
+  the same error reply to each attempt. (fd.o #92200, Simon McVittie)
+
 • On Windows, fix the logic for replacing the installation prefix
   in service files' Exec lines (fd.o #83539; Milan Crha, Simon McVittie)
+
+• On Windows, if installed in the conventional layout with ${prefix}/etc
+  and ${prefix}/share, use relative paths between bus configuration files
+  to allow the tree to be relocated (fd.o #92028, Simon McVittie)
 
 D-Bus 1.10.0 (2015-08-25)
 ==
