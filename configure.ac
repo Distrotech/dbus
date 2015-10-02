@@ -1651,9 +1651,21 @@ AC_SUBST(DBUS_LIBEXECDIR)
 AC_DEFINE_UNQUOTED(DBUS_LIBEXECDIR,"$DBUS_LIBEXECDIR", [Directory for installing the libexec binaries])
 
 #### Directory to source sysconfdir configuration from
-DBUS_SYSCONFDIR="$EXPANDED_SYSCONFDIR"
-AC_SUBST(DBUS_SYSCONFDIR)
-AC_DEFINE_UNQUOTED(DBUS_SYSCONFDIR,"$DBUS_SYSCONFDIR", [Directory to source sysconfdir configuration from])
+
+# On Windows this is relative to where we put the bus setup, in
+# ${datadir}/dbus-1. For simplicity, we only do this if
+# ${sysconfdir} = ${prefix}/etc and ${datadir} = ${prefix}/share.
+#
+# On Unix, or on Windows with weird install layouts, it's the absolute path.
+AS_IF([test "${dbus_win}" = yes && \
+       test "$EXPANDED_SYSCONFDIR" = "$EXPANDED_PREFIX/etc" && \
+       test "$EXPANDED_DATADIR" = "$EXPANDED_PREFIX/share"],
+      [SYSCONFDIR_FROM_PKGDATADIR="../../etc"
+       DATADIR_FROM_PKGSYSCONFDIR="../../share"],
+      [SYSCONFDIR_FROM_PKGDATADIR="$EXPANDED_SYSCONFDIR"
+       DATADIR_FROM_PKGSYSCONFDIR="$EXPANDED_DATADIR"])
+AC_SUBST([SYSCONFDIR_FROM_PKGDATADIR])
+AC_SUBST([DATADIR_FROM_PKGSYSCONFDIR])
 
 #### Tell tests where to find certain stuff in builddir
 
