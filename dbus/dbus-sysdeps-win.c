@@ -3117,8 +3117,8 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
 
   if (_dbus_daemon_already_runs(address,&shm_name,scope))
     {
-        _dbus_verbose( "found running dbus daemon at %s\n",
-                       _dbus_string_get_const_data (&shm_name) );
+        _dbus_verbose( "found running dbus daemon for scope '%s' at %s\n",
+                       scope ? scope : "", _dbus_string_get_const_data (&shm_name) );
         retval = TRUE;
         goto out;
     }
