@@ -16,7 +16,12 @@ Fixes:
 • Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
 
 • On Windows, fix the logic for replacing the installation prefix
-  in service files' Exec lines (fd.o #83539; Milan Crha, Simon McVittie)
+  in service files' Exec lines, and the corresponding regression test
+  (fd.o #83539; Milan Crha, Simon McVittie)
+
+• On Windows, when including configuration files with <include> or
+  <includedir>, apply the same relocation as for the Exec paths
+  in .service files (fd.o #92028, Simon McVittie)
 
 • On Windows, if installed in the conventional layout with ${prefix}/etc
   and ${prefix}/share, use relative paths between bus configuration files
