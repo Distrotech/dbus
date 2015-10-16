@@ -40,12 +40,18 @@ typedef struct {
 
     DBusConnection *caller;
     const char *caller_name;
+    DBusMessage *caller_message;
+    dbus_bool_t caller_filter_added;
+
     DBusConnection *systemd;
     const char *systemd_name;
     DBusMessage *systemd_message;
+    dbus_bool_t systemd_filter_added;
+
     DBusConnection *activated;
     const char *activated_name;
     DBusMessage *activated_message;
+    dbus_bool_t activated_filter_added;
 } Fixture;
 
 /* this is a macro so it gets the right line number */
@@ -90,6 +96,21 @@ do { \
   g_assert_cmpstr (dbus_message_get_interface (m), ==, NULL); \
   g_assert_cmpstr (dbus_message_get_member (m), ==, NULL); \
   g_assert_cmpstr (dbus_message_get_signature (m), ==, signature); \
+  g_assert_cmpint (dbus_message_get_serial (m), !=, 0); \
+  g_assert_cmpint (dbus_message_get_reply_serial (m), !=, 0); \
+} while (0)
+
+#define assert_error_reply(m, sender, destination, error_name) \
+do { \
+  g_assert_cmpstr (dbus_message_type_to_string (dbus_message_get_type (m)), \
+      ==, dbus_message_type_to_string (DBUS_MESSAGE_TYPE_ERROR)); \
+  g_assert_cmpstr (dbus_message_get_sender (m), ==, sender); \
+  g_assert_cmpstr (dbus_message_get_destination (m), ==, destination); \
+  g_assert_cmpstr (dbus_message_get_error_name (m), ==, error_name); \
+  g_assert_cmpstr (dbus_message_get_path (m), ==, NULL); \
+  g_assert_cmpstr (dbus_message_get_interface (m), ==, NULL); \
+  g_assert_cmpstr (dbus_message_get_member (m), ==, NULL); \
+  g_assert_cmpstr (dbus_message_get_signature (m), ==, "s"); \
   g_assert_cmpint (dbus_message_get_serial (m), !=, 0); \
   g_assert_cmpint (dbus_message_get_reply_serial (m), !=, 0); \
 } while (0)
@@ -150,6 +171,27 @@ activated_filter (DBusConnection *connection,
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+static DBusHandlerResult
+caller_filter (DBusConnection *connection,
+    DBusMessage *message,
+    void *user_data)
+{
+  Fixture *f = user_data;
+
+  if (dbus_message_is_signal (message, DBUS_INTERFACE_DBUS,
+        "NameAcquired") ||
+      dbus_message_is_signal (message, DBUS_INTERFACE_DBUS,
+        "NameLost"))
+    {
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+  g_assert (f->caller_message == NULL);
+  f->caller_message = dbus_message_ref (message);
+
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
 static void
 setup (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
@@ -203,6 +245,7 @@ test_activation (Fixture *f,
   f->systemd = test_connect_to_bus (f->ctx, f->address);
   if (!dbus_connection_add_filter (f->systemd, systemd_filter, f, NULL))
     g_error ("OOM");
+  f->systemd_filter_added = TRUE;
   f->systemd_name = dbus_bus_get_unique_name (f->systemd);
   take_well_known_name (f, f->systemd, "org.freedesktop.systemd1");
 
@@ -222,6 +265,7 @@ test_activation (Fixture *f,
   if (!dbus_connection_add_filter (f->activated, activated_filter,
         f, NULL))
     g_error ("OOM");
+  f->activated_filter_added = TRUE;
   f->activated_name = dbus_bus_get_unique_name (f->activated);
   take_well_known_name (f, f->activated, "com.example.SystemdActivatable1");
 
@@ -509,6 +553,140 @@ test_uae (Fixture *f,
 }
 
 static void
+test_deny_send (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m;
+
+  if (f->address == NULL)
+    return;
+
+  if (!dbus_connection_add_filter (f->caller, caller_filter, f, NULL))
+    g_error ("OOM");
+
+  f->caller_filter_added = TRUE;
+
+  /* The sender sends a message to an activatable service. */
+  m = dbus_message_new_method_call ("com.example.SendDenied", "/foo",
+      "com.example.bar", "Call");
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_connection_send (f->caller, m, NULL);
+  dbus_message_unref (m);
+
+  /* The fake systemd connects to the bus. */
+  f->systemd = test_connect_to_bus (f->ctx, f->address);
+  if (!dbus_connection_add_filter (f->systemd, systemd_filter, f, NULL))
+    g_error ("OOM");
+  f->systemd_filter_added = TRUE;
+  f->systemd_name = dbus_bus_get_unique_name (f->systemd);
+  take_well_known_name (f, f->systemd, "org.freedesktop.systemd1");
+
+  /* It gets its activation request. */
+  while (f->caller_message == NULL && f->systemd_message == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  g_assert (f->caller_message == NULL);
+  g_assert (f->systemd_message != NULL);
+
+  m = f->systemd_message;
+  f->systemd_message = NULL;
+  assert_signal (m, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+      "org.freedesktop.systemd1.Activator", "ActivationRequest", "s",
+      "org.freedesktop.systemd1");
+  dbus_message_unref (m);
+
+  /* systemd starts the activatable service. */
+  f->activated = test_connect_to_bus (f->ctx, f->address);
+  if (!dbus_connection_add_filter (f->activated, activated_filter,
+        f, NULL))
+    g_error ("OOM");
+  f->activated_filter_added = TRUE;
+  f->activated_name = dbus_bus_get_unique_name (f->activated);
+  take_well_known_name (f, f->activated, "com.example.SendDenied");
+
+  /* We re-do the message matching, and now the message is
+   * forbidden by the receive policy. */
+  while (f->activated_message == NULL && f->caller_message == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  g_assert (f->activated_message == NULL);
+
+  m = f->caller_message;
+  f->caller_message = NULL;
+  assert_error_reply (m, DBUS_SERVICE_DBUS, f->caller_name,
+      DBUS_ERROR_ACCESS_DENIED);
+  dbus_message_unref (m);
+}
+
+static void
+test_deny_receive (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m;
+
+  if (f->address == NULL)
+    return;
+
+  if (!dbus_connection_add_filter (f->caller, caller_filter, f, NULL))
+    g_error ("OOM");
+
+  f->caller_filter_added = TRUE;
+
+  /* The sender sends a message to an activatable service. */
+  m = dbus_message_new_method_call ("com.example.ReceiveDenied", "/foo",
+      "com.example.ReceiveDenied", "Call");
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_connection_send (f->caller, m, NULL);
+  dbus_message_unref (m);
+
+  /* The fake systemd connects to the bus. */
+  f->systemd = test_connect_to_bus (f->ctx, f->address);
+  if (!dbus_connection_add_filter (f->systemd, systemd_filter, f, NULL))
+    g_error ("OOM");
+  f->systemd_filter_added = TRUE;
+  f->systemd_name = dbus_bus_get_unique_name (f->systemd);
+  take_well_known_name (f, f->systemd, "org.freedesktop.systemd1");
+
+  /* It gets its activation request. */
+  while (f->systemd_message == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = f->systemd_message;
+  f->systemd_message = NULL;
+  assert_signal (m, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+      "org.freedesktop.systemd1.Activator", "ActivationRequest", "s",
+      "org.freedesktop.systemd1");
+  dbus_message_unref (m);
+
+  /* systemd starts the activatable service. */
+  f->activated = test_connect_to_bus (f->ctx, f->address);
+  if (!dbus_connection_add_filter (f->activated, activated_filter,
+        f, NULL))
+    g_error ("OOM");
+  f->activated_filter_added = TRUE;
+  f->activated_name = dbus_bus_get_unique_name (f->activated);
+  take_well_known_name (f, f->activated, "com.example.ReceiveDenied");
+
+  /* We re-do the message matching, and now the message is
+   * forbidden by the receive policy. */
+  while (f->caller_message == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = f->caller_message;
+  f->caller_message = NULL;
+  assert_error_reply (m, DBUS_SERVICE_DBUS, f->caller_name,
+      DBUS_ERROR_ACCESS_DENIED);
+  dbus_message_unref (m);
+
+  /* The activated service never even saw it. */
+  g_assert (f->activated_message == NULL);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -517,6 +695,9 @@ teardown (Fixture *f,
 
   if (f->caller != NULL)
     {
+      if (f->caller_filter_added)
+        dbus_connection_remove_filter (f->caller, caller_filter, f);
+
       dbus_connection_close (f->caller);
       dbus_connection_unref (f->caller);
       f->caller = NULL;
@@ -524,7 +705,9 @@ teardown (Fixture *f,
 
   if (f->systemd != NULL)
     {
-      dbus_connection_remove_filter (f->systemd, systemd_filter, f);
+      if (f->systemd_filter_added)
+        dbus_connection_remove_filter (f->systemd, systemd_filter, f);
+
       dbus_connection_close (f->systemd);
       dbus_connection_unref (f->systemd);
       f->systemd = NULL;
@@ -532,7 +715,9 @@ teardown (Fixture *f,
 
   if (f->activated != NULL)
     {
-      dbus_connection_remove_filter (f->activated, activated_filter, f);
+      if (f->activated_filter_added)
+        dbus_connection_remove_filter (f->activated, activated_filter, f);
+
       dbus_connection_close (f->activated);
       dbus_connection_unref (f->activated);
       f->activated = NULL;
@@ -554,6 +739,10 @@ main (int argc,
       setup, test_activation, teardown);
   g_test_add ("/sd-activation/uae", Fixture, NULL,
       setup, test_uae, teardown);
+  g_test_add ("/sd-activation/deny-send", Fixture, NULL,
+      setup, test_deny_send, teardown);
+  g_test_add ("/sd-activation/deny-receive", Fixture, NULL,
+      setup, test_deny_receive, teardown);
 
   return g_test_run ();
 }

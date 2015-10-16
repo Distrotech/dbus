@@ -430,6 +430,8 @@ static_data = \
 	data/sha-1/bit-messages.sha1 \
 	data/sha-1/byte-hashes.sha1 \
 	data/sha-1/byte-messages.sha1 \
+	data/systemd-activation/com.example.ReceiveDenied.service \
+	data/systemd-activation/com.example.SendDenied.service \
 	data/systemd-activation/com.example.SystemdActivatable1.service \
 	data/systemd-activation/com.example.SystemdActivatable2.service \
 	data/systemd-activation/com.example.SystemdActivatable3.service \

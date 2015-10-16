@@ -3,9 +3,15 @@
 <busconfig>
   <listen>@TEST_LISTEN@</listen>
   <servicedir>@DBUS_TEST_DATA@/systemd-activation</servicedir>
+
   <policy context="default">
     <allow send_destination="*"/>
     <allow receive_sender="*"/>
     <allow own="*"/>
+  </policy>
+
+  <policy context="mandatory">
+    <deny send_destination="com.example.SendDenied"/>
+    <deny receive_interface="com.example.ReceiveDenied" receive_member="Call"/>
   </policy>
 </busconfig>
