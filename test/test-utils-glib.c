@@ -93,22 +93,14 @@ child_setup (gpointer user_data)
 static gchar *
 spawn_dbus_daemon (const gchar *binary,
     const gchar *configuration,
+    const gchar *listen_address,
     TestUser user,
     GPid *daemon_pid)
 {
   GError *error = NULL;
   GString *address;
   gint address_fd;
-  const gchar *const argv[] = {
-      binary,
-      configuration,
-      "--nofork",
-      "--print-address=1", /* stdout */
-#ifdef DBUS_UNIX
-      "--systemd-activation",
-#endif
-      NULL
-  };
+  GPtrArray *argv;
 #ifdef DBUS_UNIX
   const struct passwd *pwd = NULL;
 #endif
@@ -166,8 +158,23 @@ spawn_dbus_daemon (const gchar *binary,
 #endif
     }
 
+  argv = g_ptr_array_new_with_free_func (g_free);
+  g_ptr_array_add (argv, g_strdup (binary));
+  g_ptr_array_add (argv, g_strdup (configuration));
+  g_ptr_array_add (argv, g_strdup ("--nofork"));
+  g_ptr_array_add (argv, g_strdup ("--print-address=1")); /* stdout */
+
+  if (listen_address != NULL)
+    g_ptr_array_add (argv, g_strdup (listen_address));
+
+#ifdef DBUS_UNIX
+  g_ptr_array_add (argv, g_strdup ("--systemd-activation"));
+#endif
+
+  g_ptr_array_add (argv, NULL);
+
   g_spawn_async_with_pipes (NULL, /* working directory */
-      (gchar **) argv, /* g_s_a_w_p() is not const-correct :-( */
+      (gchar **) argv->pdata,
       NULL, /* envp */
       G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 #ifdef DBUS_UNIX
@@ -181,6 +188,8 @@ spawn_dbus_daemon (const gchar *binary,
       NULL, /* child's stderr = our stderr */
       &error);
   g_assert_no_error (error);
+
+  g_ptr_array_free (argv, TRUE);
 
   address = g_string_new (NULL);
 
@@ -223,7 +232,13 @@ test_get_dbus_daemon (const gchar *config_file,
 {
   gchar *dbus_daemon;
   gchar *arg;
+  const gchar *listen_address = NULL;
   gchar *address;
+
+  /* we often have to override this because on Windows, the default may be
+   * autolaunch:, which is globally-scoped and hence unsuitable for
+   * regression tests */
+  listen_address = "--address=" TEST_LISTEN;
 
   if (config_file != NULL)
     {
@@ -239,6 +254,10 @@ test_get_dbus_daemon (const gchar *config_file,
       arg = g_strdup_printf (
           "--config-file=%s/%s",
           g_getenv ("DBUS_TEST_DATA"), config_file);
+
+      /* The configuration file is expected to give a suitable address,
+       * do not override it */
+      listen_address = NULL;
     }
   else if (g_getenv ("DBUS_TEST_DATADIR") != NULL)
     {
@@ -276,7 +295,8 @@ test_get_dbus_daemon (const gchar *config_file,
     }
   else
     {
-      address = spawn_dbus_daemon (dbus_daemon, arg, user, daemon_pid);
+      address = spawn_dbus_daemon (dbus_daemon, arg,
+          listen_address, user, daemon_pid);
     }
 
   g_free (dbus_daemon);
