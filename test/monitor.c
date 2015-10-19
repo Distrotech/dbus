@@ -128,11 +128,13 @@ static Config no_eavesdrop_config = {
     FALSE
 };
 
+#ifdef DBUS_UNIX
 static Config fake_systemd_config = {
     "valid-config-files/systemd-activation.conf",
     NULL,
     FALSE
 };
+#endif
 
 static Config side_effects_config = {
     NULL,
@@ -1158,6 +1160,8 @@ test_selective (Fixture *f,
   g_assert (m == NULL);
 }
 
+#ifdef DBUS_UNIX
+/* currently only used for the systemd activation test */
 static void
 expect_new_connection (Fixture *f)
 {
@@ -1184,6 +1188,7 @@ expect_new_connection (Fixture *f)
   dbus_message_unref (m);
 }
 
+/* currently only used for the systemd activation test */
 static void
 take_well_known_name (Fixture *f,
     DBusConnection *connection,
@@ -1197,6 +1202,7 @@ take_well_known_name (Fixture *f,
   g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
 }
 
+/* currently only used for the systemd activation test */
 static void
 expect_take_well_known_name (Fixture *f,
     DBusConnection *connection,
@@ -1426,6 +1432,7 @@ test_activation (Fixture *f,
       "com.example.Nope");
   dbus_message_unref (m);
 }
+#endif /* DBUS_UNIX */
 
 static void
 teardown (Fixture *f,
@@ -1516,8 +1523,12 @@ main (int argc,
       setup, test_unicast_signal, teardown);
   g_test_add ("/monitor/no-eavesdrop", Fixture, &no_eavesdrop_config,
       setup, test_unicast_signal, teardown);
+
+#ifdef DBUS_UNIX
+  /* this relies on the systemd activation code path */
   g_test_add ("/monitor/activation", Fixture, &fake_systemd_config,
       setup, test_activation, teardown);
+#endif
 
   return g_test_run ();
 }
