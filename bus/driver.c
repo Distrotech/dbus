@@ -2006,10 +2006,7 @@ bus_driver_handle_become_monitor (DBusConnection *connection,
       rule = bus_match_rule_parse (connection, &str, error);
 
       if (rule == NULL)
-        {
-          BUS_SET_OOM (error);
-          goto out;
-        }
+        goto out;
 
       /* monitors always eavesdrop */
       bus_match_rule_set_client_is_eavesdropping (rule, TRUE);
