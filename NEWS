@@ -8,6 +8,11 @@ Fixes:
   would get the correct reply, but the rest would time out. We now send
   the same error reply to each attempt. (fd.o #92200, Simon McVittie)
 
+• If BecomeMonitor is called with a syntactically invalid match rule,
+  don't crash with an assertion failure, fixing a regression in 1.9.10.
+  This was not exploitable as a denial of service, because the check
+  for a privileged user is done first. (fd.o #92298, Simon McVittie)
+
 • On Windows, fix the logic for replacing the installation prefix
   in service files' Exec lines (fd.o #83539; Milan Crha, Simon McVittie)
 
