@@ -1202,6 +1202,12 @@ if test x$enable_systemd = xyes -a x$have_systemd != xyes ; then
     AC_MSG_ERROR([Explicitly requested systemd support, but systemd not found])
 fi
 
+# If not found in $PATH, we might still have systemd and systemctl at runtime
+# (perhaps dbus is being compiled in a minimal chroot with no systemd).
+# Assume the upstream-recommended location. Distributors with split /usr
+# can override this with ./configure SYSTEMCTL=/bin/systemctl
+AC_PATH_PROG([SYSTEMCTL], [systemctl], [/usr/bin/systemctl])
+
 # libaudit detection
 if test x$enable_libaudit = xno ; then
     have_libaudit=no;
