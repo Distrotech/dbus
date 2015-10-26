@@ -514,6 +514,155 @@ become_monitor (Fixture *f)
 }
 
 /*
+ * Test what happens if the method call arguments are invalid.
+ */
+static void
+test_invalid (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m;
+  DBusPendingCall *pc;
+  dbus_bool_t ok;
+  DBusMessageIter appender, array_appender;
+  dbus_uint32_t zero = 0;
+  dbus_uint32_t invalid_flags = G_MAXUINT32;
+  const char *s;
+
+  if (f->address == NULL)
+    return;
+
+  dbus_connection_set_route_peer_messages (f->monitor, TRUE);
+
+  /* Try to become a monitor but specify nonzero flags - not allowed */
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_MONITORING, "BecomeMonitor");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &appender);
+
+  if (!dbus_message_iter_open_container (&appender, DBUS_TYPE_ARRAY, "s",
+        &array_appender))
+    g_error ("OOM");
+
+  if (!dbus_message_iter_close_container (&appender, &array_appender) ||
+      !dbus_message_iter_append_basic (&appender, DBUS_TYPE_UINT32,
+        &invalid_flags))
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->monitor, m, &pc,
+        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+        &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  g_assert_cmpint (dbus_message_get_type (m), ==, DBUS_MESSAGE_TYPE_ERROR);
+  g_assert_cmpstr (dbus_message_get_error_name (m), ==,
+      DBUS_ERROR_INVALID_ARGS);
+
+  /* Try to become a monitor but specify a bad match rule -
+   * also not allowed */
+
+  dbus_pending_call_unref (pc);
+  dbus_message_unref (m);
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_MONITORING, "BecomeMonitor");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &appender);
+
+  if (!dbus_message_iter_open_container (&appender, DBUS_TYPE_ARRAY, "s",
+        &array_appender))
+    g_error ("OOM");
+
+  /* Syntactically incorrect match rule taken from #92298 - was probably
+   * intended to be path='/modules/...'
+   */
+  s = "interface='org.kde.walletd',member='/modules/kwalletd/org.kde.KWallet/walletOpened'";
+
+  if (!dbus_message_iter_append_basic (&array_appender, DBUS_TYPE_STRING,
+        &s) ||
+      !dbus_message_iter_close_container (&appender, &array_appender) ||
+      !dbus_message_iter_append_basic (&appender, DBUS_TYPE_UINT32, &zero) ||
+      !dbus_connection_send_with_reply (f->monitor, m, &pc,
+        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+        &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  g_assert_cmpint (dbus_message_get_type (m), ==, DBUS_MESSAGE_TYPE_ERROR);
+  g_assert_cmpstr (dbus_message_get_error_name (m), ==,
+      DBUS_ERROR_MATCH_RULE_INVALID);
+
+  dbus_pending_call_unref (pc);
+  dbus_message_unref (m);
+
+  /* We did not become a monitor, so we can still call methods. */
+
+  pc = NULL;
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS, "GetId");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->monitor, m, &pc,
+        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+        &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  ok = dbus_message_get_args (m, &f->e,
+      DBUS_TYPE_STRING, &s,
+      DBUS_TYPE_INVALID);
+  test_assert_no_error (&f->e);
+  g_assert (ok);
+  g_assert_cmpstr (s, !=, NULL);
+  g_assert_cmpstr (s, !=, "");
+
+  dbus_pending_call_unref (pc);
+  dbus_message_unref (m);
+}
+
+/*
  * Test the side-effects of becoming a monitor.
  */
 static void
@@ -1497,6 +1646,8 @@ main (int argc,
 {
   test_init (&argc, &argv);
 
+  g_test_add ("/monitor/invalid", Fixture, NULL,
+      setup, test_invalid, teardown);
   g_test_add ("/monitor/become", Fixture, &side_effects_config,
       setup, test_become_monitor, teardown);
   g_test_add ("/monitor/broadcast", Fixture, NULL,
