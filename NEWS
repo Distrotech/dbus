@@ -18,6 +18,10 @@ Fixes:
   This was not exploitable as a denial of service, because the check
   for a privileged user is done first. (fd.o #92298, Simon McVittie)
 
+• On Linux with --enable-user-session, add the bus address to the
+  environment of systemd services for better backwards compatibility
+  (fd.o #92612, Jan Alexander Steffens)
+
 • Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
 
 • On Windows, fix the logic for replacing the installation prefix
@@ -31,6 +35,9 @@ Fixes:
 • On Windows, if installed in the conventional layout with ${prefix}/etc
   and ${prefix}/share, use relative paths between bus configuration files
   to allow the tree to be relocated (fd.o #92028, Simon McVittie)
+
+• Make more of the regression tests pass in Windows builds (fd.o #92538,
+  Simon McVittie)
 
 D-Bus 1.10.0 (2015-08-25)
 ==

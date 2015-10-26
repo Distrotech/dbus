@@ -151,11 +151,17 @@ installable_tests += \
 	test-marshal \
 	test-refs \
 	test-relay \
-	test-sd-activation \
 	test-syntax \
 	test-syslog \
 	test-uid-permissions \
 	$(NULL)
+
+if DBUS_UNIX
+installable_tests += \
+	test-sd-activation \
+	$(NULL)
+endif DBUS_UNIX
+
 installable_manual_tests += \
 	manual-authz \
 	$(NULL)
@@ -216,6 +222,7 @@ test_dbus_daemon_eavesdrop_LDADD = \
     $(GLIB_LIBS) \
     $(NULL)
 
+if DBUS_UNIX
 test_sd_activation_SOURCES = \
     sd-activation.c \
     $(NULL)
@@ -223,6 +230,7 @@ test_sd_activation_LDADD = \
     libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
+endif
 
 test_marshal_SOURCES = marshal.c
 test_marshal_LDADD = \
