@@ -8,6 +8,22 @@ Dependencies:
 
 Fixes:
 
+• Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
+
+• On Windows, when including configuration files with <include> or
+  <includedir>, apply the same relocation as for the Exec paths
+  in .service files (fd.o #92028, Simon McVittie)
+
+• On Windows, fix the regression test for relocating service files' Exec
+  lines (fd.o #83539, Simon McVittie)
+
+D-Bus 1.10.2 (2015-10-26)
+==
+
+The “worst pies in London” release.
+
+Fixes:
+
 • Correct error handling for activation: if there are multiple attempts
   to activate the same service and it fails immediately, the first attempt
   would get the correct reply, but the rest would time out. We now send
@@ -22,15 +38,8 @@ Fixes:
   environment of systemd services for better backwards compatibility
   (fd.o #92612, Jan Alexander Steffens)
 
-• Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
-
 • On Windows, fix the logic for replacing the installation prefix
-  in service files' Exec lines, and the corresponding regression test
-  (fd.o #83539; Milan Crha, Simon McVittie)
-
-• On Windows, when including configuration files with <include> or
-  <includedir>, apply the same relocation as for the Exec paths
-  in .service files (fd.o #92028, Simon McVittie)
+  in service files' Exec lines (fd.o #83539; Milan Crha, Simon McVittie)
 
 • On Windows, if installed in the conventional layout with ${prefix}/etc
   and ${prefix}/share, use relative paths between bus configuration files
