@@ -3481,7 +3481,8 @@ test_default_session_servicedirs (void)
   i = 0;
   while ((link = _dbus_list_pop_first_link (&dirs)))
     {
-      printf ("    test service dir: %s\n", (char *)link->data);
+      printf ("    test service dir: '%s'\n", (char *)link->data);
+      printf ("    current standard service dir: '%s'\n", test_session_service_dir_matches[i]);
       if (test_session_service_dir_matches[i] == NULL)
         {
           printf ("more directories parsed than in match set\n");
@@ -3493,7 +3494,7 @@ test_default_session_servicedirs (void)
       if (strcmp (test_session_service_dir_matches[i], 
                   (char *)link->data) != 0)
         {
-          printf ("%s directory does not match %s in the match set\n", 
+          printf ("'%s' directory does not match '%s' in the match set\n",
                   (char *)link->data,
                   test_session_service_dir_matches[i]);
           dbus_free (link->data);
