@@ -288,7 +288,7 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
       return 0;
     }
 
-  _dbus_verbose ("trying to get peers pid");
+  _dbus_verbose ("trying to get peer's pid\n");
 
   result = get_pid_from_extended_tcp_table (peer_port);
   if (result > 0)
