@@ -2935,6 +2935,7 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
   char *shared_addr = NULL;
   DBusString shm_name;
   DBusString mutex_name;
+  dbus_uint64_t len;
 
   _dbus_assert (address);
 
@@ -2969,7 +2970,7 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
     }
 
   // create shm
-  dbus_uint64_t len = strlen( address ) + 1;
+  len = strlen (address) + 1;
 
   hDBusSharedMem = CreateFileMappingA( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
                                        len >> 32, len & 0xffffffffu,
