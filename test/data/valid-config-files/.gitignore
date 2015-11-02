@@ -2,6 +2,5 @@ debug-allow-all.conf
 debug-allow-all-sha1.conf
 incoming-limit.conf
 session.conf
-system.conf
 run-with-tmp-session-bus.conf
 finite-timeout.conf

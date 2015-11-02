@@ -3680,6 +3680,11 @@ bus_config_parser_test (const DBusString *test_data_dir)
   if (!process_test_valid_subdir (test_data_dir, "valid-config-files", VALID))
     return FALSE;
 
+#ifndef DBUS_WIN
+  if (!process_test_valid_subdir (test_data_dir, "valid-config-files-system", VALID))
+    return FALSE;
+#endif
+
   if (!process_test_valid_subdir (test_data_dir, "invalid-config-files", INVALID))
     return FALSE;
 
