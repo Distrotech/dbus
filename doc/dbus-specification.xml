@@ -1383,12 +1383,7 @@
                   <para>
                     This message does not expect method return replies or
                     error replies, even if it is of a type that can
-                    have a reply; the reply can be omitted as an
-                    optimization. It is compliant with this specification
-                    to return the reply despite this flag, although doing
-                    so on a bus with a non-trivial security policy
-                    (such as the well-known system bus) may result in
-                    access denial messages being logged for the reply.
+                    have a reply; the reply should be omitted.
                   </para>
                   <para>
                     Note that METHOD_CALL is the only message type currently
@@ -1864,12 +1859,9 @@
           header field.
         </para>
         <para>
-          If a <literal>METHOD_CALL</literal> message has the flag <literal>NO_REPLY_EXPECTED</literal>, 
-          then as an optimization the application receiving the method 
-          call may choose to omit the reply message (regardless of 
-          whether the reply would have been <literal>METHOD_RETURN</literal> or <literal>ERROR</literal>). 
-          However, it is also acceptable to ignore the <literal>NO_REPLY_EXPECTED</literal>
-          flag and reply anyway.
+          If a <literal>METHOD_CALL</literal> message has the flag <literal>NO_REPLY_EXPECTED</literal>,
+          then the application receiving the method should not send the reply message (regardless of
+          whether the reply would have been <literal>METHOD_RETURN</literal> or <literal>ERROR</literal>).
         </para>
         <para>
           Unless a message has the flag <literal>NO_AUTO_START</literal>, if the
