@@ -616,13 +616,16 @@ babysitter (void *parameter)
       DWORD status;
 
       PING();
+      // wait until process finished
       WaitForSingleObject (sitter->child_handle, INFINITE);
 
       PING();
       ret = GetExitCodeProcess (sitter->child_handle, &status);
-
-      sitter->child_status = status;
-      sitter->have_child_status = TRUE;
+      if (ret)
+        {
+          sitter->child_status = status;
+          sitter->have_child_status = TRUE;
+        }
 
       CloseHandle (sitter->child_handle);
       sitter->child_handle = NULL;
@@ -637,7 +640,7 @@ babysitter (void *parameter)
 
   _dbus_babysitter_unref (sitter);
 
-  return 0;
+  return ret ? 0 : 1;
 }
 
 dbus_bool_t
