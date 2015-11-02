@@ -3402,11 +3402,18 @@ test_default_session_servicedirs (void)
   DBusList *link;
   DBusString progs;
   int i;
-
+  dbus_bool_t ret = FALSE;
 #ifdef DBUS_WIN
   const char *common_progs;
   char buffer[1024];
+#endif
 
+  /* On Unix we don't actually use this variable, but it's easier to handle the
+   * deallocation if we always allocate it, whether needed or not */
+  if (!_dbus_string_init (&progs))
+    _dbus_assert_not_reached ("OOM allocating progs");
+
+#ifdef DBUS_WIN
   if (_dbus_get_install_root(buffer, sizeof(buffer)))
     {
       strcat(buffer,DBUS_DATADIR);
@@ -3415,27 +3422,17 @@ test_default_session_servicedirs (void)
     }
 #endif
 
-  /* On Unix we don't actually use this variable, but it's easier to handle the
-   * deallocation if we always allocate it, whether needed or not */
-  if (!_dbus_string_init (&progs))
-    _dbus_assert_not_reached ("OOM allocating progs");
-
 #ifndef DBUS_UNIX
   common_progs = _dbus_getenv ("CommonProgramFiles");
 
   if (common_progs) 
     {
       if (!_dbus_string_append (&progs, common_progs)) 
-        {
-          _dbus_string_free (&progs);
-          return FALSE;
-        }
+        goto out;
 
       if (!_dbus_string_append (&progs, "/dbus-1/services")) 
-        {
-          _dbus_string_free (&progs);
-          return FALSE;
-        }
+        goto out;
+
       test_session_service_dir_matches[1] = _dbus_string_get_const_data(&progs);
     }
 #endif
@@ -3457,8 +3454,7 @@ test_default_session_servicedirs (void)
           printf ("error with default session service directories\n");
 	      dbus_free (link->data);
     	  _dbus_list_free_link (link);
-          _dbus_string_free (&progs);
-          return FALSE;
+          goto out;
         }
  
       dbus_free (link->data);
@@ -3485,8 +3481,7 @@ test_default_session_servicedirs (void)
           printf ("more directories parsed than in match set\n");
           dbus_free (link->data);
           _dbus_list_free_link (link);
-          _dbus_string_free (&progs);
-          return FALSE;
+          goto out;
         }
  
       if (strcmp (test_session_service_dir_matches[i], 
@@ -3497,8 +3492,7 @@ test_default_session_servicedirs (void)
                   test_session_service_dir_matches[i]);
           dbus_free (link->data);
           _dbus_list_free_link (link);
-          _dbus_string_free (&progs);
-          return FALSE;
+          goto out;
         }
 
       ++i;
@@ -3511,13 +3505,14 @@ test_default_session_servicedirs (void)
     {
       printf ("extra data %s in the match set was not matched\n",
               test_session_service_dir_matches[i]);
-
-      _dbus_string_free (&progs);
-      return FALSE;
+      goto out;
     }
-    
+
+  ret = TRUE;
+
+out:
   _dbus_string_free (&progs);
-  return TRUE;
+  return ret;
 }
 
 static const char *test_system_service_dir_matches[] = 
