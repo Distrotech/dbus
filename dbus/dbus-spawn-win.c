@@ -582,6 +582,7 @@ spawn_program (char* name, char** argv, char** envp)
 static DWORD __stdcall
 babysitter (void *parameter)
 {
+  int ret = 0;
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
 
   PING();
@@ -612,7 +613,6 @@ babysitter (void *parameter)
 
   if (sitter->child_handle != NULL)
     {
-      int ret;
       DWORD status;
 
       PING();
