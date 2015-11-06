@@ -72,8 +72,8 @@ send_one_message (DBusConnection *connection,
                                           message,
                                           &stack_error))
     {
-      if (!bus_transaction_capture_error_reply (transaction, &stack_error,
-                                                message))
+      if (!bus_transaction_capture_error_reply (transaction, sender,
+                                                &stack_error, message))
         {
           bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
                            "broadcast rejected, but not enough "
@@ -93,8 +93,8 @@ send_one_message (DBusConnection *connection,
                       bus_connection_get_name (connection),
                       bus_connection_get_loginfo (connection));
 
-      if (!bus_transaction_capture_error_reply (transaction, &stack_error,
-                                                message))
+      if (!bus_transaction_capture_error_reply (transaction, sender,
+                                                &stack_error, message))
         {
           bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
                            "broadcast with Unix fd not delivered, but not "
@@ -370,15 +370,15 @@ bus_dispatch (DBusConnection *connection,
    */
   service_name = dbus_message_get_destination (message);
 
-  if (!bus_transaction_capture (transaction, connection, message))
-    {
-      BUS_SET_OOM (&error);
-      goto out;
-    }
-
   if (service_name &&
       strcmp (service_name, DBUS_SERVICE_DBUS) == 0) /* to bus driver */
     {
+      if (!bus_transaction_capture (transaction, connection, NULL, message))
+        {
+          BUS_SET_OOM (&error);
+          goto out;
+        }
+
       if (!bus_context_check_security_policy (context, transaction,
                                               connection, NULL, NULL, message, &error))
         {
@@ -392,6 +392,12 @@ bus_dispatch (DBusConnection *connection,
     }
   else if (!bus_connection_is_active (connection)) /* clients must talk to bus driver first */
     {
+      if (!bus_transaction_capture (transaction, connection, NULL, message))
+        {
+          BUS_SET_OOM (&error);
+          goto out;
+        }
+
       _dbus_verbose ("Received message from non-registered client. Disconnecting.\n");
       dbus_connection_close (connection);
       goto out;
@@ -412,6 +418,14 @@ bus_dispatch (DBusConnection *connection,
       if (service == NULL && dbus_message_get_auto_start (message))
         {
           BusActivation *activation;
+
+          if (!bus_transaction_capture (transaction, connection, NULL,
+                                        message))
+            {
+              BUS_SET_OOM (&error);
+              goto out;
+            }
+
           /* We can't do the security policy check here, since the addressed
            * recipient service doesn't exist yet. We do it before sending the
            * message after the service has been created.
@@ -430,6 +444,13 @@ bus_dispatch (DBusConnection *connection,
         }
       else if (service == NULL)
         {
+          if (!bus_transaction_capture (transaction, connection,
+                                        NULL, message))
+            {
+              BUS_SET_OOM (&error);
+              goto out;
+            }
+
           dbus_set_error (&error,
                           DBUS_ERROR_NAME_HAS_NO_OWNER,
                           "Name \"%s\" does not exist",
@@ -440,6 +461,21 @@ bus_dispatch (DBusConnection *connection,
         {
           addressed_recipient = bus_service_get_primary_owners_connection (service);
           _dbus_assert (addressed_recipient != NULL);
+
+          if (!bus_transaction_capture (transaction, connection,
+                                        addressed_recipient, message))
+            {
+              BUS_SET_OOM (&error);
+              goto out;
+            }
+        }
+    }
+  else /* service_name == NULL */
+    {
+      if (!bus_transaction_capture (transaction, connection, NULL, message))
+        {
+          BUS_SET_OOM (&error);
+          goto out;
         }
     }
 

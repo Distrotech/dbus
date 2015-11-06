@@ -92,6 +92,11 @@ static const char * const selective_match_rules[] = {
     FALSE
 };
 
+static const char * const well_known_destination_match_rules[] = {
+    "destination='com.example.Recipient'",
+    NULL
+};
+
 static Config forbidding_config = {
     "valid-config-files/forbidding.conf",
     NULL,
@@ -107,6 +112,12 @@ static Config wildcard_config = {
 static Config selective_config = {
     NULL,
     selective_match_rules,
+    FALSE
+};
+
+static Config well_known_destination_config = {
+    NULL,
+    well_known_destination_match_rules,
     FALSE
 };
 
@@ -415,6 +426,19 @@ activated_filter (DBusConnection *connection,
 }
 
 static void
+take_well_known_name (Fixture *f,
+    DBusConnection *connection,
+    const char *name)
+{
+  int ret;
+
+  ret = dbus_bus_request_name (connection, name,
+      DBUS_NAME_FLAG_DO_NOT_QUEUE, &f->e);
+  test_assert_no_error (&f->e);
+  g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
+}
+
+static void
 setup (Fixture *f,
     gconstpointer context)
 {
@@ -446,7 +470,8 @@ setup (Fixture *f,
 }
 
 static void
-become_monitor (Fixture *f)
+become_monitor (Fixture *f,
+    const Config *config)
 {
   DBusMessage *m;
   DBusPendingCall *pc;
@@ -458,8 +483,11 @@ become_monitor (Fixture *f)
 
   dbus_connection_set_route_peer_messages (f->monitor, TRUE);
 
-  if (f->config != NULL && f->config->match_rules != NULL)
-    match_rules = f->config->match_rules;
+  if (config == NULL)
+    config = f->config;
+
+  if (config != NULL && config->match_rules != NULL)
+    match_rules = config->match_rules;
   else
     match_rules = wildcard_match_rules;
 
@@ -746,7 +774,7 @@ test_become_monitor (Fixture *f,
         }
     }
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   while (!lost_unique || !lost_a || !lost_b || !lost_c)
     {
@@ -848,7 +876,7 @@ test_broadcast (Fixture *f,
   dbus_bus_add_match (f->recipient, "type='signal'", &f->e);
   test_assert_no_error (&f->e);
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   m = dbus_message_new_signal ("/foo", "com.example.bar", "BroadcastSignal1");
   dbus_connection_send (f->sender, m, NULL);
@@ -896,7 +924,7 @@ test_forbidden_broadcast (Fixture *f,
   dbus_bus_add_match (f->recipient, "type='signal'", &f->e);
   test_assert_no_error (&f->e);
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   m = dbus_message_new_signal ("/foo", "com.example.CannotSend",
       "BroadcastSignal1");
@@ -959,7 +987,7 @@ test_unicast_signal (Fixture *f,
   if (f->address == NULL)
     return;
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   m = dbus_message_new_signal ("/foo", "com.example.bar", "UnicastSignal1");
   if (!dbus_message_set_destination (m, f->recipient_name))
@@ -1010,7 +1038,7 @@ test_forbidden (Fixture *f,
   if (f->address == NULL)
     return;
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   m = dbus_message_new_signal ("/foo", "com.example.CannotSend",
       "UnicastSignal1");
@@ -1079,7 +1107,7 @@ test_method_call (Fixture *f,
   if (f->address == NULL)
     return;
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   /* regression test for
    * https://bugs.freedesktop.org/show_bug.cgi?id=90952 */
@@ -1134,7 +1162,7 @@ test_forbidden_method_call (Fixture *f,
   if (f->address == NULL)
     return;
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   m = dbus_message_new_method_call (f->recipient_name, "/foo",
       "com.example.CannotSend", "Call1");
@@ -1189,7 +1217,7 @@ test_dbus_daemon (Fixture *f,
   if (f->address == NULL)
     return;
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   res = dbus_bus_request_name (f->sender, "com.example.Sender",
       DBUS_NAME_FLAG_DO_NOT_QUEUE, &f->e);
@@ -1266,7 +1294,7 @@ test_selective (Fixture *f,
       "eavesdrop='true',interface='com.example.Tedious'", &f->e);
   test_assert_no_error (&f->e);
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   m = dbus_message_new_signal ("/foo", "com.example.Interesting",
       "UnicastSignal1");
@@ -1309,6 +1337,129 @@ test_selective (Fixture *f,
   g_assert (m == NULL);
 }
 
+static void
+test_well_known_destination (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m;
+
+  if (f->address == NULL)
+    return;
+
+  take_well_known_name (f, f->recipient, "com.example.Recipient");
+  /* we don't expect_take_well_known_name here because the
+   * monitor isn't up yet */
+
+  become_monitor (f, NULL);
+
+  /* The sender sends a message to itself. It will not be observed. */
+  m = dbus_message_new_signal ("/foo", "com.example.bar", "Unobserved");
+  if (!dbus_message_set_destination (m, f->sender_name))
+    g_error ("OOM");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  /* The sender sends a message to the recipient by well-known name.
+   * It will be observed. */
+  m = dbus_message_new_signal ("/foo", "com.example.bar", "Observed1");
+  if (!dbus_message_set_destination (m, "com.example.Recipient"))
+    g_error ("OOM");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  /* The sender sends a message to the recipient by unique name.
+   * It will still be observed. */
+  m = dbus_message_new_signal ("/foo", "com.example.bar", "Observed2");
+  if (!dbus_message_set_destination (m, f->recipient_name))
+    g_error ("OOM");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  while (g_queue_get_length (&f->monitored) < 2)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = g_queue_pop_head (&f->monitored);
+  assert_signal (m, f->sender_name, "/foo", "com.example.bar",
+      "Observed1", "", "com.example.Recipient");
+  dbus_message_unref (m);
+
+  m = g_queue_pop_head (&f->monitored);
+  assert_signal (m, f->sender_name, "/foo", "com.example.bar",
+      "Observed2", "", f->recipient_name);
+  dbus_message_unref (m);
+
+  m = g_queue_pop_head (&f->monitored);
+  g_assert (m == NULL);
+}
+
+static void
+test_unique_destination (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m;
+  Config config = {
+    NULL,
+    NULL, /* match rules */
+    FALSE
+  };
+  const gchar *match_rules[2] = { NULL, NULL };
+  gchar *rule;
+
+  if (f->address == NULL)
+    return;
+
+  take_well_known_name (f, f->recipient, "com.example.Recipient");
+  /* we don't expect_take_well_known_name here because the
+   * monitor isn't up yet */
+
+  rule = g_strdup_printf ("destination='%s'", f->recipient_name);
+  /* free it later */
+  g_test_queue_free (rule);
+  match_rules[0] = rule;
+  config.match_rules = match_rules;
+
+  become_monitor (f, &config);
+
+  /* The sender sends a message to itself. It will not be observed. */
+  m = dbus_message_new_signal ("/foo", "com.example.bar", "Unobserved");
+  if (!dbus_message_set_destination (m, f->sender_name))
+    g_error ("OOM");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  /* The sender sends a message to the recipient by well-known name.
+   * It will be observed. */
+  m = dbus_message_new_signal ("/foo", "com.example.bar", "Observed1");
+  if (!dbus_message_set_destination (m, "com.example.Recipient"))
+    g_error ("OOM");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  /* The sender sends a message to the recipient by unique name.
+   * It will still be observed. */
+  m = dbus_message_new_signal ("/foo", "com.example.bar", "Observed2");
+  if (!dbus_message_set_destination (m, f->recipient_name))
+    g_error ("OOM");
+  dbus_connection_send (f->sender, m, NULL);
+  dbus_message_unref (m);
+
+  while (g_queue_get_length (&f->monitored) < 2)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = g_queue_pop_head (&f->monitored);
+  assert_signal (m, f->sender_name, "/foo", "com.example.bar",
+      "Observed1", "", "com.example.Recipient");
+  dbus_message_unref (m);
+
+  m = g_queue_pop_head (&f->monitored);
+  assert_signal (m, f->sender_name, "/foo", "com.example.bar",
+      "Observed2", "", f->recipient_name);
+  dbus_message_unref (m);
+
+  m = g_queue_pop_head (&f->monitored);
+  g_assert (m == NULL);
+}
+
 #ifdef DBUS_UNIX
 /* currently only used for the systemd activation test */
 static void
@@ -1335,20 +1486,6 @@ expect_new_connection (Fixture *f)
   m = g_queue_pop_head (&f->monitored);
   assert_name_acquired (m);
   dbus_message_unref (m);
-}
-
-/* currently only used for the systemd activation test */
-static void
-take_well_known_name (Fixture *f,
-    DBusConnection *connection,
-    const char *name)
-{
-  int ret;
-
-  ret = dbus_bus_request_name (connection, name,
-      DBUS_NAME_FLAG_DO_NOT_QUEUE, &f->e);
-  test_assert_no_error (&f->e);
-  g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
 }
 
 /* currently only used for the systemd activation test */
@@ -1392,7 +1529,7 @@ test_activation (Fixture *f,
   if (f->address == NULL)
     return;
 
-  become_monitor (f);
+  become_monitor (f, NULL);
 
   /* The sender sends a message to an activatable service. */
   m = dbus_message_new_signal ("/foo", "com.example.bar", "UnicastSignal1");
@@ -1666,6 +1803,12 @@ main (int argc,
       setup, test_dbus_daemon, teardown);
   g_test_add ("/monitor/selective", Fixture, &selective_config,
       setup, test_selective, teardown);
+  g_test_add ("/monitor/well-known-destination",
+      Fixture, &well_known_destination_config,
+      setup, test_well_known_destination, teardown);
+  g_test_add ("/monitor/unique-destination",
+      Fixture, NULL,
+      setup, test_unique_destination, teardown);
   g_test_add ("/monitor/wildcard", Fixture, &wildcard_config,
       setup, test_unicast_signal, teardown);
   g_test_add ("/monitor/no-rule", Fixture, &no_rules_config,

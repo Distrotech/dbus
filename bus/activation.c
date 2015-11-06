@@ -1964,6 +1964,7 @@ bus_activation_activate_service (BusActivation  *activation,
           DBusString service_string;
           BusService *service;
           BusRegistry *registry;
+          DBusConnection *systemd = NULL;
 
           /* OK, we have a systemd service configured for this entry,
              hence let's enqueue an activation request message. This
@@ -2012,11 +2013,14 @@ bus_activation_activate_service (BusActivation  *activation,
           _dbus_string_init_const (&service_string, "org.freedesktop.systemd1");
           service = bus_registry_lookup (registry, &service_string);
 
+          if (service)
+            systemd = bus_service_get_primary_owners_connection (service);
+
           /* Following the general principle of "log early and often",
            * we capture that we *want* to send the activation message, even if
            * systemd is not actually there to receive it yet */
           if (!bus_transaction_capture (activation_transaction,
-                NULL, message))
+                                        NULL, systemd, message))
             {
               dbus_message_unref (message);
               BUS_SET_OOM (error);
@@ -2030,8 +2034,8 @@ bus_activation_activate_service (BusActivation  *activation,
                                service_name,
                                entry->systemd_service);
               /* Wonderful, systemd is connected, let's just send the msg */
-              retval = bus_dispatch_matches (activation_transaction, NULL, bus_service_get_primary_owners_connection (service),
-                                             message, error);
+              retval = bus_dispatch_matches (activation_transaction, NULL,
+                                             systemd, message, error);
             }
           else
             {

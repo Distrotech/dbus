@@ -2182,6 +2182,7 @@ bus_transaction_get_context (BusTransaction  *transaction)
 dbus_bool_t
 bus_transaction_capture (BusTransaction *transaction,
                          DBusConnection *sender,
+                         DBusConnection *addressed_recipient,
                          DBusMessage    *message)
 {
   BusConnections *connections;
@@ -2201,8 +2202,8 @@ bus_transaction_capture (BusTransaction *transaction,
    * There's little point, since there is up to 1 per process. */
   _dbus_assert (mm != NULL);
 
-  if (!bus_matchmaker_get_recipients (mm, connections, sender, NULL, message,
-        &recipients))
+  if (!bus_matchmaker_get_recipients (mm, connections, sender,
+        addressed_recipient, message, &recipients))
     goto out;
 
   for (link = _dbus_list_get_first_link (&recipients);
@@ -2224,6 +2225,7 @@ out:
 
 dbus_bool_t
 bus_transaction_capture_error_reply (BusTransaction  *transaction,
+                                     DBusConnection  *addressed_recipient,
                                      const DBusError *error,
                                      DBusMessage     *in_reply_to)
 {
@@ -2250,7 +2252,7 @@ bus_transaction_capture_error_reply (BusTransaction  *transaction,
   if (!dbus_message_set_sender (reply, DBUS_SERVICE_DBUS))
     goto out;
 
-  ret = bus_transaction_capture (transaction, NULL, reply);
+  ret = bus_transaction_capture (transaction, NULL, addressed_recipient, reply);
 
 out:
   dbus_message_unref (reply);
@@ -2292,7 +2294,7 @@ bus_transaction_send_from_driver (BusTransaction *transaction,
   /* Capture it for monitors, even if the real recipient's receive policy
    * does not allow it to receive this message from us (which would be odd).
    */
-  if (!bus_transaction_capture (transaction, NULL, message))
+  if (!bus_transaction_capture (transaction, NULL, connection, message))
     return FALSE;
 
   /* If security policy doesn't allow the message, we would silently
@@ -2304,7 +2306,8 @@ bus_transaction_send_from_driver (BusTransaction *transaction,
                                           transaction,
                                           NULL, connection, connection, message, &error))
     {
-      if (!bus_transaction_capture_error_reply (transaction, &error, message))
+      if (!bus_transaction_capture_error_reply (transaction, connection,
+                                                &error, message))
         {
           bus_context_log (transaction->context, DBUS_SYSTEM_LOG_WARNING,
                            "message from dbus-daemon rejected but not enough "

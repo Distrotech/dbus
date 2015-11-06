@@ -1887,9 +1887,18 @@ match_rule_matches (BusMatchRule    *rule,
         return FALSE;
 
       if (addressed_recipient == NULL)
-        {          
-          if (strcmp (rule->destination,
-                      DBUS_SERVICE_DBUS) != 0)
+        {
+          /* If the message is going to be delivered to the dbus-daemon
+           * itself, its destination will be "org.freedesktop.DBus",
+           * which we again match against the rule (see bus_dispatch()
+           * in bus/dispatch.c, which checks for o.fd.DBus first).
+           *
+           * If we are monitoring and we don't know who is going to receive
+           * the message (for instance because they haven't been activated yet),
+           * assume they will own the requested destination name and no other,
+           * and match the rule's destination against that.
+           */
+          if (strcmp (rule->destination, destination) != 0)
             return FALSE;
         }
       else

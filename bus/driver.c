@@ -243,7 +243,7 @@ bus_driver_send_service_owner_changed (const char     *service_name,
 
   _dbus_assert (dbus_message_has_signature (message, "sss"));
 
-  if (!bus_transaction_capture (transaction, NULL, message))
+  if (!bus_transaction_capture (transaction, NULL, NULL, message))
     goto oom;
 
   retval = bus_dispatch_matches (transaction, NULL, NULL, message, error);
