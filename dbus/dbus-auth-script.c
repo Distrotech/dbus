@@ -25,6 +25,9 @@
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
 
 #include "dbus-auth-script.h"
+
+#include <stdio.h>
+
 #include "dbus-auth.h"
 #include "dbus-string.h"
 #include "dbus-hash.h"
@@ -339,7 +342,7 @@ _dbus_auth_script_run (const DBusString *filename)
                                                "UNIX_ONLY"))
         {
           /* skip this file */
-          _dbus_warn ("skipping unix only auth script\n");
+          fprintf (stderr, "skipping unix only auth script\n");
           retval = TRUE;
           goto out;
         }
@@ -355,7 +358,7 @@ _dbus_auth_script_run (const DBusString *filename)
                                                "WIN_ONLY"))
         {
           /* skip this file */
-          _dbus_warn ("skipping windows only auth script\n");
+          fprintf (stderr, "skipping windows only auth script\n");
           retval = TRUE;
           goto out;
         }

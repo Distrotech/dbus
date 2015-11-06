@@ -122,8 +122,8 @@ set (TESTDIRS
     test/data/valid-config-files
     test/data/valid-config-files/basic.d
     test/data/valid-config-files/session.d
-    test/data/valid-config-files/system.d
     test/data/valid-config-files-system
+    test/data/valid-config-files-system/system.d
     test/data/valid-introspection-files
     test/data/valid-messages
     test/data/valid-service-files
@@ -140,13 +140,16 @@ set (TESTDIRS
 )
 set (CONFIG_VERBOSE 0)
 
+FOREACH(DIR ${TESTDIRS})
+    FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${DIR})
+ENDFOREACH(DIR)
+
 ### copy tests to builddir so that generated tests and static tests 
 ### are all in one place.
 MESSAGE(STATUS "Copying test files to test directory")
 FOREACH(FILE_TYPE *.message *.message-raw *.auth-script *.sha1 *.txt *.conf *.service)
     FOREACH(DIR ${TESTDIRS})
         FILE(GLOB FILES "${CMAKE_SOURCE_DIR}/../${DIR}/${FILE_TYPE}" )
-        FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${DIR})
         FOREACH(FILE ${FILES})
             GET_FILENAME_COMPONENT(FILENAME ${FILE} NAME)
             SET (TARGET ${CMAKE_BINARY_DIR}/${DIR}/${FILENAME})
@@ -164,7 +167,6 @@ MESSAGE(STATUS "Generating test files from templates into test directory")
 FOREACH(FILE_TYPE *.conf.in *.service.in)
   FOREACH(DIR ${TESTDIRS})
     FILE(GLOB FILES "${CMAKE_SOURCE_DIR}/../${DIR}/${FILE_TYPE}" )
-    FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${DIR})
     FOREACH(FILE ${FILES})
       GET_FILENAME_COMPONENT(FILENAME ${FILE} NAME)
       STRING(REGEX REPLACE "\\.in$" "" FILENAME ${FILENAME})
@@ -178,19 +180,5 @@ FOREACH(FILE_TYPE *.conf.in *.service.in)
 ENDFOREACH(FILE_TYPE)
 
 MESSAGE(STATUS "Copying generated bus config files to test directory")
-set (OUTDIR ${CMAKE_BINARY_DIR}/test/data/valid-config-files)
-
-SET(FILES
-  "${CMAKE_SOURCE_DIR}/../bus/session.conf.in"
-  "${CMAKE_SOURCE_DIR}/../bus/system.conf.in"
-)
-FILE(MAKE_DIRECTORY ${OUTDIR})
-FOREACH(FILE ${FILES})
-    GET_FILENAME_COMPONENT(FILENAME ${FILE} NAME)
-    STRING(REGEX REPLACE "\\.in$" "" FILENAME ${FILENAME})
-    SET (TARGET ${OUTDIR}/${FILENAME})
-    configure_file(${FILE} ${TARGET} @ONLY)
-    IF (CONFIG_VERBOSE)
-        MESSAGE("FROM: ${FILE}\nTO: ${TARGET}\n")
-    ENDIF (CONFIG_VERBOSE)
-ENDFOREACH(FILE)
+configure_file("${CMAKE_SOURCE_DIR}/../bus/session.conf.in" ${CMAKE_BINARY_DIR}/test/data/valid-config-files/session.conf @ONLY)
+configure_file("${CMAKE_SOURCE_DIR}/../bus/system.conf.in" ${CMAKE_BINARY_DIR}/test/data/valid-config-files-system/system.conf @ONLY)

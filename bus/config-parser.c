@@ -3405,30 +3405,30 @@ test_default_session_servicedirs (void)
   DBusList *dirs;
   DBusList *link;
   DBusString progs;
+  DBusString install_root_based;
   int i;
   dbus_bool_t ret = FALSE;
-
 #ifdef DBUS_WIN
   const char *common_progs;
-  DBusString install_root_based;
+#endif
 
-  if (!_dbus_string_init (&install_root_based) ||
-      !_dbus_string_append (&install_root_based, DBUS_DATADIR) ||
+  /* On Unix we don't actually use these, but it's easier to handle the
+   * deallocation if we always allocate them, whether needed or not */
+  if (!_dbus_string_init (&progs) ||
+      !_dbus_string_init (&install_root_based))
+    _dbus_assert_not_reached ("OOM allocating strings");
+
+#ifdef DBUS_WIN
+  if (!_dbus_string_append (&install_root_based, DBUS_DATADIR) ||
+      !_dbus_string_append (&install_root_based, "/dbus-1/services") ||
       !_dbus_replace_install_prefix (&install_root_based))
-    _dbus_assert_not_reached ("OOM getting relocated DBUS_DATADIR");
+    goto out;
 
   _dbus_assert (_dbus_path_is_absolute (&install_root_based));
 
-  test_session_service_dir_matches[0] = _dbus_string_get_const_data (&install_root_based);
+  test_session_service_dir_matches[0] = _dbus_string_get_const_data (
+      &install_root_based);
 
-#endif
-
-  /* On Unix we don't actually use this variable, but it's easier to handle the
-   * deallocation if we always allocate it, whether needed or not */
-  if (!_dbus_string_init (&progs))
-    _dbus_assert_not_reached ("OOM allocating progs");
-
-#ifndef DBUS_UNIX
   common_progs = _dbus_getenv ("CommonProgramFiles");
 
   if (common_progs) 
@@ -3518,10 +3518,8 @@ test_default_session_servicedirs (void)
   ret = TRUE;
 
 out:
-  _dbus_string_free (&progs);
-#ifdef DBUS_WIN
   _dbus_string_free (&install_root_based);
-#endif
+  _dbus_string_free (&progs);
   return ret;
 }
 
@@ -3680,6 +3678,11 @@ bus_config_parser_test (const DBusString *test_data_dir)
 
   if (!process_test_valid_subdir (test_data_dir, "valid-config-files", VALID))
     return FALSE;
+
+#ifndef DBUS_WIN
+  if (!process_test_valid_subdir (test_data_dir, "valid-config-files-system", VALID))
+    return FALSE;
+#endif
 
   if (!process_test_valid_subdir (test_data_dir, "invalid-config-files", INVALID))
     return FALSE;

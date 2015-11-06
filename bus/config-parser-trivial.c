@@ -684,6 +684,13 @@ bus_config_parser_trivial_test (const DBusString *test_data_dir)
   if (!process_test_valid_subdir (test_data_dir, "valid-config-files", VALID))
     goto finish;
 
+#ifndef DBUS_WIN
+  /* We already test default_session_servicedirs and default_system_servicedirs
+   * in bus_config_parser_test() */
+  if (!process_test_valid_subdir (test_data_dir, "valid-config-files-system", VALID))
+    goto finish;
+#endif
+
   /* we don't process all the invalid files, as the trivial parser can't hope
    * to validate them all for all different syntaxes. We just check one broken
    * file to see if junk is received */
@@ -693,14 +700,16 @@ bus_config_parser_trivial_test (const DBusString *test_data_dir)
     goto finish;
   _dbus_string_free (&full_path);
 
+#ifndef DBUS_WIN
   /* just test if the check_file_valid works okay and we got sane values */
-  if (!make_full_path (test_data_dir, "valid-config-files", "system.conf", &full_path))
+  if (!make_full_path (test_data_dir, "valid-config-files-system", "system.conf", &full_path))
     goto finish;
   if (!check_file_valid (&full_path, VALID))
     goto finish;
   /* check to see if we got the correct values from the parser */
   if (!check_return_values (&full_path))
     goto finish;
+#endif
 
   /* woot! */
   retval = TRUE;

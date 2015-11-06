@@ -384,7 +384,7 @@ static_data = \
 	data/valid-config-files/entities.conf \
 	data/valid-config-files/listen-unix-runtime.conf \
 	data/valid-config-files/many-rules.conf \
-	data/valid-config-files/system.d/test.conf \
+	data/valid-config-files-system/system.d/test.conf \
 	data/valid-messages/array-of-array-of-uint32.message \
 	data/valid-messages/dict-simple.message \
 	data/valid-messages/dict.message \
@@ -468,7 +468,7 @@ if DBUS_ENABLE_INSTALLED_TESTS
 		install -m644 "installable/$${F%.in}" "$(DESTDIR)$(testexecdir)/$${F%.in}"; \
 	done
 	ln -nfs $(datadir)/dbus-1/session.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/session.conf
-	ln -nfs $(datadir)/dbus-1/system.conf $(DESTDIR)$(testexecdir)/data/valid-config-files/system.conf
+	ln -nfs $(datadir)/dbus-1/system.conf $(DESTDIR)$(testexecdir)/data/valid-config-files-system/system.conf
 else
 	@:
 endif
@@ -486,7 +486,7 @@ clean-local:
 
 imported_data = \
 	data/valid-config-files/session.conf \
-	data/valid-config-files/system.conf \
+	data/valid-config-files-system/system.conf \
 	$(NULL)
 
 noinst_DATA = $(imported_data)
@@ -496,8 +496,12 @@ CLEANFILES += \
 	installable \
 	$(NULL)
 
-$(imported_data): data/valid-config-files/%.conf: $(top_builddir)/bus/%.conf
+data/valid-config-files/session.conf: $(top_builddir)/bus/session.conf
 	$(AM_V_at)$(MKDIR_P) data/valid-config-files
+	$(AM_V_GEN)cp $< $@
+
+data/valid-config-files-system/system.conf: $(top_builddir)/bus/system.conf
+	$(AM_V_at)$(MKDIR_P) data/valid-config-files-system
 	$(AM_V_GEN)cp $< $@
 
 $(installable_test_meta): %.test: %$(EXEEXT) Makefile

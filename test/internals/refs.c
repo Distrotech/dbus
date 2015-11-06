@@ -62,12 +62,15 @@ typedef struct {
   DBusMessage *message;
   GThread *threads[N_THREADS];
   gboolean last_unref;
+  unsigned n_refs;
+  unsigned n_threads;
 } Fixture;
 
 typedef void *(*RefFunc) (void *);
 typedef void (*VoidFunc) (void *);
 
 typedef struct {
+  const Fixture *f;
   void *thing;
   RefFunc ref;
   VoidFunc ref_void;
@@ -86,9 +89,10 @@ static gpointer
 ref_thread (gpointer data)
 {
   Thread *thread = data;
-  int i;
+  const Fixture *f = thread->f;
+  unsigned i;
 
-  for (i = 0; i < N_REFS; i++)
+  for (i = 0; i < f->n_refs; i++)
     {
       if (thread->lock != NULL)
         (thread->lock) (thread->mutex);
@@ -115,9 +119,10 @@ static gpointer
 cycle_thread (gpointer data)
 {
   Thread *thread = data;
-  int i;
+  const Fixture *f = thread->f;
+  unsigned i;
 
-  for (i = 0; i < N_REFS; i++)
+  for (i = 0; i < f->n_refs; i++)
     {
       if (thread->lock != NULL)
         (thread->lock) (thread->mutex);
@@ -146,9 +151,10 @@ static gpointer
 unref_thread (gpointer data)
 {
   Thread *thread = data;
-  int i;
+  const Fixture *f = thread->f;
+  unsigned i;
 
-  for (i = 0; i < N_REFS; i++)
+  for (i = 0; i < f->n_refs; i++)
     {
       if (thread->lock != NULL)
         (thread->lock) (thread->mutex);
@@ -174,9 +180,9 @@ last_unref (void *data)
 static void
 wait_for_all_threads (Fixture *f)
 {
-  int i;
+  unsigned i;
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     g_thread_join (f->threads[i]);
 }
 
@@ -199,6 +205,20 @@ setup (Fixture *f,
 {
   if (!dbus_threads_init_default ())
     g_error ("OOM");
+
+  f->n_threads = N_THREADS;
+  f->n_refs = N_REFS;
+
+  // wine sets WINESERVERSOCKET for its child processes automatically
+  if (g_getenv ("WINESERVERSOCKET") != NULL)
+    {
+      /* Our reference-counting is really slow under Wine (it involves
+       * IPC to wineserver). Do fewer iterations: enough to demonstrate
+       * that it works, rather than a performance test.
+       */
+      f->n_threads = 10;
+      f->n_refs = 10;
+    }
 
   f->loop = _dbus_loop_new ();
   g_assert (f->loop != NULL);
@@ -257,28 +277,32 @@ static void
 test_connection (Fixture *f,
     gconstpointer data)
 {
-  Thread public_api = { f->connection,
+  Thread public_api = {
+    f,
+    f->connection,
     (RefFunc) dbus_connection_ref,
     NULL,
     (VoidFunc) dbus_connection_unref,
     NULL,
     NULL,
     NULL };
-  Thread internal_api = { f->connection,
+  Thread internal_api = {
+    f,
+    f->connection,
     (RefFunc) _dbus_connection_ref_unlocked,
     NULL,
     (VoidFunc) _dbus_connection_unref_unlocked,
     f->connection,
     (VoidFunc) _dbus_connection_lock,
     (VoidFunc) _dbus_connection_unlock };
-  int i;
+  unsigned i;
 
   /* Use a slot as a pseudo-weakref */
   if (!dbus_connection_set_data (f->connection, connection_slot, f,
         last_unref))
     g_error ("OOM");
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, ref_thread, &public_api);
@@ -290,7 +314,7 @@ test_connection (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, cycle_thread, &public_api);
@@ -302,7 +326,7 @@ test_connection (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, unref_thread, &public_api);
@@ -338,26 +362,30 @@ static void
 test_server (Fixture *f,
     gconstpointer data)
 {
-  Thread public_api = { f->server,
+  Thread public_api = {
+    f,
+    f->server,
     (RefFunc) dbus_server_ref,
     NULL,
     (VoidFunc) dbus_server_unref,
     NULL,
     NULL,
     NULL };
-  Thread internal_api = { f->server,
+  Thread internal_api = {
+    f,
+    f->server,
     NULL,
     (VoidFunc) _dbus_server_ref_unlocked,
     (VoidFunc) _dbus_server_unref_unlocked,
     f->server,
     server_lock,
     server_unlock };
-  int i;
+  unsigned i;
 
   if (!dbus_server_set_data (f->server, server_slot, f, last_unref))
     g_error ("OOM");
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, ref_thread, &public_api);
@@ -369,7 +397,7 @@ test_server (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, cycle_thread, &public_api);
@@ -381,7 +409,7 @@ test_server (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, unref_thread, &public_api);
@@ -407,19 +435,21 @@ test_message (Fixture *f,
 {
   DBusMessage *message = dbus_message_new_signal ("/foo", "foo.bar.baz",
       "Foo");
-  Thread public_api = { message,
+  Thread public_api = {
+    f,
+    message,
     (RefFunc) dbus_message_ref,
     NULL,
     (VoidFunc) dbus_message_unref,
     NULL,
     NULL,
     NULL };
-  int i;
+  unsigned i;
 
   if (!dbus_message_set_data (message, message_slot, f, last_unref))
     g_error ("OOM");
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       f->threads[i] = g_thread_new (NULL, ref_thread, &public_api);
       g_assert (f->threads[i] != NULL);
@@ -427,7 +457,7 @@ test_message (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       f->threads[i] = g_thread_new (NULL, cycle_thread, &public_api);
       g_assert (f->threads[i] != NULL);
@@ -435,7 +465,7 @@ test_message (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       f->threads[i] = g_thread_new (NULL, unref_thread, &public_api);
       g_assert (f->threads[i] != NULL);
@@ -453,14 +483,18 @@ static void
 test_pending_call (Fixture *f,
     gconstpointer data)
 {
-  Thread public_api = { NULL,
+  Thread public_api = {
+    f,
+    NULL,
     (RefFunc) dbus_pending_call_ref,
     NULL,
     (VoidFunc) dbus_pending_call_unref,
     NULL,
     NULL,
     NULL };
-  Thread internal_api = { NULL,
+  Thread internal_api = {
+    f,
+    NULL,
     (RefFunc) _dbus_pending_call_ref_unlocked,
     NULL,
     (VoidFunc) dbus_pending_call_unref,
@@ -468,14 +502,16 @@ test_pending_call (Fixture *f,
     (VoidFunc) _dbus_connection_lock,
     (VoidFunc) _dbus_connection_unlock };
   /* This one can't be used to ref, only to cycle or unref. */
-  Thread unref_and_unlock_api = { NULL,
+  Thread unref_and_unlock_api = {
+    f,
+    NULL,
     (RefFunc) _dbus_pending_call_ref_unlocked,
     NULL,
     (VoidFunc) _dbus_pending_call_unref_and_unlock,
     f->connection,
     (VoidFunc) _dbus_connection_lock,
     NULL };
-  int i;
+  unsigned i;
   DBusPendingCall *pending_call;
 
   _dbus_connection_lock (f->connection);
@@ -492,7 +528,7 @@ test_pending_call (Fixture *f,
         last_unref))
     g_error ("OOM");
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       if ((i % 2) == 0)
         f->threads[i] = g_thread_new (NULL, ref_thread, &public_api);
@@ -504,7 +540,7 @@ test_pending_call (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       switch (i % 3)
         {
@@ -524,7 +560,7 @@ test_pending_call (Fixture *f,
 
   wait_for_all_threads (f);
 
-  for (i = 0; i < N_THREADS; i++)
+  for (i = 0; i < f->n_threads; i++)
     {
       switch (i % 3)
         {

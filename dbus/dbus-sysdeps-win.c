@@ -288,7 +288,7 @@ _dbus_get_peer_pid_from_tcp_handle (int handle)
       return 0;
     }
 
-  _dbus_verbose ("trying to get peers pid");
+  _dbus_verbose ("trying to get peer's pid\n");
 
   result = get_pid_from_extended_tcp_table (peer_port);
   if (result > 0)
@@ -2932,6 +2932,7 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
   char *shared_addr = NULL;
   DBusString shm_name;
   DBusString mutex_name;
+  dbus_uint64_t len;
 
   _dbus_assert (address);
 
@@ -2966,7 +2967,7 @@ _dbus_daemon_publish_session_bus_address (const char* address, const char *scope
     }
 
   // create shm
-  dbus_uint64_t len = strlen( address ) + 1;
+  len = strlen (address) + 1;
 
   hDBusSharedMem = CreateFileMappingA( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
                                        len >> 32, len & 0xffffffffu,
@@ -3114,8 +3115,8 @@ _dbus_get_autolaunch_address (const char *scope, DBusString *address,
 
   if (_dbus_daemon_already_runs(address,&shm_name,scope))
     {
-        _dbus_verbose( "found running dbus daemon at %s\n",
-                       _dbus_string_get_const_data (&shm_name) );
+        _dbus_verbose( "found running dbus daemon for scope '%s' at %s\n",
+                       scope ? scope : "", _dbus_string_get_const_data (&shm_name) );
         retval = TRUE;
         goto out;
     }

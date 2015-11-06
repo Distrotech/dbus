@@ -582,6 +582,7 @@ spawn_program (char* name, char** argv, char** envp)
 static DWORD __stdcall
 babysitter (void *parameter)
 {
+  int ret = 0;
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
 
   PING();
@@ -612,17 +613,19 @@ babysitter (void *parameter)
 
   if (sitter->child_handle != NULL)
     {
-      int ret;
       DWORD status;
 
       PING();
+      // wait until process finished
       WaitForSingleObject (sitter->child_handle, INFINITE);
 
       PING();
       ret = GetExitCodeProcess (sitter->child_handle, &status);
-
-      sitter->child_status = status;
-      sitter->have_child_status = TRUE;
+      if (ret)
+        {
+          sitter->child_status = status;
+          sitter->have_child_status = TRUE;
+        }
 
       CloseHandle (sitter->child_handle);
       sitter->child_handle = NULL;
@@ -637,7 +640,7 @@ babysitter (void *parameter)
 
   _dbus_babysitter_unref (sitter);
 
-  return 0;
+  return ret ? 0 : 1;
 }
 
 dbus_bool_t
