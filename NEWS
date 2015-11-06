@@ -6,6 +6,12 @@ Dependencies:
 • On non-Windows platforms, D-Bus requires an <inttypes.h> that defines
   C99 constants such as PRId64 and PRIu64.
 
+Enhancements:
+
+• D-Bus Specification version 0.27
+  · Specify that services should not reply if NO_REPLY_EXPECTED was used
+    (fd.o #75749, Lars Uebernickel)
+
 Fixes:
 
 • Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
