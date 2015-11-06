@@ -653,6 +653,7 @@ typedef struct
   const char *expected_service_name;
   dbus_bool_t failed;
   DBusConnection *skip_connection;
+  BusContext *context;
 } CheckServiceOwnerChangedData;
 
 static dbus_bool_t
@@ -674,9 +675,14 @@ check_service_owner_changed_foreach (DBusConnection *connection,
   message = pop_message_waiting_for_memory (connection);
   if (message == NULL)
     {
-      _dbus_warn ("Did not receive a message on %p, expecting %s\n",
-                  connection, "NameOwnerChanged");
-      goto out;
+      block_connection_until_message_from_bus (d->context, connection, "NameOwnerChanged");
+      message = pop_message_waiting_for_memory (connection);
+      if (message == NULL)
+        {
+          _dbus_warn ("Did not receive a message on %p, expecting %s\n",
+                      connection, "NameOwnerChanged");
+          goto out;
+        }
     }
   else if (!dbus_message_is_signal (message,
                                     DBUS_INTERFACE_DBUS,
@@ -789,6 +795,7 @@ kill_client_connection (BusContext     *context,
   socd.expected_service_name = base_service;
   socd.failed = FALSE;
   socd.skip_connection = NULL;
+  socd.context = context;
 
   bus_test_clients_foreach (check_service_owner_changed_foreach,
                             &socd);
@@ -1017,6 +1024,8 @@ check_hello_message (BusContext     *context,
       socd.expected_service_name = name;
       socd.failed = FALSE;
       socd.skip_connection = connection; /* we haven't done AddMatch so won't get it ourselves */
+      socd.context = context;
+
       bus_test_clients_foreach (check_service_owner_changed_foreach,
                                 &socd);
 
@@ -1029,9 +1038,14 @@ check_hello_message (BusContext     *context,
       message = pop_message_waiting_for_memory (connection);
       if (message == NULL)
         {
-          _dbus_warn ("Expecting %s, got nothing\n",
+          block_connection_until_message_from_bus (context, connection, "signal NameAcquired");
+          message = pop_message_waiting_for_memory (connection);
+          if (message == NULL)
+            {
+              _dbus_warn ("Expecting %s, got nothing\n",
                       "NameAcquired");
-          goto out;
+              goto out;
+            }
         }
       if (! dbus_message_is_signal (message, DBUS_INTERFACE_DBUS,
                                     "NameAcquired"))
@@ -2086,6 +2100,8 @@ check_base_service_activated (BusContext     *context,
       socd.expected_service_name = base_service;
       socd.failed = FALSE;
       socd.skip_connection = connection;
+      socd.context = context;
+
       bus_test_clients_foreach (check_service_owner_changed_foreach,
                                 &socd);
 
@@ -2190,6 +2206,8 @@ check_service_activated (BusContext     *context,
       socd.skip_connection = connection;
       socd.failed = FALSE;
       socd.expected_service_name = service_name;
+      socd.context = context;
+
       bus_test_clients_foreach (check_service_owner_changed_foreach,
                                 &socd);
 
@@ -2327,6 +2345,8 @@ check_service_auto_activated (BusContext     *context,
       socd.expected_service_name = service_name;
       socd.failed = FALSE;
       socd.skip_connection = connection;
+      socd.context = context;
+
       bus_test_clients_foreach (check_service_owner_changed_foreach,
                                 &socd);
 
@@ -2376,6 +2396,8 @@ check_service_deactivated (BusContext     *context,
   socd.expected_service_name = activated_name;
   socd.failed = FALSE;
   socd.skip_connection = NULL;
+  socd.context = context;
+
   bus_test_clients_foreach (check_service_owner_changed_foreach,
                             &socd);
 
@@ -2386,6 +2408,8 @@ check_service_deactivated (BusContext     *context,
   socd.expected_service_name = base_service;
   socd.failed = FALSE;
   socd.skip_connection = NULL;
+  socd.context = context;
+
   bus_test_clients_foreach (check_service_owner_changed_foreach,
                             &socd);
 
@@ -2833,6 +2857,7 @@ check_existent_service_no_auto_start (BusContext     *context,
             socd.expected_service_name = base_service;
             socd.failed = FALSE;
             socd.skip_connection = NULL;
+            socd.context = context;
 
             bus_test_clients_foreach (check_service_owner_changed_foreach,
                                       &socd);
@@ -3453,6 +3478,8 @@ check_existent_service_auto_start (BusContext     *context,
             socd.expected_service_name = base_service;
             socd.failed = FALSE;
             socd.skip_connection = NULL;
+            socd.context = context;
+
             bus_test_clients_foreach (check_service_owner_changed_foreach,
                                       &socd);
 
@@ -4141,6 +4168,8 @@ check_shell_service_success_auto_start (BusContext     *context,
             socd.expected_service_name = base_service;
             socd.failed = FALSE;
             socd.skip_connection = NULL;
+            socd.context = context;
+
             bus_test_clients_foreach (check_service_owner_changed_foreach,
                                       &socd);
 
