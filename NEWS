@@ -14,8 +14,20 @@ Fixes:
   <includedir>, apply the same relocation as for the Exec paths
   in .service files (fd.o #92028, Simon McVittie)
 
-• On Windows, fix the regression test for relocating service files' Exec
-  lines (fd.o #83539, Simon McVittie)
+• On Windows, don't crash if <syslog/> or --syslog is used
+  (fd.o #92538, Ralf Habacker)
+
+• On Windows, fix various failing tests:
+  · don't test system.conf features (users, groups) that only make sense
+    on the system bus, which is not supported on Windows
+  · don't call _dbus_warn() when we skip a test, since it is fatal
+  · fix computation of expected <standard_session_servicedirs/>
+  · when running TAP tests, translate newlines to Unix format, fixing
+    cross-compiled tests under Wine on Linux
+  · don't stress-test refcounting under Wine, where it's really slow
+  · stop assuming that a message looped-back to the test will be received
+    immediately
+  (fd.o #83539, #92538, fd.o #92721; Ralf Habacker, Simon McVittie)
 
 D-Bus 1.10.2 (2015-10-26)
 ==
