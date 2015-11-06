@@ -941,8 +941,6 @@ check_hello_message (BusContext     *context,
       return TRUE;
     }
 
-  dbus_connection_unref (connection);
-
   message = pop_message_waiting_for_memory (connection);
   if (message == NULL)
     {
@@ -1089,6 +1087,8 @@ check_hello_message (BusContext     *context,
 
   if (name_message)
     dbus_message_unref (name_message);
+
+  dbus_connection_unref (connection);
 
   return retval;
 }
