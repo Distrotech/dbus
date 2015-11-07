@@ -6,6 +6,3 @@ Requires=dbus.socket
 [Service]
 ExecStart=@EXPANDED_BINDIR@/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation
 ExecReload=@EXPANDED_BINDIR@/dbus-send --print-reply --session --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-
-[Install]
-Also=dbus.socket
