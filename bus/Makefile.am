@@ -249,8 +249,6 @@ if HAVE_SYSTEMD
 # Install dbus.socket as default implementation of a D-Bus stack.
 # Deliberately not using $(LN_S) here: ln -fs is not universally portable,
 # but neither is systemd, so it's OK to assume here that ln complies with SUS.
-	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/dbus.target.wants
-	ln -fs ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/dbus.target.wants/dbus.socket
 # Unconditionally enable D-Bus on systemd installations
 	$(mkinstalldirs) $(DESTDIR)$(systemdsystemunitdir)/sockets.target.wants
 	ln -fs ../dbus.socket $(DESTDIR)$(systemdsystemunitdir)/sockets.target.wants/dbus.socket
