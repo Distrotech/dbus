@@ -2926,7 +2926,6 @@ check_existent_service_no_auto_start (BusContext     *context,
   return retval;
 }
 
-#ifndef DBUS_WIN_FIXME
 /* returns TRUE if the correct thing happens,
  * but the correct thing may include OOM errors.
  */
@@ -3015,11 +3014,19 @@ check_segfault_service_no_auto_start (BusContext     *context,
           /* make sure this only happens with the launch helper */
           _dbus_assert (servicehelper != NULL);
         }
+#ifdef DBUS_WIN
+      else if (dbus_message_is_error (message,
+                                      DBUS_ERROR_SPAWN_CHILD_EXITED))
+        {
+          /* unhandled exceptions are normal exit codes */
+        }
+#else
       else if (dbus_message_is_error (message,
                                       DBUS_ERROR_SPAWN_CHILD_SIGNALED))
         {
           ; /* good, this is expected also */
         }
+#endif
       else
         {
           warn_unexpected (connection, message, "not this error");
@@ -3108,11 +3115,19 @@ check_segfault_service_auto_start (BusContext     *context,
         {
           ; /* good, this is a valid response */
         }
+#ifdef DBUS_WIN
+      else if (dbus_message_is_error (message,
+                                      DBUS_ERROR_SPAWN_CHILD_EXITED))
+        {
+          /* unhandled exceptions are normal exit codes */
+        }
+#else
       else if (dbus_message_is_error (message,
                                       DBUS_ERROR_SPAWN_CHILD_SIGNALED))
         {
           ; /* good, this is expected also */
         }
+#endif
       else
         {
           warn_unexpected (connection, message, "not this error");
@@ -3134,7 +3149,6 @@ check_segfault_service_auto_start (BusContext     *context,
 
   return retval;
 }
-#endif
 
 #define TEST_ECHO_MESSAGE "Test echo message"
 #define TEST_RUN_HELLO_FROM_SELF_MESSAGE "Test sending message to self"
@@ -4849,12 +4863,8 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
   check2_try_iterations (context, foo, "nonexistent_service_no_auto_start",
                          check_nonexistent_service_no_auto_start);
 
-#ifdef DBUS_WIN_FIXME
-  _dbus_warn("TODO: dispatch.c segfault_service_no_auto_start test\n");
-#else
   check2_try_iterations (context, foo, "segfault_service_no_auto_start",
                          check_segfault_service_no_auto_start);
-#endif
 
   check2_try_iterations (context, foo, "existent_service_no_auto_start",
                          check_existent_service_no_auto_start);
@@ -4862,14 +4872,9 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
   check2_try_iterations (context, foo, "nonexistent_service_auto_start",
                          check_nonexistent_service_auto_start);
 
-
-#ifdef DBUS_WIN_FIXME
-  _dbus_warn("TODO: dispatch.c segfault_service_auto_start test\n");
-#else
   /* only do the segfault test if we are not using the launcher */
   check2_try_iterations (context, foo, "segfault_service_auto_start",
                          check_segfault_service_auto_start);
-#endif
 
   /* only do the shell fail test if we are not using the launcher */
   check2_try_iterations (context, foo, "shell_fail_service_auto_start",
