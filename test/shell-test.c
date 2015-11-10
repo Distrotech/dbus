@@ -36,7 +36,13 @@ test_command_line_internal (dbus_bool_t should_work,
 
   original_argc = _dbus_list_get_length (&list);
   original_argv = dbus_new (char *, original_argc);
-  _dbus_string_init (&str);
+  if (!_dbus_string_init (&str))
+    {
+      _dbus_list_clear (&list);
+      dbus_free (original_argv);
+      return FALSE;
+    }
+
   for (i = 0, node = _dbus_list_get_first_link (&list); i < original_argc && node;
        i++, node = _dbus_list_get_next_link (&list, node))
     {
@@ -57,6 +63,7 @@ test_command_line_internal (dbus_bool_t should_work,
           should_work ? "" : " (as expected)",
           error.message ? error.message : "");
       dbus_free (original_argv);
+      _dbus_string_free (&str);
       return !should_work;
     }
   else
