@@ -3610,13 +3610,8 @@ _dbus_win_set_error_from_win_error (DBusError *error,
                   (LPSTR) &msg, 0, NULL);
   if (msg)
     {
-      char *msg_copy;
-
-      msg_copy = dbus_malloc (strlen (msg));
-      strcpy (msg_copy, msg);
+      dbus_set_error (error, "win32.error", "%s", msg);
       LocalFree (msg);
-
-      dbus_set_error (error, "win32.error", "%s", msg_copy);
     }
   else
     dbus_set_error (error, "win32.error", "Unknown error code %d or FormatMessage failed", code);
