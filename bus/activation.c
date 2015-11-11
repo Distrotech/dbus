@@ -2593,7 +2593,6 @@ bus_activation_service_reload_test (const DBusString *test_data_dir)
 {
   DBusString directory;
   const char *tmp;
-  dbus_bool_t ret = FALSE;
 
   if (!_dbus_string_init (&directory))
     return FALSE;
@@ -2601,14 +2600,16 @@ bus_activation_service_reload_test (const DBusString *test_data_dir)
   tmp = _dbus_get_tmpdir ();
 
   if (tmp == NULL)
-    goto out;
+    return FALSE;
 
   if (!_dbus_string_append (&directory, tmp))
-    goto out;
+    return FALSE;
 
   if (!_dbus_string_append (&directory, "/dbus-reload-test-") ||
       !_dbus_generate_random_ascii (&directory, 6, NULL))
-    goto out;
+     {
+       return FALSE;
+     }
 
   /* Do normal tests */
   if (!init_service_reload_test (&directory))
@@ -2630,13 +2631,11 @@ bus_activation_service_reload_test (const DBusString *test_data_dir)
 
   /* Cleanup test directory */
   if (!cleanup_service_reload_test (&directory))
-    goto out;
+    return FALSE;
 
-  ret = TRUE;
-
-out:
   _dbus_string_free (&directory);
-  return ret;
+
+  return TRUE;
 }
 
 #endif /* DBUS_ENABLE_EMBEDDED_TESTS */
