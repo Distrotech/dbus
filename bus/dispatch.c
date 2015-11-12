@@ -4977,9 +4977,7 @@ bus_dispatch_test (const DBusString *test_data_dir)
   			       "valid-config-files/debug-allow-all.conf", FALSE))
     return FALSE;
 
-#ifdef DBUS_WIN
-  _dbus_warn("Info: Launch helper activation tests skipped because launch-helper is not supported yet\n");
-#else
+#ifndef DBUS_WIN
   /* run launch-helper activation tests */
   _dbus_verbose ("Launch helper activation tests\n");
   if (!bus_dispatch_test_conf (test_data_dir,
