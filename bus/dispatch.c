@@ -1277,6 +1277,12 @@ check_get_connection_unix_user (BusContext     *context,
         {
           ; /* good, this is a valid response */
         }
+#ifdef DBUS_WIN
+      else if (dbus_message_is_error (message, DBUS_ERROR_FAILED))
+        {
+          /* this is OK, Unix uids aren't meaningful on Windows */
+        }
+#endif
       else
         {
           warn_unexpected (connection, message, "not this error");
@@ -4837,13 +4843,12 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
     _dbus_assert_not_reached ("GetAllMatchRules message failed");
 #endif
 
-#ifdef DBUS_WIN_FIXME
-  _dbus_warn("TODO: testing of GetConnectionUnixUser message skipped for now\n");
-  _dbus_warn("TODO: testing of GetConnectionUnixProcessID message skipped for now\n");
-#else
   if (!check_get_connection_unix_user (context, baz))
     _dbus_assert_not_reached ("GetConnectionUnixUser message failed");
 
+#ifdef DBUS_WIN_FIXME
+  _dbus_warn("TODO: testing of GetConnectionUnixProcessID message skipped for now\n");
+#else
   if (!check_get_connection_unix_process_id (context, baz))
     _dbus_assert_not_reached ("GetConnectionUnixProcessID message failed");
 #endif
