@@ -4847,7 +4847,7 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
     _dbus_assert_not_reached ("GetConnectionUnixUser message failed");
 
 #ifdef DBUS_WIN_FIXME
-  _dbus_warn("TODO: testing of GetConnectionUnixProcessID message skipped for now\n");
+  _dbus_verbose("TODO: testing of GetConnectionUnixProcessID message skipped for now\n");
 #else
   if (!check_get_connection_unix_process_id (context, baz))
     _dbus_assert_not_reached ("GetConnectionUnixProcessID message failed");
