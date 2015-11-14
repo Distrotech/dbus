@@ -986,6 +986,7 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 {
   dbus_bool_t retval;
   BusActivation *activation;
+  BusContext *context;
   DBusMessageIter iter;
   DBusMessageIter dict_iter;
   DBusMessageIter dict_entry_iter;
@@ -1010,6 +1011,16 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
         return FALSE;
     }
 #endif
+
+  context = bus_connection_get_context (connection);
+
+  if (bus_context_get_servicehelper (context) != NULL)
+    {
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+                      "Cannot change activation environment "
+                      "on a system bus.");
+      return FALSE;
+    }
 
   activation = bus_connection_get_activation (connection);
 
