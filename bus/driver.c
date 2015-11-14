@@ -43,6 +43,13 @@
 #include <dbus/dbus-marshal-validate.h>
 #include <string.h>
 
+typedef enum
+{
+  BUS_DRIVER_FOUND_SELF,
+  BUS_DRIVER_FOUND_PEER,
+  BUS_DRIVER_FOUND_ERROR,
+} BusDriverFound;
+
 static inline const char *
 nonnull (const char *maybe_null,
          const char *if_null)
@@ -68,11 +75,12 @@ bus_driver_get_owner_of_name (DBusConnection *connection,
   return bus_service_get_primary_owners_connection (serv);
 }
 
-static DBusConnection *
+static BusDriverFound
 bus_driver_get_conn_helper (DBusConnection  *connection,
                             DBusMessage     *message,
                             const char      *what_we_want,
                             const char     **name_p,
+                            DBusConnection **peer_conn_p,
                             DBusError       *error)
 {
   DBusConnection *conn;
@@ -81,10 +89,16 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
   if (!dbus_message_get_args (message, error,
                               DBUS_TYPE_STRING, &name,
                               DBUS_TYPE_INVALID))
-    return NULL;
+    return BUS_DRIVER_FOUND_ERROR;
 
   _dbus_assert (name != NULL);
   _dbus_verbose ("asked for %s of connection %s\n", what_we_want, name);
+
+  if (name_p != NULL)
+    *name_p = name;
+
+  if (strcmp (name, DBUS_SERVICE_DBUS) == 0)
+    return BUS_DRIVER_FOUND_SELF;
 
   conn = bus_driver_get_owner_of_name (connection, name);
 
@@ -93,13 +107,13 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
       dbus_set_error (error, DBUS_ERROR_NAME_HAS_NO_OWNER,
                       "Could not get %s of name '%s': no such name",
                       what_we_want, name);
-      return NULL;
+      return BUS_DRIVER_FOUND_ERROR;
     }
 
-  if (name_p != NULL)
-    *name_p = name;
+  if (peer_conn_p != NULL)
+    *peer_conn_p = conn;
 
-  return conn;
+  return BUS_DRIVER_FOUND_PEER;
 }
 
 /*
@@ -1602,31 +1616,41 @@ bus_driver_handle_get_connection_unix_user (DBusConnection *connection,
 {
   DBusConnection *conn;
   DBusMessage *reply;
-  unsigned long uid;
+  dbus_uid_t uid;
   dbus_uint32_t uid32;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "UID", &service,
-                                     error);
+  found = bus_driver_get_conn_helper (connection, message, "UID", &service,
+                                      &conn, error);
+  switch (found)
+    {
+      case BUS_DRIVER_FOUND_SELF:
+        uid = _dbus_getuid ();
+        break;
+      case BUS_DRIVER_FOUND_PEER:
+        if (!dbus_connection_get_unix_user (conn, &uid))
+          uid = DBUS_UID_UNSET;
+        break;
+      case BUS_DRIVER_FOUND_ERROR:
+        goto failed;
+    }
 
-  if (conn == NULL)
-    goto failed;
-
-  reply = dbus_message_new_method_return (message);
-  if (reply == NULL)
-    goto oom;
-
-  if (!dbus_connection_get_unix_user (conn, &uid))
+  if (uid == DBUS_UID_UNSET)
     {
       dbus_set_error (error,
                       DBUS_ERROR_FAILED,
                       "Could not determine UID for '%s'", service);
       goto failed;
     }
+
+  reply = dbus_message_new_method_return (message);
+  if (reply == NULL)
+    goto oom;
 
   uid32 = uid;
   if (! dbus_message_append_args (reply,
@@ -1659,31 +1683,41 @@ bus_driver_handle_get_connection_unix_process_id (DBusConnection *connection,
 {
   DBusConnection *conn;
   DBusMessage *reply;
-  unsigned long pid;
+  dbus_pid_t pid;
   dbus_uint32_t pid32;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "PID", &service,
-                                     error);
+  found = bus_driver_get_conn_helper (connection, message, "PID", &service,
+                                      &conn, error);
+  switch (found)
+    {
+      case BUS_DRIVER_FOUND_SELF:
+        pid = _dbus_getpid ();
+        break;
+      case BUS_DRIVER_FOUND_PEER:
+        if (!dbus_connection_get_unix_process_id (conn, &pid))
+          pid = DBUS_PID_UNSET;
+        break;
+      case BUS_DRIVER_FOUND_ERROR:
+        goto failed;
+    }
 
-  if (conn == NULL)
-    goto failed;
-
-  reply = dbus_message_new_method_return (message);
-  if (reply == NULL)
-    goto oom;
-
-  if (!dbus_connection_get_unix_process_id (conn, &pid))
+  if (pid == DBUS_PID_UNSET)
     {
       dbus_set_error (error,
                       DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN,
                       "Could not determine PID for '%s'", service);
       goto failed;
     }
+
+  reply = dbus_message_new_method_return (message);
+  if (reply == NULL)
+    goto oom;
 
   pid32 = pid;
   if (! dbus_message_append_args (reply,
@@ -1719,22 +1753,29 @@ bus_driver_handle_get_adt_audit_session_data (DBusConnection *connection,
   void *data = NULL;
   dbus_uint32_t data_size;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message,
-                                     "audit session data", &service, error);
+  found = bus_driver_get_conn_helper (connection, message, "audit session data",
+                                      &service, &conn, error);
 
-  if (conn == NULL)
+  if (found == BUS_DRIVER_FOUND_ERROR)
     goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
     goto oom;
 
-  if (!dbus_connection_get_adt_audit_session_data (conn, &data, &data_size) || data == NULL)
+  /* We don't know how to find "ADT audit session data" for the bus daemon
+   * itself. Is that even meaningful?
+   * FIXME: Implement this or briefly note it makes no sense.
+   */
+  if (found != BUS_DRIVER_FOUND_PEER ||
+      !dbus_connection_get_adt_audit_session_data (conn, &data, &data_size) ||
+      data == NULL)
     {
       dbus_set_error (error,
                       DBUS_ERROR_ADT_AUDIT_DATA_UNKNOWN,
@@ -1774,22 +1815,28 @@ bus_driver_handle_get_connection_selinux_security_context (DBusConnection *conne
   DBusMessage *reply;
   BusSELinuxID *context;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "security context",
-                                     &service, error);
+  found = bus_driver_get_conn_helper (connection, message, "security context",
+                                      &service, &conn, error);
 
-  if (conn == NULL)
+  if (found == BUS_DRIVER_FOUND_ERROR)
     goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
     goto oom;
 
-  context = bus_connection_get_selinux_id (conn);
+  /* FIXME: Obtain the SELinux security context for the bus daemon itself */
+  if (found == BUS_DRIVER_FOUND_PEER)
+    context = bus_connection_get_selinux_id (conn);
+  else
+    context = NULL;
+
   if (!context)
     {
       dbus_set_error (error,
@@ -1828,19 +1875,34 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
   DBusMessage *reply;
   DBusMessageIter reply_iter;
   DBusMessageIter array_iter;
-  unsigned long ulong_val;
+  unsigned long ulong_uid, ulong_pid;
   char *s;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "credentials",
-                                     &service, error);
+  found = bus_driver_get_conn_helper (connection, message, "credentials",
+                                      &service, &conn, error);
 
-  if (conn == NULL)
-    goto failed;
+  switch (found)
+    {
+      case BUS_DRIVER_FOUND_SELF:
+        ulong_pid = _dbus_getpid ();
+        ulong_uid = _dbus_getuid ();
+        break;
+
+      case BUS_DRIVER_FOUND_PEER:
+        if (!dbus_connection_get_unix_process_id (conn, &ulong_pid))
+          ulong_pid = DBUS_PID_UNSET;
+        if (!dbus_connection_get_unix_user (conn, &ulong_uid))
+          ulong_uid = DBUS_UID_UNSET;
+        break;
+      case BUS_DRIVER_FOUND_ERROR:
+        goto failed;
+    }
 
   reply = _dbus_asv_new_method_return (message, &reply_iter, &array_iter);
   if (reply == NULL)
@@ -1848,23 +1910,19 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
 
   /* we can't represent > 32-bit pids; if your system needs them, please
    * add ProcessID64 to the spec or something */
-  if (dbus_connection_get_unix_process_id (conn, &ulong_val) &&
-      ulong_val <= _DBUS_UINT32_MAX)
-    {
-      if (!_dbus_asv_add_uint32 (&array_iter, "ProcessID", ulong_val))
-        goto oom;
-    }
+  if (ulong_pid <= _DBUS_UINT32_MAX && ulong_pid != DBUS_PID_UNSET &&
+      !_dbus_asv_add_uint32 (&array_iter, "ProcessID", ulong_pid))
+    goto oom;
 
   /* we can't represent > 32-bit uids; if your system needs them, please
    * add UnixUserID64 to the spec or something */
-  if (dbus_connection_get_unix_user (conn, &ulong_val) &&
-      ulong_val <= _DBUS_UINT32_MAX)
-    {
-      if (!_dbus_asv_add_uint32 (&array_iter, "UnixUserID", ulong_val))
-        goto oom;
-    }
+  if (ulong_uid <= _DBUS_UINT32_MAX && ulong_uid != DBUS_UID_UNSET &&
+      !_dbus_asv_add_uint32 (&array_iter, "UnixUserID", ulong_uid))
+    goto oom;
 
-  if (dbus_connection_get_windows_user (conn, &s))
+  /* FIXME: Obtain the Windows user of the bus daemon itself */
+  if (found == BUS_DRIVER_FOUND_PEER &&
+      dbus_connection_get_windows_user (conn, &s))
     {
       DBusString str;
       dbus_bool_t result;
@@ -1886,7 +1944,9 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
       dbus_free (s);
     }
 
-  if (_dbus_connection_get_linux_security_label (conn, &s))
+  /* FIXME: Obtain the security label for the bus daemon itself */
+  if (found == BUS_DRIVER_FOUND_PEER &&
+      _dbus_connection_get_linux_security_label (conn, &s))
     {
       if (s == NULL)
         goto oom;

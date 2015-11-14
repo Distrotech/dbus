@@ -2138,6 +2138,15 @@ _dbus_getpid (void)
   return GetCurrentProcessId ();
 }
 
+/** Gets our Unix UID
+ * @returns on Windows, just DBUS_UID_UNSET
+ */
+dbus_uid_t
+_dbus_getuid (void)
+{
+  return DBUS_UID_UNSET;
+}
+
 /** nanoseconds in a second */
 #define NANOSECONDS_PER_SECOND       1000000000
 /** microseconds in a second */
