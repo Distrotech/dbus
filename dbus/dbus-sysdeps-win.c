@@ -2403,7 +2403,7 @@ _dbus_delete_file (const DBusString *filename,
 #include <imagehlp.h>
 #include <stdio.h>
 
-#define DPRINTF _dbus_warn
+#define DPRINTF(fmt, ...) fprintf (stderr, fmt, ##__VA_ARGS__)
 
 #ifdef _MSC_VER
 #define BOOL int
