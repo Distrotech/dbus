@@ -978,6 +978,72 @@ send_ack_reply (DBusConnection *connection,
   return TRUE;
 }
 
+/*
+ * Send a message from the driver, activating the destination if necessary.
+ * The message must already have a destination set.
+ */
+static dbus_bool_t
+bus_driver_send_or_activate (BusTransaction *transaction,
+                             DBusMessage    *message,
+                             DBusError      *error)
+{
+  BusContext *context;
+  BusService *service;
+  const char *service_name;
+  DBusString service_string;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  service_name = dbus_message_get_destination (message);
+
+  _dbus_assert (service_name != NULL);
+
+  _dbus_string_init_const (&service_string, service_name);
+
+  context = bus_transaction_get_context (transaction);
+
+  service = bus_registry_lookup (bus_context_get_registry (context),
+                                 &service_string);
+
+  if (service == NULL)
+    {
+      /* destination isn't connected yet; pass the message to activation */
+      BusActivation *activation;
+
+      activation = bus_context_get_activation (context);
+
+      if (!bus_transaction_capture (transaction, NULL, message))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory for bus_transaction_capture()");
+          return FALSE;
+        }
+
+      if (!bus_activation_activate_service (activation, NULL, transaction, TRUE,
+                                            message, service_name, error))
+        {
+          _DBUS_ASSERT_ERROR_IS_SET (error);
+          _dbus_verbose ("bus_activation_activate_service() failed");
+          return FALSE;
+        }
+    }
+  else
+    {
+      DBusConnection *service_conn;
+
+      service_conn = bus_service_get_primary_owners_connection (service);
+
+      if (!bus_transaction_send_from_driver (transaction, service_conn, message))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory for bus_transaction_send_from_driver()");
+          return FALSE;
+        }
+    }
+
+  return TRUE;
+}
+
 static dbus_bool_t
 bus_driver_handle_update_activation_environment (DBusConnection *connection,
                                                  BusTransaction *transaction,
@@ -994,6 +1060,8 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   int key_type;
   DBusList *keys, *key_link;
   DBusList *values, *value_link;
+  DBusMessage *systemd_message;
+  DBusMessageIter systemd_iter;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1034,6 +1102,7 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   dbus_message_iter_recurse (&iter, &dict_iter);
 
   retval = FALSE;
+  systemd_message = NULL;
 
   /* Then loop through the sent dictionary, add the location of
    * the environment keys and values to lists. The result will
@@ -1088,6 +1157,33 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 
   _dbus_assert (_dbus_list_get_length (&keys) == _dbus_list_get_length (&values));
 
+  if (bus_context_get_systemd_activation (bus_connection_get_context (connection)))
+    {
+      /* Prepare a call to forward environment updates to systemd */
+      systemd_message = dbus_message_new_method_call ("org.freedesktop.systemd1",
+                                                      "/org/freedesktop/systemd1",
+                                                      "org.freedesktop.systemd1.Manager",
+                                                      "SetEnvironment");
+      if (systemd_message == NULL ||
+          !dbus_message_set_sender (systemd_message, DBUS_SERVICE_DBUS))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory to create systemd message\n");
+          goto out;
+        }
+
+      dbus_message_set_no_reply (systemd_message, TRUE);
+      dbus_message_iter_init_append (systemd_message, &iter);
+
+      if (!dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY, "s",
+                                             &systemd_iter))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory to open systemd message container\n");
+          goto out;
+        }
+    }
+
   key_link = keys;
   value_link = values;
   while (key_link != NULL)
@@ -1100,11 +1196,41 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 
       if (!bus_activation_set_environment_variable (activation,
                                                     key, value, error))
-      {
+        {
           _DBUS_ASSERT_ERROR_IS_SET (error);
           _dbus_verbose ("bus_activation_set_environment_variable() failed\n");
           break;
-      }
+        }
+
+      if (systemd_message != NULL)
+        {
+          DBusString envline;
+          const char *s;
+
+          /* SetEnvironment wants an array of KEY=VALUE strings */
+          if (!_dbus_string_init (&envline) ||
+              !_dbus_string_append_printf (&envline, "%s=%s", key, value))
+            {
+              BUS_SET_OOM (error);
+              _dbus_verbose ("No memory to format systemd environment line\n");
+              _dbus_string_free (&envline);
+              break;
+            }
+
+          s = _dbus_string_get_data (&envline);
+
+          if (!dbus_message_iter_append_basic (&systemd_iter,
+                                               DBUS_TYPE_STRING, &s))
+            {
+              BUS_SET_OOM (error);
+              _dbus_verbose ("No memory to append systemd environment line\n");
+              _dbus_string_free (&envline);
+              break;
+            }
+
+          _dbus_string_free (&envline);
+        }
+
       key_link = _dbus_list_get_next_link (&keys, key_link);
       value_link = _dbus_list_get_next_link (&values, value_link);
   }
@@ -1114,7 +1240,28 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
    * matter, so we're punting for now.
    */
   if (key_link != NULL)
-    goto out;
+    {
+      if (systemd_message != NULL)
+        dbus_message_iter_abandon_container (&iter, &systemd_iter);
+      goto out;
+    }
+
+  if (systemd_message != NULL)
+    {
+      if (!dbus_message_iter_close_container (&iter, &systemd_iter))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory to close systemd message container\n");
+          goto out;
+        }
+
+      if (!bus_driver_send_or_activate (transaction, systemd_message, error))
+        {
+          _DBUS_ASSERT_ERROR_IS_SET (error);
+          _dbus_verbose ("bus_driver_send_or_activate() failed\n");
+          goto out;
+        }
+    }
 
   if (!send_ack_reply (connection, transaction,
                        message, error))
@@ -1123,6 +1270,8 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   retval = TRUE;
 
  out:
+  if (systemd_message != NULL)
+    dbus_message_unref (systemd_message);
   _dbus_list_clear (&keys);
   _dbus_list_clear (&values);
   return retval;
