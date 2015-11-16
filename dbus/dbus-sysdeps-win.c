@@ -2555,6 +2555,7 @@ static void dump_backtrace_for_thread(HANDLE hThread)
     STACKFRAME sf;
     CONTEXT context;
     DWORD dwImageType;
+    int i = 0;
 
     if (!pStackWalk)
         if (!init_backtrace())
@@ -2628,15 +2629,15 @@ static void dump_backtrace_for_thread(HANDLE hThread)
 
             if (!pSymGetModuleInfo(GetCurrentProcess(), sf.AddrPC.Offset,
                                    &ModuleInfo))
-                DPRINTF("1\t%p\n", (void*)sf.AddrPC.Offset);
+                DPRINTF("%3d %p\n", i++, (void*)sf.AddrPC.Offset);
             else
-                DPRINTF("2\t%s+0x%lx\n", ModuleInfo.ImageName,
+                DPRINTF("%3d %s+0x%lx\n", i++, ModuleInfo.ImageName,
                     sf.AddrPC.Offset - ModuleInfo.BaseOfImage);
         }
         else if (dwDisplacement)
-            DPRINTF("3\t%s+0x%lx\n", pSymbol->Name, dwDisplacement);
+            DPRINTF("%3d %s+0x%lx\n", i++, pSymbol->Name, dwDisplacement);
         else
-            DPRINTF("4\t%s\n", pSymbol->Name);
+            DPRINTF("%3d %s\n", i++, pSymbol->Name);
     }
 
     ResumeThread(hThread);
