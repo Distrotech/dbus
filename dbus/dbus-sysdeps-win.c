@@ -2478,7 +2478,12 @@ static BOOL  (WINAPI *pSymGetModuleInfo)(
 static DWORD  (WINAPI *pSymSetOptions)(
   DWORD SymOptions
 );
-
+static BOOL (WINAPI *pSymGetLineFromAddr)(
+  HANDLE hProcess,
+  DWORD dwAddr,
+  PDWORD pdwDisplacement,
+  PIMAGEHLP_LINE Line
+);
 
 static BOOL init_backtrace()
 {
@@ -2551,9 +2556,14 @@ PTRANSLATE_ADDRESS_ROUTINE TranslateAddress
 pSymSetOptions = (DWORD  (WINAPI *)(
 DWORD SymOptions
 ))GetProcAddress (hmodDbgHelp, FUNC(SymSetOptions));
+    pSymGetLineFromAddr = (BOOL (WINAPI *)(
+  HANDLE hProcess,
+  DWORD dwAddr,
+  PDWORD pdwDisplacement,
+  PIMAGEHLP_LINE Line
+))GetProcAddress (hmodDbgHelp, FUNC(SymGetLineFromAddr));
 
-
-    pSymSetOptions(SYMOPT_UNDNAME);
+    pSymSetOptions(SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
 
     pSymInitialize(GetCurrentProcess(), NULL, TRUE);
 
@@ -2620,37 +2630,50 @@ static void dump_backtrace_for_thread(HANDLE hThread)
 # error You need to fill in the STACKFRAME structure for your architecture
 #endif
 
+    /*
+      backtrace format
+      <level> <address> <symbol>[+offset] [ '[' <file> ':' <line> ']' ] [ 'in' <module> ]
+      example:
+        6 0xf75ade6b wine_switch_to_stack+0x2a [/usr/src/debug/wine-snapshot/libs/wine/port.c:59] in libwine.so.1
+    */
     while (pStackWalk(dwImageType, GetCurrentProcess(),
                      hThread, &sf, &context, NULL, pSymFunctionTableAccess,
                      pSymGetModuleBase, NULL))
-    {
+      {
         BYTE buffer[256];
         IMAGEHLP_SYMBOL * pSymbol = (IMAGEHLP_SYMBOL *)buffer;
         DWORD dwDisplacement;
+        IMAGEHLP_LINE line;
+        IMAGEHLP_MODULE moduleInfo;
 
         pSymbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
         pSymbol->MaxNameLength = sizeof(buffer) - sizeof(IMAGEHLP_SYMBOL) + 1;
 
-        if (!pSymGetSymFromAddr(GetCurrentProcess(), sf.AddrPC.Offset,
-                                &dwDisplacement, pSymbol))
-        {
-            IMAGEHLP_MODULE ModuleInfo;
-            ModuleInfo.SizeOfStruct = sizeof(ModuleInfo);
-
-            if (!pSymGetModuleInfo(GetCurrentProcess(), sf.AddrPC.Offset,
-                                   &ModuleInfo))
-                DPRINTF("%3d %p\n", i++, (void*)sf.AddrPC.Offset);
+        if (pSymGetSymFromAddr(GetCurrentProcess(), sf.AddrPC.Offset,
+                               &dwDisplacement, pSymbol))
+          {
+            if (dwDisplacement)
+                DPRINTF ("%3d %s+0x%lx", i++, pSymbol->Name, dwDisplacement);
             else
-                DPRINTF("%3d %s+0x%lx\n", i++, ModuleInfo.ImageName,
-                    sf.AddrPC.Offset - ModuleInfo.BaseOfImage);
-        }
-        else if (dwDisplacement)
-            DPRINTF("%3d %s+0x%lx\n", i++, pSymbol->Name, dwDisplacement);
+                DPRINTF ("%3d %s", i++, pSymbol->Name);
+          }
         else
-            DPRINTF("%3d %s\n", i++, pSymbol->Name);
-    }
+          DPRINTF ("%3d 0x%lx", i++, sf.AddrPC.Offset);
 
-    ResumeThread(hThread);
+        line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+        if (pSymGetLineFromAddr(GetCurrentProcess(), sf.AddrPC.Offset, &dwDisplacement, &line) == TRUE)
+          {
+            DPRINTF (" [%s:%ld]", line.FileName, line.LineNumber);
+          }
+
+        moduleInfo.SizeOfStruct = sizeof(moduleInfo);
+        if (pSymGetModuleInfo(GetCurrentProcess(), sf.AddrPC.Offset, &moduleInfo))
+          {
+            DPRINTF (" in %s", moduleInfo.ModuleName);
+          }
+        DPRINTF ("\n");
+      }
+    ResumeThread (hThread);
 }
 
 static DWORD WINAPI dump_thread_proc(LPVOID lpParameter)
