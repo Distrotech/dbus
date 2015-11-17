@@ -931,6 +931,27 @@ bus_context_new (const DBusString *config_file,
       !_dbus_pipe_is_stdout_or_stderr (print_pid_pipe))
     _dbus_pipe_close (print_pid_pipe, NULL);
 
+  /* Here we change our credentials if required,
+   * as soon as we've set up our sockets and pidfile.
+   * This must be done before initializing LSMs, so that the netlink
+   * monitoring thread started by avc_init() will not lose CAP_AUDIT_WRITE
+   * when the main thread calls setuid().
+   * https://bugs.freedesktop.org/show_bug.cgi?id=92832
+   */
+  if (context->user != NULL)
+    {
+      if (!_dbus_change_to_daemon_user (context->user, error))
+	{
+	  _DBUS_ASSERT_ERROR_IS_SET (error);
+	  goto failed;
+	}
+    }
+
+  /* Auditing should be initialized before LSMs, so that the LSMs are able
+   * to log audit-events that happen during their initialization.
+   */
+  bus_audit_init (context);
+
   if (!bus_selinux_full_init ())
     {
       bus_context_log (context, DBUS_SYSTEM_LOG_FATAL, "SELinux enabled but D-Bus initialization failed; check system log\n");
@@ -950,6 +971,11 @@ bus_context_new (const DBusString *config_file,
                          "AppArmor D-Bus mediation is enabled\n");
     }
 
+  /* When SELinux is used, this must happen after bus_selinux_full_init()
+   * so that it has access to the access vector cache, which is required
+   * to process <associate/> elements.
+   * http://lists.freedesktop.org/archives/dbus/2008-October/010491.html
+   */
   if (!process_config_postinit (context, parser, error))
     {
       _DBUS_ASSERT_ERROR_IS_SET (error);
@@ -961,20 +987,6 @@ bus_context_new (const DBusString *config_file,
       bus_config_parser_unref (parser);
       parser = NULL;
     }
-
-  /* Here we change our credentials if required,
-   * as soon as we've set up our sockets and pidfile
-   */
-  if (context->user != NULL)
-    {
-      if (!_dbus_change_to_daemon_user (context->user, error))
-	{
-	  _DBUS_ASSERT_ERROR_IS_SET (error);
-	  goto failed;
-	}
-    }
-
-  bus_audit_init (context);
 
   dbus_server_free_data_slot (&server_data_slot);
 
