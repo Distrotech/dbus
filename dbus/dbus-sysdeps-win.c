@@ -2493,17 +2493,18 @@ static void dump_backtrace_for_thread (HANDLE hThread)
     {
       char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(char)];
       PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
-      DWORD dwDisplacement;
+      DWORD64 displacement;
       IMAGEHLP_LINE line;
+      DWORD dwDisplacement;
       IMAGEHLP_MODULE moduleInfo;
 
       pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
       pSymbol->MaxNameLen = MAX_SYM_NAME;
 
-      if (SymFromAddr (GetCurrentProcess (), sf.AddrPC.Offset, &dwDisplacement, pSymbol))
+      if (SymFromAddr (GetCurrentProcess (), sf.AddrPC.Offset, &displacement, pSymbol))
         {
-          if (dwDisplacement)
-            DPRINTF ("%3d %s+0x%lx", i++, pSymbol->Name, dwDisplacement);
+          if (displacement)
+            DPRINTF ("%3d %s+0x%I64x", i++, pSymbol->Name, displacement);
           else
             DPRINTF ("%3d %s", i++, pSymbol->Name);
         }
