@@ -15,7 +15,10 @@ SH_LOG_COMPILER = $(SHELL)
 ## note that TESTS has special meaning (stuff to use in make check)
 ## so if adding tests not to be run in make check, don't add them to 
 ## TESTS
+TESTS =
+
 if DBUS_ENABLE_EMBEDDED_TESTS
+if DBUS_UNIX
 AM_TESTS_ENVIRONMENT = \
         export DBUS_TOP_BUILDDIR=@abs_top_builddir@; \
         export DBUS_TOP_SRCDIR=@abs_top_srcdir@; \
@@ -25,9 +28,11 @@ AM_TESTS_ENVIRONMENT = \
         export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
         $(NULL)
 
-TESTS=run-test.sh run-test-systemserver.sh
-else
-TESTS=
+TESTS += \
+	run-test.sh \
+	run-test-systemserver.sh \
+	$(NULL)
+endif
 endif
 
 EXTRA_DIST=run-test.sh run-test-systemserver.sh test-wait-for-echo.py test-activation-forking.py
