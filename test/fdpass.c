@@ -93,8 +93,6 @@ typedef struct {
     int fd_before;
 } Fixture;
 
-#ifdef HAVE_UNIX_FD_PASSING
-
 static void oom (const gchar *doing) G_GNUC_NORETURN;
 
 static void
@@ -170,7 +168,7 @@ new_conn_cb (DBusServer *server,
 
 static void
 test_connect (Fixture *f,
-    gconstpointer data G_GNUC_UNUSED)
+    gboolean should_support_fds)
 {
   char *address;
 
@@ -225,6 +223,9 @@ test_connect (Fixture *f,
       test_main_context_iterate (f->ctx, TRUE);
     }
 
+  if (!should_support_fds)
+    return;
+
   if (!dbus_connection_can_send_type (f->left_client_conn,
         DBUS_TYPE_UNIX_FD))
     g_error ("left client connection cannot send Unix fds");
@@ -241,7 +242,30 @@ test_connect (Fixture *f,
         DBUS_TYPE_UNIX_FD))
     g_error ("right server connection cannot send Unix fds");
 }
-#endif
+
+static void
+setup_common (Fixture *f,
+    const char *address)
+{
+  f->ctx = test_main_context_get ();
+  dbus_error_init (&f->e);
+  g_queue_init (&f->messages);
+
+  f->server = dbus_server_listen (address, &f->e);
+  assert_no_error (&f->e);
+  g_assert (f->server != NULL);
+
+  dbus_server_set_new_connection_function (f->server,
+      new_conn_cb, f, NULL);
+  test_server_setup (f->ctx, f->server);
+}
+
+static void
+setup_unsupported (Fixture *f,
+    gconstpointer data G_GNUC_UNUSED)
+{
+  setup_common (f, "tcp:host=127.0.0.1");
+}
 
 static void
 setup (Fixture *f,
@@ -249,18 +273,7 @@ setup (Fixture *f,
 {
 #ifdef HAVE_UNIX_FD_PASSING
   /* We assume that anything with fd-passing supports the unix: transport */
-
-  f->ctx = test_main_context_get ();
-  dbus_error_init (&f->e);
-  g_queue_init (&f->messages);
-
-  f->server = dbus_server_listen ("unix:tmpdir=/tmp", &f->e);
-  assert_no_error (&f->e);
-  g_assert (f->server != NULL);
-
-  dbus_server_set_new_connection_function (f->server,
-      new_conn_cb, f, NULL);
-  test_server_setup (f->ctx, f->server);
+  setup_common (f, "unix:tmpdir=/tmp");
 
   f->fd_before = open ("/dev/null", O_RDONLY);
 
@@ -270,6 +283,29 @@ setup (Fixture *f,
 
   _dbus_fd_set_close_on_exec (f->fd_before);
 #endif
+}
+
+static void
+test_unsupported (Fixture *f,
+    gconstpointer data)
+{
+  test_connect (f, FALSE);
+
+  if (dbus_connection_can_send_type (f->left_client_conn,
+        DBUS_TYPE_UNIX_FD))
+    g_error ("left client connection claims it can send Unix fds");
+
+  if (dbus_connection_can_send_type (f->left_server_conn,
+        DBUS_TYPE_UNIX_FD))
+    g_error ("left server connection claims it can send Unix fds");
+
+  if (dbus_connection_can_send_type (f->right_client_conn,
+        DBUS_TYPE_UNIX_FD))
+    g_error ("right client connection claims it can send Unix fds");
+
+  if (dbus_connection_can_send_type (f->right_server_conn,
+        DBUS_TYPE_UNIX_FD))
+    g_error ("right server connection claims it can send Unix fds");
 }
 
 static void
@@ -285,7 +321,7 @@ test_relay (Fixture *f,
   struct stat stat_before;
   struct stat stat_after;
 
-  test_connect (f, data);
+  test_connect (f, TRUE);
 
   outgoing = dbus_message_new_signal ("/com/example/Hello",
       "com.example.Hello", "Greeting");
@@ -365,7 +401,7 @@ test_limit (Fixture *f,
   DBusMessage *outgoing, *incoming;
   int i;
 
-  test_connect (f, data);
+  test_connect (f, TRUE);
 
   outgoing = dbus_message_new_signal ("/com/example/Hello",
       "com.example.Hello", "Greeting");
@@ -423,7 +459,7 @@ test_too_many (Fixture *f,
   DBusMessage *outgoing;
   unsigned int i;
 
-  test_connect (f, data);
+  test_connect (f, TRUE);
 
   outgoing = dbus_message_new_signal ("/com/example/Hello",
       "com.example.Hello", "Greeting");
@@ -495,7 +531,7 @@ test_too_many_split (Fixture *f,
     }
 #endif
 
-  test_connect (f, data);
+  test_connect (f, TRUE);
 
   outgoing = dbus_message_new_signal ("/com/example/Hello",
       "com.example.Hello", "Greeting");
@@ -605,7 +641,7 @@ test_flood (Fixture *f,
   DBusMessage *outgoing[SOME_MESSAGES];
   dbus_uint32_t serial;
 
-  test_connect (f, data);
+  test_connect (f, TRUE);
 
   for (j = 0; j < SOME_MESSAGES; j++)
     {
@@ -677,7 +713,7 @@ test_odd_limit (Fixture *f,
   DBusMessage *outgoing;
   int i;
 
-  test_connect (f, data);
+  test_connect (f, TRUE);
   dbus_connection_set_max_message_unix_fds (f->left_server_conn, 7);
   dbus_connection_set_max_message_unix_fds (f->right_server_conn, 7);
 
@@ -757,7 +793,6 @@ static void
 teardown (Fixture *f,
     gconstpointer data G_GNUC_UNUSED)
 {
-#ifdef HAVE_UNIX_FD_PASSING
   if (f->left_client_conn != NULL)
     {
       dbus_connection_close (f->left_client_conn);
@@ -793,8 +828,10 @@ teardown (Fixture *f,
       f->server = NULL;
     }
 
-  test_main_context_unref (f->ctx);
+  if (f->ctx != NULL)
+    test_main_context_unref (f->ctx);
 
+#ifdef HAVE_UNIX_FD_PASSING
   if (f->fd_before >= 0 && close (f->fd_before) < 0)
     g_error ("%s", g_strerror (errno));
 #endif
@@ -824,6 +861,9 @@ main (int argc,
         }
     }
 #endif
+
+  g_test_add ("/unsupported", Fixture, NULL, setup_unsupported,
+      test_unsupported, teardown);
 
   g_test_add ("/relay", Fixture, NULL, setup,
       test_relay, teardown);
