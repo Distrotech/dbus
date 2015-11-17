@@ -28,17 +28,20 @@
 
 #include <stdio.h>
 
-void test2()
+static void
+test2 (void)
 {
   _dbus_print_backtrace();
 }
 
-void test1()
+static void
+test1 (void)
 {
   test2();
 }
 
-void test()
+static void
+test (void)
 {
   test1();
 }
