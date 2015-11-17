@@ -2421,195 +2421,46 @@ _dbus_delete_file (const DBusString *filename,
 #define __i386__
 #endif
 
-//#define MAKE_FUNCPTR(f) static typeof(f) * p##f
-
-//MAKE_FUNCPTR(StackWalk);
-//MAKE_FUNCPTR(SymGetModuleBase);
-//MAKE_FUNCPTR(SymFunctionTableAccess);
-//MAKE_FUNCPTR(SymInitialize);
-//MAKE_FUNCPTR(SymGetSymFromAddr);
-//MAKE_FUNCPTR(SymGetModuleInfo);
-static BOOL (WINAPI *pStackWalk)(
-  DWORD MachineType,
-  HANDLE hProcess,
-  HANDLE hThread,
-  LPSTACKFRAME StackFrame,
-  PVOID ContextRecord,
-  PREAD_PROCESS_MEMORY_ROUTINE ReadMemoryRoutine,
-  PFUNCTION_TABLE_ACCESS_ROUTINE FunctionTableAccessRoutine,
-  PGET_MODULE_BASE_ROUTINE GetModuleBaseRoutine,
-  PTRANSLATE_ADDRESS_ROUTINE TranslateAddress
-);
-#ifdef _WIN64
-static DWORD64 (WINAPI *pSymGetModuleBase)(
-  HANDLE hProcess,
-  DWORD64 dwAddr
-);
-static PVOID  (WINAPI *pSymFunctionTableAccess)(
-  HANDLE hProcess,
-  DWORD64 AddrBase
-);
-#else
-static DWORD (WINAPI *pSymGetModuleBase)(
-  HANDLE hProcess,
-  DWORD dwAddr
-);
-static PVOID  (WINAPI *pSymFunctionTableAccess)(
-  HANDLE hProcess,
-  DWORD AddrBase
-);
-#endif
-static BOOL  (WINAPI *pSymInitialize)(
-  HANDLE hProcess,
-  PSTR UserSearchPath,
-  BOOL fInvadeProcess
-);
-static BOOL  (WINAPI *pSymGetSymFromAddr)(
-  HANDLE hProcess,
-  DWORD Address,
-  PDWORD Displacement,
-  PIMAGEHLP_SYMBOL Symbol
-);
-static BOOL  (WINAPI *pSymGetModuleInfo)(
-  HANDLE hProcess,
-  DWORD dwAddr,
-  PIMAGEHLP_MODULE ModuleInfo
-);
-static DWORD  (WINAPI *pSymSetOptions)(
-  DWORD SymOptions
-);
-static BOOL (WINAPI *pSymGetLineFromAddr)(
-  HANDLE hProcess,
-  DWORD dwAddr,
-  PDWORD pdwDisplacement,
-  PIMAGEHLP_LINE Line
-);
-
-static BOOL init_backtrace()
+static void dump_backtrace_for_thread (HANDLE hThread)
 {
-    HMODULE hmodDbgHelp = LoadLibraryA("dbghelp");
-/*
-    #define GETFUNC(x) \
-    p##x = (typeof(x)*)GetProcAddress(hmodDbgHelp, #x); \
-    if (!p##x) \
-    { \
-        return FALSE; \
-    }
-    */
+  STACKFRAME sf;
+  CONTEXT context;
+  DWORD dwImageType;
+  int i = 0;
+
+  SymSetOptions (SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
+  SymInitialize (GetCurrentProcess (), NULL, TRUE);
 
 
-//    GETFUNC(StackWalk);
-//    GETFUNC(SymGetModuleBase);
-//    GETFUNC(SymFunctionTableAccess);
-//    GETFUNC(SymInitialize);
-//    GETFUNC(SymGetSymFromAddr);
-//    GETFUNC(SymGetModuleInfo);
+  /* can't use this function for current thread as GetThreadContext
+   * doesn't support getting context from current thread */
+  if (hThread == GetCurrentThread())
+    return;
 
-#define FUNC(x) #x
+  DPRINTF ("Backtrace:\n");
 
-      pStackWalk = (BOOL  (WINAPI *)(
-DWORD MachineType,
-HANDLE hProcess,
-HANDLE hThread,
-LPSTACKFRAME StackFrame,
-PVOID ContextRecord,
-PREAD_PROCESS_MEMORY_ROUTINE ReadMemoryRoutine,
-PFUNCTION_TABLE_ACCESS_ROUTINE FunctionTableAccessRoutine,
-PGET_MODULE_BASE_ROUTINE GetModuleBaseRoutine,
-PTRANSLATE_ADDRESS_ROUTINE TranslateAddress
-))GetProcAddress (hmodDbgHelp, FUNC(StackWalk));
-#ifdef _WIN64
-    pSymGetModuleBase=(DWORD64  (WINAPI *)(
-  HANDLE hProcess,
-  DWORD64 dwAddr
-))GetProcAddress (hmodDbgHelp, FUNC(SymGetModuleBase));
-    pSymFunctionTableAccess=(PVOID  (WINAPI *)(
-  HANDLE hProcess,
-  DWORD64 AddrBase
-))GetProcAddress (hmodDbgHelp, FUNC(SymFunctionTableAccess));
-#else
-    pSymGetModuleBase=(DWORD  (WINAPI *)(
-  HANDLE hProcess,
-  DWORD dwAddr
-))GetProcAddress (hmodDbgHelp, FUNC(SymGetModuleBase));
-    pSymFunctionTableAccess=(PVOID  (WINAPI *)(
-  HANDLE hProcess,
-  DWORD AddrBase
-))GetProcAddress (hmodDbgHelp, FUNC(SymFunctionTableAccess));
-#endif
-    pSymInitialize = (BOOL  (WINAPI *)(
-  HANDLE hProcess,
-  PSTR UserSearchPath,
-  BOOL fInvadeProcess
-))GetProcAddress (hmodDbgHelp, FUNC(SymInitialize));
-    pSymGetSymFromAddr = (BOOL  (WINAPI *)(
-  HANDLE hProcess,
-  DWORD Address,
-  PDWORD Displacement,
-  PIMAGEHLP_SYMBOL Symbol
-))GetProcAddress (hmodDbgHelp, FUNC(SymGetSymFromAddr));
-    pSymGetModuleInfo = (BOOL  (WINAPI *)(
-  HANDLE hProcess,
-  DWORD dwAddr,
-  PIMAGEHLP_MODULE ModuleInfo
-))GetProcAddress (hmodDbgHelp, FUNC(SymGetModuleInfo));
-pSymSetOptions = (DWORD  (WINAPI *)(
-DWORD SymOptions
-))GetProcAddress (hmodDbgHelp, FUNC(SymSetOptions));
-    pSymGetLineFromAddr = (BOOL (WINAPI *)(
-  HANDLE hProcess,
-  DWORD dwAddr,
-  PDWORD pdwDisplacement,
-  PIMAGEHLP_LINE Line
-))GetProcAddress (hmodDbgHelp, FUNC(SymGetLineFromAddr));
+  _DBUS_ZERO (context);
+  context.ContextFlags = CONTEXT_FULL;
 
-    pSymSetOptions(SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
+  SuspendThread (hThread);
 
-    pSymInitialize(GetCurrentProcess(), NULL, TRUE);
-
-    return TRUE;
-}
-
-static void dump_backtrace_for_thread(HANDLE hThread)
-{
-    STACKFRAME sf;
-    CONTEXT context;
-    DWORD dwImageType;
-    int i = 0;
-
-    if (!pStackWalk)
-        if (!init_backtrace())
-            return;
-
-    /* can't use this function for current thread as GetThreadContext
-     * doesn't support getting context from current thread */
-    if (hThread == GetCurrentThread())
-        return;
-
-    DPRINTF("Backtrace:\n");
-
-    _DBUS_ZERO(context);
-    context.ContextFlags = CONTEXT_FULL;
-
-    SuspendThread(hThread);
-
-    if (!GetThreadContext(hThread, &context))
+  if (!GetThreadContext (hThread, &context))
     {
-        DPRINTF("Couldn't get thread context (error %ld)\n", GetLastError());
-        ResumeThread(hThread);
-        return;
+      DPRINTF ("Couldn't get thread context (error %ld)\n", GetLastError ());
+      ResumeThread (hThread);
+      return;
     }
 
-    _DBUS_ZERO(sf);
+  _DBUS_ZERO (sf);
 
 #ifdef __i386__
-    sf.AddrFrame.Offset = context.Ebp;
-    sf.AddrFrame.Mode = AddrModeFlat;
-    sf.AddrPC.Offset = context.Eip;
-    sf.AddrPC.Mode = AddrModeFlat;
-    dwImageType = IMAGE_FILE_MACHINE_I386;
+  dwImageType         = IMAGE_FILE_MACHINE_I386;
+  sf.AddrFrame.Offset = context.Ebp;
+  sf.AddrFrame.Mode   = AddrModeFlat;
+  sf.AddrPC.Offset    = context.Eip;
+  sf.AddrPC.Mode      = AddrModeFlat;
 #elif _M_X64
-  dwImageType                = IMAGE_FILE_MACHINE_AMD64;
+  dwImageType         = IMAGE_FILE_MACHINE_AMD64;
   sf.AddrPC.Offset    = context.Rip;
   sf.AddrPC.Mode      = AddrModeFlat;
   sf.AddrFrame.Offset = context.Rsp;
@@ -2617,7 +2468,7 @@ static void dump_backtrace_for_thread(HANDLE hThread)
   sf.AddrStack.Offset = context.Rsp;
   sf.AddrStack.Mode   = AddrModeFlat;
 #elif _M_IA64
-  dwImageType                 = IMAGE_FILE_MACHINE_IA64;
+  dwImageType         = IMAGE_FILE_MACHINE_IA64;
   sf.AddrPC.Offset    = context.StIIP;
   sf.AddrPC.Mode      = AddrModeFlat;
   sf.AddrFrame.Offset = context.IntSp;
@@ -2630,84 +2481,83 @@ static void dump_backtrace_for_thread(HANDLE hThread)
 # error You need to fill in the STACKFRAME structure for your architecture
 #endif
 
-    /*
-      backtrace format
-      <level> <address> <symbol>[+offset] [ '[' <file> ':' <line> ']' ] [ 'in' <module> ]
-      example:
-        6 0xf75ade6b wine_switch_to_stack+0x2a [/usr/src/debug/wine-snapshot/libs/wine/port.c:59] in libwine.so.1
-    */
-    while (pStackWalk(dwImageType, GetCurrentProcess(),
-                     hThread, &sf, &context, NULL, pSymFunctionTableAccess,
-                     pSymGetModuleBase, NULL))
-      {
-        BYTE buffer[256];
-        IMAGEHLP_SYMBOL * pSymbol = (IMAGEHLP_SYMBOL *)buffer;
-        DWORD dwDisplacement;
-        IMAGEHLP_LINE line;
-        IMAGEHLP_MODULE moduleInfo;
+  /*
+    backtrace format
+    <level> <address> <symbol>[+offset] [ '[' <file> ':' <line> ']' ] [ 'in' <module> ]
+    example:
+      6 0xf75ade6b wine_switch_to_stack+0x2a [/usr/src/debug/wine-snapshot/libs/wine/port.c:59] in libwine.so.1
+  */
+  while (StackWalk (dwImageType, GetCurrentProcess (),
+                    hThread, &sf, &context, NULL, SymFunctionTableAccess,
+                    SymGetModuleBase, NULL))
+    {
+      char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(char)];
+      PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
+      DWORD dwDisplacement;
+      IMAGEHLP_LINE line;
+      IMAGEHLP_MODULE moduleInfo;
 
-        pSymbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
-        pSymbol->MaxNameLength = sizeof(buffer) - sizeof(IMAGEHLP_SYMBOL) + 1;
+      pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+      pSymbol->MaxNameLen = MAX_SYM_NAME;
 
-        if (pSymGetSymFromAddr(GetCurrentProcess(), sf.AddrPC.Offset,
-                               &dwDisplacement, pSymbol))
-          {
-            if (dwDisplacement)
-                DPRINTF ("%3d %s+0x%lx", i++, pSymbol->Name, dwDisplacement);
-            else
-                DPRINTF ("%3d %s", i++, pSymbol->Name);
-          }
-        else
-          DPRINTF ("%3d 0x%lx", i++, sf.AddrPC.Offset);
+      if (SymFromAddr (GetCurrentProcess (), sf.AddrPC.Offset, &dwDisplacement, pSymbol))
+        {
+          if (dwDisplacement)
+            DPRINTF ("%3d %s+0x%lx", i++, pSymbol->Name, dwDisplacement);
+          else
+            DPRINTF ("%3d %s", i++, pSymbol->Name);
+        }
+      else
+        DPRINTF ("%3d 0x%lx", i++, sf.AddrPC.Offset);
 
-        line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
-        if (pSymGetLineFromAddr(GetCurrentProcess(), sf.AddrPC.Offset, &dwDisplacement, &line) == TRUE)
-          {
-            DPRINTF (" [%s:%ld]", line.FileName, line.LineNumber);
-          }
+      line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+      if (SymGetLineFromAddr (GetCurrentProcess (), sf.AddrPC.Offset, &dwDisplacement, &line))
+        {
+          DPRINTF (" [%s:%ld]", line.FileName, line.LineNumber);
+        }
 
-        moduleInfo.SizeOfStruct = sizeof(moduleInfo);
-        if (pSymGetModuleInfo(GetCurrentProcess(), sf.AddrPC.Offset, &moduleInfo))
-          {
-            DPRINTF (" in %s", moduleInfo.ModuleName);
-          }
-        DPRINTF ("\n");
-      }
-    ResumeThread (hThread);
+      moduleInfo.SizeOfStruct = sizeof(moduleInfo);
+      if (SymGetModuleInfo (GetCurrentProcess (), sf.AddrPC.Offset, &moduleInfo))
+        {
+          DPRINTF (" in %s", moduleInfo.ModuleName);
+        }
+      DPRINTF ("\n");
+    }
+  ResumeThread (hThread);
 }
 
-static DWORD WINAPI dump_thread_proc(LPVOID lpParameter)
+static DWORD WINAPI dump_thread_proc (LPVOID lpParameter)
 {
-    dump_backtrace_for_thread((HANDLE)lpParameter);
-    return 0;
+  dump_backtrace_for_thread ((HANDLE) lpParameter);
+  return 0;
 }
 
 /* cannot get valid context from current thread, so we have to execute
  * backtrace from another thread */
-static void dump_backtrace()
+static void dump_backtrace ()
 {
-    HANDLE hCurrentThread;
-    HANDLE hThread;
-    DWORD dwThreadId;
-    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
-        GetCurrentProcess(), &hCurrentThread, 0, FALSE, DUPLICATE_SAME_ACCESS);
-    hThread = CreateThread(NULL, 0, dump_thread_proc, (LPVOID)hCurrentThread,
-        0, &dwThreadId);
-    WaitForSingleObject(hThread, INFINITE);
-    CloseHandle(hThread);
-    CloseHandle(hCurrentThread);
+  HANDLE hCurrentThread;
+  HANDLE hThread;
+  DWORD dwThreadId;
+  DuplicateHandle (GetCurrentProcess (), GetCurrentThread (),
+                   GetCurrentProcess (), &hCurrentThread,
+                   0, FALSE, DUPLICATE_SAME_ACCESS);
+  hThread = CreateThread (NULL, 0, dump_thread_proc, (LPVOID)hCurrentThread,
+                          0, &dwThreadId);
+  WaitForSingleObject (hThread, INFINITE);
+  CloseHandle (hThread);
+  CloseHandle (hCurrentThread);
 }
 #endif
 #endif /* asserts or tests enabled */
 
 #ifdef BACKTRACES
-void _dbus_print_backtrace(void)
+void _dbus_print_backtrace (void)
 {
-  init_backtrace();
-  dump_backtrace();
+  dump_backtrace ();
 }
 #else
-void _dbus_print_backtrace(void)
+void _dbus_print_backtrace (void)
 {
   _dbus_verbose ("  D-Bus not compiled with backtrace support\n");
 }
