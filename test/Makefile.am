@@ -110,6 +110,9 @@ test_refs_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 test_syslog_SOURCES = internals/syslog.c
 test_syslog_LDADD = libdbus-testutils.la $(GLIB_LIBS)
 
+manual_backtrace_SOURCES = manual-backtrace.c
+manual_backtrace_LDADD = $(top_builddir)/dbus/libdbus-1.la
+
 manual_dir_iter_SOURCES = manual-dir-iter.c
 manual_dir_iter_LDADD = $(top_builddir)/dbus/libdbus-internal.la
 
@@ -132,9 +135,10 @@ installable_tests = \
 	test-printf \
 	$(NULL)
 installable_manual_tests = \
+	manual-backtrace \
 	manual-dir-iter \
-        manual-tcp \
-        $(NULL)
+	manual-tcp \
+	$(NULL)
 
 if DBUS_WIN
 installable_manual_tests += manual-paths

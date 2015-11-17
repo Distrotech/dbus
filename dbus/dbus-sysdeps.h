@@ -92,6 +92,7 @@ typedef struct DBusPipe DBusPipe;
  * @{
  */
 
+DBUS_PRIVATE_EXPORT
 void _dbus_abort (void) _DBUS_GNUC_NORETURN;
 
 dbus_bool_t _dbus_check_setuid (void);
@@ -516,6 +517,7 @@ dbus_bool_t _dbus_socketpair (DBusSocket       *fd1,
                               dbus_bool_t       blocking,
                               DBusError        *error);
 
+DBUS_PRIVATE_EXPORT
 void        _dbus_print_backtrace  (void);
 
 dbus_bool_t _dbus_become_daemon   (const DBusString *pidfile,
