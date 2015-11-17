@@ -2423,6 +2423,7 @@ _dbus_delete_file (const DBusString *filename,
 
 static void dump_backtrace_for_thread (HANDLE hThread)
 {
+  ADDRESS old_address;
   STACKFRAME sf;
   CONTEXT context;
   DWORD dwImageType;
@@ -2439,6 +2440,7 @@ static void dump_backtrace_for_thread (HANDLE hThread)
 
   DPRINTF ("Backtrace:\n");
 
+  _DBUS_ZERO (old_address);
   _DBUS_ZERO (context);
   context.ContextFlags = CONTEXT_FULL;
 
@@ -2498,6 +2500,18 @@ static void dump_backtrace_for_thread (HANDLE hThread)
       DWORD dwDisplacement;
       IMAGEHLP_MODULE moduleInfo;
 
+      /*
+         on Wine64 version 1.7.54, we get an infinite number of stack entries
+         pointing to the same stack frame  (_start+0x29 in <wine-loader>)
+         see bug https://bugs.winehq.org/show_bug.cgi?id=39606
+      */
+#ifndef __i386__
+      if (old_address.Offset == sf.AddrPC.Offset)
+        {
+          break;
+        }
+#endif
+
       pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
       pSymbol->MaxNameLen = MAX_SYM_NAME;
 
@@ -2523,6 +2537,7 @@ static void dump_backtrace_for_thread (HANDLE hThread)
           DPRINTF (" in %s", moduleInfo.ModuleName);
         }
       DPRINTF ("\n");
+      old_address = sf.AddrPC;
     }
   ResumeThread (hThread);
 }
