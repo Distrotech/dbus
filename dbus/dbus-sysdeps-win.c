@@ -3199,6 +3199,7 @@ out:
     _DBUS_ASSERT_ERROR_IS_SET (error);
   
   _dbus_global_unlock (mutex);
+  _dbus_string_free (&shm_name);
 
   return retval;
  }
