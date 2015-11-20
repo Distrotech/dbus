@@ -141,6 +141,71 @@ test_uae (Fixture *f,
 }
 
 static void
+test_monitor (Fixture *f,
+    gconstpointer context)
+{
+  const Config *config = context;
+  DBusMessage *m;
+  DBusPendingCall *pc;
+  DBusMessageIter args_iter;
+  DBusMessageIter arr_iter;
+  dbus_uint32_t no_flags = 0;
+
+  if (f->skip)
+    return;
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_MONITORING, "BecomeMonitor");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &args_iter);
+
+  /* Append an empty as (string array). */
+  if (!dbus_message_iter_open_container (&args_iter, DBUS_TYPE_ARRAY,
+        "s", &arr_iter) ||
+      !dbus_message_iter_close_container (&args_iter, &arr_iter) ||
+      !dbus_message_iter_append_basic (&args_iter,
+        DBUS_TYPE_UINT32, &no_flags))
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->conn, m, &pc,
+                                        DBUS_TIMEOUT_USE_DEFAULT) ||
+      pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+                                          &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  if (config->expect_success)
+    {
+      /* it succeeds */
+      g_assert_cmpint (dbus_message_get_type (m), ==,
+          DBUS_MESSAGE_TYPE_METHOD_RETURN);
+    }
+  else
+    {
+      /* it fails, yielding an error message with one string argument */
+      g_assert_cmpint (dbus_message_get_type (m), ==, DBUS_MESSAGE_TYPE_ERROR);
+      g_assert_cmpstr (dbus_message_get_error_name (m), ==,
+          DBUS_ERROR_ACCESS_DENIED);
+      g_assert_cmpstr (dbus_message_get_signature (m), ==, "s");
+    }
+
+  dbus_message_unref (m);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -188,12 +253,22 @@ main (int argc,
 {
   test_init (&argc, &argv);
 
-  g_test_add ("/uid-permissions/uae/root", Fixture, &root_ok_config,
-      setup, test_uae, teardown);
-  g_test_add ("/uid-permissions/uae/messagebus", Fixture, &messagebus_ok_config,
-      setup, test_uae, teardown);
+  /* UpdateActivationEnvironment used to be allowed by dbus-daemon for root
+   * and messagebus but not for other users (although system.conf forbids it
+   * for everyone, and it's useless). It is now hard-coded to fail on a
+   * system bus for everyone, so don't assert that root and messagebus
+   * may call it; continue to assert that it is denied for unprivileged
+   * users though. */
   g_test_add ("/uid-permissions/uae/other", Fixture, &other_fail_config,
       setup, test_uae, teardown);
+
+  /* BecomeMonitor has the behaviour that UAE used to have. */
+  g_test_add ("/uid-permissions/monitor/root", Fixture, &root_ok_config,
+      setup, test_monitor, teardown);
+  g_test_add ("/uid-permissions/monitor/messagebus", Fixture, &messagebus_ok_config,
+      setup, test_monitor, teardown);
+  g_test_add ("/uid-permissions/monitor/other", Fixture, &other_fail_config,
+      setup, test_monitor, teardown);
 
   return g_test_run ();
 }
