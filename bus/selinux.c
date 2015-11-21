@@ -146,7 +146,9 @@ log_callback (const char *fmt, ...)
 
   vsyslog (LOG_USER | LOG_INFO, fmt, ap);
 
+#ifdef HAVE_LIBAUDIT
 out:
+#endif
   va_end(ap);
 }
 
