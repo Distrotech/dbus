@@ -460,7 +460,7 @@ _dbus_sha_final (DBusSHAContext   *context,
 
   sha_finish (context, digest);
 
-  if (!_dbus_string_append_len (results, digest, 20))
+  if (!_dbus_string_append_len (results, (const char *) digest, 20))
     return FALSE;
 
   /* some kind of security paranoia, though it seems pointless
