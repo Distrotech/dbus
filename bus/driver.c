@@ -1557,7 +1557,7 @@ bus_driver_handle_get_adt_audit_session_data (DBusConnection *connection,
   DBusConnection *conn;
   DBusMessage *reply;
   void *data = NULL;
-  dbus_uint32_t data_size;
+  dbus_int32_t data_size;
   const char *service;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
