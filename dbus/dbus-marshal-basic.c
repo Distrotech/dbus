@@ -1386,7 +1386,7 @@ _dbus_verbose_bytes_of_string (const DBusString    *str,
 
   d = _dbus_string_get_const_data_len (str, start, len);
 
-  _dbus_verbose_bytes (d, len, start);
+  _dbus_verbose_bytes ((const unsigned char *) d, len, start);
 }
 
 static int
@@ -1588,9 +1588,9 @@ swap_test_array (void *array,
         _dbus_verbose_bytes_of_string (&str, dump_pos,                                  \
                                       _dbus_string_get_length (&str) - dump_pos);       \
         _dbus_verbose ("LITERAL DATA\n");                                               \
-        _dbus_verbose_bytes ((char*)literal, sizeof (literal), 0);                      \
+        _dbus_verbose_bytes ((const unsigned char *) literal, sizeof (literal), 0);                      \
         _dbus_verbose ("READ DATA\n");                                                  \
-        _dbus_verbose_bytes ((char*)v_ARRAY_##typename, sizeof (literal), 0);           \
+        _dbus_verbose_bytes ((const unsigned char *) v_ARRAY_##typename, sizeof (literal), 0);           \
         _dbus_assert_not_reached ("demarshaled wrong fixed array value");               \
       }                                                                                 \
   } while (0)
