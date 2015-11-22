@@ -760,7 +760,7 @@ marshal_string (DBusString    *str,
                 int           *pos_after)
 {
   return marshal_len_followed_by_bytes (MARSHAL_AS_STRING,
-                                        str, insert_at, value,
+                                        str, insert_at, (const unsigned char *) value,
                                         strlen (value),
                                         byte_order, pos_after);
 }
@@ -772,7 +772,7 @@ marshal_signature (DBusString    *str,
                    int           *pos_after)
 {
   return marshal_len_followed_by_bytes (MARSHAL_AS_SIGNATURE,
-                                        str, insert_at, value,
+                                        str, insert_at, (const unsigned char *) value,
                                         strlen (value),
                                         DBUS_COMPILER_BYTE_ORDER, /* irrelevant */
                                         pos_after);
