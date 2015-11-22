@@ -120,8 +120,8 @@ _dbus_string_find_byte_backward (const DBusString  *str,
 #include <stdio.h>
 
 static void
-test_hex_roundtrip (const unsigned char *data,
-                    int                  len)
+test_hex_roundtrip (const char *data,
+                    int         len)
 {
   DBusString orig;
   DBusString encoded;
@@ -170,8 +170,8 @@ test_hex_roundtrip (const unsigned char *data,
   _dbus_string_free (&decoded);  
 }
 
-typedef void (* TestRoundtripFunc) (const unsigned char *data,
-                                    int                  len);
+typedef void (* TestRoundtripFunc) (const char *data,
+                                    int         len);
 static void
 test_roundtrips (TestRoundtripFunc func)
 {
@@ -200,13 +200,13 @@ test_roundtrips (TestRoundtripFunc func)
     i = 0;
     while (i < _DBUS_N_ELEMENTS (buf))
       {
-        buf[i] = i;
+        buf[i] = (i & 0xff);
         ++i;
       }
     i = 0;
     while (i < _DBUS_N_ELEMENTS (buf))
       {
-        (* func) (buf, i);
+        (* func) ((const char *) buf, i);
         ++i;
       }
   }
