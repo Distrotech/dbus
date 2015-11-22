@@ -239,7 +239,7 @@ _dbus_marshal_byteswap (const DBusString *signature,
 
   byteswap_body_helper (&reader, TRUE,
                         old_byte_order, new_byte_order,
-                        _dbus_string_get_data_len (value_str, value_pos, 0),
+                        (unsigned char *) _dbus_string_get_data_len (value_str, value_pos, 0),
                         NULL);
 }
 
