@@ -420,7 +420,7 @@ validate_body_helper (DBusTypeReader       *reader,
             if (current_type == DBUS_TYPE_OBJECT_PATH)
               {
                 DBusString str;
-                _dbus_string_init_const_len (&str, p, claimed_len);
+                _dbus_string_init_const_len (&str, (const char *) p, claimed_len);
                 if (!_dbus_validate_path (&str, 0,
                                           _dbus_string_get_length (&str)))
                   return DBUS_INVALID_BAD_PATH;
@@ -430,7 +430,7 @@ validate_body_helper (DBusTypeReader       *reader,
             else if (current_type == DBUS_TYPE_STRING)
               {
                 DBusString str;
-                _dbus_string_init_const_len (&str, p, claimed_len);
+                _dbus_string_init_const_len (&str, (const char *) p, claimed_len);
                 if (!_dbus_string_validate_utf8 (&str, 0,
                                                  _dbus_string_get_length (&str)))
                   return DBUS_INVALID_BAD_UTF8_IN_STRING;
@@ -529,7 +529,7 @@ validate_body_helper (DBusTypeReader       *reader,
             if (claimed_len + 1 > (unsigned long) (end - p))
               return DBUS_INVALID_SIGNATURE_LENGTH_OUT_OF_BOUNDS;
 
-            _dbus_string_init_const_len (&str, p, claimed_len);
+            _dbus_string_init_const_len (&str, (const char *) p, claimed_len);
             validity =
               _dbus_validate_signature_with_reason (&str, 0,
                                                     _dbus_string_get_length (&str));
@@ -573,7 +573,7 @@ validate_body_helper (DBusTypeReader       *reader,
             if (claimed_len + 1 > (unsigned long) (end - p))
               return DBUS_INVALID_VARIANT_SIGNATURE_LENGTH_OUT_OF_BOUNDS;
 
-            _dbus_string_init_const_len (&sig, p, claimed_len);
+            _dbus_string_init_const_len (&sig, (const char *) p, claimed_len);
             reason = _dbus_validate_signature_with_reason (&sig, 0,
                                            _dbus_string_get_length (&sig));
             if (!(reason == DBUS_VALID))

@@ -161,7 +161,7 @@ byteswap_body_helper (DBusTypeReader       *reader,
             sig_len = *p;
             ++p;
 
-            _dbus_string_init_const_len (&sig, p, sig_len);
+            _dbus_string_init_const_len (&sig, (const char *) p, sig_len);
 
             p += (sig_len + 1); /* 1 for nul */
 

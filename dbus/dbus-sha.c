@@ -524,7 +524,7 @@ check_sha_binary (const unsigned char *input,
   DBusString expected_str;
   DBusString results;
 
-  _dbus_string_init_const_len (&input_str, input, input_len);
+  _dbus_string_init_const_len (&input_str, (const char *) input, input_len);
   _dbus_string_init_const (&expected_str, expected);
 
   if (!_dbus_string_init (&results))

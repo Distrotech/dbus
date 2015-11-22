@@ -706,7 +706,7 @@ marshal_len_followed_by_bytes (int                  marshal_as,
   else
     value_len = data_len + 1; /* value has a nul */
 
-  _dbus_string_init_const_len (&value_str, value, value_len);
+  _dbus_string_init_const_len (&value_str, (const char *) value, value_len);
 
   pos = insert_at;
 
@@ -865,7 +865,7 @@ marshal_1_octets_array (DBusString          *str,
   int pos;
   DBusString value_str;
 
-  _dbus_string_init_const_len (&value_str, value, n_elements);
+  _dbus_string_init_const_len (&value_str, (const char *) value, n_elements);
 
   pos = insert_at;
 
@@ -982,7 +982,7 @@ marshal_fixed_multi (DBusString           *str,
     goto error;
 
   _dbus_string_init_const_len (&t,
-                               (const unsigned char*) value,
+                               (const char *) value,
                                len_in_bytes);
 
   if (!_dbus_string_copy (&t, 0,
