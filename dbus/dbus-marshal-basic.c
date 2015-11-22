@@ -208,7 +208,7 @@ set_2_octets (DBusString          *str,
 
   data = _dbus_string_get_data_len (str, offset, 2);
 
-  pack_2_octets (value, byte_order, data);
+  pack_2_octets (value, byte_order, (unsigned char *) data);
 }
 
 static void
@@ -224,7 +224,7 @@ set_4_octets (DBusString          *str,
 
   data = _dbus_string_get_data_len (str, offset, 4);
 
-  pack_4_octets (value, byte_order, data);
+  pack_4_octets (value, byte_order, (unsigned char *) data);
 }
 
 static void
@@ -240,7 +240,7 @@ set_8_octets (DBusString          *str,
 
   data = _dbus_string_get_data_len (str, offset, 8);
 
-  pack_8_octets (value, byte_order, data);
+  pack_8_octets (value, byte_order, (unsigned char *) data);
 }
 
 /**
