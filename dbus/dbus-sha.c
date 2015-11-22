@@ -550,7 +550,7 @@ static dbus_bool_t
 check_sha_str (const char *input,
                const char *expected)
 {
-  return check_sha_binary (input, strlen (input), expected);
+  return check_sha_binary ((unsigned char *) input, strlen (input), expected);
 }
 
 static dbus_bool_t
