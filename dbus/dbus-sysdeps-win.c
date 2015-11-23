@@ -2320,7 +2320,8 @@ _dbus_get_tmpdir(void)
 
   if (tmpdir == NULL)
     {
-      char *last_slash;
+      unsigned char *last_slash;
+      unsigned char *p = (unsigned char *)buf;
 
       if (!GetTempPathA (sizeof (buf), buf))
         {
@@ -2329,11 +2330,11 @@ _dbus_get_tmpdir(void)
         }
 
       /* Drop terminating backslash or slash */
-      last_slash = _mbsrchr (buf, '\\');
-      if (last_slash > buf && last_slash[1] == '\0')
+      last_slash = _mbsrchr (p, '\\');
+      if (last_slash > p && last_slash[1] == '\0')
         last_slash[0] = '\0';
-      last_slash = _mbsrchr (buf, '/');
-      if (last_slash > buf && last_slash[1] == '\0')
+      last_slash = _mbsrchr (p, '/');
+      if (last_slash > p && last_slash[1] == '\0')
         last_slash[0] = '\0';
 
       tmpdir = buf;
@@ -3308,8 +3309,8 @@ _dbus_get_install_root (DBusString *str)
 {
     /* this is just an initial guess */
     DWORD pathLength = MAX_PATH;
-    char *lastSlash;
-    char *prefix;
+    unsigned char *lastSlash;
+    unsigned char *prefix;
 
     do
       {
@@ -3352,9 +3353,9 @@ _dbus_get_install_root (DBusString *str)
 
     /* the rest of this function works by direct byte manipulation of the
      * underlying buffer */
-    prefix = _dbus_string_get_data (str);
+    prefix = _dbus_string_get_udata (str);
 
-    lastSlash = _mbsrchr(prefix, '\\');
+    lastSlash = _mbsrchr (prefix, '\\');
     if (lastSlash == NULL) {
         /* failed, but not OOM */
         _dbus_string_set_length (str, 0);
@@ -3368,15 +3369,15 @@ _dbus_get_install_root (DBusString *str)
     //folder's name happens to end with the *bytes*
     //"\\bin"... (I.e. the second byte of some Han character and then
     //the Latin "bin", but that is not likely I think...
-    if (lastSlash - prefix >= 4 && strnicmp(lastSlash - 4, "\\bin", 4) == 0)
+    if (lastSlash - prefix >= 4 && _mbsnicmp (lastSlash - 4, (const unsigned char *)"\\bin", 4) == 0)
         lastSlash[-3] = 0;
-    else if (lastSlash - prefix >= 10 && strnicmp(lastSlash - 10, "\\bin\\debug", 10) == 0)
+    else if (lastSlash - prefix >= 10 && _mbsnicmp (lastSlash - 10, (const unsigned char *)"\\bin\\debug", 10) == 0)
         lastSlash[-9] = 0;
-    else if (lastSlash - prefix >= 12 && strnicmp(lastSlash - 12, "\\bin\\release", 12) == 0)
+    else if (lastSlash - prefix >= 12 && _mbsnicmp (lastSlash - 12, (const unsigned char *)"\\bin\\release", 12) == 0)
         lastSlash[-11] = 0;
 
     /* fix up the length to match the byte-manipulation */
-    _dbus_string_set_length (str, strlen (prefix));
+    _dbus_string_set_length (str, strlen ((char *) prefix));
 
     return TRUE;
 }

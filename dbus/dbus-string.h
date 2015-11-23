@@ -361,6 +361,11 @@ dbus_bool_t   _dbus_string_validate_nul          (const DBusString  *str,
                                                   int                len);
 void          _dbus_string_zero                  (DBusString        *str);
 
+static inline unsigned char *
+_dbus_string_get_udata (DBusString *str)
+{
+  return (unsigned char *) _dbus_string_get_data (str);
+}
 
 static inline unsigned char *
 _dbus_string_get_udata_len (DBusString *str, int start, int len)
