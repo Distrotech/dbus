@@ -2271,7 +2271,7 @@ _dbus_generate_random_bytes (DBusString *str,
                              DBusError  *error)
 {
   int old_len;
-  char *p;
+  unsigned char *p;
   HCRYPTPROV hprov;
 
   old_len = _dbus_string_get_length (str);
@@ -2282,7 +2282,7 @@ _dbus_generate_random_bytes (DBusString *str,
       return FALSE;
     }
 
-  p = _dbus_string_get_data_len (str, old_len, n_bytes);
+  p = _dbus_string_get_udata_len (str, old_len, n_bytes);
 
   if (!CryptAcquireContext (&hprov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
     {
