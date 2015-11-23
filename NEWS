@@ -1,6 +1,19 @@
 D-Bus 1.10.6 (UNRELEASED)
 ==
 
+Fixes:
+
+• On Unix when running tests as root, don't assert that root and
+  the dbus-daemon user can still call UpdateActivationEnvironment;
+  assert that those privileged users can call BecomeMonitor instead
+  (fd.o #93036, Simon McVittie)
+
+• On Windows, fix a memory leak in the autolaunch transport (fd.o #92899,
+  Simon McVittie)
+
+• On Windows Autotools builds, don't run tests that rely on
+  dbus-run-session and other Unix-specifics (fd.o #92899, Simon McVittie)
+
 D-Bus 1.10.4 (2015-11-17)
 ==
 
