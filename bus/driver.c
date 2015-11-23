@@ -43,6 +43,13 @@
 #include <dbus/dbus-marshal-validate.h>
 #include <string.h>
 
+typedef enum
+{
+  BUS_DRIVER_FOUND_SELF,
+  BUS_DRIVER_FOUND_PEER,
+  BUS_DRIVER_FOUND_ERROR,
+} BusDriverFound;
+
 static inline const char *
 nonnull (const char *maybe_null,
          const char *if_null)
@@ -68,11 +75,12 @@ bus_driver_get_owner_of_name (DBusConnection *connection,
   return bus_service_get_primary_owners_connection (serv);
 }
 
-static DBusConnection *
+static BusDriverFound
 bus_driver_get_conn_helper (DBusConnection  *connection,
                             DBusMessage     *message,
                             const char      *what_we_want,
                             const char     **name_p,
+                            DBusConnection **peer_conn_p,
                             DBusError       *error)
 {
   DBusConnection *conn;
@@ -81,10 +89,16 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
   if (!dbus_message_get_args (message, error,
                               DBUS_TYPE_STRING, &name,
                               DBUS_TYPE_INVALID))
-    return NULL;
+    return BUS_DRIVER_FOUND_ERROR;
 
   _dbus_assert (name != NULL);
   _dbus_verbose ("asked for %s of connection %s\n", what_we_want, name);
+
+  if (name_p != NULL)
+    *name_p = name;
+
+  if (strcmp (name, DBUS_SERVICE_DBUS) == 0)
+    return BUS_DRIVER_FOUND_SELF;
 
   conn = bus_driver_get_owner_of_name (connection, name);
 
@@ -93,13 +107,13 @@ bus_driver_get_conn_helper (DBusConnection  *connection,
       dbus_set_error (error, DBUS_ERROR_NAME_HAS_NO_OWNER,
                       "Could not get %s of name '%s': no such name",
                       what_we_want, name);
-      return NULL;
+      return BUS_DRIVER_FOUND_ERROR;
     }
 
-  if (name_p != NULL)
-    *name_p = name;
+  if (peer_conn_p != NULL)
+    *peer_conn_p = conn;
 
-  return conn;
+  return BUS_DRIVER_FOUND_PEER;
 }
 
 /*
@@ -978,6 +992,72 @@ send_ack_reply (DBusConnection *connection,
   return TRUE;
 }
 
+/*
+ * Send a message from the driver, activating the destination if necessary.
+ * The message must already have a destination set.
+ */
+static dbus_bool_t
+bus_driver_send_or_activate (BusTransaction *transaction,
+                             DBusMessage    *message,
+                             DBusError      *error)
+{
+  BusContext *context;
+  BusService *service;
+  const char *service_name;
+  DBusString service_string;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  service_name = dbus_message_get_destination (message);
+
+  _dbus_assert (service_name != NULL);
+
+  _dbus_string_init_const (&service_string, service_name);
+
+  context = bus_transaction_get_context (transaction);
+
+  service = bus_registry_lookup (bus_context_get_registry (context),
+                                 &service_string);
+
+  if (service == NULL)
+    {
+      /* destination isn't connected yet; pass the message to activation */
+      BusActivation *activation;
+
+      activation = bus_context_get_activation (context);
+
+      if (!bus_transaction_capture (transaction, NULL, NULL, message))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory for bus_transaction_capture()");
+          return FALSE;
+        }
+
+      if (!bus_activation_activate_service (activation, NULL, transaction, TRUE,
+                                            message, service_name, error))
+        {
+          _DBUS_ASSERT_ERROR_IS_SET (error);
+          _dbus_verbose ("bus_activation_activate_service() failed");
+          return FALSE;
+        }
+    }
+  else
+    {
+      DBusConnection *service_conn;
+
+      service_conn = bus_service_get_primary_owners_connection (service);
+
+      if (!bus_transaction_send_from_driver (transaction, service_conn, message))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory for bus_transaction_send_from_driver()");
+          return FALSE;
+        }
+    }
+
+  return TRUE;
+}
+
 static dbus_bool_t
 bus_driver_handle_update_activation_environment (DBusConnection *connection,
                                                  BusTransaction *transaction,
@@ -986,6 +1066,7 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 {
   dbus_bool_t retval;
   BusActivation *activation;
+  BusContext *context;
   DBusMessageIter iter;
   DBusMessageIter dict_iter;
   DBusMessageIter dict_entry_iter;
@@ -993,6 +1074,8 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   int key_type;
   DBusList *keys, *key_link;
   DBusList *values, *value_link;
+  DBusMessage *systemd_message;
+  DBusMessageIter systemd_iter;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1011,6 +1094,16 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
     }
 #endif
 
+  context = bus_connection_get_context (connection);
+
+  if (bus_context_get_servicehelper (context) != NULL)
+    {
+      dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED,
+                      "Cannot change activation environment "
+                      "on a system bus.");
+      return FALSE;
+    }
+
   activation = bus_connection_get_activation (connection);
 
   dbus_message_iter_init (message, &iter);
@@ -1023,6 +1116,7 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   dbus_message_iter_recurse (&iter, &dict_iter);
 
   retval = FALSE;
+  systemd_message = NULL;
 
   /* Then loop through the sent dictionary, add the location of
    * the environment keys and values to lists. The result will
@@ -1077,6 +1171,33 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 
   _dbus_assert (_dbus_list_get_length (&keys) == _dbus_list_get_length (&values));
 
+  if (bus_context_get_systemd_activation (bus_connection_get_context (connection)))
+    {
+      /* Prepare a call to forward environment updates to systemd */
+      systemd_message = dbus_message_new_method_call ("org.freedesktop.systemd1",
+                                                      "/org/freedesktop/systemd1",
+                                                      "org.freedesktop.systemd1.Manager",
+                                                      "SetEnvironment");
+      if (systemd_message == NULL ||
+          !dbus_message_set_sender (systemd_message, DBUS_SERVICE_DBUS))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory to create systemd message\n");
+          goto out;
+        }
+
+      dbus_message_set_no_reply (systemd_message, TRUE);
+      dbus_message_iter_init_append (systemd_message, &iter);
+
+      if (!dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY, "s",
+                                             &systemd_iter))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory to open systemd message container\n");
+          goto out;
+        }
+    }
+
   key_link = keys;
   value_link = values;
   while (key_link != NULL)
@@ -1089,11 +1210,41 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
 
       if (!bus_activation_set_environment_variable (activation,
                                                     key, value, error))
-      {
+        {
           _DBUS_ASSERT_ERROR_IS_SET (error);
           _dbus_verbose ("bus_activation_set_environment_variable() failed\n");
           break;
-      }
+        }
+
+      if (systemd_message != NULL)
+        {
+          DBusString envline;
+          const char *s;
+
+          /* SetEnvironment wants an array of KEY=VALUE strings */
+          if (!_dbus_string_init (&envline) ||
+              !_dbus_string_append_printf (&envline, "%s=%s", key, value))
+            {
+              BUS_SET_OOM (error);
+              _dbus_verbose ("No memory to format systemd environment line\n");
+              _dbus_string_free (&envline);
+              break;
+            }
+
+          s = _dbus_string_get_data (&envline);
+
+          if (!dbus_message_iter_append_basic (&systemd_iter,
+                                               DBUS_TYPE_STRING, &s))
+            {
+              BUS_SET_OOM (error);
+              _dbus_verbose ("No memory to append systemd environment line\n");
+              _dbus_string_free (&envline);
+              break;
+            }
+
+          _dbus_string_free (&envline);
+        }
+
       key_link = _dbus_list_get_next_link (&keys, key_link);
       value_link = _dbus_list_get_next_link (&values, value_link);
   }
@@ -1103,7 +1254,28 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
    * matter, so we're punting for now.
    */
   if (key_link != NULL)
-    goto out;
+    {
+      if (systemd_message != NULL)
+        dbus_message_iter_abandon_container (&iter, &systemd_iter);
+      goto out;
+    }
+
+  if (systemd_message != NULL)
+    {
+      if (!dbus_message_iter_close_container (&iter, &systemd_iter))
+        {
+          BUS_SET_OOM (error);
+          _dbus_verbose ("No memory to close systemd message container\n");
+          goto out;
+        }
+
+      if (!bus_driver_send_or_activate (transaction, systemd_message, error))
+        {
+          _DBUS_ASSERT_ERROR_IS_SET (error);
+          _dbus_verbose ("bus_driver_send_or_activate() failed\n");
+          goto out;
+        }
+    }
 
   if (!send_ack_reply (connection, transaction,
                        message, error))
@@ -1112,6 +1284,8 @@ bus_driver_handle_update_activation_environment (DBusConnection *connection,
   retval = TRUE;
 
  out:
+  if (systemd_message != NULL)
+    dbus_message_unref (systemd_message);
   _dbus_list_clear (&keys);
   _dbus_list_clear (&values);
   return retval;
@@ -1442,31 +1616,41 @@ bus_driver_handle_get_connection_unix_user (DBusConnection *connection,
 {
   DBusConnection *conn;
   DBusMessage *reply;
-  unsigned long uid;
+  dbus_uid_t uid;
   dbus_uint32_t uid32;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "UID", &service,
-                                     error);
+  found = bus_driver_get_conn_helper (connection, message, "UID", &service,
+                                      &conn, error);
+  switch (found)
+    {
+      case BUS_DRIVER_FOUND_SELF:
+        uid = _dbus_getuid ();
+        break;
+      case BUS_DRIVER_FOUND_PEER:
+        if (!dbus_connection_get_unix_user (conn, &uid))
+          uid = DBUS_UID_UNSET;
+        break;
+      case BUS_DRIVER_FOUND_ERROR:
+        goto failed;
+    }
 
-  if (conn == NULL)
-    goto failed;
-
-  reply = dbus_message_new_method_return (message);
-  if (reply == NULL)
-    goto oom;
-
-  if (!dbus_connection_get_unix_user (conn, &uid))
+  if (uid == DBUS_UID_UNSET)
     {
       dbus_set_error (error,
                       DBUS_ERROR_FAILED,
                       "Could not determine UID for '%s'", service);
       goto failed;
     }
+
+  reply = dbus_message_new_method_return (message);
+  if (reply == NULL)
+    goto oom;
 
   uid32 = uid;
   if (! dbus_message_append_args (reply,
@@ -1499,31 +1683,41 @@ bus_driver_handle_get_connection_unix_process_id (DBusConnection *connection,
 {
   DBusConnection *conn;
   DBusMessage *reply;
-  unsigned long pid;
+  dbus_pid_t pid;
   dbus_uint32_t pid32;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "PID", &service,
-                                     error);
+  found = bus_driver_get_conn_helper (connection, message, "PID", &service,
+                                      &conn, error);
+  switch (found)
+    {
+      case BUS_DRIVER_FOUND_SELF:
+        pid = _dbus_getpid ();
+        break;
+      case BUS_DRIVER_FOUND_PEER:
+        if (!dbus_connection_get_unix_process_id (conn, &pid))
+          pid = DBUS_PID_UNSET;
+        break;
+      case BUS_DRIVER_FOUND_ERROR:
+        goto failed;
+    }
 
-  if (conn == NULL)
-    goto failed;
-
-  reply = dbus_message_new_method_return (message);
-  if (reply == NULL)
-    goto oom;
-
-  if (!dbus_connection_get_unix_process_id (conn, &pid))
+  if (pid == DBUS_PID_UNSET)
     {
       dbus_set_error (error,
                       DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN,
                       "Could not determine PID for '%s'", service);
       goto failed;
     }
+
+  reply = dbus_message_new_method_return (message);
+  if (reply == NULL)
+    goto oom;
 
   pid32 = pid;
   if (! dbus_message_append_args (reply,
@@ -1559,22 +1753,29 @@ bus_driver_handle_get_adt_audit_session_data (DBusConnection *connection,
   void *data = NULL;
   dbus_int32_t data_size;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message,
-                                     "audit session data", &service, error);
+  found = bus_driver_get_conn_helper (connection, message, "audit session data",
+                                      &service, &conn, error);
 
-  if (conn == NULL)
+  if (found == BUS_DRIVER_FOUND_ERROR)
     goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
     goto oom;
 
-  if (!dbus_connection_get_adt_audit_session_data (conn, &data, &data_size) || data == NULL)
+  /* We don't know how to find "ADT audit session data" for the bus daemon
+   * itself. Is that even meaningful?
+   * FIXME: Implement this or briefly note it makes no sense.
+   */
+  if (found != BUS_DRIVER_FOUND_PEER ||
+      !dbus_connection_get_adt_audit_session_data (conn, &data, &data_size) ||
+      data == NULL)
     {
       dbus_set_error (error,
                       DBUS_ERROR_ADT_AUDIT_DATA_UNKNOWN,
@@ -1614,22 +1815,28 @@ bus_driver_handle_get_connection_selinux_security_context (DBusConnection *conne
   DBusMessage *reply;
   BusSELinuxID *context;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "security context",
-                                     &service, error);
+  found = bus_driver_get_conn_helper (connection, message, "security context",
+                                      &service, &conn, error);
 
-  if (conn == NULL)
+  if (found == BUS_DRIVER_FOUND_ERROR)
     goto failed;
 
   reply = dbus_message_new_method_return (message);
   if (reply == NULL)
     goto oom;
 
-  context = bus_connection_get_selinux_id (conn);
+  /* FIXME: Obtain the SELinux security context for the bus daemon itself */
+  if (found == BUS_DRIVER_FOUND_PEER)
+    context = bus_connection_get_selinux_id (conn);
+  else
+    context = NULL;
+
   if (!context)
     {
       dbus_set_error (error,
@@ -1668,19 +1875,34 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
   DBusMessage *reply;
   DBusMessageIter reply_iter;
   DBusMessageIter array_iter;
-  unsigned long ulong_val;
+  unsigned long ulong_uid, ulong_pid;
   char *s;
   const char *service;
+  BusDriverFound found;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
   reply = NULL;
 
-  conn = bus_driver_get_conn_helper (connection, message, "credentials",
-                                     &service, error);
+  found = bus_driver_get_conn_helper (connection, message, "credentials",
+                                      &service, &conn, error);
 
-  if (conn == NULL)
-    goto failed;
+  switch (found)
+    {
+      case BUS_DRIVER_FOUND_SELF:
+        ulong_pid = _dbus_getpid ();
+        ulong_uid = _dbus_getuid ();
+        break;
+
+      case BUS_DRIVER_FOUND_PEER:
+        if (!dbus_connection_get_unix_process_id (conn, &ulong_pid))
+          ulong_pid = DBUS_PID_UNSET;
+        if (!dbus_connection_get_unix_user (conn, &ulong_uid))
+          ulong_uid = DBUS_UID_UNSET;
+        break;
+      case BUS_DRIVER_FOUND_ERROR:
+        goto failed;
+    }
 
   reply = _dbus_asv_new_method_return (message, &reply_iter, &array_iter);
   if (reply == NULL)
@@ -1688,23 +1910,19 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
 
   /* we can't represent > 32-bit pids; if your system needs them, please
    * add ProcessID64 to the spec or something */
-  if (dbus_connection_get_unix_process_id (conn, &ulong_val) &&
-      ulong_val <= _DBUS_UINT32_MAX)
-    {
-      if (!_dbus_asv_add_uint32 (&array_iter, "ProcessID", ulong_val))
-        goto oom;
-    }
+  if (ulong_pid <= _DBUS_UINT32_MAX && ulong_pid != DBUS_PID_UNSET &&
+      !_dbus_asv_add_uint32 (&array_iter, "ProcessID", ulong_pid))
+    goto oom;
 
   /* we can't represent > 32-bit uids; if your system needs them, please
    * add UnixUserID64 to the spec or something */
-  if (dbus_connection_get_unix_user (conn, &ulong_val) &&
-      ulong_val <= _DBUS_UINT32_MAX)
-    {
-      if (!_dbus_asv_add_uint32 (&array_iter, "UnixUserID", ulong_val))
-        goto oom;
-    }
+  if (ulong_uid <= _DBUS_UINT32_MAX && ulong_uid != DBUS_UID_UNSET &&
+      !_dbus_asv_add_uint32 (&array_iter, "UnixUserID", ulong_uid))
+    goto oom;
 
-  if (dbus_connection_get_windows_user (conn, &s))
+  /* FIXME: Obtain the Windows user of the bus daemon itself */
+  if (found == BUS_DRIVER_FOUND_PEER &&
+      dbus_connection_get_windows_user (conn, &s))
     {
       DBusString str;
       dbus_bool_t result;
@@ -1726,7 +1944,9 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
       dbus_free (s);
     }
 
-  if (_dbus_connection_get_linux_security_label (conn, &s))
+  /* FIXME: Obtain the security label for the bus daemon itself */
+  if (found == BUS_DRIVER_FOUND_PEER &&
+      _dbus_connection_get_linux_security_label (conn, &s))
     {
       if (s == NULL)
         goto oom;

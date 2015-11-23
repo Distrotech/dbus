@@ -20,10 +20,54 @@ Fixes:
   <includedir>, apply the same relocation as for the Exec paths
   in .service files (fd.o #92028, Simon McVittie)
 
+• On Unix when running tests as root, don't assert that root and
+  the dbus-daemon user can still call UpdateActivationEnvironment;
+  assert that those privileged users can call BecomeMonitor instead
+  (fd.o #93036, Simon McVittie)
+
+• On Windows, fix a memory leak in the autolaunch transport (fd.o #92899,
+  Simon McVittie)
+
+• On Windows Autotools builds, don't run tests that rely on
+  dbus-run-session and other Unix-specifics (fd.o #92899, Simon McVittie)
+
+D-Bus 1.10.4 (2015-11-17)
+==
+
+The “Frostburn Canyon” release.
+
+Enhancements:
+
+• GetConnectionCredentials, GetConnectionUnixUser and
+  GetConnectionUnixProcessID with argument "org.freedesktop.DBus"
+  will now return details of the dbus-daemon itself. This is required
+  to be able to call SetEnvironment on systemd.
+  (fd.o #92857, Jan Alexander Steffens)
+
+Fixes:
+
+• Make UpdateActivationEnvironment always fail with AccessDenied on the
+  system bus. Previously, it was possible to configure it so root could
+  call it, but the environment variables were not actually used,
+  because the launch helper would discard them.
+  (fd.o #92857, Jan Alexander Steffens)
+
+• On Unix with --systemd-activation on a user bus, make
+  UpdateActivationEnvironment pass on its arguments to systemd's
+  SetEnvironment method, solving inconsistency between the environments
+  used for traditional activation and systemd user-service activation.
+  (fd.o #92857, Jan Alexander Steffens)
+
 • On Windows, don't crash if <syslog/> or --syslog is used
   (fd.o #92538, Ralf Habacker)
 
-• On Windows, fix various failing tests:
+• On Windows, fix a memory leak when setting a DBusError from a Windows
+  error (fd.o #92721, Ralf Habacker)
+
+• On Windows, don't go into infinite recursion if we abort the process
+  with backtraces enabled (fd.o #92721, Ralf Habacker)
+
+• Fix various failing tests, variously on Windows and cross-platform:
   · don't test system.conf features (users, groups) that only make sense
     on the system bus, which is not supported on Windows
   · don't call _dbus_warn() when we skip a test, since it is fatal
@@ -33,7 +77,8 @@ Fixes:
   · don't stress-test refcounting under Wine, where it's really slow
   · stop assuming that a message looped-back to the test will be received
     immediately
-  (fd.o #83539, #92538, fd.o #92721; Ralf Habacker, Simon McVittie)
+  · skip some system bus tests on Windows since they make no sense there
+  (fd.o #92538, fd.o #92721; Ralf Habacker, Simon McVittie)
 
 D-Bus 1.10.2 (2015-10-26)
 ==

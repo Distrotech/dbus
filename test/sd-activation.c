@@ -65,6 +65,35 @@ do { \
   g_assert_cmpint (dbus_message_get_reply_serial (m), ==, 0); \
 } while (0)
 
+#define assert_method_call(m, sender, \
+    destination, path, iface, method, signature) \
+do { \
+  g_assert_cmpstr (dbus_message_type_to_string (dbus_message_get_type (m)), \
+      ==, dbus_message_type_to_string (DBUS_MESSAGE_TYPE_METHOD_CALL)); \
+  g_assert_cmpstr (dbus_message_get_sender (m), ==, sender); \
+  g_assert_cmpstr (dbus_message_get_destination (m), ==, destination); \
+  g_assert_cmpstr (dbus_message_get_path (m), ==, path); \
+  g_assert_cmpstr (dbus_message_get_interface (m), ==, iface); \
+  g_assert_cmpstr (dbus_message_get_member (m), ==, method); \
+  g_assert_cmpstr (dbus_message_get_signature (m), ==, signature); \
+  g_assert_cmpint (dbus_message_get_serial (m), !=, 0); \
+  g_assert_cmpint (dbus_message_get_reply_serial (m), ==, 0); \
+} while (0)
+
+#define assert_method_reply(m, sender, destination, signature) \
+do { \
+  g_assert_cmpstr (dbus_message_type_to_string (dbus_message_get_type (m)), \
+      ==, dbus_message_type_to_string (DBUS_MESSAGE_TYPE_METHOD_RETURN)); \
+  g_assert_cmpstr (dbus_message_get_sender (m), ==, sender); \
+  g_assert_cmpstr (dbus_message_get_destination (m), ==, destination); \
+  g_assert_cmpstr (dbus_message_get_path (m), ==, NULL); \
+  g_assert_cmpstr (dbus_message_get_interface (m), ==, NULL); \
+  g_assert_cmpstr (dbus_message_get_member (m), ==, NULL); \
+  g_assert_cmpstr (dbus_message_get_signature (m), ==, signature); \
+  g_assert_cmpint (dbus_message_get_serial (m), !=, 0); \
+  g_assert_cmpint (dbus_message_get_reply_serial (m), !=, 0); \
+} while (0)
+
 static DBusHandlerResult
 systemd_filter (DBusConnection *connection,
     DBusMessage *message,
@@ -80,8 +109,22 @@ systemd_filter (DBusConnection *connection,
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
+  g_test_message("sender %s iface %s member %s",
+                 dbus_message_get_sender (message),
+                 dbus_message_get_interface (message),
+                 dbus_message_get_member (message));
+
+
   g_assert (f->systemd_message == NULL);
   f->systemd_message = dbus_message_ref (message);
+
+  if (dbus_message_is_method_call (message, "org.freedesktop.systemd1.Manager",
+                                   "SetEnvironment"))
+    {
+      g_assert (dbus_message_get_no_reply (message));
+      g_test_message("got call");
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
 
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
@@ -301,6 +344,171 @@ test_activation (Fixture *f,
 }
 
 static void
+test_uae (Fixture *f,
+    gconstpointer context)
+{
+  DBusMessage *m;
+  DBusPendingCall *pc;
+  DBusMessageIter args_iter, arr_iter, entry_iter;
+  const char *s;
+
+  if (f->address == NULL)
+    return;
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+      DBUS_INTERFACE_DBUS, "UpdateActivationEnvironment");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &args_iter);
+
+  /* Append an empty a{ss} (string => string dictionary). */
+  if (!dbus_message_iter_open_container (&args_iter, DBUS_TYPE_ARRAY,
+        "{ss}", &arr_iter) ||
+      !dbus_message_iter_close_container (&args_iter, &arr_iter))
+    g_error ("OOM");
+
+  if (!dbus_connection_send_with_reply (f->caller, m, &pc,
+        DBUS_TIMEOUT_USE_DEFAULT) || pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+        &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  assert_method_reply (m, DBUS_SERVICE_DBUS, f->caller_name, "");
+  dbus_message_unref (m);
+
+  /* The fake systemd connects to the bus. */
+  f->systemd = test_connect_to_bus (f->ctx, f->address);
+  if (!dbus_connection_add_filter (f->systemd, systemd_filter, f, NULL))
+    g_error ("OOM");
+  f->systemd_name = dbus_bus_get_unique_name (f->systemd);
+  take_well_known_name (f, f->systemd, "org.freedesktop.systemd1");
+
+  /* It gets the SetEnvironment */
+  while (f->systemd_message == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = f->systemd_message;
+  f->systemd_message = NULL;
+
+  /* With activation, the destination is the well-known name */
+  assert_method_call (m, DBUS_SERVICE_DBUS, "org.freedesktop.systemd1",
+      "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager",
+      "SetEnvironment", "as");
+
+  dbus_message_iter_init (m, &args_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&args_iter), ==,
+      DBUS_TYPE_ARRAY);
+  g_assert_cmpuint (dbus_message_iter_get_element_type (&args_iter), ==,
+      DBUS_TYPE_STRING);
+  dbus_message_iter_recurse (&args_iter, &arr_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&arr_iter), ==,
+      DBUS_TYPE_INVALID);
+  dbus_message_iter_next (&args_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&args_iter), ==,
+      DBUS_TYPE_INVALID);
+  dbus_message_unref (m);
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+      DBUS_INTERFACE_DBUS, "UpdateActivationEnvironment");
+
+  if (m == NULL)
+    g_error ("OOM");
+
+  dbus_message_iter_init_append (m, &args_iter);
+
+
+  {
+    const char *k1 = "Key1", *v1 = "Value1",
+               *k2 = "Key2", *v2 = "Value2";
+
+    /* Append a filled a{ss} (string => string dictionary). */
+    if (!dbus_message_iter_open_container (&args_iter, DBUS_TYPE_ARRAY,
+          "{ss}", &arr_iter) ||
+        !dbus_message_iter_open_container (&arr_iter, DBUS_TYPE_DICT_ENTRY,
+          NULL, &entry_iter) ||
+        !dbus_message_iter_append_basic (&entry_iter, DBUS_TYPE_STRING,
+          &k1) ||
+        !dbus_message_iter_append_basic (&entry_iter, DBUS_TYPE_STRING,
+          &v1) ||
+        !dbus_message_iter_close_container (&arr_iter, &entry_iter) ||
+        !dbus_message_iter_open_container (&arr_iter, DBUS_TYPE_DICT_ENTRY,
+          NULL, &entry_iter) ||
+        !dbus_message_iter_append_basic (&entry_iter, DBUS_TYPE_STRING,
+          &k2) ||
+        !dbus_message_iter_append_basic (&entry_iter, DBUS_TYPE_STRING,
+          &v2) ||
+        !dbus_message_iter_close_container (&arr_iter, &entry_iter) ||
+        !dbus_message_iter_close_container (&args_iter, &arr_iter))
+      g_error ("OOM");
+  }
+
+  if (!dbus_connection_send_with_reply (f->caller, m, &pc,
+        DBUS_TIMEOUT_USE_DEFAULT) || pc == NULL)
+    g_error ("OOM");
+
+  dbus_message_unref (m);
+  m = NULL;
+
+  if (dbus_pending_call_get_completed (pc))
+    test_pending_call_store_reply (pc, &m);
+  else if (!dbus_pending_call_set_notify (pc, test_pending_call_store_reply,
+        &m, NULL))
+    g_error ("OOM");
+
+  while (m == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  assert_method_reply (m, DBUS_SERVICE_DBUS, f->caller_name, "");
+  dbus_message_unref (m);
+
+  while (f->systemd_message == NULL)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  m = f->systemd_message;
+  f->systemd_message = NULL;
+
+  /* Without activation, the destination is the unique name */
+  assert_method_call (m, DBUS_SERVICE_DBUS, f->systemd_name,
+      "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager",
+      "SetEnvironment", "as");
+
+  dbus_message_iter_init (m, &args_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&args_iter), ==,
+      DBUS_TYPE_ARRAY);
+  g_assert_cmpuint (dbus_message_iter_get_element_type (&args_iter), ==,
+      DBUS_TYPE_STRING);
+  dbus_message_iter_recurse (&args_iter, &arr_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&arr_iter), ==,
+      DBUS_TYPE_STRING);
+  dbus_message_iter_get_basic (&arr_iter, &s);
+  g_assert_cmpstr (s, ==, "Key1=Value1");
+  dbus_message_iter_next (&arr_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&arr_iter), ==,
+      DBUS_TYPE_STRING);
+  dbus_message_iter_get_basic (&arr_iter, &s);
+  g_assert_cmpstr (s, ==, "Key2=Value2");
+  dbus_message_iter_next (&arr_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&arr_iter), ==,
+      DBUS_TYPE_INVALID);
+  dbus_message_iter_next (&args_iter);
+  g_assert_cmpuint (dbus_message_iter_get_arg_type (&args_iter), ==,
+      DBUS_TYPE_INVALID);
+  dbus_message_unref (m);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -342,8 +550,10 @@ main (int argc,
 {
   test_init (&argc, &argv);
 
-  g_test_add ("/sd-activation", Fixture, NULL,
+  g_test_add ("/sd-activation/activation", Fixture, NULL,
       setup, test_activation, teardown);
+  g_test_add ("/sd-activation/uae", Fixture, NULL,
+      setup, test_uae, teardown);
 
   return g_test_run ();
 }

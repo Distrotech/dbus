@@ -2138,6 +2138,15 @@ _dbus_getpid (void)
   return GetCurrentProcessId ();
 }
 
+/** Gets our Unix UID
+ * @returns on Windows, just DBUS_UID_UNSET
+ */
+dbus_uid_t
+_dbus_getuid (void)
+{
+  return DBUS_UID_UNSET;
+}
+
 /** nanoseconds in a second */
 #define NANOSECONDS_PER_SECOND       1000000000
 /** microseconds in a second */
@@ -3188,6 +3197,7 @@ out:
     _DBUS_ASSERT_ERROR_IS_SET (error);
   
   _dbus_global_unlock (mutex);
+  _dbus_string_free (&shm_name);
 
   return retval;
  }

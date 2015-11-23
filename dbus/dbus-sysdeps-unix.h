@@ -138,7 +138,6 @@ dbus_bool_t _dbus_group_info_fill_gid (DBusGroupInfo    *info,
                                        DBusError        *error);
 void        _dbus_group_info_free     (DBusGroupInfo    *info);
 
-dbus_uid_t    _dbus_getuid (void);
 DBUS_PRIVATE_EXPORT
 dbus_uid_t    _dbus_geteuid (void);
 
