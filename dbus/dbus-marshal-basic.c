@@ -296,7 +296,7 @@ set_string (DBusString          *str,
 
   _dbus_assert (_DBUS_ALIGN_VALUE (pos, 4) == (unsigned) pos);
   old_len = _dbus_unpack_uint32 (byte_order,
-                                 _dbus_string_get_const_data_len (str, pos, 4));
+                                 _dbus_string_get_const_udata_len (str, pos, 4));
 
   new_len = _dbus_string_get_length (&dstr);
 
@@ -468,7 +468,7 @@ _dbus_marshal_read_uint32  (const DBusString *str,
   _dbus_assert (pos + 4 <= _dbus_string_get_length (str));
   
   return _dbus_unpack_uint32 (byte_order,
-                              _dbus_string_get_const_data (str) + pos);
+                              _dbus_string_get_const_udata (str) + pos);
 }
 
 /**
