@@ -16,6 +16,13 @@ Fixes:
 
 • Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
 
+• When using the Monitoring interface, match messages' destinations
+  (fd.o #92074, Simon McVittie)
+
+• On Linux with systemd, stop installing a reference to the obsolete
+  dbus.target, and enable dbus.socket statically (fd.o #78412, #92402;
+  Simon McVittie)
+
 • On Windows, when including configuration files with <include> or
   <includedir>, apply the same relocation as for the Exec paths
   in .service files (fd.o #92028, Simon McVittie)
@@ -30,6 +37,8 @@ Fixes:
 
 • On Windows Autotools builds, don't run tests that rely on
   dbus-run-session and other Unix-specifics (fd.o #92899, Simon McVittie)
+
+• Fix many -Wpointer-sign warnings (fd.o #93069, Ralf Habacker)
 
 D-Bus 1.10.4 (2015-11-17)
 ==
