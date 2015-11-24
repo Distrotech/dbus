@@ -51,7 +51,7 @@ main (int    argc,
   setlocale(LC_ALL, "");
 #endif
   
-  if (argc > 1)
+  if (argc > 1 && strcmp (argv[1], "--tap") != 0)
     test_data_dir = argv[1];
   else
     test_data_dir = NULL;

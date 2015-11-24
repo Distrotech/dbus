@@ -73,7 +73,7 @@ main (int argc, char **argv)
 
   progname = argv[0];
 
-  if (argc > 1)
+  if (argc > 1 && strcmp (argv[1], "--tap") != 0)
     dir = argv[1];
   else
     dir = _dbus_getenv ("DBUS_TEST_DATA");
