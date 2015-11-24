@@ -120,6 +120,7 @@ set (TESTDIRS
     test/data/incomplete-messages
     test/data/auth
     test/data/sha-1
+    test/data/systemd-activation
     test/data/valid-config-files
     test/data/valid-config-files/basic.d
     test/data/valid-config-files/session.d
