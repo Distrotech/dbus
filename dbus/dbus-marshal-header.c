@@ -1460,7 +1460,7 @@ _dbus_header_toggle_flag (DBusHeader   *header,
 {
   unsigned char *flags_p;
 
-  flags_p = _dbus_string_get_data_len (&header->data, FLAGS_OFFSET, 1);
+  flags_p = _dbus_string_get_udata_len (&header->data, FLAGS_OFFSET, 1);
 
   if (value)
     *flags_p |= flag;
@@ -1481,7 +1481,7 @@ _dbus_header_get_flag (DBusHeader   *header,
 {
   const unsigned char *flags_p;
 
-  flags_p = _dbus_string_get_const_data_len (&header->data, FLAGS_OFFSET, 1);
+  flags_p = _dbus_string_get_const_udata_len (&header->data, FLAGS_OFFSET, 1);
 
   return (*flags_p & flag) != 0;
 }

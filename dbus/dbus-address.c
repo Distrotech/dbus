@@ -112,7 +112,7 @@ _dbus_address_append_escaped (DBusString       *escaped,
   ret = FALSE;
 
   orig_len = _dbus_string_get_length (escaped);
-  p = (const unsigned char *) _dbus_string_get_const_data (unescaped);
+  p = _dbus_string_get_const_udata (unescaped);
   end = p + _dbus_string_get_length (unescaped);
   while (p != end)
     {

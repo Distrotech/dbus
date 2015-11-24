@@ -83,9 +83,9 @@ _dbus_validate_signature_with_reason (const DBusString *type_str,
       goto out;
     }
 
-  p = _dbus_string_get_const_data_len (type_str, type_pos, 0);
+  p = _dbus_string_get_const_udata_len (type_str, type_pos, 0);
 
-  end = _dbus_string_get_const_data_len (type_str, type_pos + len, 0);
+  end = _dbus_string_get_const_udata_len (type_str, type_pos + len, 0);
   struct_depth = 0;
   array_depth = 0;
   dict_entry_depth = 0;
@@ -233,7 +233,7 @@ _dbus_validate_signature_with_reason (const DBusString *type_str,
         {
           if (*p == DBUS_TYPE_ARRAY && p != end)
             {
-	       const char *p1;
+               const unsigned char *p1;
 	       p1 = p + 1;
                if (*p1 == DBUS_STRUCT_END_CHAR ||
                    *p1 == DBUS_DICT_ENTRY_END_CHAR)
@@ -725,7 +725,7 @@ _dbus_validate_body_with_reason (const DBusString *expected_signature,
   _dbus_type_reader_init_types_only (&reader,
                                      expected_signature, expected_signature_start);
 
-  p = _dbus_string_get_const_data_len (value_str, value_pos, len);
+  p = _dbus_string_get_const_udata_len (value_str, value_pos, len);
   end = p + len;
 
   validity = validate_body_helper (&reader, byte_order, TRUE, 0, p, end, &p);
@@ -800,7 +800,7 @@ _dbus_validate_path (const DBusString  *str,
   if (len == 0)
     return FALSE;
 
-  s = _dbus_string_get_const_data (str) + start;
+  s = _dbus_string_get_const_udata (str) + start;
   end = s + len;
 
   if (*s != '/')
@@ -941,7 +941,7 @@ _dbus_validate_interface (const DBusString  *str,
     return FALSE;
 
   last_dot = NULL;
-  iface = _dbus_string_get_const_data (str) + start;
+  iface = _dbus_string_get_const_udata (str) + start;
   end = iface + len;
   s = iface;
 
@@ -1015,7 +1015,7 @@ _dbus_validate_member (const DBusString  *str,
   if (len == 0)
     return FALSE;
 
-  member = _dbus_string_get_const_data (str) + start;
+  member = _dbus_string_get_const_udata (str) + start;
   end = member + len;
   s = member;
 
@@ -1107,7 +1107,7 @@ _dbus_validate_bus_name_full (const DBusString  *str,
     return FALSE;
 
   last_dot = NULL;
-  iface = _dbus_string_get_const_data (str) + start;
+  iface = _dbus_string_get_const_udata (str) + start;
   end = iface + len;
   s = iface;
 

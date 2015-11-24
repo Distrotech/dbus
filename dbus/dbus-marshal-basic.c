@@ -1610,7 +1610,9 @@ _dbus_marshal_test (void)
   int pos, dump_pos;
   unsigned char array1[5] = { 3, 4, 0, 1, 9 };
   dbus_int16_t array2[3] = { 124, 457, 780 };
+  dbus_uint16_t array2u[3] = { 124, 457, 780 };
   dbus_int32_t array4[3] = { 123, 456, 789 };
+  dbus_uint32_t array4u[3] = { 123, 456, 789 };
   dbus_int64_t array8[3] = { DBUS_INT64_CONSTANT (0x123ffffffff),
                              DBUS_INT64_CONSTANT (0x456ffffffff),
                              DBUS_INT64_CONSTANT (0x789ffffffff) };
@@ -1707,13 +1709,13 @@ _dbus_marshal_test (void)
   /* Arrays */
   MARSHAL_TEST_FIXED_ARRAY (INT16, DBUS_BIG_ENDIAN, array2);
   MARSHAL_TEST_FIXED_ARRAY (INT16, DBUS_LITTLE_ENDIAN, array2);
-  MARSHAL_TEST_FIXED_ARRAY (UINT16, DBUS_BIG_ENDIAN, array2);
-  MARSHAL_TEST_FIXED_ARRAY (UINT16, DBUS_LITTLE_ENDIAN, array2);
+  MARSHAL_TEST_FIXED_ARRAY (UINT16, DBUS_BIG_ENDIAN, array2u);
+  MARSHAL_TEST_FIXED_ARRAY (UINT16, DBUS_LITTLE_ENDIAN, array2u);
   
   MARSHAL_TEST_FIXED_ARRAY (INT32, DBUS_BIG_ENDIAN, array4);
   MARSHAL_TEST_FIXED_ARRAY (INT32, DBUS_LITTLE_ENDIAN, array4);
-  MARSHAL_TEST_FIXED_ARRAY (UINT32, DBUS_BIG_ENDIAN, array4);
-  MARSHAL_TEST_FIXED_ARRAY (UINT32, DBUS_LITTLE_ENDIAN, array4);
+  MARSHAL_TEST_FIXED_ARRAY (UINT32, DBUS_BIG_ENDIAN, array4u);
+  MARSHAL_TEST_FIXED_ARRAY (UINT32, DBUS_LITTLE_ENDIAN, array4u);
 
   MARSHAL_TEST_FIXED_ARRAY (BYTE, DBUS_BIG_ENDIAN, array1);
   MARSHAL_TEST_FIXED_ARRAY (BYTE, DBUS_LITTLE_ENDIAN, array1);

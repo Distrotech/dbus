@@ -362,6 +362,24 @@ dbus_bool_t   _dbus_string_validate_nul          (const DBusString  *str,
 void          _dbus_string_zero                  (DBusString        *str);
 
 
+static inline unsigned char *
+_dbus_string_get_udata_len (DBusString *str, int start, int len)
+{
+  return (unsigned char *) _dbus_string_get_data_len (str, start, len);
+}
+
+static inline const unsigned char *
+_dbus_string_get_const_udata (const DBusString *str)
+{
+  return (const unsigned char *) _dbus_string_get_const_data (str);
+}
+
+static inline const unsigned char *
+_dbus_string_get_const_udata_len (const DBusString *str, int start, int len)
+{
+  return (const unsigned char *) _dbus_string_get_const_data_len (str, start, len);
+}
+
 /**
  * We allocate 1 byte for nul termination, plus 7 bytes for possible
  * align_offset, so we always need 8 bytes on top of the string's

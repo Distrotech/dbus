@@ -224,7 +224,7 @@ array_reader_get_array_len (const DBusTypeReader *reader)
 
   _dbus_assert (_DBUS_ALIGN_VALUE (len_pos, 4) == (unsigned) len_pos);
   array_len = _dbus_unpack_uint32 (reader->byte_order,
-                                   _dbus_string_get_const_data_len (reader->value_str, len_pos, 4));
+                                   _dbus_string_get_const_udata_len (reader->value_str, len_pos, 4));
 
 #if RECURSIVE_MARSHAL_READ_TRACE
   _dbus_verbose ("   reader %p len_pos %d array len %u len_offset %d\n",
@@ -347,7 +347,7 @@ _dbus_type_signature_next (const char       *type_str,
   _dbus_assert (type_str != NULL);
   _dbus_assert (type_pos != NULL);
   
-  start = type_str;
+  start = (const unsigned char *)type_str;
   p = start + *type_pos;
 
   _dbus_assert (*p != DBUS_STRUCT_END_CHAR);
@@ -855,9 +855,9 @@ _dbus_type_reader_read_raw (const DBusTypeReader  *reader,
 {
   _dbus_assert (!reader->klass->types_only);
 
-  *value_location = _dbus_string_get_const_data_len (reader->value_str,
-                                                     reader->value_pos,
-                                                     0);
+  *value_location = _dbus_string_get_const_udata_len (reader->value_str,
+                                                      reader->value_pos,
+                                                      0);
 }
 
 /**
@@ -1934,7 +1934,7 @@ writer_recurse_array (DBusTypeWriter   *writer,
           _dbus_assert (_DBUS_ALIGN_VALUE (sub->u.array.len_pos, 4) ==
                         (unsigned) sub->u.array.len_pos);
           len = _dbus_unpack_uint32 (sub->byte_order,
-                                     _dbus_string_get_const_data_len (sub->value_str,
+                                     _dbus_string_get_const_udata_len (sub->value_str,
                                                                       sub->u.array.len_pos,
                                                                       4));
 
@@ -2579,7 +2579,7 @@ writer_write_reader_helper (DBusTypeWriter       *writer,
                             (unsigned) fixup.len_pos_in_reader);
 
               old_len = _dbus_unpack_uint32 (reader->byte_order,
-                                             _dbus_string_get_const_data_len (reader->value_str,
+                                             _dbus_string_get_const_udata_len (reader->value_str,
                                                                               fixup.len_pos_in_reader, 4));
 
               if (old_len != fixup.new_len && !append_fixup (fixups, &fixup))

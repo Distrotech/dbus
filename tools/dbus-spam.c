@@ -245,7 +245,7 @@ dbus_test_tool_spam (int argc, char **argv)
               n_random_sizes++;
             }
 
-          random_sizes = dbus_new0 (int, n_random_sizes);
+          random_sizes = dbus_new0 (unsigned int, n_random_sizes);
 
           if (random_sizes == NULL)
             tool_oom ("allocating array of message lengths");
