@@ -69,8 +69,6 @@ struct DBusBabysitter
 #endif
 
     char *log_name;
-    DBusSpawnChildSetupFunc child_setup;
-    void *user_data;
 
     int argc;
     char **argv;
@@ -588,12 +586,6 @@ babysitter (void *parameter)
   PING();
   _dbus_babysitter_ref (sitter);
 
-  if (sitter->child_setup)
-    {
-      PING();
-      (*sitter->child_setup) (sitter->user_data);
-    }
-
   _dbus_verbose ("babysitter: spawning %s\n", sitter->log_name);
 
   PING();
@@ -648,8 +640,8 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
                                    const char                *log_name,
                                    char                     **argv,
                                    char                     **envp,
-                                   DBusSpawnChildSetupFunc    child_setup,
-                                   void                      *user_data,
+                                   DBusSpawnChildSetupFunc    child_setup _DBUS_GNUC_UNUSED,
+                                   void                      *user_data _DBUS_GNUC_UNUSED,
                                    DBusError                 *error)
 {
   DBusBabysitter *sitter;
@@ -668,9 +660,6 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
       _DBUS_SET_OOM (error);
       return FALSE;
     }
-
-  sitter->child_setup = child_setup;
-  sitter->user_data = user_data;
 
   sitter->log_name = _dbus_strdup (log_name);
   if (sitter->log_name == NULL && log_name != NULL)

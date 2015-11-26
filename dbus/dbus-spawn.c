@@ -1188,9 +1188,14 @@ babysit (pid_t grandchild_pid,
 }
 
 /**
- * Spawns a new process. The child_setup
- * function is passed the given user_data and is run in the child
- * just before calling exec().
+ * Spawns a new process.
+ *
+ * On Unix platforms, the child_setup function is passed the given
+ * user_data and is run in the child after fork() but before calling exec().
+ * This can be used to change uid, resource limits and so on.
+ * On Windows, this functionality does not fit the multi-processing model
+ * (Windows does the equivalent of fork() and exec() in a single API call),
+ * and the child_setup function and its user_data are ignored.
  *
  * Also creates a "babysitter" which tracks the status of the
  * child process, advising the parent if the child exits.
