@@ -1326,6 +1326,7 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
    missing-prototypes \
    nested-externs \
    pointer-arith \
+   pointer-sign \
    cast-align \
    no-address \
    float-equal \
@@ -1348,7 +1349,6 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   [$DISABLE_UNUSED_WARNINGS \
    missing-field-initializers \
    unused-parameter \
-   pointer-sign \
    type-limits \
   ])
 
