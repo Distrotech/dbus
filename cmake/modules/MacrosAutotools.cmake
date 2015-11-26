@@ -116,6 +116,71 @@ macro(autodefine name)
     endforeach()
 endmacro()
 
+#
+# fetch compiler warnings settings from autotools
+#
+# @param target_warnings the variable name which will contain the warnings keys
+# @param target_disabled_warnings the variable name which will contain the disabled warnings keys
+#
+macro(autocompilerwarnings target_warnings target_disabled_warnings)
+    set(in_warnings 0)
+    set(content)
+    # parse configure_ac
+    foreach(line ${_configure_ac})
+        if(line MATCHES ".*TP_COMPILER_WARNINGS.*")
+            set(in_warnings 1)
+            string(REGEX REPLACE "^.*TP_COMPILER_WARNINGS\\((.*)$" "\\1" temp ${line})
+            set(content "${content}${temp}")
+        elseif(in_warnings EQUAL 1)
+            if(line MATCHES ".*dnl.*")
+                # skip
+            elseif(line MATCHES "\\)$")
+                string(REGEX REPLACE "(.*)\\)$" "\\1" temp ${line})
+                set(content "${content}${temp}")
+                set(in_warnings 2)
+            else()
+                string(STRIP ${line} _line)
+                if(NOT _line STREQUAL "")
+                    set(content "${content}${line}")
+                endif()
+            endif()
+        endif()
+    endforeach()
+
+    # extract macro parts
+    string(REPLACE ";" "#" temp ${content})
+    string(REPLACE "[" "" temp ${temp})
+    string(REPLACE "]" "" temp ${temp})
+    string(REPLACE "," ";" alist ${temp})
+    list(GET alist 0 flag_name)
+    list(GET alist 2 warnings_flag)
+    list(GET alist 3 no_warnings_flag)
+    string(REPLACE "#" ";" warnings_list ${warnings_flag})
+    string(REPLACE "#" ";" no_warnings_list ${no_warnings_flag})
+    list(REMOVE_AT no_warnings_list 0)
+
+    set(warnings)
+    foreach(warning ${warnings_list})
+        string(STRIP ${warning} _warning)
+        if(NOT _warning STREQUAL "")
+            set(warnings "${warnings} ${_warning}")
+        endif()
+    endforeach()
+    set(${target_warnings} "${warnings}")
+
+    set(warnings)
+    foreach(warning ${no_warnings_list})
+        string(STRIP ${warning} _warning)
+        if(NOT _warning STREQUAL "")
+            set(warnings "${warnings} ${_warning}")
+        endif()
+    endforeach()
+    set(${target_disabled_warnings} "${warnings}")
+    if(DEBUG_MACROS)
+        message("autocompilerwarnings returns: warnings: ${${target_warnings}} disabled_warnings: ${${target_disabled_warnings}}")
+    endif()
+endmacro()
+
 macro(autoheaderchecks config_h_in configure_checks_file config_h_cmake)
     file(READ ${configure_checks_file} configure_checks_file_raw)
     file(READ ${config_h_in} _config_h_in_raw)
