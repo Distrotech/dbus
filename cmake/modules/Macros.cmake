@@ -70,3 +70,57 @@ macro(add_helper_executable _target _source)
     add_executable(${_target} ${_source})
     target_link_libraries(${_target} ${ARGN})
 endmacro(add_helper_executable)
+
+
+#
+# generate compiler flags from MSVC warning identifiers (e.g. '4114') or gcc warning keys (e.g. 'pointer-sign')
+#
+# @param target the variable name which will contain the warnings flags
+# @param warnings a string with space delimited warnings
+# @param disabled_warnings a string with space delimited disabled warnings
+# @param error_warnings a string with space delimited warnings which should result into compile errors
+#
+macro(generate_warning_cflags target warnings disabled_warnings error_warnings)
+    if(DEBUG_MACROS)
+        message("generate_warning_cflags got: ${warnings} - ${disabled_warnings} - ${error_warnings}")
+    endif()
+    if(MSVC)
+        # level 1 is default
+        set(enabled_prefix "/w1")
+        set(error_prefix "/we")
+        set(disabled_prefix "/wd")
+    else()
+        set(enabled_prefix "-W")
+        set(error_prefix "-Werror=")
+        set(disabled_prefix "-Wno-")
+    endif()
+
+    set(temp)
+    string(REPLACE " " ";" warnings_list "${warnings}")
+    foreach(warning ${warnings_list})
+        string(STRIP ${warning} _warning)
+        if(_warning)
+            set(temp "${temp} ${enabled_prefix}${_warning}")
+        endif()
+    endforeach()
+
+    string(REPLACE " " ";" disabled_warnings_list "${disabled_warnings}")
+    foreach(warning ${disabled_warnings_list})
+        string(STRIP ${warning} _warning)
+        if(_warning)
+            set(temp "${temp} ${disabled_prefix}${_warning}")
+        endif()
+    endforeach()
+
+    string(REPLACE " " ";" error_warnings_list "${error_warnings}")
+    foreach(warning ${error_warnings_list})
+        string(STRIP ${warning} _warning)
+        if(_warning)
+            set(temp "${temp} ${error_prefix}${_warning}")
+        endif()
+    endforeach()
+    set(${target} "${temp}")
+    if(DEBUG_MACROS)
+        message("generate_warning_cflags return: ${${target}}")
+    endif()
+endmacro()

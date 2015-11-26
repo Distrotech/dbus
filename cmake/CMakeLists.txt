@@ -153,44 +153,67 @@ if(VCS)
 	set(DBUS_VERBOSE_C_S 1 CACHE STRING "verbose mode" FORCE)
 endif(VCS)
 
-if(WIN32)
-	if(MSVC)
-		# controll folders in msvc projects
-		include(ProjectSourceGroup)
-		if(NOT GROUP_CODE)
-			#set(GROUP_CODE split) #cmake default
-			set(GROUP_CODE flat)
-		endif(NOT GROUP_CODE)
-		ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
+if(MSVC)
+    # controll folders in msvc projects
+    include(ProjectSourceGroup)
+    if(NOT GROUP_CODE)
+        #set(GROUP_CODE split) #cmake default
+        set(GROUP_CODE flat)
+    endif(NOT GROUP_CODE)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
+    SET(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   /FIconfig.h")
+    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /FIconfig.h")
+endif()
 
+#
+# setup warnings
+#
+if(MSVC)
+    # Use the highest warning level
+    if(WALL)
+        set(WALL 1 CACHE STRING "all warnings"  FORCE)
+        set(CMAKE_CXX_WARNING_LEVEL 4 CACHE STRING "warning level" FORCE)
+        if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+            string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+        endif()
 
-		# Use the highest warning level
-		if (WALL)
-			set(WALL 1 CACHE STRING "all warnings"  FORCE)
-			set(CMAKE_CXX_WARNING_LEVEL 4 CACHE STRING "warning level" FORCE)
+        if(CMAKE_C_FLAGS MATCHES "/W[0-4]")
+            string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+        else()
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
+        endif()
+    else()
+        set(CMAKE_CXX_WARNING_LEVEL 3 CACHE STRING "warning level" FORCE)
+    endif()
 
-			if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-				STRING(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-			else(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-				SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-			endif(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+    # see https://msdn.microsoft.com/en-us/library/z78503e6.aspx
+    # 4018 'expression' : signed/unsigned mismatch
+    set(WARNINGS "4018")
+    # 4090 'operation' : different 'modifier' qualifiers
+    # 4101 'identifier' : unreferenced local variable
+    # 4127 conditional expression is constant
+    # 4244 'argument' : conversion from 'type1' to 'type2', possible loss of data
+    set(WARNINGS_DISABLED "4090 4101 4127 4244")
+    # 4002 too many actual parameters for macro 'identifier'
+    # 4003 not enough actual parameters for macro 'identifier'
+    # 4013 'function' undefined; assuming extern returning int
+    # 4028 formal parameter 'number' different from declaration
+    # 4031 second formal parameter list longer than the first list
+    # 4047 operator' : 'identifier1' differs in levels of indirection from 'identifier2'
+    # 4114 same type qualifier used more than once
+    # 4133 'type' : incompatible types - from 'type1' to 'type2'
+    set(WARNINGS_ERRORS "4002 4003 4013 4028 4031 4047 4114 4133")
+else()
+    set(WARNINGS "sign-compare")
+    set(WARNINGS_DISABLED "")
+    set(WARNINGS_ERRORS "")
+endif()
+generate_warning_cflags(WARNINGS_CFLAGS "${WARNINGS}" "${WARNINGS_DISABLED}" "${WARNINGS_ERRORS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNINGS_CFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNINGS_CFLAGS}")
 
-			if(CMAKE_C_FLAGS MATCHES "/W[0-4]")
-				STRING(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-			else(CMAKE_C_FLAGS MATCHES "/W[0-4]")
-				SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
-			endif(CMAKE_C_FLAGS MATCHES "/W[0-4]")
-		else (WALL)
-			set(CMAKE_CXX_WARNING_LEVEL 3 CACHE STRING "warning level" FORCE)
-		endif (WALL)
-
-		SET(MSVC_W_ERROR   " /we4028 /we4013 /we4133 /we4047 /we4031 /we4002 /we4003 /we4114")
-		SET(MSVC_W_DISABLE " /wd4127 /wd4090 /wd4101 /wd4244")
-
-		SET(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   /FIconfig.h ${MSVC_W_ERROR} ${MSVC_W_DISABLE}")
-		SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /FIconfig.h ${MSVC_W_ERROR} ${MSVC_W_DISABLE}")
-	endif(MSVC)
-endif(WIN32)
 
 if (UNIX AND NOT DBUS_DISABLE_ASSERT)
 	# required for backtrace
@@ -205,13 +228,6 @@ if(DBUS_WITH_GLIB)
 endif()
 
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}  -D_DEBUG")
-if(MSVC)
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  /w14018")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w14018")
-else()
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wsign-compare")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wsign-compare")
-endif()
 
 #########################################################################
 # Windows CE (>= 5.0.0)
