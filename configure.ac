@@ -1226,7 +1226,7 @@ if test x$dbus_win = xyes ; then
   if test x$dbus_wince = xyes ; then
     NETWORK_libs="-lws2"
   else
-    NETWORK_libs="-lws2_32 -liphlpapi"
+    NETWORK_libs="-lws2_32 -liphlpapi -ldbghelp"
   fi
 fi
 
