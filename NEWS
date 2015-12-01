@@ -27,6 +27,15 @@ Fixes:
   <includedir>, apply the same relocation as for the Exec paths
   in .service files (fd.o #92028, Simon McVittie)
 
+• Fix many -Wpointer-sign warnings (fd.o #93069, Ralf Habacker)
+
+D-Bus 1.10.6 (2015-12-01)
+==
+
+The “marzipan beetles” release.
+
+Fixes:
+
 • On Unix when running tests as root, don't assert that root and
   the dbus-daemon user can still call UpdateActivationEnvironment;
   assert that those privileged users can call BecomeMonitor instead
@@ -37,8 +46,6 @@ Fixes:
 
 • On Windows Autotools builds, don't run tests that rely on
   dbus-run-session and other Unix-specifics (fd.o #92899, Simon McVittie)
-
-• Fix many -Wpointer-sign warnings (fd.o #93069, Ralf Habacker)
 
 D-Bus 1.10.4 (2015-11-17)
 ==
