@@ -7,7 +7,7 @@
   <articleinfo>
     <title>D-Bus Specification</title>
     <releaseinfo>Version 0.27</releaseinfo>
-    <date>(not yet released)</date>
+    <date>2015-12-02</date>
     <authorgroup>
       <author>
         <firstname>Havoc</firstname>
@@ -72,11 +72,9 @@
    <revhistory>
      <revision>
        <revnumber>0.27</revnumber>
-       <date>(not yet released)</date>
-       <authorinitials>n/a</authorinitials>
-       <revremark>
-         see <ulink url='http://cgit.freedesktop.org/dbus/dbus/log/doc/dbus-specification.xml'>commit log</ulink>
-       </revremark>
+       <date>2015-12-02</date>
+       <authorinitials>LU</authorinitials>
+       <revremark>Services should not send unwanted replies</revremark>
      </revision>
      <revision>
        <revnumber>0.26</revnumber>
