@@ -1,9 +1,11 @@
 D-Bus 1.11.0 (UNRELEASED)
 ==
 
+The “peppermint deer” release.
+
 Dependencies:
 
-• On non-Windows platforms, D-Bus requires an <inttypes.h> that defines
+• On non-Windows platforms, dbus now requires an <inttypes.h> that defines
   C99 constants such as PRId64 and PRIu64.
 
 Enhancements:
@@ -12,7 +14,19 @@ Enhancements:
   · Specify that services should not reply if NO_REPLY_EXPECTED was used
     (fd.o #75749, Lars Uebernickel)
 
+• Add a script to do continuous-integration builds, and metadata to run it
+  on travis-ci.org. To use this, clone the dbus git repository on GitHub
+  and set it up with travis-ci.org; the only special setting needed is
+  "only build branches with a .travis.yml". (fd.o #93194, Simon McVittie)
+
+• If dbus-daemon is run with --systemd-activation, do not require
+  org.freedesktop.systemd1.service to exist (fd.o #93194, Simon McVittie)
+
 Fixes:
+
+• Re-order dbus-daemon startup so that on SELinux systems, the thread
+  that reads AVC notifications retains the ability to write to the
+  audit log (fd.o #92832, Laurent Bigonville)
 
 • Print 64-bit integers on non-GNU Unix platforms (fd.o #92043, Natanael Copa)
 
@@ -26,6 +40,8 @@ Fixes:
 • On Windows, when including configuration files with <include> or
   <includedir>, apply the same relocation as for the Exec paths
   in .service files (fd.o #92028, Simon McVittie)
+
+• Add support for backtraces on Windows (fd.o #92721, Ralf Habacker)
 
 • Fix many -Wpointer-sign warnings (fd.o #93069, Ralf Habacker)
 
