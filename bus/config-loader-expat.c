@@ -242,7 +242,7 @@ bus_config_load (const DBusString      *file,
 
     data_str = _dbus_string_get_const_data (&data);
 
-    if (!XML_Parse (expat, data_str, _dbus_string_get_length (&data), TRUE))
+    if (XML_Parse (expat, data_str, _dbus_string_get_length (&data), TRUE) == XML_STATUS_ERROR)
       {
         if (context.error != NULL &&
             !dbus_error_is_set (context.error))
