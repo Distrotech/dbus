@@ -90,19 +90,15 @@ server_get_context (DBusServer *server)
   BusContext *context;
   BusServerData *bd;
 
-  if (!dbus_server_allocate_data_slot (&server_data_slot))
-    return NULL;
+  /* this data slot was allocated by the BusContext */
+  _dbus_assert (server_data_slot >= 0);
 
   bd = BUS_SERVER_DATA (server);
-  if (bd == NULL)
-    {
-      dbus_server_free_data_slot (&server_data_slot);
-      return NULL;
-    }
+
+  /* every DBusServer in the dbus-daemon has gone through setup_server() */
+  _dbus_assert (bd != NULL);
 
   context = bd->context;
-
-  dbus_server_free_data_slot (&server_data_slot);
 
   return context;
 }
