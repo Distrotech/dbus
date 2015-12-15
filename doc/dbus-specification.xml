@@ -968,8 +968,10 @@
       <para>
         Each value in a block of bytes is aligned "naturally," for example
         4-byte values are aligned to a 4-byte boundary, and 8-byte values to an
-        8-byte boundary. To properly align a value, <firstterm>alignment
-        padding</firstterm> may be necessary. The alignment padding must always
+        8-byte boundary. Boundaries are calculated globally, with respect to
+        the first byte in the message. To properly align a value,
+        <firstterm>alignment padding</firstterm> may be necessary before the
+        value. The alignment padding must always
         be the minimum required padding to properly align the following value;
         and it must always be made up of nul bytes. The alignment padding must
         not be left uninitialized (it can't contain garbage), and more padding
@@ -996,21 +998,50 @@
       </para>
 
       <para>
-        The string-like types are all marshalled as a
+        The string-like types (STRING, OBJECT_PATH and SIGNATURE) are all
+        marshalled as a
         fixed-length unsigned integer <varname>n</varname> giving the
         length of the variable part, followed by <varname>n</varname>
         nonzero bytes of UTF-8 text, followed by a single zero (nul) byte
         which is not considered to be part of the text. The alignment
         of the string-like type is the same as the alignment of
-        <varname>n</varname>.
+        <varname>n</varname>: any padding required for <varname>n</varname>
+        appears immediately before <varname>n</varname> itself. There is never
+        any alignment padding between <varname>n</varname> and the string text,
+        or between the string text and the trailing nul. The alignment padding
+        for the next value in the message (if there is one) starts after the
+        trailing nul.
       </para>
 
       <para>
         For the STRING and OBJECT_PATH types, <varname>n</varname> is
-        encoded in 4 bytes, leading to 4-byte alignment.
-        For the SIGNATURE type, <varname>n</varname> is encoded as a single
-        byte. As a result, alignment padding is never required before a
-        SIGNATURE.
+        encoded in 4 bytes (a <literal>UINT32</literal>), leading to 4-byte
+        alignment. For the SIGNATURE type, <varname>n</varname> is encoded as a
+        single byte (a <literal>UINT8</literal>). As a result, alignment
+        padding is never required before a SIGNATURE.
+      </para>
+
+      <para>
+        For example, if the current position is a multiple of 8 bytes from the
+        beginning of a little-endian message, strings ‘foo’, ‘+’ and ‘bar’
+        would be serialized in sequence as follows:
+
+        <screen>
+                                          <lineannotation>no padding required, we are already at a multiple of 4</lineannotation>
+0x03 0x00 0x00 0x00                       <lineannotation>length of ‘foo’ = 3</lineannotation>
+                    0x66 0x6f 0x6f        <lineannotation>‘foo’</lineannotation>
+                                   0x00   <lineannotation>trailing nul</lineannotation>
+
+                                          <lineannotation>no padding required, we are already at a multiple of 4</lineannotation>
+0x01 0x00 0x00 0x00                       <lineannotation>length of ‘+’ = 1</lineannotation>
+                    0x2b                  <lineannotation>‘+’</lineannotation>
+                         0x00             <lineannotation>trailing nul</lineannotation>
+
+                               0x00 0x00  <lineannotation>2 bytes of padding to reach next multiple of 4</lineannotation>
+0x03 0x00 0x00 0x00                       <lineannotation>length of ‘bar’ = 1</lineannotation>
+                    0x62 0x61 0x72        <lineannotation>‘bar’</lineannotation>
+                                    0x00  <lineannotation>trailing nul</lineannotation>
+        </screen>
       </para>
     </sect2>
 
@@ -1024,7 +1055,8 @@
         element type, followed by the <varname>n</varname> bytes of the
         array elements marshalled in sequence. <varname>n</varname> does not
         include the padding after the length, or any padding after the
-        last element.
+        last element. i.e. <varname>n</varname> should be divisible by the
+        number of elements in the array.
       </para>
 
       <para>
@@ -1033,7 +1065,7 @@
         the 64-bit integer 5 would be marshalled as:
 
         <screen>
-00 00 00 08               <lineannotation>8 bytes of data</lineannotation>
+00 00 00 08               <lineannotation><varname>n</varname> = 8 bytes of data</lineannotation>
 00 00 00 00               <lineannotation>padding to 8-byte boundary</lineannotation>
 00 00 00 00  00 00 00 05  <lineannotation>first element = 5</lineannotation>
         </screen>
@@ -1057,8 +1089,10 @@
         marshalled value with the type given by that signature. The
         variant has the same 1-byte alignment as the signature, which means
         that alignment padding before a variant is never needed.
-        Use of variants may not cause a total message depth to be larger
+        Use of variants must not cause a total message depth to be larger
         than 64, including other container types such as structures.
+        (See <link linkend="message-protocol-marshaling-signature">Valid
+        Signatures</link>.)
       </para>
     </sect2>
 
