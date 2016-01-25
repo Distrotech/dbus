@@ -48,10 +48,8 @@ c_test () {
   shift
   e=0
   echo "# running test $t"
-  if ! "${DBUS_TOP_BUILDDIR}/libtool" --mode=execute $DEBUG "$DBUS_TOP_BUILDDIR/test/name-test/$t" "$@" >&2; then
-    e=$?
-    echo "# exit status $e"
-  fi
+  "${DBUS_TOP_BUILDDIR}/libtool" --mode=execute $DEBUG "$DBUS_TOP_BUILDDIR/test/name-test/$t" "$@" >&2 || e=$?
+  echo "# exit status $e"
   interpret_result "$e" "$t" "$@"
 }
 
