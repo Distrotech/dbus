@@ -146,7 +146,7 @@ auth_state_from_string (const DBusString *str)
   else if (_dbus_string_starts_with_c_str (str, "AUTHENTICATED"))
     return DBUS_AUTH_STATE_AUTHENTICATED;
   else
-    return -1;
+    return DBUS_AUTH_STATE_INVALID;
 }
 
 static const char*
@@ -164,6 +164,8 @@ auth_state_to_string (DBusAuthState state)
       return "NEED_DISCONNECT";
     case DBUS_AUTH_STATE_AUTHENTICATED:
       return "AUTHENTICATED";
+    default:
+      break;
     }
 
   return "unknown";

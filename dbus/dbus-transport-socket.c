@@ -476,6 +476,8 @@ do_authentication (DBusTransport *transport,
           _dbus_verbose (" %s auth state: authenticated\n",
                          TRANSPORT_SIDE (transport));
           break;
+        default:
+          _dbus_assert_not_reached ("invalid auth state");
         }
     }
 
