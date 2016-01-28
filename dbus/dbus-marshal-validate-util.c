@@ -61,8 +61,6 @@ run_validity_tests (const ValidityTest *tests,
                       v, tests[i].data);
           _dbus_assert_not_reached ("test failed");
         }
-
-      ++i;
     }
 }
 
@@ -83,7 +81,7 @@ static const ValidityTest signature_tests[] = {
     DBUS_INVALID_EXCEEDED_MAXIMUM_STRUCT_RECURSION },
   { ")", DBUS_INVALID_STRUCT_ENDED_BUT_NOT_STARTED },
   { "i)", DBUS_INVALID_STRUCT_ENDED_BUT_NOT_STARTED },
-  { "a)", DBUS_INVALID_STRUCT_ENDED_BUT_NOT_STARTED },
+  { "a)", DBUS_INVALID_MISSING_ARRAY_ELEMENT_TYPE },
   { "(", DBUS_INVALID_STRUCT_STARTED_BUT_NOT_ENDED },
   { "(i", DBUS_INVALID_STRUCT_STARTED_BUT_NOT_ENDED },
   { "(iiiii", DBUS_INVALID_STRUCT_STARTED_BUT_NOT_ENDED },
