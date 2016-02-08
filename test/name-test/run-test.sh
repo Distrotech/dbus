@@ -67,14 +67,8 @@ py_test () {
 }
 
 test_num=1
-# TAP test plan: we will run 8 tests
-echo "1..8"
+# TAP test plan: we will run 2 tests
+echo "1..2"
 
-c_test test-ids
-c_test test-pending-call-dispatch
-c_test test-pending-call-timeout
-c_test test-threads-init
-c_test test-privserver-client
-c_test test-shutdown
 py_test test-activation-forking.py
 c_test test-autolaunch
