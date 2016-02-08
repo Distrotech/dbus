@@ -97,7 +97,7 @@ main (int argc, char *argv[])
   if (!server)
     die (error.message);
   testdata->private_addr = dbus_server_get_address (server);
-  printf ("test server listening on %s\n", testdata->private_addr);
+  fprintf (stderr, "test server listening on %s\n", testdata->private_addr);
 
   dbus_server_set_new_connection_function (server, new_connection_callback,
                                            testdata, NULL);

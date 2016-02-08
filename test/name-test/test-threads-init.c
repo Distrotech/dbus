@@ -105,7 +105,7 @@ check_condvar_lock (DBusCondVar *condvar1,
     }
 }
 
-
+/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int argc, char *argv[])
 {
@@ -116,6 +116,7 @@ main (int argc, char *argv[])
   DBusCondVar *dispatch_cond1, *io_path_cond1;
   DBusMutex *mutex2, *dispatch_mutex2, *io_path_mutex2;
   DBusCondVar *dispatch_cond2, *io_path_cond2;
+  int test_num = 0;
 
   printf ("*** Testing late thread init\n");
 
@@ -140,6 +141,7 @@ main (int argc, char *argv[])
   check_mutex_lock (io_path_mutex1, io_path_mutex2, TRUE);
   check_condvar_lock (dispatch_cond1, dispatch_cond2, TRUE);
   check_condvar_lock (io_path_cond1, io_path_cond2, TRUE);
+  printf ("ok %d\n", ++test_num);
 
   dbus_threads_init_default ();
 
@@ -161,6 +163,7 @@ main (int argc, char *argv[])
   check_mutex_lock (io_path_mutex1, io_path_mutex2, TRUE);
   check_condvar_lock (dispatch_cond1, dispatch_cond2, TRUE);
   check_condvar_lock (io_path_cond1, io_path_cond2, TRUE);
+  printf ("ok %d\n", ++test_num);
 
   method = dbus_message_new_method_call ("org.freedesktop.TestSuiteEchoService",
                                          "/org/freedesktop/TestSuite",
@@ -169,6 +172,6 @@ main (int argc, char *argv[])
   dbus_connection_send (conn, method, NULL);
   dbus_message_unref (method);
 
-  printf ("Success ***\n");
+  printf ("Testing completed\n1..%d\n", test_num);
   exit (0);
 }

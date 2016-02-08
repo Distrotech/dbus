@@ -56,13 +56,13 @@ _run_iteration (DBusConnection *conn)
 
   if (reply == NULL)
     {
-      printf ("Failed: Reply is NULL ***\n");
+      printf ("Bail out! Reply is NULL ***\n");
       exit (1);
     }
 
   if (dbus_message_get_type (reply) == DBUS_MESSAGE_TYPE_ERROR)
     {
-      printf ("Failed: Reply is error: %s ***\n", dbus_message_get_error_name (reply));
+      printf ("Bail out! Reply is error: %s ***\n", dbus_message_get_error_name (reply));
       exit (1);
     } 
 
@@ -72,6 +72,7 @@ _run_iteration (DBusConnection *conn)
   
 }
 
+/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int argc, char *argv[])
 {
@@ -87,7 +88,7 @@ main (int argc, char *argv[])
      but if it does and we are stuck in a poll call then we know the 
      stuck in poll bug has come back to haunt us */
 
-  printf ("*** Testing stuck in poll\n");
+  printf ("# Testing stuck in poll\n");
 
   dbus_error_init (&error);
 
@@ -104,10 +105,10 @@ main (int argc, char *argv[])
 
       /* we just care about seconds */
       delta = end_tv_sec - start_tv_sec;
-      printf ("Iter %i: %lis\n", i, delta);
+      printf ("ok %d - %lis\n", i + 1, delta);
       if (delta >= 5)
         {
-	  printf ("Failed: looks like we might have been be stuck in poll ***\n");
+	  printf ("Bail out! Looks like we might have been be stuck in poll ***\n");
 	  exit (1);
 	}
     }
@@ -119,6 +120,6 @@ main (int argc, char *argv[])
   dbus_connection_send (conn, method, NULL);
   dbus_message_unref (method);
 
-  printf ("Success ***\n");
+  printf ("# Testing completed\n1..%d\n", i);
   exit (0);
 }

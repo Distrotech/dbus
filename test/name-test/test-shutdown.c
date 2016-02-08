@@ -7,7 +7,7 @@ static DBusLoop *loop;
 static void
 die (const char *message)
 {
-  fprintf (stderr, "*** test-shutdown: %s", message);
+  printf ("Bail out! test-shutdown: %s", message);
   exit (1);
 }
 
@@ -46,23 +46,28 @@ open_destroy_shared_session_bus_connection (void)
   dbus_connection_unref (connection); 
 }
 
+/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int    argc,
       char **argv)
 {
-  open_destroy_shared_session_bus_connection ();
-
-  dbus_shutdown ();
+  int test_num = 0;
 
   open_destroy_shared_session_bus_connection ();
 
   dbus_shutdown ();
+  printf ("ok %d\n", ++test_num);
 
   open_destroy_shared_session_bus_connection ();
 
   dbus_shutdown ();
+  printf ("ok %d\n", ++test_num);
 
-  _dbus_verbose ("*** Test shutdown exiting\n");
-  
+  open_destroy_shared_session_bus_connection ();
+
+  dbus_shutdown ();
+  printf ("ok %d\n", ++test_num);
+
+  printf ("1..%d\n", test_num);
   return 0;
 }
