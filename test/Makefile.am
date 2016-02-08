@@ -174,6 +174,7 @@ installcheck_tests =
 installcheck_environment = \
 	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
 	export DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT); \
+	export DBUS_TEST_DBUS_LAUNCH=$(DESTDIR)$(bindir)/dbus-launch$(EXEEXT); \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
 	export DBUS_TEST_DATADIR=$(DESTDIR)$(datadir); \
 	${NULL}
@@ -182,6 +183,7 @@ AM_TESTS_ENVIRONMENT = \
 	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
 	export DBUS_FATAL_WARNINGS=1; \
 	export DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT); \
+	export DBUS_TEST_DBUS_LAUNCH=@abs_top_builddir@/tools/dbus-launch$(EXEEXT); \
 	export DBUS_TEST_DATA=@abs_top_builddir@/test/data; \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
 	$(NULL)

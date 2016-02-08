@@ -1169,10 +1169,10 @@ main (int argc, char **argv)
  
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
       {
-        const char *test_daemon;
         /* exec from testdir */
-        if (getenv ("DBUS_USE_TEST_BINARY") != NULL &&
-            (test_daemon = getenv ("DBUS_TEST_DAEMON")) != NULL)
+        const char *test_daemon = getenv ("DBUS_TEST_DAEMON");
+
+        if (test_daemon != NULL)
           {
             if (config_file == NULL && getenv ("DBUS_TEST_DATA") != NULL)
               {
