@@ -1692,9 +1692,6 @@ AC_DEFINE_UNQUOTED([DBUS_TEST_EXEC], ["$DBUS_TEST_EXEC"],
 AC_DEFINE_UNQUOTED([DBUS_EXEEXT], ["$EXEEXT"],
                    [Extension for executables, typically empty or .exe])
 
-AC_DEFINE_UNQUOTED(TEST_BUS_LAUNCH_BINARY, ["$DBUS_PWD/tools/dbus-launch$EXEEXT"],
-                   [Full path to the dbus-launch in the builddir])
-
 ## Export the non-setuid external helper
 TEST_LAUNCH_HELPER_BINARY="$DBUS_PWD/bus/dbus-daemon-launch-helper-test$EXEEXT"
 AC_SUBST(TEST_LAUNCH_HELPER_BINARY)
