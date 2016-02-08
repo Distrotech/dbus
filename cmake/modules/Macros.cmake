@@ -5,19 +5,25 @@ if(DBUS_BUILD_TESTS AND CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_NAME STREQUAL "Win
             PATHS /usr/bin /usr/local/bin
             NO_CMAKE_FIND_ROOT_PATH
         )
-        find_file(HAVE_BINFMT_WINE_SUPPORT
+        find_file(BINFMT_WINE_SUPPORT_FILE
             NAMES DOSWin wine Wine windows Windows
             PATHS /proc/sys/fs/binfmt_misc
             NO_SYSTEM_PATH NO_CMAKE_FIND_ROOT_PATH
         )
-        if(WINE_EXECUTABLE AND HAVE_BINFMT_WINE_SUPPORT)
+        if(BINFMT_WINE_SUPPORT_FILE)
+            file(READ ${BINFMT_WINE_SUPPORT_FILE} CONTENT)
+            if(${CONTENT} MATCHES "enabled")
+                set(HAVE_BINFMT_WINE_SUPPORT 1)
+            endif()
+        endif()
+        if(WINE_EXECUTABLE)
             list(APPEND FOOTNOTES "NOTE: The requirements to run cross compiled applications on your host system are achieved. You may run 'make check'.")
         endif()
         if(NOT WINE_EXECUTABLE)
             list(APPEND FOOTNOTES "NOTE: You may install the Windows emulator 'wine' to be able to run cross compiled test applications.")
         endif()
         if(NOT HAVE_BINFMT_WINE_SUPPORT)
-            list(APPEND FOOTNOTES "NOTE: You may activate binfmt_misc support for wine to be able to run cross compiled test applications.")
+            list(APPEND FOOTNOTES "NOTE: You may activate binfmt_misc support for wine to be able to run cross compiled test applications directly.")
         endif()
     else()
         list(APPEND FOOTNOTES "NOTE: You will not be able to run cross compiled applications on your host system.")
@@ -43,7 +49,11 @@ macro(add_test_executable _target _source)
         # run tests with binfmt_misc
         set(PREFIX "z:")
         set(_env "DBUS_TEST_DAEMON=${PREFIX}${CMAKE_BINARY_DIR}/bin/dbus-daemon${EXEEXT}")
-        add_test(NAME ${_target} COMMAND $<TARGET_FILE:${_target}> --tap)
+        if(HAVE_BINFMT_WINE_SUPPORT)
+            add_test(NAME ${_target} COMMAND $<TARGET_FILE:${_target}> --tap)
+        else()
+            add_test(NAME ${_target} COMMAND ${WINE_EXECUTABLE} ${PREFIX}$<TARGET_FILE:${_target}> --tap)
+        endif()
     else()
         set(PREFIX)
         set(_env "DBUS_TEST_DAEMON=${CMAKE_BINARY_DIR}/bin/dbus-daemon${EXEEXT}")
