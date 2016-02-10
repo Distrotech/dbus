@@ -52,6 +52,10 @@
 #endif
 #endif
 
+#ifndef HAVE_SOCKLEN_T
+#define socklen_t int
+#endif
+
 static const char*
 type_to_name (int message_type)
 {
@@ -182,8 +186,8 @@ print_fd (int fd, int depth)
       struct sockaddr_in6 ipv6;
   } addr, peer;
   char hostip[INET6_ADDRSTRLEN];
-  int addrlen = sizeof (addr);
-  int peerlen = sizeof (peer);
+  socklen_t addrlen = sizeof (addr);
+  socklen_t peerlen = sizeof (peer);
   int has_peer;
 
   /* Don't print the fd number: it is different in every process and since

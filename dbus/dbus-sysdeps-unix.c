@@ -1905,7 +1905,7 @@ _dbus_read_credentials_socket  (DBusSocket       client_fd,
 #else
     struct ucred cr;
 #endif
-    int cr_len = sizeof (cr);
+    socklen_t cr_len = sizeof (cr);
 
     if (getsockopt (client_fd.fd, SOL_SOCKET, SO_PEERCRED, &cr, &cr_len) != 0)
       {
@@ -4365,7 +4365,7 @@ _dbus_append_address_from_socket (DBusSocket  fd,
       struct sockaddr_in6 ipv6;
   } socket;
   char hostip[INET6_ADDRSTRLEN];
-  int size = sizeof (socket);
+  socklen_t size = sizeof (socket);
   DBusString path_str;
 
   if (getsockname (fd.fd, &socket.sa, &size))
