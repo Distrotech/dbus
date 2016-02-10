@@ -281,7 +281,7 @@ _dbus_read_socket_with_unix_fds (DBusSocket        fd,
                                  DBusString       *buffer,
                                  int               count,
                                  int              *fds,
-                                 int              *n_fds) {
+                                 unsigned int     *n_fds) {
 #ifndef HAVE_UNIX_FD_PASSING
   int r;
 
@@ -298,7 +298,7 @@ _dbus_read_socket_with_unix_fds (DBusSocket        fd,
   struct iovec iov;
 
   _dbus_assert (count >= 0);
-  _dbus_assert (*n_fds >= 0);
+  _dbus_assert (*n_fds <= DBUS_MAXIMUM_MESSAGE_UNIX_FDS);
 
   start = _dbus_string_get_length (buffer);
 
@@ -378,10 +378,9 @@ _dbus_read_socket_with_unix_fds (DBusSocket        fd,
             size_t payload_len_fds = payload_len_bytes / sizeof (int);
             size_t fds_to_use;
 
-            /* Every non-negative int fits in a size_t without truncation,
-             * and we already know that *n_fds is non-negative, so
+            /* Every unsigned int fits in a size_t without truncation, so
              * casting (size_t) *n_fds is OK */
-            _DBUS_STATIC_ASSERT (sizeof (size_t) >= sizeof (int));
+            _DBUS_STATIC_ASSERT (sizeof (size_t) >= sizeof (unsigned int));
 
             if (_DBUS_LIKELY (payload_len_fds <= (size_t) *n_fds))
               {
@@ -407,9 +406,10 @@ _dbus_read_socket_with_unix_fds (DBusSocket        fd,
 
             memcpy (fds, payload, fds_to_use * sizeof (int));
             found = TRUE;
-            /* This cannot overflow because we have chosen fds_to_use
+            /* This narrowing cast from size_t to unsigned int cannot
+             * overflow because we have chosen fds_to_use
              * to be <= *n_fds */
-            *n_fds = (int) fds_to_use;
+            *n_fds = (unsigned int) fds_to_use;
 
             /* Linux doesn't tell us whether MSG_CMSG_CLOEXEC actually
                worked, hence we need to go through this list and set

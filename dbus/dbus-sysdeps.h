@@ -199,7 +199,7 @@ int _dbus_read_socket_with_unix_fds      (DBusSocket        fd,
                                           DBusString       *buffer,
                                           int               count,
                                           int              *fds,
-                                          int              *n_fds);
+                                          unsigned int     *n_fds);
 DBUS_PRIVATE_EXPORT
 int _dbus_write_socket_with_unix_fds     (DBusSocket        fd,
                                           const DBusString *buffer,

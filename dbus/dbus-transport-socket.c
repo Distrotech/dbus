@@ -823,7 +823,8 @@ do_reading (DBusTransport *transport)
 #ifdef HAVE_UNIX_FD_PASSING
       if (DBUS_TRANSPORT_CAN_SEND_UNIX_FD(transport))
         {
-          int *fds, n_fds;
+          int *fds;
+          unsigned int n_fds;
 
           if (!_dbus_message_loader_get_unix_fds(transport->loader, &fds, &n_fds))
             {
