@@ -606,7 +606,9 @@ bus_apparmor_allows_acquire_service (DBusConnection     *connection,
   BusAppArmorConfinement *con = NULL;
   DBusString qstr, auxdata;
   dbus_bool_t free_auxdata = FALSE;
-  dbus_bool_t allow = FALSE, audit = TRUE;
+  /* the AppArmor API uses pointers to int for pointers to boolean, and
+   * int is not strictly guaranteed to be the same as dbus_bool_t */
+  int allow = FALSE, audit = TRUE;
   unsigned long pid;
   int res, serrno = 0;
 
@@ -742,8 +744,8 @@ bus_apparmor_allows_send (DBusConnection     *sender,
 #ifdef HAVE_APPARMOR
   BusAppArmorConfinement *src_con = NULL, *dst_con = NULL;
   DBusString qstr, auxdata;
-  dbus_bool_t src_allow = FALSE, dst_allow = FALSE;
-  dbus_bool_t src_audit = TRUE, dst_audit = TRUE;
+  int src_allow = FALSE, dst_allow = FALSE;
+  int src_audit = TRUE, dst_audit = TRUE;
   dbus_bool_t free_auxdata = FALSE;
   unsigned long pid;
   int len, res, src_errno = 0, dst_errno = 0;
@@ -1006,7 +1008,7 @@ bus_apparmor_allows_eavesdropping (DBusConnection     *connection,
 #ifdef HAVE_APPARMOR
   BusAppArmorConfinement *con = NULL;
   DBusString qstr, auxdata;
-  dbus_bool_t allow = FALSE, audit = TRUE;
+  int allow = FALSE, audit = TRUE;
   dbus_bool_t free_auxdata = FALSE;
   unsigned long pid;
   int res, serrno = 0;
