@@ -1177,7 +1177,7 @@ string_squash_nonprintable (DBusString *str)
   unsigned char *buf;
   int i, len; 
   
-  buf = _dbus_string_get_data (str);
+  buf = _dbus_string_get_udata (str);
   len = _dbus_string_get_length (str);
   
   for (i = 0; i < len; i++)
