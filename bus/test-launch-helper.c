@@ -30,7 +30,10 @@
 #include <dbus/dbus-internals.h>
 #include <dbus/dbus-misc.h>
 
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
+#if !defined(DBUS_ENABLE_EMBEDDED_TESTS) || !defined(DBUS_UNIX)
+#error This file is only relevant for the embedded tests on Unix
+#endif
+
 static void
 die (const char *failure)
 {
@@ -57,8 +60,6 @@ test_post_hook (const char *name)
 {
   check_memleaks (name);
 }
-#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
-
 
 #ifdef ACTIVATION_LAUNCHER_DO_OOM
 
@@ -98,7 +99,6 @@ bus_activation_helper_oom_test (void *data)
 int
 main (int argc, char **argv)
 {
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
   const char *dir;
   DBusString config_file;
 
@@ -138,11 +138,4 @@ main (int argc, char **argv)
   printf ("%s: Success\n", argv[0]);
 
   return 0;
-#else /* DBUS_ENABLE_EMBEDDED_TESTS */
-
-  printf ("Not compiled with test support\n");
-  
-  return 0;
-#endif
 }
-

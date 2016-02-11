@@ -122,6 +122,19 @@ if (DBUS_SERVICE)
 	install_targets(/bin dbus-service )
 endif (DBUS_SERVICE)
 
+set(LAUNCH_HELPER_SOURCES ${XML_SOURCES}
+    ${BUS_DIR}/config-parser-common.c
+    ${BUS_DIR}/config-parser-trivial.c
+    ${BUS_DIR}/desktop-file.c
+    ${BUS_DIR}/utils.c
+    ${BUS_DIR}/activation-helper.c
+)
+
+if(NOT WIN32)
+	add_executable(dbus-daemon-launch-helper ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/activation-helper-bin.c )
+	target_link_libraries(dbus-daemon-launch-helper ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
+endif(NOT WIN32)
+
 if (DBUS_ENABLE_EMBEDDED_TESTS)
 	set(SOURCES ${BUS_SOURCES} ${BUS_DIR}/test-main.c)
 	add_test_executable(test-bus "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
@@ -135,6 +148,15 @@ if (DBUS_ENABLE_EMBEDDED_TESTS)
 			${BUS_DIR}/test-system.c
 		)
 		add_test_executable(test-bus-system "${test_bus_system_SOURCES}" ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} ${DBUS_BUS_LIBS})
+
+		add_executable(dbus-daemon-launch-helper-test ${LAUNCH_HELPER_SOURCES}     ${BUS_DIR}/activation-helper-bin.c)
+		set_target_properties(dbus-daemon-launch-helper-test PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST")
+		target_link_libraries(dbus-daemon-launch-helper-test ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
+
+		set (SOURCES ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/test-launch-helper.c)
+		add_test_executable(test-bus-launch-helper "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
+		set_target_properties(test-bus-launch-helper PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST -DACTIVATION_LAUNCHER_DO_OOM")
+		install_targets(/lib dbus-daemon-launch-helper)
 	endif()
 endif (DBUS_ENABLE_EMBEDDED_TESTS)
 
@@ -152,31 +174,6 @@ endif(MSVC)
 #	$(mkinstalldirs) $(DESTDIR)/$(datadir)/dbus-1/services
 
 ##install_file(${configdir}/system.d FILE
-
-
-set(LAUNCH_HELPER_SOURCES ${XML_SOURCES}
-    ${BUS_DIR}/config-parser-common.c
-    ${BUS_DIR}/config-parser-trivial.c
-    ${BUS_DIR}/desktop-file.c
-    ${BUS_DIR}/utils.c
-    ${BUS_DIR}/activation-helper.c
-
-)
-
-if(NOT WIN32)
-# TODO PENDING(kdab) fix build on windows (activation-helper.c)
-   add_executable(dbus-daemon-launch-helper ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/activation-helper-bin.c )
-   target_link_libraries(dbus-daemon-launch-helper ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
-   
-   add_executable(dbus-daemon-launch-helper-test ${LAUNCH_HELPER_SOURCES}     ${BUS_DIR}/activation-helper-bin.c)
-   set_target_properties(dbus-daemon-launch-helper-test PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST")
-   target_link_libraries(dbus-daemon-launch-helper-test ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY} )
-   
-   set (SOURCES ${LAUNCH_HELPER_SOURCES} ${BUS_DIR}/test-launch-helper.c)
-   add_test_executable(test-bus-launch-helper "${SOURCES}"  ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
-   set_target_properties(test-bus-launch-helper PROPERTIES COMPILE_FLAGS "-DACTIVATION_LAUNCHER_TEST -DACTIVATION_LAUNCHER_DO_OOM")
-   install_targets(/lib dbus-daemon-launch-helper)
-endif(NOT WIN32)
 
 #### Init scripts fun
 #SCRIPT_IN_FILES=messagebus.in
