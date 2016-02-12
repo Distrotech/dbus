@@ -729,6 +729,9 @@ update_directory (BusActivation       *activation,
 static dbus_bool_t
 populate_environment (BusActivation *activation)
 {
+  DBusString   key;
+  DBusString   value;
+  int          i;
   char       **environment;
   dbus_bool_t  retval = FALSE;
 
@@ -737,7 +740,50 @@ populate_environment (BusActivation *activation)
   if (environment == NULL)
     return FALSE;
 
-  retval = _dbus_hash_table_from_array (activation->environment, environment, '=');
+  if (!_dbus_string_init (&key))
+    {
+        dbus_free_string_array (environment);
+        return FALSE;
+    }
+
+  if (!_dbus_string_init (&value))
+    {
+      _dbus_string_free (&key);
+      dbus_free_string_array (environment);
+      return FALSE;
+    }
+
+  for (i = 0; environment[i] != NULL; i++)
+    {
+      if (!_dbus_string_append (&key, environment[i]))
+        break;
+
+      if (_dbus_string_split_on_byte (&key, '=', &value))
+        {
+          char *hash_key, *hash_value;
+
+          if (!_dbus_string_steal_data (&key, &hash_key))
+            break;
+
+          if (!_dbus_string_steal_data (&value, &hash_value))
+            break;
+
+          if (!_dbus_hash_table_insert_string (activation->environment,
+                                               hash_key, hash_value))
+            break;
+        }
+      _dbus_string_set_length (&key, 0);
+      _dbus_string_set_length (&value, 0);
+    }
+
+  if (environment[i] != NULL)
+    goto out;
+
+  retval = TRUE;
+out:
+
+  _dbus_string_free (&key);
+  _dbus_string_free (&value);
   dbus_free_string_array (environment);
 
   return retval;
@@ -1553,7 +1599,51 @@ activation_find_entry (BusActivation *activation,
 static char **
 bus_activation_get_environment (BusActivation *activation)
 {
-  return _dbus_hash_table_to_array (activation->environment, '=');
+  char **environment;
+  int i, length;
+  DBusString entry;
+  DBusHashIter iter;
+
+  length = _dbus_hash_table_get_n_entries (activation->environment);
+
+  environment = dbus_new0 (char *, length + 1);
+
+  if (environment == NULL)
+    return NULL;
+
+  i = 0;
+  _dbus_hash_iter_init (activation->environment, &iter);
+
+  if (!_dbus_string_init (&entry))
+    {
+      dbus_free_string_array (environment);
+      return NULL;
+    }
+
+  while (_dbus_hash_iter_next (&iter))
+    {
+      const char *key, *value;
+
+      key = (const char *) _dbus_hash_iter_get_string_key (&iter);
+      value = (const char *) _dbus_hash_iter_get_value (&iter);
+
+      if (!_dbus_string_append_printf (&entry, "%s=%s", key, value))
+        break;
+
+      if (!_dbus_string_steal_data (&entry, environment + i))
+        break;
+      i++;
+    }
+
+  _dbus_string_free (&entry);
+
+  if (i != length)
+    {
+      dbus_free_string_array (environment);
+      environment = NULL;
+    }
+
+  return environment;
 }
 
 dbus_bool_t

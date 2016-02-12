@@ -133,14 +133,6 @@ dbus_bool_t    _dbus_hash_table_insert_uintptr     (DBusHashTable    *table,
 DBUS_PRIVATE_EXPORT
 int            _dbus_hash_table_get_n_entries      (DBusHashTable    *table);
 
-DBUS_PRIVATE_EXPORT
-char **        _dbus_hash_table_to_array           (DBusHashTable     *table,
-                                                    char               delimiter);
-DBUS_PRIVATE_EXPORT
-dbus_bool_t    _dbus_hash_table_from_array         (DBusHashTable     *table,
-                                                    char             **array,
-                                                    char               delimiter);
-
 /* Preallocation */
 
 /** A preallocated hash entry */
