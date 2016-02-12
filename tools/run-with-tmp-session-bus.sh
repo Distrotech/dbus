@@ -45,6 +45,11 @@ export LD_LIBRARY_PATH
 unset DBUS_SESSION_BUS_ADDRESS
 unset DBUS_SESSION_BUS_PID
 
+# this does not actually affect dbus-run-session any more, but could be
+# significant for dbus-launch as used by the autolaunch test
+DBUS_USE_TEST_BINARY=1
+export DBUS_USE_TEST_BINARY
+
 $DBUS_TOP_BUILDDIR/tools/dbus-run-session \
     --config-file="$CONFIG_FILE" \
     --dbus-daemon="$DBUS_TOP_BUILDDIR/bus/dbus-daemon" \

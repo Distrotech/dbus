@@ -3671,7 +3671,7 @@ _dbus_get_autolaunch_address (const char *scope,
    * but that's done elsewhere, and if it worked, this function wouldn't
    * be called.) */
   const char *display;
-  const char *progpath;
+  char *progpath;
   char *argv[6];
   int i;
   DBusString uuid;
@@ -3716,9 +3716,9 @@ _dbus_get_autolaunch_address (const char *scope,
     }
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
-  progpath = _dbus_getenv ("DBUS_TEST_DBUS_LAUNCH");
-
-  if (progpath == NULL)
+  if (_dbus_getenv ("DBUS_USE_TEST_BINARY") != NULL)
+    progpath = TEST_BUS_LAUNCH_BINARY;
+  else
 #endif
     progpath = DBUS_BINDIR "/dbus-launch";
   /*

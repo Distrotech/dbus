@@ -25,7 +25,6 @@ AM_TESTS_ENVIRONMENT = \
         export PYTHON=@PYTHON@; \
         export DBUS_TEST_DATA=@abs_top_builddir@/test/data; \
         export DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT); \
-        export DBUS_TEST_DBUS_LAUNCH=@abs_top_builddir@/tools/dbus-launch$(EXEEXT); \
         export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
         $(NULL)
 
