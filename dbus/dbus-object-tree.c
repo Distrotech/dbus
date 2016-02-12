@@ -1592,6 +1592,14 @@ do_test_dispatch (DBusObjectTree *tree,
   return FALSE;
 }
 
+static size_t
+string_array_length (const char **array)
+{
+  size_t i;
+  for (i = 0; array[i]; i++) ;
+  return i;
+}
+
 typedef struct
 {
   const char *path;
@@ -1626,14 +1634,14 @@ run_decompose_tests (void)
                                  &result, &result_len))
         return FALSE;
 
-      expected_len = _dbus_string_array_length (decompose_tests[i].result);
+      expected_len = string_array_length (decompose_tests[i].result);
       
-      if (result_len != (int) _dbus_string_array_length ((const char**)result) ||
+      if (result_len != (int) string_array_length ((const char**)result) ||
           expected_len != result_len ||
           path_contains (decompose_tests[i].result,
                          (const char**) result) != STR_EQUAL)
         {
-          int real_len = _dbus_string_array_length ((const char**)result);
+          int real_len = string_array_length ((const char**)result);
           _dbus_warn ("Expected decompose of %s to have len %d, returned %d, appears to have %d\n",
                       decompose_tests[i].path, expected_len, result_len,
                       real_len);
@@ -1867,7 +1875,7 @@ object_tree_test_iteration (void *data)
     _dbus_object_tree_list_registered_unlocked (tree, path1, &child_entries);
     if (child_entries != NULL)
       {
-	nb = _dbus_string_array_length ((const char**)child_entries);
+	nb = string_array_length ((const char**)child_entries);
 	_dbus_assert (nb == 1);
 	dbus_free_string_array (child_entries);
       }
@@ -1875,7 +1883,7 @@ object_tree_test_iteration (void *data)
     _dbus_object_tree_list_registered_unlocked (tree, path2, &child_entries);
     if (child_entries != NULL)
       {
-	nb = _dbus_string_array_length ((const char**)child_entries);
+	nb = string_array_length ((const char**)child_entries);
 	_dbus_assert (nb == 2);
 	dbus_free_string_array (child_entries);
       }
@@ -1883,7 +1891,7 @@ object_tree_test_iteration (void *data)
     _dbus_object_tree_list_registered_unlocked (tree, path8, &child_entries);
     if (child_entries != NULL)
       {
-	nb = _dbus_string_array_length ((const char**)child_entries);
+	nb = string_array_length ((const char**)child_entries);
 	_dbus_assert (nb == 0);
 	dbus_free_string_array (child_entries);
       }
@@ -1891,7 +1899,7 @@ object_tree_test_iteration (void *data)
     _dbus_object_tree_list_registered_unlocked (tree, root, &child_entries);
     if (child_entries != NULL)
       {
-	nb = _dbus_string_array_length ((const char**)child_entries);
+	nb = string_array_length ((const char**)child_entries);
 	_dbus_assert (nb == 3);
 	dbus_free_string_array (child_entries);
       }

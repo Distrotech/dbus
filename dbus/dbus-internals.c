@@ -642,21 +642,6 @@ _dbus_string_array_contains (const char **array,
 }
 
 /**
- * Returns the size of a string array
- *
- * @param array array to search.
- * @returns size of array
- */
-size_t
-_dbus_string_array_length (const char **array)
-{
-  size_t i;
-  for (i = 0; array[i]; i++) {}
-  return i;
-}
-
-
-/**
  * Generates a new UUID. If you change how this is done,
  * there's some text about it in the spec that should also change.
  *

@@ -246,8 +246,6 @@ void*       _dbus_memdup                (const void  *mem,
 DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_string_array_contains (const char **array,
                                          const char  *str);
-DBUS_PRIVATE_EXPORT
-size_t      _dbus_string_array_length   (const char **array);
 char**      _dbus_dup_string_array      (const char **array);
 
 #define _DBUS_INT16_MIN	 ((dbus_int16_t) 0x8000)
