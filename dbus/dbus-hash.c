@@ -1399,6 +1399,135 @@ _dbus_hash_table_get_n_entries (DBusHashTable *table)
   return table->n_entries;
 }
 
+/**
+ * Imports a string array into a hash table
+ * The hash table needs to be initialized with string keys,
+ * and dbus_free() as both key and value free-function.
+ *
+ * @param table the hash table
+ * @param array the string array to import
+ * @param delimiter the delimiter to separate key and value
+ * @return #TRUE on success.
+ * @return #FALSE if not enough memory.
+ */
+
+dbus_bool_t
+_dbus_hash_table_from_array (DBusHashTable *table, char **array, char delimiter)
+{
+  DBusString   key;
+  DBusString   value;
+  int          i;
+  dbus_bool_t  retval = FALSE;
+
+  _dbus_assert (table != NULL);
+  _dbus_assert (array != NULL);
+
+  if (!_dbus_string_init (&key))
+    {
+        return FALSE;
+    }
+
+  if (!_dbus_string_init (&value))
+    {
+      _dbus_string_free (&key);
+      return FALSE;
+    }
+
+  for (i = 0; array[i] != NULL; i++)
+    {
+      if (!_dbus_string_append (&key, array[i]))
+        break;
+
+      if (_dbus_string_split_on_byte (&key, delimiter, &value))
+        {
+          char *hash_key, *hash_value;
+
+          if (!_dbus_string_steal_data (&key, &hash_key))
+            break;
+
+          if (!_dbus_string_steal_data (&value, &hash_value))
+            break;
+
+          if (!_dbus_hash_table_insert_string (table,
+                                               hash_key, hash_value))
+            break;
+        }
+      _dbus_string_set_length (&key, 0);
+      _dbus_string_set_length (&value, 0);
+    }
+
+  if (array[i] != NULL)
+    goto out;
+
+  retval = TRUE;
+out:
+
+  _dbus_string_free (&key);
+  _dbus_string_free (&value);
+
+  return retval;
+}
+
+/**
+ * Creates a string array from a hash table
+ *
+ * @param table the hash table
+ * @param delimiter the delimiter to join key and value
+ * @return pointer to created string array (free with dbus_free_string_array)
+ * @return #FALSE if not enough memory.
+ */
+char **
+_dbus_hash_table_to_array (DBusHashTable *table, char delimiter)
+{
+  int i, length;
+  DBusString entry;
+  DBusHashIter iter;
+  char **array;
+
+  _dbus_assert (table != NULL);
+
+  length = _dbus_hash_table_get_n_entries (table);
+
+  array = dbus_new0 (char *, length + 1);
+
+  if (array == NULL)
+    return NULL;
+
+  i = 0;
+  _dbus_hash_iter_init (table, &iter);
+
+  if (!_dbus_string_init (&entry))
+    {
+      dbus_free_string_array (array);
+      return NULL;
+    }
+
+  while (_dbus_hash_iter_next (&iter))
+    {
+      const char *key, *value;
+
+      key = (const char *) _dbus_hash_iter_get_string_key (&iter);
+      value = (const char *) _dbus_hash_iter_get_value (&iter);
+
+      if (!_dbus_string_append_printf (&entry, "%s%c%s", key, delimiter, value))
+        break;
+
+      if (!_dbus_string_steal_data (&entry, array + i))
+        break;
+      i++;
+    }
+
+  _dbus_string_free (&entry);
+
+  if (i != length)
+    {
+      dbus_free_string_array (array);
+      array = NULL;
+    }
+
+  return array;
+}
+
 /** @} */
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
@@ -1826,135 +1955,6 @@ _dbus_hash_test (void)
   dbus_free (keys);
   
   return ret;
-}
-
-/**
- * Imports a string array into a hash table
- * The hash table needs to be initialized with string keys,
- * and dbus_free() as both key and value free-function.
- *
- * @param table the hash table
- * @param array the string array to import
- * @param delimiter the delimiter to separate key and value
- * @return #TRUE on success.
- * @return #FALSE if not enough memory.
- */
-
-dbus_bool_t
-_dbus_hash_table_from_array (DBusHashTable *table, char **array, char delimiter)
-{
-  DBusString   key;
-  DBusString   value;
-  int          i;
-  dbus_bool_t  retval = FALSE;
-
-  _dbus_assert (table != NULL);
-  _dbus_assert (array != NULL);
-
-  if (!_dbus_string_init (&key))
-    {
-        return FALSE;
-    }
-
-  if (!_dbus_string_init (&value))
-    {
-      _dbus_string_free (&key);
-      return FALSE;
-    }
-
-  for (i = 0; array[i] != NULL; i++)
-    {
-      if (!_dbus_string_append (&key, array[i]))
-        break;
-
-      if (_dbus_string_split_on_byte (&key, delimiter, &value))
-        {
-          char *hash_key, *hash_value;
-
-          if (!_dbus_string_steal_data (&key, &hash_key))
-            break;
-
-          if (!_dbus_string_steal_data (&value, &hash_value))
-            break;
-
-          if (!_dbus_hash_table_insert_string (table,
-                                               hash_key, hash_value))
-            break;
-        }
-      _dbus_string_set_length (&key, 0);
-      _dbus_string_set_length (&value, 0);
-    }
-
-  if (array[i] != NULL)
-    goto out;
-
-  retval = TRUE;
-out:
-
-  _dbus_string_free (&key);
-  _dbus_string_free (&value);
-
-  return retval;
-}
-
-/**
- * Creates a string array from a hash table
- *
- * @param table the hash table
- * @param delimiter the delimiter to join key and value
- * @return pointer to created string array (free with dbus_free_string_array)
- * @return #FALSE if not enough memory.
- */
-char **
-_dbus_hash_table_to_array (DBusHashTable *table, char delimiter)
-{
-  int i, length;
-  DBusString entry;
-  DBusHashIter iter;
-  char **array;
-
-  _dbus_assert (table != NULL);
-
-  length = _dbus_hash_table_get_n_entries (table);
-
-  array = dbus_new0 (char *, length + 1);
-
-  if (array == NULL)
-    return NULL;
-
-  i = 0;
-  _dbus_hash_iter_init (table, &iter);
-
-  if (!_dbus_string_init (&entry))
-    {
-      dbus_free_string_array (array);
-      return NULL;
-    }
-
-  while (_dbus_hash_iter_next (&iter))
-    {
-      const char *key, *value;
-
-      key = (const char *) _dbus_hash_iter_get_string_key (&iter);
-      value = (const char *) _dbus_hash_iter_get_value (&iter);
-
-      if (!_dbus_string_append_printf (&entry, "%s%c%s", key, delimiter, value))
-        break;
-
-      if (!_dbus_string_steal_data (&entry, array + i))
-        break;
-      i++;
-    }
-
-  _dbus_string_free (&entry);
-
-  if (i != length)
-    {
-      dbus_free_string_array (array);
-      array = NULL;
-    }
-
-  return array;
 }
 
 #endif /* DBUS_ENABLE_EMBEDDED_TESTS */
