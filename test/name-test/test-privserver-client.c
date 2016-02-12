@@ -102,7 +102,7 @@ open_shutdown_private_connection (dbus_bool_t use_guid)
   dbus_message_unref (msg);
   if (!dbus_message_get_args (reply, &error, DBUS_TYPE_STRING, &addr, DBUS_TYPE_INVALID))
     die ("couldn't parse message replym\n");
-  printf ("# got private temp address %s\n", addr);
+  printf ("got private temp address %s\n", addr);
   addr = strdup (addr);
   if (!use_guid)
     {
@@ -145,32 +145,24 @@ open_shutdown_private_connection (dbus_bool_t use_guid)
   _dbus_loop_unref (loop);
 }
 
-/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int argc, char *argv[])
 {
-  int test_num = 0;
+  open_shutdown_private_connection (TRUE);
+
+  dbus_shutdown ();
 
   open_shutdown_private_connection (TRUE);
 
   dbus_shutdown ();
-  printf ("ok %d\n", ++test_num);
-
-  open_shutdown_private_connection (TRUE);
-
-  dbus_shutdown ();
-  printf ("ok %d\n", ++test_num);
 
   open_shutdown_private_connection (FALSE);
 
   dbus_shutdown ();
-  printf ("ok %d\n", ++test_num);
 
   open_shutdown_private_connection (FALSE);
 
   dbus_shutdown ();
-  printf ("ok %d\n", ++test_num);
 
-  printf ("1..%d\n", test_num);
   return 0;
 }

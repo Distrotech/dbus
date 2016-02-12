@@ -39,13 +39,13 @@ _method_call (DBusConnection *conn,
 
   if (reply == NULL)
     {
-      printf ("Bail out! Reply is NULL ***\n");
+      printf ("Failed: Reply is NULL ***\n");
       exit (1);
     }
 
   if (dbus_message_get_type (reply) == DBUS_MESSAGE_TYPE_ERROR)
     {
-      printf ("Bail out! Reply is error: %s ***\n", dbus_message_get_error_name (reply));
+      printf ("Failed: Reply is error: %s ***\n", dbus_message_get_error_name (reply));
       exit (1);
     } 
 
@@ -61,7 +61,6 @@ _run_iteration (DBusConnection *conn)
   _method_call (conn, INT_MAX);
 }
 
-/* This test outputs TAP syntax: http://testanything.org/ */
 int
 main (int argc, char *argv[])
 {
@@ -72,7 +71,7 @@ main (int argc, char *argv[])
   DBusConnection *conn;
   DBusError error;
 
-  printf ("# Testing pending call timeouts\n");
+  printf ("*** Testing pending call timeouts\n");
 
   dbus_error_init (&error);
 
@@ -89,7 +88,7 @@ main (int argc, char *argv[])
 
       /* we just care about seconds */
       delta = end_tv_sec - start_tv_sec;
-      printf ("ok %d - %lis\n", i + 1, delta);
+      printf ("Iter %i: %lis\n", i, delta);
     }
  
   method = dbus_message_new_method_call ("org.freedesktop.TestSuiteEchoService",
@@ -99,6 +98,6 @@ main (int argc, char *argv[])
   dbus_connection_send (conn, method, NULL);
   dbus_message_unref (method);
 
-  printf ("# Testing completed\n1..%d\n", i);
+  printf ("Success ***\n");
   exit (0);
 }
