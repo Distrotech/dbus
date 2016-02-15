@@ -2058,6 +2058,11 @@ _dbus_message_iter_init_common (DBusMessage         *message,
       sizeof (DBusMessageIter));
   _DBUS_STATIC_ASSERT (_DBUS_ALIGNOF (DBusMessageIter_1_10_0) ==
       _DBUS_ALIGNOF (DBusMessageIter));
+  /* If this static assertion fails, it means the DBusMessageIter struct
+   * is not "packed", which might result in "iter = other_iter" not copying
+   * every byte. */
+  _DBUS_STATIC_ASSERT (sizeof (DBusMessageIter) ==
+      4 * sizeof (void *) + sizeof (dbus_uint32_t) + 9 * sizeof (int));
 
   /* Since the iterator will read or write who-knows-what from the
    * message, we need to get in the right byte order
