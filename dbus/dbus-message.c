@@ -2025,7 +2025,10 @@ _dbus_message_iter_init_common (DBusMessage         *message,
                                 DBusMessageRealIter *real,
                                 int                  iter_type)
 {
+  /* If these static assertions fail on your platform, report it as a bug. */
   _DBUS_STATIC_ASSERT (sizeof (DBusMessageRealIter) <= sizeof (DBusMessageIter));
+  _DBUS_STATIC_ASSERT (_DBUS_ALIGNOF (DBusMessageRealIter) <=
+      _DBUS_ALIGNOF (DBusMessageIter));
 
   /* Since the iterator will read or write who-knows-what from the
    * message, we need to get in the right byte order
