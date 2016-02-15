@@ -62,7 +62,7 @@ struct DBusMessageIter
   int dummy10;          /**< Don't use this */
   int dummy11;          /**< Don't use this */
   int pad1;             /**< Don't use this */
-  int pad2;             /**< Don't use this */
+  void *pad2;           /**< Don't use this */
   void *pad3;           /**< Don't use this */
 };
 
