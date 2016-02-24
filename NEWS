@@ -1,7 +1,20 @@
 D-Bus 1.10.8 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• Enable "large file support" on systems where it exists: dbus-daemon
+  is not expected to open large files, but it might need to stat files
+  that happen to have large inode numbers (fd.o #93545, Hongxu Jia)
+
+• Correctly report test failures in C tests from run-test.sh
+  (fd.o #93379; amit tewari, Simon McVittie)
+
+• When tests are enabled, run all the marshal-validate tests, not just
+  the even-numbered ones (fd.o #93908, Nick Lewycky)
+
+• Correct the expected error from one marshal-validate test, which was
+  previously not run due to the above bug (fd.o #93908, Simon McVittie)
 
 D-Bus 1.10.6 (2015-12-01)
 ==
