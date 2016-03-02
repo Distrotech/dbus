@@ -45,7 +45,7 @@
         <arg choice="plain">--system</arg>
       </group>
       <arg choice="opt">--name=<replaceable>NAME</replaceable></arg>
-      <arg choice="opt">--sleep=<replaceable>MS</replaceable></arg>
+      <arg choice="opt">--sleep-ms=<replaceable>MS</replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -161,7 +161,7 @@
         </varlistentry>
 
         <varlistentry>
-          <term><option>--sleep=</option><replaceable>MS</replaceable></term>
+          <term><option>--sleep-ms=</option><replaceable>MS</replaceable></term>
           <listitem>
             <para>Block for <replaceable>MS</replaceable> milliseconds
               before replying to a method call.</para>

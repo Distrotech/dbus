@@ -52,7 +52,7 @@ usage_echo (int exit_with)
            "\n"
            "    --name=NAME   claim this well-known name first\n"
            "\n"
-           "    --sleep=N     sleep N milliseconds before sending each reply\n"
+           "    --sleep-ms=N  sleep N milliseconds before sending each reply\n"
            "\n"
            "    --session     use the session bus (default)\n"
            "    --system      use the system bus\n"
