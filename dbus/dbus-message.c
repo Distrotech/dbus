@@ -136,6 +136,29 @@ struct DBusMessageRealIter
   } u; /**< the type writer or reader that does all the work */
 };
 
+/**
+ * Layout of a DBusMessageIter on the stack in dbus 1.10.0. This is no
+ * longer used, but for ABI compatibility we need to assert that the
+ * new layout is the same size.
+ */
+typedef struct
+{
+  void *dummy1;
+  void *dummy2;
+  dbus_uint32_t dummy3;
+  int dummy4;
+  int dummy5;
+  int dummy6;
+  int dummy7;
+  int dummy8;
+  int dummy9;
+  int dummy10;
+  int dummy11;
+  int pad1;
+  int pad2;
+  void *pad3;
+} DBusMessageIter_1_10_0;
+
 static void
 get_const_signature (DBusHeader        *header,
                      const DBusString **type_str_p,
@@ -2025,7 +2048,21 @@ _dbus_message_iter_init_common (DBusMessage         *message,
                                 DBusMessageRealIter *real,
                                 int                  iter_type)
 {
+  /* If these static assertions fail on your platform, report it as a bug. */
   _DBUS_STATIC_ASSERT (sizeof (DBusMessageRealIter) <= sizeof (DBusMessageIter));
+  _DBUS_STATIC_ASSERT (_DBUS_ALIGNOF (DBusMessageRealIter) <=
+      _DBUS_ALIGNOF (DBusMessageIter));
+  /* A failure of these two assertions would indicate that we've broken
+   * ABI on this platform since 1.10.0. */
+  _DBUS_STATIC_ASSERT (sizeof (DBusMessageIter_1_10_0) ==
+      sizeof (DBusMessageIter));
+  _DBUS_STATIC_ASSERT (_DBUS_ALIGNOF (DBusMessageIter_1_10_0) ==
+      _DBUS_ALIGNOF (DBusMessageIter));
+  /* If this static assertion fails, it means the DBusMessageIter struct
+   * is not "packed", which might result in "iter = other_iter" not copying
+   * every byte. */
+  _DBUS_STATIC_ASSERT (sizeof (DBusMessageIter) ==
+      4 * sizeof (void *) + sizeof (dbus_uint32_t) + 9 * sizeof (int));
 
   /* Since the iterator will read or write who-knows-what from the
    * message, we need to get in the right byte order

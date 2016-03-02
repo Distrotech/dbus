@@ -195,6 +195,9 @@ extern const char *_dbus_return_if_fail_warning_format;
 #define _DBUS_STRUCT_OFFSET(struct_type, member)	\
     ((intptr_t) ((unsigned char*) &((struct_type*) 0)->member))
 
+#define _DBUS_ALIGNOF(type) \
+    (_DBUS_STRUCT_OFFSET (struct { char _1; type _2; }, _2))
+
 #ifdef DBUS_DISABLE_CHECKS
 /* this is an assert and not an error, but in the typical --disable-checks case (you're trying
  * to really minimize code size), disabling these assertions makes sense.
