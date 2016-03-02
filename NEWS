@@ -24,6 +24,30 @@ Fixes:
 • Correct the expected error from one marshal-validate test, which was
   previously not run due to the above bug (fd.o #93908, Simon McVittie)
 
+• Fix compilation under CMake when embedded tests are disabled
+  (fd.o #94094, eric.hyer)
+
+Internal changes:
+
+• Fix all -Wpointer-sign (signed/unsigned mismatch) warnings, and enable the
+  warning (fd.o #93069; Ralf Habacker, Simon McVittie)
+
+• When building with CMake, use the same gcc/clang warnings as under Autotools,
+  or MSVC warnings that are broadly similar (fd.o #93069, Ralf Habacker)
+
+• test/name-test: make C tests produce TAP output and run them directly, not
+  via run-test.sh (fd.o #92899, Simon McVittie)
+
+• Under CMake when cross-compiling for Windows on Unix, run the tests
+  under Wine even if binfmt_misc support is not available
+  (fd.o #88966, Ralf Habacker)
+
+• The DBUS_USE_TEST_BINARY environment variable is no longer used by builds with
+  embedded tests; DBUS_TEST_DBUS_LAUNCH replaces it (fd.o #92899, Simon McVittie)
+
+• Factor out some functions that will be needed in future for a Windows
+  implementation of dbus-run-session (fd.o #92899, Ralf Habacker)
+
 D-Bus 1.11.0 (2015-12-02)
 ==
 
