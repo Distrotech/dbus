@@ -2,6 +2,8 @@ sudo: required
 dist: trusty
 language: c
 install:
+  # travis-ci has a sources list for Chrome which doesn't support i386
+  - ": | sudo tee /etc/apt/sources.list.d/google-chrome.list"
   - test "$dbus_ci_host" != mingw || sudo dpkg --add-architecture i386
   - sudo apt-get -qq -y update
   - sudo apt-get -qq -y build-dep dbus
