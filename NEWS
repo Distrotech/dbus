@@ -1,5 +1,12 @@
-D-Bus 1.10.8 (UNRELEASED)
+D-Bus 1.10.10 (UNRELEASED)
 ==
+
+...
+
+D-Bus 1.10.8 (2016-03-07)
+==
+
+The “digestive biscuits” release.
 
 Fixes:
 
