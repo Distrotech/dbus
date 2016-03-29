@@ -414,7 +414,7 @@ set_address_in_file (char *address, pid_t pid, Window wid)
            "# If the DBUS_SESSION_BUS_ADDRESS environment variable is set, it will\n"
            "# be used rather than this file.\n"
            "# See \"man dbus-launch\" for more details.\n"
-           "DBUS_SESSION_BUS_ADDRESS=%s\n"
+           "DBUS_SESSION_BUS_ADDRESS='%s'\n"
            "DBUS_SESSION_BUS_PID=%ld\n"
            "DBUS_SESSION_BUS_WINDOWID=%ld\n",
            get_machine_uuid (),
