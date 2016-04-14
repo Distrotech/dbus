@@ -483,7 +483,6 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
   /* check some trivial loader functions */
   _dbus_message_loader_ref (loader);
   _dbus_message_loader_unref (loader);
-  _dbus_message_loader_get_max_message_size (loader);
 
   len = _dbus_string_get_length (data);
   for (i = 0; i < len; i++)
