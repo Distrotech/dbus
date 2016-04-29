@@ -16,7 +16,7 @@ main (int argc, char **argv)
 {
   char **argv_copy;
   int i;
-  DBusError error;
+  DBusError error = DBUS_ERROR_INIT;
   
   if (argc < 2)
     {
