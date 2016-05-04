@@ -1120,7 +1120,7 @@ _dbus_listen_unix_socket (const char     *path,
       return -1;
     }
 
-  if (listen (listen_fd, 30 /* backlog */) < 0)
+  if (listen (listen_fd, SOMAXCONN /* backlog */) < 0)
     {
       dbus_set_error (error, _dbus_error_from_errno (errno),
                       "Failed to listen on socket \"%s\": %s",
