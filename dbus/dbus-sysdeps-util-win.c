@@ -1528,6 +1528,7 @@ _dbus_replace_install_prefix (DBusString *path)
         _dbus_string_set_byte (path, i, '/');
     }
 
+  _dbus_string_free (&runtime_prefix);
   return TRUE;
 #endif
 }
