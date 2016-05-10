@@ -492,6 +492,10 @@ DBUS_PRIVATE_EXPORT
 int _dbus_printf_string_upper_bound (const char *format,
                                      va_list args);
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+DBUS_PRIVATE_EXPORT
+void _dbus_print_thread (void);
+#endif
 
 /**
  * Portable struct with stat() results

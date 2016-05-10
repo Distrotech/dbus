@@ -281,12 +281,6 @@ _dbus_warn_check_failed(const char *format,
 static dbus_bool_t verbose_initted = FALSE;
 static dbus_bool_t verbose = TRUE;
 
-/** Whether to show the current thread in verbose messages */
-#define PTHREAD_IN_VERBOSE 0
-#if PTHREAD_IN_VERBOSE
-#include <pthread.h>
-#endif
-
 #ifdef DBUS_USE_OUTPUT_DEBUG_STRING
 static char module_name[1024];
 #endif
@@ -406,11 +400,7 @@ _dbus_verbose_real (
   /* Print out pid before the line */
   if (need_pid)
     {
-#if PTHREAD_IN_VERBOSE
-      fprintf (stderr, "%lu: 0x%lx: ", _dbus_pid_for_log (), pthread_self ());
-#else
-      fprintf (stderr, "%lu: ", _dbus_pid_for_log ());
-#endif
+      _dbus_print_thread ();
     }
 #endif
 

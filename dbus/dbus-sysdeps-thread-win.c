@@ -300,3 +300,11 @@ _dbus_threads_unlock_platform_specific (void)
   _dbus_assert (global_init_done);
   LeaveCriticalSection (&init_lock);
 }
+
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+void
+_dbus_print_thread (void)
+{
+  fprintf (stderr, "%lu: 0x%04lx: ", _dbus_pid_for_log (), GetCurrentThreadId ());
+}
+#endif

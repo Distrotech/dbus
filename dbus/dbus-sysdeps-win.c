@@ -3636,4 +3636,3 @@ _dbus_restore_socket_errno (int saved_errno)
 
 /** @} end of sysdeps-win */
 /* tests in dbus-sysdeps-util.c */
-
