@@ -124,6 +124,7 @@ static void _dbus_verbose(const char * x,...) {;}
 #  define _dbus_is_verbose() FALSE 
 #endif /* !DBUS_ENABLE_VERBOSE_MODE */
 
+DBUS_PRIVATE_EXPORT
 void _dbus_trace_ref (const char *obj_name,
                       void       *obj,
                       int         old_refcount,

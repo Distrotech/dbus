@@ -60,7 +60,7 @@
  */
 struct DBusBabysitter
   {
-    int refcount;
+    DBusAtomic refcount;
 
     HANDLE start_sync_event;
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
@@ -91,16 +91,33 @@ struct DBusBabysitter
     int child_status;
   };
 
+static void
+_dbus_babysitter_trace_ref (DBusBabysitter *sitter,
+    int old_refcount,
+    int new_refcount,
+    const char *why)
+{
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+  static int enabled = -1;
+
+  _dbus_trace_ref ("DBusBabysitter", sitter, old_refcount, new_refcount, why,
+      "DBUS_BABYSITTER_TRACE", &enabled);
+#endif
+}
+
 static DBusBabysitter*
 _dbus_babysitter_new (void)
 {
   DBusBabysitter *sitter;
+  dbus_int32_t old_refcount;
 
   sitter = dbus_new0 (DBusBabysitter, 1);
   if (sitter == NULL)
     return NULL;
 
-  sitter->refcount = 1;
+  old_refcount = _dbus_atomic_inc (&sitter->refcount);
+
+  _dbus_babysitter_trace_ref (sitter, old_refcount, old_refcount+1, __FUNCTION__);
 
   sitter->start_sync_event = CreateEvent (NULL, FALSE, FALSE, NULL);
   if (sitter->start_sync_event == NULL)
@@ -148,11 +165,13 @@ _dbus_babysitter_new (void)
 DBusBabysitter *
 _dbus_babysitter_ref (DBusBabysitter *sitter)
 {
+  dbus_int32_t old_refcount;
   PING();
   _dbus_assert (sitter != NULL);
-  _dbus_assert (sitter->refcount > 0);
 
-  sitter->refcount += 1;
+  old_refcount = _dbus_atomic_inc (&sitter->refcount);
+  _dbus_assert (old_refcount > 0);
+  _dbus_babysitter_trace_ref (sitter, old_refcount, old_refcount+1, __FUNCTION__);
 
   return sitter;
 }
@@ -187,14 +206,16 @@ void
 _dbus_babysitter_unref (DBusBabysitter *sitter)
 {
   int i;
+  dbus_int32_t old_refcount;
 
   PING();
   _dbus_assert (sitter != NULL);
-  _dbus_assert (sitter->refcount > 0);
 
-  sitter->refcount -= 1;
+  old_refcount = _dbus_atomic_dec (&sitter->refcount);
+  _dbus_assert (old_refcount > 0);
+  _dbus_babysitter_trace_ref (sitter, old_refcount, old_refcount-1, __FUNCTION__);
 
-  if (sitter->refcount == 0)
+  if (old_refcount == 1)
     {
       close_socket_to_babysitter (sitter);
 
