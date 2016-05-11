@@ -388,6 +388,8 @@ _dbus_verbose_real (
   va_list args;
   static dbus_bool_t need_pid = TRUE;
   int len;
+  long sec, usec;
+  _dbus_get_real_time (&sec, &usec);
   
   /* things are written a bit oddly here so that
    * in the non-verbose case we just have the one
@@ -403,6 +405,7 @@ _dbus_verbose_real (
       _dbus_print_thread ();
     }
 #endif
+  fprintf (stderr, "%ld.%06ld ", sec, usec);
 
   /* Only print pid again if the next line is a new line */
   len = strlen (format);
