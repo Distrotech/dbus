@@ -586,8 +586,6 @@ babysitter (void *parameter)
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
 
   PING();
-  _dbus_babysitter_ref (sitter);
-
   if (sitter->child_setup)
     {
       PING();
@@ -728,7 +726,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
 
   PING();
   sitter_thread = (HANDLE) CreateThread (NULL, 0, babysitter,
-                  sitter, 0, &sitter_thread_id);
+                  _dbus_babysitter_ref (sitter), 0, &sitter_thread_id);
 
   if (sitter_thread == 0)
     {
