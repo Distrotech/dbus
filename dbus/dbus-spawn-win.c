@@ -605,12 +605,6 @@ babysitter (void *parameter)
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
 
   PING();
-  if (sitter->child_setup)
-    {
-      PING();
-      (*sitter->child_setup) (sitter->user_data);
-    }
-
   _dbus_verbose ("babysitter: spawning %s\n", sitter->log_name);
 
   PING();
