@@ -63,10 +63,6 @@ struct DBusBabysitter
     DBusAtomic refcount;
 
     HANDLE start_sync_event;
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
-
-    HANDLE end_sync_event;
-#endif
 
     char *log_name;
 
@@ -74,6 +70,7 @@ struct DBusBabysitter
     char **argv;
     char **envp;
 
+    HANDLE thread_handle;
     HANDLE child_handle;
     DBusSocket socket_to_babysitter;	/* Connection to the babysitter thread */
     DBusSocket socket_to_main;
@@ -123,15 +120,6 @@ _dbus_babysitter_new (void)
       _dbus_babysitter_unref (sitter);
       return NULL;
     }
-
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
-  sitter->end_sync_event = CreateEvent (NULL, FALSE, FALSE, NULL);
-  if (sitter->end_sync_event == NULL)
-    {
-      _dbus_babysitter_unref (sitter);
-      return NULL;
-    }
-#endif
 
   sitter->child_handle = NULL;
 
@@ -269,13 +257,11 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
           sitter->start_sync_event = NULL;
         }
 
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
-      if (sitter->end_sync_event != NULL)
+      if (sitter->thread_handle)
         {
-          CloseHandle (sitter->end_sync_event);
-          sitter->end_sync_event = NULL;
+          CloseHandle (sitter->thread_handle);
+          sitter->thread_handle = NULL;
         }
-#endif
 
       dbus_free (sitter->log_name);
 
@@ -646,10 +632,6 @@ babysitter (void *parameter)
       sitter->child_handle = NULL;
     }
 
-#ifdef DBUS_ENABLE_EMBEDDED_TESTS
-  SetEvent (sitter->end_sync_event);
-#endif
-
   PING();
   send (sitter->socket_to_main.sock, " ", 1, 0);
 
@@ -668,7 +650,6 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
                                    DBusError                 *error)
 {
   DBusBabysitter *sitter;
-  HANDLE sitter_thread;
   DWORD sitter_thread_id;
   
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
@@ -739,17 +720,16 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
   sitter->envp = envp;
 
   PING();
-  sitter_thread = (HANDLE) CreateThread (NULL, 0, babysitter,
+  sitter->thread_handle = (HANDLE) CreateThread (NULL, 0, babysitter,
                   _dbus_babysitter_ref (sitter), 0, &sitter_thread_id);
 
-  if (sitter_thread == 0)
+  if (sitter->thread_handle == NULL)
     {
       PING();
       dbus_set_error_const (error, DBUS_ERROR_SPAWN_FORK_FAILED,
                             "Failed to create new thread");
       goto out0;
     }
-  CloseHandle (sitter_thread);
 
   PING();
   WaitForSingleObject (sitter->start_sync_event, INFINITE);
@@ -811,10 +791,10 @@ get_test_exec (const char *exe,
 static void
 _dbus_babysitter_block_for_child_exit (DBusBabysitter *sitter)
 {
-  if (sitter->child_handle == NULL)
-    return;
-
-  WaitForSingleObject (sitter->end_sync_event, INFINITE);
+  /* The thread terminates after the child does. We want to wait for the thread,
+   * not just the child, to avoid data races and ensure that it has freed all
+   * its memory. */
+  WaitForSingleObject (sitter->thread_handle, INFINITE);
 }
 
 static dbus_bool_t
