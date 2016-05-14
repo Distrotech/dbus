@@ -28,6 +28,8 @@
 #include "dbus-threads.h"
 #include "dbus-list.h"
 
+#include <stdio.h>
+
 #include <windows.h>
 
 static dbus_bool_t global_init_done = FALSE;
