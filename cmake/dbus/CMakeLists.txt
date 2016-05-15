@@ -22,7 +22,7 @@ set (dbusinclude_HEADERS
 	${DBUS_DIR}/dbus-syntax.h
 	${DBUS_DIR}/dbus-threads.h
 	${DBUS_DIR}/dbus-types.h
-	dbus-arch-deps.h
+	${CMAKE_CURRENT_BINARY_DIR}/dbus-arch-deps.h
 )
 
 ### source code that goes in the installed client library
