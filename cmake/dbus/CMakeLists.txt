@@ -168,6 +168,7 @@ if (DBUS_ENABLE_EMBEDDED_TESTS)
 	set (DBUS_UTIL_SOURCES 
 		${DBUS_UTIL_SOURCES}
 		${DBUS_DIR}/dbus-test.c
+		${DBUS_DIR}/dbus-spawn-test.c
 	)
 endif (DBUS_ENABLE_EMBEDDED_TESTS)
 

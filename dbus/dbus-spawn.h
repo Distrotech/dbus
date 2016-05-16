@@ -62,6 +62,7 @@ dbus_bool_t _dbus_babysitter_set_watch_functions  (DBusBabysitter            *si
                                                    DBusWatchToggledFunction   toggled_function,
                                                    void                      *data,
                                                    DBusFreeFunction           free_data_function);
+void        _dbus_babysitter_block_for_child_exit (DBusBabysitter            *sitter);
 
 DBUS_END_DECLS
 

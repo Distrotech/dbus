@@ -268,6 +268,10 @@ DBUS_UTIL_SOURCES=				\
 	dbus-test.c				\
 	dbus-test.h
 
+if DBUS_ENABLE_EMBEDDED_TESTS
+DBUS_UTIL_SOURCES += dbus-spawn-test.c
+endif
+
 libdbus_1_la_SOURCES=				\
 	$(DBUS_LIB_SOURCES)			\
 	$(DBUS_SHARED_SOURCES)
