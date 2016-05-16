@@ -14,6 +14,7 @@
 #endif
 
 #ifdef DBUS_WIN
+#include <stdio.h>
 #include <windows.h>
 
 int
