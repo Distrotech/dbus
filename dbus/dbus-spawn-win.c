@@ -605,6 +605,7 @@ babysitter (void *parameter)
 {
   int ret = 0;
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
+  HANDLE handle;
 
   PING();
   if (sitter->child_setup)
@@ -616,11 +617,14 @@ babysitter (void *parameter)
   _dbus_verbose ("babysitter: spawning %s\n", sitter->log_name);
 
   PING();
-  sitter->child_handle = spawn_program (sitter->log_name,
-					sitter->argv, sitter->envp);
+  handle = spawn_program (sitter->log_name, sitter->argv, sitter->envp);
 
   PING();
-  if (sitter->child_handle == (HANDLE) -1)
+  if (handle != INVALID_HANDLE_VALUE)
+    {
+      sitter->child_handle = handle;
+    }
+  else
     {
       sitter->child_handle = NULL;
       sitter->have_spawn_errno = TRUE;
