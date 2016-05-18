@@ -295,8 +295,11 @@ struct DBusAtomic
 #   undef DBUS_HAVE_ATOMIC_INT
 #endif
 
+DBUS_PRIVATE_EXPORT
 dbus_int32_t _dbus_atomic_inc (DBusAtomic *atomic);
+DBUS_PRIVATE_EXPORT
 dbus_int32_t _dbus_atomic_dec (DBusAtomic *atomic);
+DBUS_PRIVATE_EXPORT
 dbus_int32_t _dbus_atomic_get (DBusAtomic *atomic);
 
 #ifdef DBUS_WIN

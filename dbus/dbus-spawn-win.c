@@ -60,7 +60,7 @@
  */
 struct DBusBabysitter
   {
-    int refcount;
+    DBusAtomic refcount;
 
     HANDLE start_sync_event;
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
@@ -91,16 +91,33 @@ struct DBusBabysitter
     int child_status;
   };
 
+static void
+_dbus_babysitter_trace_ref (DBusBabysitter *sitter,
+    int old_refcount,
+    int new_refcount,
+    const char *why)
+{
+#ifdef DBUS_ENABLE_VERBOSE_MODE
+  static int enabled = -1;
+
+  _dbus_trace_ref ("DBusBabysitter", sitter, old_refcount, new_refcount, why,
+      "DBUS_BABYSITTER_TRACE", &enabled);
+#endif
+}
+
 static DBusBabysitter*
 _dbus_babysitter_new (void)
 {
   DBusBabysitter *sitter;
+  dbus_int32_t old_refcount;
 
   sitter = dbus_new0 (DBusBabysitter, 1);
   if (sitter == NULL)
     return NULL;
 
-  sitter->refcount = 1;
+  old_refcount = _dbus_atomic_inc (&sitter->refcount);
+
+  _dbus_babysitter_trace_ref (sitter, old_refcount, old_refcount+1, __FUNCTION__);
 
   sitter->start_sync_event = CreateEvent (NULL, FALSE, FALSE, NULL);
   if (sitter->start_sync_event == NULL)
@@ -148,11 +165,13 @@ _dbus_babysitter_new (void)
 DBusBabysitter *
 _dbus_babysitter_ref (DBusBabysitter *sitter)
 {
+  dbus_int32_t old_refcount;
   PING();
   _dbus_assert (sitter != NULL);
-  _dbus_assert (sitter->refcount > 0);
 
-  sitter->refcount += 1;
+  old_refcount = _dbus_atomic_inc (&sitter->refcount);
+  _dbus_assert (old_refcount > 0);
+  _dbus_babysitter_trace_ref (sitter, old_refcount, old_refcount+1, __FUNCTION__);
 
   return sitter;
 }
@@ -187,14 +206,16 @@ void
 _dbus_babysitter_unref (DBusBabysitter *sitter)
 {
   int i;
+  dbus_int32_t old_refcount;
 
   PING();
   _dbus_assert (sitter != NULL);
-  _dbus_assert (sitter->refcount > 0);
 
-  sitter->refcount -= 1;
+  old_refcount = _dbus_atomic_dec (&sitter->refcount);
+  _dbus_assert (old_refcount > 0);
+  _dbus_babysitter_trace_ref (sitter, old_refcount, old_refcount-1, __FUNCTION__);
 
-  if (sitter->refcount == 0)
+  if (old_refcount == 1)
     {
       close_socket_to_babysitter (sitter);
 
@@ -584,10 +605,9 @@ babysitter (void *parameter)
 {
   int ret = 0;
   DBusBabysitter *sitter = (DBusBabysitter *) parameter;
+  HANDLE handle;
 
   PING();
-  _dbus_babysitter_ref (sitter);
-
   if (sitter->child_setup)
     {
       PING();
@@ -597,11 +617,14 @@ babysitter (void *parameter)
   _dbus_verbose ("babysitter: spawning %s\n", sitter->log_name);
 
   PING();
-  sitter->child_handle = spawn_program (sitter->log_name,
-					sitter->argv, sitter->envp);
+  handle = spawn_program (sitter->log_name, sitter->argv, sitter->envp);
 
   PING();
-  if (sitter->child_handle == (HANDLE) -1)
+  if (handle != INVALID_HANDLE_VALUE)
+    {
+      sitter->child_handle = handle;
+    }
+  else
     {
       sitter->child_handle = NULL;
       sitter->have_spawn_errno = TRUE;
@@ -659,7 +682,8 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
   _dbus_assert (argv[0] != NULL);
 
-  *sitter_p = NULL;
+  if (sitter_p != NULL)
+    *sitter_p = NULL;
 
   PING();
   sitter = _dbus_babysitter_new ();
@@ -727,7 +751,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
 
   PING();
   sitter_thread = (HANDLE) CreateThread (NULL, 0, babysitter,
-                  sitter, 0, &sitter_thread_id);
+                  _dbus_babysitter_ref (sitter), 0, &sitter_thread_id);
 
   if (sitter_thread == 0)
     {

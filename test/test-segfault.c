@@ -13,10 +13,36 @@
 #include <sys/prctl.h>
 #endif
 
+#ifdef DBUS_WIN
+#include <stdio.h>
+#include <windows.h>
+
+int
+exception_handler(LPEXCEPTION_POINTERS p);
+
+/* Explicit Windows exception handlers needed to supress OS popups */
+int
+exception_handler(LPEXCEPTION_POINTERS p)
+{
+  fprintf(stderr, "test-segfault: raised fatal exception as intended\n");
+  ExitProcess(0xc0000005);
+}
+#endif
+
 int
 main (int argc, char **argv)
 {
   char *p;  
+
+#ifdef DBUS_WIN
+  /* Disable Windows popup dialog when an app crashes so that app quits
+   * immediately with error code instead of waiting for user to dismiss
+   * the dialog.  */
+  DWORD dwMode = SetErrorMode(SEM_NOGPFAULTERRORBOX);
+  SetErrorMode(dwMode | SEM_NOGPFAULTERRORBOX);
+  /* Disable "just in time" debugger */
+  SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)&exception_handler);
+#endif
 
 #if HAVE_SETRLIMIT
   /* No core dumps please, we know we crashed. */
