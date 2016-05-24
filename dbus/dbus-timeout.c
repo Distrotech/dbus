@@ -49,6 +49,7 @@ struct DBusTimeout
   void *data;		   	               /**< Application data. */
   DBusFreeFunction free_data_function;         /**< Free the application data. */
   unsigned int enabled : 1;                    /**< True if timeout is active. */
+  unsigned int needs_restart : 1;              /**< Flag that timeout should be restarted after re-enabling. */
 };
 
 /**
@@ -79,6 +80,7 @@ _dbus_timeout_new (int                 interval,
   timeout->free_handler_data_function = free_data_function;
 
   timeout->enabled = TRUE;
+  timeout->needs_restart = FALSE;
   
   return timeout;
 }
@@ -122,25 +124,29 @@ _dbus_timeout_unref (DBusTimeout *timeout)
 }
 
 /**
- * Changes the timeout interval. Note that you have to disable and
- * re-enable the timeout using the timeout toggle function
- * (_dbus_connection_toggle_timeout_unlocked() etc.) to notify the
- * application of this change.
+ * Change the timeout interval to be interval milliseconds from now
+ * (forgetting when the timeout was initially started), and enable it.
+ *
+ * This function is only valid when used in conjunction with DBusLoop:
+ * it can be used in the message bus daemon implementation or in unit tests,
+ * but it cannot be used in conjunction with an application main loop.
  *
  * @param timeout the timeout
  * @param interval the new interval
  */
 void
-_dbus_timeout_set_interval (DBusTimeout *timeout,
-                            int          interval)
+_dbus_timeout_restart (DBusTimeout *timeout,
+                       int          interval)
 {
   _dbus_assert (interval >= 0);
   
   timeout->interval = interval;
+  timeout->enabled = TRUE;
+  timeout->needs_restart = TRUE;
 }
 
 /**
- * Changes the timeout's enabled-ness. Note that you should use
+ * Disable the timeout. Note that you should use
  * _dbus_connection_toggle_timeout_unlocked() etc. instead, if
  * the timeout is passed out to an application main loop.
  * i.e. you can't use this function in the D-Bus library, it's
@@ -150,12 +156,10 @@ _dbus_timeout_set_interval (DBusTimeout *timeout,
  * @param enabled #TRUE if timeout should be enabled.
  */
 void
-_dbus_timeout_set_enabled (DBusTimeout  *timeout,
-                           dbus_bool_t   enabled)
+_dbus_timeout_disable (DBusTimeout  *timeout)
 {
-  timeout->enabled = enabled != FALSE;
+  timeout->enabled = FALSE;
 }
-
 
 /**
  * @typedef DBusTimeoutList
@@ -373,6 +377,30 @@ _dbus_timeout_list_toggle_timeout (DBusTimeoutList           *timeout_list,
   if (timeout_list->timeout_toggled_function != NULL)
     (* timeout_list->timeout_toggled_function) (timeout,
                                                 timeout_list->timeout_data);
+}
+
+/**
+ * Returns whether a timeout needs restart time counting in the event loop.
+ *
+ * @param timeout the DBusTimeout object
+ * @returns #TRUE if restart is needed
+ */
+dbus_bool_t
+_dbus_timeout_needs_restart (DBusTimeout *timeout)
+{
+  return timeout->needs_restart;
+}
+
+/**
+ * Mark timeout as restarted (setting timestamps is responsibility of the event
+ * loop).
+ *
+ * @param timeout the DBusTimeout object
+ */
+void
+_dbus_timeout_restarted (DBusTimeout *timeout)
+{
+  timeout->needs_restart = FALSE;
 }
 
 /** @} */

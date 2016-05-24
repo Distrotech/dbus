@@ -49,11 +49,10 @@ DBusTimeout* _dbus_timeout_ref          (DBusTimeout        *timeout);
 DBUS_PRIVATE_EXPORT
 void         _dbus_timeout_unref        (DBusTimeout        *timeout);
 DBUS_PRIVATE_EXPORT
-void         _dbus_timeout_set_interval (DBusTimeout        *timeout,
+void         _dbus_timeout_restart      (DBusTimeout        *timeout,
                                          int                 interval);
 DBUS_PRIVATE_EXPORT
-void         _dbus_timeout_set_enabled  (DBusTimeout        *timeout,
-                                         dbus_bool_t         enabled);
+void         _dbus_timeout_disable      (DBusTimeout        *timeout);
 
 DBusTimeoutList *_dbus_timeout_list_new            (void);
 void             _dbus_timeout_list_free           (DBusTimeoutList           *timeout_list);
@@ -71,6 +70,10 @@ void             _dbus_timeout_list_toggle_timeout (DBusTimeoutList           *t
                                                     DBusTimeout               *timeout,
                                                     dbus_bool_t                enabled);
 
+DBUS_PRIVATE_EXPORT
+dbus_bool_t _dbus_timeout_needs_restart (DBusTimeout *timeout);
+DBUS_PRIVATE_EXPORT
+void        _dbus_timeout_restarted     (DBusTimeout *timeout);
 
 /** @} */
 

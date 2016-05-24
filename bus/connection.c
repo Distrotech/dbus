@@ -477,7 +477,7 @@ bus_connections_new (BusContext *context)
   if (connections->expire_timeout == NULL)
     goto failed_3;
 
-  _dbus_timeout_set_enabled (connections->expire_timeout, FALSE);
+  _dbus_timeout_disable (connections->expire_timeout);
 
   connections->pending_replies = bus_expire_list_new (bus_context_get_loop (context),
                                                       bus_context_get_reply_timeout (context),
@@ -683,14 +683,13 @@ check_pending_fds_cb (DBusConnection *connection)
 
   if (n_pending_unix_fds_old == 0 && n_pending_unix_fds_new > 0)
     {
-      _dbus_timeout_set_interval (d->pending_unix_fds_timeout,
+      _dbus_timeout_restart (d->pending_unix_fds_timeout,
               bus_context_get_pending_fd_timeout (d->connections->context));
-      _dbus_timeout_set_enabled (d->pending_unix_fds_timeout, TRUE);
     }
 
   if (n_pending_unix_fds_old > 0 && n_pending_unix_fds_new == 0)
     {
-      _dbus_timeout_set_enabled (d->pending_unix_fds_timeout, FALSE);
+      _dbus_timeout_disable (d->pending_unix_fds_timeout);
     }
 
 
@@ -846,7 +845,7 @@ bus_connections_setup_connection (BusConnections *connections,
   if (d->pending_unix_fds_timeout == NULL)
     goto out;
 
-  _dbus_timeout_set_enabled (d->pending_unix_fds_timeout, FALSE);
+  _dbus_timeout_disable (d->pending_unix_fds_timeout);
   if (!_dbus_loop_add_timeout (bus_context_get_loop (connections->context),
                                d->pending_unix_fds_timeout))
     goto out;

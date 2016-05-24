@@ -63,7 +63,7 @@ bus_expire_list_new (DBusLoop      *loop,
   if (list->timeout == NULL)
     goto failed;
 
-  _dbus_timeout_set_enabled (list->timeout, FALSE);
+  _dbus_timeout_disable (list->timeout);
 
   if (!_dbus_loop_add_timeout (list->loop, list->timeout))
     goto failed;
@@ -97,16 +97,14 @@ bus_expire_timeout_set_interval (DBusTimeout   *timeout,
 {
   if (next_interval >= 0)
     {
-      _dbus_timeout_set_interval (timeout,
-                                  next_interval);
-      _dbus_timeout_set_enabled (timeout, TRUE);
+      _dbus_timeout_restart (timeout, next_interval);
 
       _dbus_verbose ("Enabled an expire timeout with interval %d\n",
                      next_interval);
     }
   else if (dbus_timeout_get_enabled (timeout))
     {
-      _dbus_timeout_set_enabled (timeout, FALSE);
+      _dbus_timeout_disable (timeout);
 
       _dbus_verbose ("Disabled an expire timeout\n");
     }

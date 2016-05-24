@@ -30,6 +30,7 @@
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-socket-set.h>
+#include <dbus/dbus-timeout.h>
 #include <dbus/dbus-watch.h>
 
 #define MAINLOOP_SPEW 0
@@ -607,6 +608,13 @@ _dbus_loop_iterate (DBusLoop     *loop,
           if (dbus_timeout_get_enabled (tcb->timeout))
             {
               int msecs_remaining;
+
+              if (_dbus_timeout_needs_restart (tcb->timeout))
+                {
+                  tcb->last_tv_sec = tv_sec;
+                  tcb->last_tv_usec = tv_usec;
+                  _dbus_timeout_restarted (tcb->timeout);
+                }
 
               check_timeout (tv_sec, tv_usec, tcb, &msecs_remaining);
 
