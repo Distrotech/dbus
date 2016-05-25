@@ -14,7 +14,6 @@
 
 #line __LINE__ "versioninfo.rc.in"
 
-#include <afxres.h>
 
 
 VS_VERSION_INFO VERSIONINFO
