@@ -1354,6 +1354,26 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
 	}
       else if (grandchild_pid == 0)
       {
+#ifdef __linux__
+          int fd = -1;
+
+#ifdef O_CLOEXEC
+          fd = open ("/proc/self/oom_score_adj", O_WRONLY | O_CLOEXEC);
+#endif
+
+          if (fd < 0)
+            {
+              fd = open ("/proc/self/oom_score_adj", O_WRONLY);
+              _dbus_fd_set_close_on_exec (fd);
+            }
+
+          if (fd >= 0)
+            {
+              if (write (fd, "0", sizeof (char)) < 0)
+                _dbus_warn ("writing oom_score_adj error: %s\n", strerror (errno));
+              _dbus_close (fd, NULL);
+            }
+#endif
           /* Go back to ignoring SIGPIPE, since it's evil
            */
           signal (SIGPIPE, SIG_IGN);
