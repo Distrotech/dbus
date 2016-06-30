@@ -526,7 +526,18 @@ test_processid (Fixture *f,
   while (m == NULL)
     test_main_context_iterate (f->ctx, TRUE);
 
-  if (dbus_message_get_args (m, &error,
+  if (dbus_set_error_from_message (&error, m))
+    {
+      g_assert_cmpstr (error.name, ==, DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN);
+
+#ifdef PID_SHOULD_WORK
+      g_error ("Expected pid to be passed, but got %s: %s",
+          error.name, error.message);
+#endif
+
+      dbus_error_free (&error);
+    }
+  else if (dbus_message_get_args (m, &error,
         DBUS_TYPE_UINT32, &pid,
         DBUS_TYPE_INVALID))
     {
@@ -545,14 +556,7 @@ test_processid (Fixture *f,
     }
   else
     {
-      g_assert_cmpstr (error.name, ==, DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN);
-
-#ifdef PID_SHOULD_WORK
-      g_error ("Expected pid to be passed, but got %s: %s",
-          error.name, error.message);
-#endif
-
-      dbus_error_free (&error);
+      g_error ("Unexpected error: %s: %s", error.name, error.message);
     }
 }
 
