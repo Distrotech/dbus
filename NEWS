@@ -1,7 +1,23 @@
 D-Bus 1.11.4 (UNRELEASED)
 ==
 
-...
+Fixes:
+
+• On Linux, when dbus-daemon is run with reduced susceptibility to the
+  OOM killer (typically via systemd), do not let child processes inherit
+  that setting (fd.o #32851; Kimmo Hämäläinen, WaLyong Cho)
+
+• Output valid shell syntax in ~/.dbus/session-bus/ if the bus address
+  contains a semicolon (fd.o #94746, Thiago Macieira)
+
+• Fix memory leaks and thread safety in subprocess starting on Windows
+  (fd.o #95191, Ralf Habacker)
+
+• Stop test-dbus-daemon incorrectly failing on platforms that cannot
+  discover the process ID of clients (fd.o #96653, Руслан Ижбулатов)
+
+• In tests that exercise correct handling of crashing D-Bus services,
+  suppress Windows crash handler (fd.o #95155; Yiyang Fei, Ralf Habacker)
 
 D-Bus 1.11.2 (2016-03-07)
 ==
