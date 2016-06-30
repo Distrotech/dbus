@@ -1,7 +1,25 @@
 D-Bus 1.11.4 (UNRELEASED)
 ==
 
+Enhancements:
+
+• D-Bus Specification version 0.28
+  · Clarify some details of serialization (fd.o #93382, Philip Withnall)
+
+• Increase listen() backlog of AF_UNIX sockets to the maximum possible,
+  minimizing failed connections under heavy load
+  (fd.o #95264, Lennart Poettering)
+
+• Use the same regression tests for subprocess starting on Unix and Windows
+  (fd.o #95191, Ralf Habacker)
+
+• Print timestamps and thread IDs in verbose messages
+  (fd.o #95191, Ralf Habacker)
+
 Fixes:
+
+• On Windows, fix a memory leak in replacing the installation prefix
+  (fd.o #95191, Ralf Habacker)
 
 • On Linux, when dbus-daemon is run with reduced susceptibility to the
   OOM killer (typically via systemd), do not let child processes inherit
