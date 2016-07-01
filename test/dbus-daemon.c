@@ -78,6 +78,7 @@ typedef struct {
     GError *ge;
 
     GPid daemon_pid;
+    gchar *address;
 
     DBusConnection *left_conn;
 
@@ -132,7 +133,6 @@ setup (Fixture *f,
     gconstpointer context)
 {
   const Config *config = context;
-  gchar *address;
 
   f->ctx = test_main_context_get ();
   f->ge = NULL;
@@ -149,17 +149,17 @@ setup (Fixture *f,
       g_setenv ("XDG_RUNTIME_DIR", f->tmp_runtime_dir, TRUE);
     }
 
-  address = test_get_dbus_daemon (config ? config->config_file : NULL,
-                                  TEST_USER_ME,
-                                  &f->daemon_pid);
+  f->address = test_get_dbus_daemon (config ? config->config_file : NULL,
+                                     TEST_USER_ME,
+                                     &f->daemon_pid);
 
-  if (address == NULL)
+  if (f->address == NULL)
     {
       f->skip = TRUE;
       return;
     }
 
-  f->left_conn = test_connect_to_bus (f->ctx, address);
+  f->left_conn = test_connect_to_bus (f->ctx, f->address);
 
   if (config != NULL && config->connect_mode == RELY_ON_DEFAULT)
     {
@@ -173,10 +173,8 @@ setup (Fixture *f,
     }
   else
     {
-      f->right_conn = test_connect_to_bus (f->ctx, address);
+      f->right_conn = test_connect_to_bus (f->ctx, f->address);
     }
-
-  g_free (address);
 }
 
 static void
@@ -646,6 +644,49 @@ test_canonical_path_uae (Fixture *f,
 }
 
 static void
+test_max_connections (Fixture *f,
+    gconstpointer context)
+{
+  DBusError error = DBUS_ERROR_INIT;
+  DBusConnection *third_conn;
+  DBusConnection *failing_conn;
+
+  if (f->skip)
+    return;
+
+  /* We have two connections already */
+  g_assert (f->left_conn != NULL);
+  g_assert (f->right_conn != NULL);
+
+  /* Our configuration file sets the limit to 3 connections, either globally
+   * or per uid, so this one is the last that will work */
+  third_conn = test_connect_to_bus (f->ctx, f->address);
+
+  /* This one is going to fail. We don't guarantee whether it will fail
+   * now, or while registering (implementation detail: it's the latter). */
+  failing_conn = dbus_connection_open_private (f->address, &error);
+
+  if (failing_conn != NULL)
+    {
+      gboolean ok = dbus_bus_register (failing_conn, &error);
+
+      g_assert (!ok);
+    }
+
+  g_assert (dbus_error_is_set (&error));
+  g_assert_cmpstr (error.name, ==, DBUS_ERROR_LIMITS_EXCEEDED);
+
+  if (failing_conn != NULL)
+    {
+      dbus_connection_close (failing_conn);
+      dbus_connection_unref (failing_conn);
+    }
+
+  dbus_connection_close (third_conn);
+  dbus_connection_unref (third_conn);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -700,6 +741,7 @@ teardown (Fixture *f,
     }
 
   test_main_context_unref (f->ctx);
+  g_free (f->address);
 }
 
 static Config limited_config = {
@@ -719,6 +761,16 @@ static Config listen_unix_runtime_config = {
 };
 #endif
 
+static Config max_completed_connections_config = {
+    NULL, 1, "valid-config-files/max-completed-connections.conf",
+    SPECIFY_ADDRESS
+};
+
+static Config max_connections_per_user_config = {
+    NULL, 1, "valid-config-files/max-connections-per-user.conf",
+    SPECIFY_ADDRESS
+};
+
 int
 main (int argc,
     char **argv)
@@ -736,6 +788,12 @@ main (int argc,
   g_test_add ("/processid", Fixture, NULL, setup, test_processid, teardown);
   g_test_add ("/canonical-path/uae", Fixture, NULL,
       setup, test_canonical_path_uae, teardown);
+  g_test_add ("/limits/max-completed-connections", Fixture,
+      &max_completed_connections_config,
+      setup, test_max_connections, teardown);
+  g_test_add ("/limits/max-connections-per-user", Fixture,
+      &max_connections_per_user_config,
+      setup, test_max_connections, teardown);
 #ifdef DBUS_UNIX
   /* We can't test this in loopback.c with the rest of unix:runtime=yes,
    * because dbus_bus_get[_private] is the only way to use the default,

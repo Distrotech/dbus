@@ -347,6 +347,8 @@ in_data = \
 	data/valid-config-files/finite-timeout.conf.in \
 	data/valid-config-files/forbidding.conf.in \
 	data/valid-config-files/incoming-limit.conf.in \
+	data/valid-config-files/max-completed-connections.conf.in \
+	data/valid-config-files/max-connections-per-user.conf.in \
 	data/valid-config-files/multi-user.conf.in \
 	data/valid-config-files/systemd-activation.conf.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
