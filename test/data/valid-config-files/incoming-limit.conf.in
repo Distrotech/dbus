@@ -15,4 +15,7 @@
   </policy>
 
   <limit name="max_incoming_bytes">1</limit>
+
+  <!-- Avoid reaching this limit -->
+  <limit name="max_replies_per_connection">1000000</limit>
 </busconfig>
