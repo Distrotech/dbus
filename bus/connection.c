@@ -1633,13 +1633,23 @@ bus_connection_get_name (DBusConnection *connection)
 dbus_bool_t
 bus_connections_check_limits (BusConnections  *connections,
                               DBusConnection  *requesting_completion,
+                              const char     **limit_name_out,
+                              int             *limit_out,
                               DBusError       *error)
 {
   unsigned long uid;
+  int limit;
 
-  if (connections->n_completed >=
-      bus_context_get_max_completed_connections (connections->context))
+  limit = bus_context_get_max_completed_connections (connections->context);
+
+  if (connections->n_completed >= limit)
     {
+      if (limit_name_out != NULL)
+        *limit_name_out = "max_completed_connections";
+
+      if (limit_out != NULL)
+        *limit_out = limit;
+
       dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
                       "The maximum number of active connections has been reached");
       return FALSE;
@@ -1647,9 +1657,16 @@ bus_connections_check_limits (BusConnections  *connections,
   
   if (dbus_connection_get_unix_user (requesting_completion, &uid))
     {
-      if (get_connections_for_uid (connections, uid) >=
-          bus_context_get_max_connections_per_user (connections->context))
+      limit = bus_context_get_max_connections_per_user (connections->context);
+
+      if (get_connections_for_uid (connections, uid) >= limit)
         {
+          if (limit_name_out != NULL)
+            *limit_name_out = "max_connections_per_user";
+
+          if (limit_out != NULL)
+            *limit_out = limit;
+
           dbus_set_error (error, DBUS_ERROR_LIMITS_EXCEEDED,
                           "The maximum number of active connections for UID %lu has been reached",
                           uid);

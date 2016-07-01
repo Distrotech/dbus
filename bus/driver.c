@@ -428,6 +428,9 @@ bus_driver_handle_hello (DBusConnection *connection,
   dbus_bool_t retval;
   BusRegistry *registry;
   BusConnections *connections;
+  DBusError tmp_error;
+  int limit;
+  const char *limit_name;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -445,11 +448,19 @@ bus_driver_handle_hello (DBusConnection *connection,
    * incomplete connections. It's even OK if the connection wants to
    * retry the hello message, we support that.
    */
+  dbus_error_init (&tmp_error);
   connections = bus_connection_get_connections (connection);
   if (!bus_connections_check_limits (connections, connection,
-                                     error))
+                                     &limit_name, &limit,
+                                     &tmp_error))
     {
-      _DBUS_ASSERT_ERROR_IS_SET (error);
+      BusContext *context;
+
+      _DBUS_ASSERT_ERROR_IS_SET (&tmp_error);
+      context = bus_connection_get_context (connection);
+      bus_context_log (context, DBUS_SYSTEM_LOG_WARNING, "%s (%s=%d)",
+          tmp_error.message, limit_name, limit);
+      dbus_move_error (&tmp_error, error);
       return FALSE;
     }
 
