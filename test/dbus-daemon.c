@@ -848,6 +848,33 @@ test_max_replies_per_connection (Fixture *f,
 }
 
 static void
+test_max_match_rules_per_connection (Fixture *f,
+    gconstpointer context)
+{
+  DBusError error = DBUS_ERROR_INIT;
+
+  if (f->skip)
+    return;
+
+  dbus_bus_add_match (f->left_conn, "sender='com.example.C1'", &error);
+  test_assert_no_error (&error);
+  dbus_bus_add_match (f->left_conn, "sender='com.example.C2'", &error);
+  test_assert_no_error (&error);
+  dbus_bus_add_match (f->left_conn, "sender='com.example.C3'", &error);
+  test_assert_no_error (&error);
+
+  dbus_bus_add_match (f->left_conn, "sender='com.example.C4'", &error);
+  g_assert_cmpstr (error.name, ==, DBUS_ERROR_LIMITS_EXCEEDED);
+  dbus_error_free (&error);
+
+  dbus_bus_remove_match (f->left_conn, "sender='com.example.C3'", &error);
+  test_assert_no_error (&error);
+
+  dbus_bus_add_match (f->left_conn, "sender='com.example.C4'", &error);
+  test_assert_no_error (&error);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -946,6 +973,11 @@ static Config max_replies_per_connection_config = {
     SPECIFY_ADDRESS
 };
 
+static Config max_match_rules_per_connection_config = {
+    NULL, 1, "valid-config-files/max-match-rules-per-connection.conf",
+    SPECIFY_ADDRESS
+};
+
 int
 main (int argc,
     char **argv)
@@ -972,6 +1004,9 @@ main (int argc,
   g_test_add ("/limits/max-replies-per-connection", Fixture,
       &max_replies_per_connection_config,
       setup, test_max_replies_per_connection, teardown);
+  g_test_add ("/limits/max-match-rules-per-connection", Fixture,
+      &max_match_rules_per_connection_config,
+      setup, test_max_match_rules_per_connection, teardown);
 #ifdef DBUS_UNIX
   /* We can't test this in loopback.c with the rest of unix:runtime=yes,
    * because dbus_bus_get[_private] is the only way to use the default,
