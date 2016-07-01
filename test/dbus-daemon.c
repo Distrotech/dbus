@@ -83,7 +83,9 @@ typedef struct {
     DBusConnection *left_conn;
 
     DBusConnection *right_conn;
+    GQueue held_messages;
     gboolean right_conn_echo;
+    gboolean right_conn_hold;
     gboolean wait_forever_called;
 
     gchar *tmp_runtime_dir;
@@ -117,6 +119,21 @@ echo_filter (DBusConnection *connection,
     g_error ("OOM");
 
   dbus_message_unref (reply);
+
+  return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+hold_filter (DBusConnection *connection,
+    DBusMessage *message,
+    void *user_data)
+{
+  Fixture *f = user_data;
+
+  if (dbus_message_get_type (message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+  g_queue_push_tail (&f->held_messages, dbus_message_ref (message));
 
   return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -187,12 +204,32 @@ add_echo_filter (Fixture *f)
 }
 
 static void
+add_hold_filter (Fixture *f)
+{
+  if (!dbus_connection_add_filter (f->right_conn, hold_filter, f, NULL))
+    g_error ("OOM");
+
+  f->right_conn_hold = TRUE;
+}
+
+static void
 pc_count (DBusPendingCall *pc,
     void *data)
 {
   guint *received_p = data;
 
   (*received_p)++;
+}
+
+static void
+pc_enqueue (DBusPendingCall *pc,
+            void *data)
+{
+  GQueue *q = data;
+  DBusMessage *m = dbus_pending_call_steal_reply (pc);
+
+  g_test_message ("message of type %d", dbus_message_get_type (m));
+  g_queue_push_tail (q, m);
 }
 
 static void
@@ -687,6 +724,130 @@ test_max_connections (Fixture *f,
 }
 
 static void
+test_max_replies_per_connection (Fixture *f,
+    gconstpointer context)
+{
+  GQueue received = G_QUEUE_INIT;
+  GQueue errors = G_QUEUE_INIT;
+  DBusMessage *m;
+  DBusPendingCall *pc;
+  guint i;
+  DBusError error = DBUS_ERROR_INIT;
+
+  if (f->skip)
+    return;
+
+  add_hold_filter (f);
+
+  /* The configured limit is 3 replies per connection. */
+  for (i = 0; i < 3; i++)
+    {
+      m = dbus_message_new_method_call (
+          dbus_bus_get_unique_name (f->right_conn), "/",
+          "com.example", "Spam");
+
+      if (m == NULL)
+        g_error ("OOM");
+
+      if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                            DBUS_TIMEOUT_INFINITE) ||
+          pc == NULL)
+        g_error ("OOM");
+
+      if (dbus_pending_call_get_completed (pc))
+        pc_enqueue (pc, &received);
+      else if (!dbus_pending_call_set_notify (pc, pc_enqueue, &received,
+            NULL))
+        g_error ("OOM");
+
+      dbus_pending_call_unref (pc);
+      dbus_message_unref (m);
+    }
+
+  while (g_queue_get_length (&f->held_messages) < 3)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  g_assert_cmpuint (g_queue_get_length (&received), ==, 0);
+  g_assert_cmpuint (g_queue_get_length (&errors), ==, 0);
+
+  /* Go a couple of messages over the limit. */
+  for (i = 0; i < 2; i++)
+    {
+      m = dbus_message_new_method_call (
+          dbus_bus_get_unique_name (f->right_conn), "/",
+          "com.example", "Spam");
+
+      if (m == NULL)
+        g_error ("OOM");
+
+      if (!dbus_connection_send_with_reply (f->left_conn, m, &pc,
+                                            DBUS_TIMEOUT_INFINITE) ||
+          pc == NULL)
+        g_error ("OOM");
+
+      if (dbus_pending_call_get_completed (pc))
+        pc_enqueue (pc, &errors);
+      else if (!dbus_pending_call_set_notify (pc, pc_enqueue, &errors,
+            NULL))
+        g_error ("OOM");
+
+      dbus_pending_call_unref (pc);
+      dbus_message_unref (m);
+    }
+
+  /* Reply to the held messages. */
+  for (m = g_queue_pop_head (&f->held_messages);
+       m != NULL;
+       m = g_queue_pop_head (&f->held_messages))
+    {
+      DBusMessage *reply = dbus_message_new_method_return (m);
+
+      if (reply == NULL)
+        g_error ("OOM");
+
+      if (!dbus_connection_send (f->right_conn, reply, NULL))
+        g_error ("OOM");
+
+      dbus_message_unref (reply);
+    }
+
+  /* Wait for all 5 replies to come in. */
+  while (g_queue_get_length (&received) + g_queue_get_length (&errors) < 5)
+    test_main_context_iterate (f->ctx, TRUE);
+
+  /* The first three succeeded. */
+  for (i = 0; i < 3; i++)
+    {
+      m = g_queue_pop_head (&received);
+      g_assert (m != NULL);
+
+      if (dbus_set_error_from_message (&error, m))
+        g_error ("Unexpected error: %s: %s", error.name, error.message);
+
+      dbus_message_unref (m);
+    }
+
+  /* The last two failed. */
+  for (i = 0; i < 2; i++)
+    {
+      m = g_queue_pop_head (&errors);
+      g_assert (m != NULL);
+
+      if (!dbus_set_error_from_message (&error, m))
+        g_error ("Unexpected success");
+
+      g_assert_cmpstr (error.name, ==, DBUS_ERROR_LIMITS_EXCEEDED);
+      dbus_error_free (&error);
+      dbus_message_unref (m);
+    }
+
+  g_assert_cmpuint (g_queue_get_length (&received), ==, 0);
+  g_assert_cmpuint (g_queue_get_length (&errors), ==, 0);
+  g_queue_clear (&received);
+  g_queue_clear (&errors);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -707,6 +868,15 @@ teardown (Fixture *f,
           dbus_connection_remove_filter (f->right_conn, echo_filter, f);
           f->right_conn_echo = FALSE;
         }
+
+      if (f->right_conn_hold)
+        {
+          dbus_connection_remove_filter (f->right_conn, hold_filter, f);
+          f->right_conn_hold = FALSE;
+        }
+
+      g_queue_foreach (&f->held_messages, (GFunc) dbus_message_unref, NULL);
+      g_queue_clear (&f->held_messages);
 
       dbus_connection_close (f->right_conn);
       dbus_connection_unref (f->right_conn);
@@ -771,6 +941,11 @@ static Config max_connections_per_user_config = {
     SPECIFY_ADDRESS
 };
 
+static Config max_replies_per_connection_config = {
+    NULL, 1, "valid-config-files/max-replies-per-connection.conf",
+    SPECIFY_ADDRESS
+};
+
 int
 main (int argc,
     char **argv)
@@ -794,6 +969,9 @@ main (int argc,
   g_test_add ("/limits/max-connections-per-user", Fixture,
       &max_connections_per_user_config,
       setup, test_max_connections, teardown);
+  g_test_add ("/limits/max-replies-per-connection", Fixture,
+      &max_replies_per_connection_config,
+      setup, test_max_replies_per_connection, teardown);
 #ifdef DBUS_UNIX
   /* We can't test this in loopback.c with the rest of unix:runtime=yes,
    * because dbus_bus_get[_private] is the only way to use the default,
