@@ -875,6 +875,45 @@ test_max_match_rules_per_connection (Fixture *f,
 }
 
 static void
+test_max_names_per_connection (Fixture *f,
+    gconstpointer context)
+{
+  DBusError error = DBUS_ERROR_INIT;
+  int ret;
+
+  if (f->skip)
+    return;
+
+  /* The limit in the configuration file is set to 4, but we only own 3
+   * names here - remember that the unique name is a name too. */
+
+  ret = dbus_bus_request_name (f->left_conn, "com.example.C1", 0, &error);
+  test_assert_no_error (&error);
+  g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
+
+  ret = dbus_bus_request_name (f->left_conn, "com.example.C2", 0, &error);
+  test_assert_no_error (&error);
+  g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
+
+  ret = dbus_bus_request_name (f->left_conn, "com.example.C3", 0, &error);
+  test_assert_no_error (&error);
+  g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
+
+  ret = dbus_bus_request_name (f->left_conn, "com.example.C4", 0, &error);
+  g_assert_cmpstr (error.name, ==, DBUS_ERROR_LIMITS_EXCEEDED);
+  dbus_error_free (&error);
+  g_assert_cmpint (ret, ==, -1);
+
+  ret = dbus_bus_release_name (f->left_conn, "com.example.C3", &error);
+  test_assert_no_error (&error);
+  g_assert_cmpint (ret, ==, DBUS_RELEASE_NAME_REPLY_RELEASED);
+
+  ret = dbus_bus_request_name (f->left_conn, "com.example.C4", 0, &error);
+  test_assert_no_error (&error);
+  g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
+}
+
+static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
@@ -978,6 +1017,11 @@ static Config max_match_rules_per_connection_config = {
     SPECIFY_ADDRESS
 };
 
+static Config max_names_per_connection_config = {
+    NULL, 1, "valid-config-files/max-names-per-connection.conf",
+    SPECIFY_ADDRESS
+};
+
 int
 main (int argc,
     char **argv)
@@ -1007,6 +1051,9 @@ main (int argc,
   g_test_add ("/limits/max-match-rules-per-connection", Fixture,
       &max_match_rules_per_connection_config,
       setup, test_max_match_rules_per_connection, teardown);
+  g_test_add ("/limits/max-names-per-connection", Fixture,
+      &max_names_per_connection_config,
+      setup, test_max_names_per_connection, teardown);
 #ifdef DBUS_UNIX
   /* We can't test this in loopback.c with the rest of unix:runtime=yes,
    * because dbus_bus_get[_private] is the only way to use the default,

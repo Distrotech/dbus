@@ -350,6 +350,7 @@ in_data = \
 	data/valid-config-files/max-completed-connections.conf.in \
 	data/valid-config-files/max-connections-per-user.conf.in \
 	data/valid-config-files/max-match-rules-per-connection.conf.in \
+	data/valid-config-files/max-names-per-connection.conf.in \
 	data/valid-config-files/max-replies-per-connection.conf.in \
 	data/valid-config-files/multi-user.conf.in \
 	data/valid-config-files/systemd-activation.conf.in \
