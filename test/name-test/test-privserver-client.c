@@ -100,6 +100,10 @@ open_shutdown_private_connection (dbus_bool_t use_guid)
   if (!(reply = dbus_connection_send_with_reply_and_block (session, msg, -1, &error)))
     die ("couldn't send message: %s\n", error.message);
   dbus_message_unref (msg);
+
+  if (dbus_set_error_from_message (&error, reply))
+    die ("%s: %s", error.name, error.message);
+
   if (!dbus_message_get_args (reply, &error, DBUS_TYPE_STRING, &addr, DBUS_TYPE_INVALID))
     die ("couldn't parse message replym\n");
   printf ("# got private temp address %s\n", addr);

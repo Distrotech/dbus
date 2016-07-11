@@ -359,7 +359,9 @@ test_relay (Fixture *f,
   g_assert_cmpstr (dbus_message_get_path (incoming), ==, "/com/example/Hello");
   g_assert_cmpuint (dbus_message_get_serial (incoming), ==, serial);
 
-  if (!dbus_message_get_args (incoming,
+  if (dbus_set_error_from_message (&f->e, incoming))
+    g_error ("%s: %s", f->e.name, f->e.message);
+  else if (!dbus_message_get_args (incoming,
         &f->e,
         DBUS_TYPE_UNIX_FD, &fd_after,
         DBUS_TYPE_INVALID))

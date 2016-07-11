@@ -678,6 +678,9 @@ test_invalid (Fixture *f,
   while (m == NULL)
     test_main_context_iterate (f->ctx, TRUE);
 
+  if (dbus_set_error_from_message (&f->e, m))
+    g_error ("%s: %s", f->e.name, f->e.message);
+
   ok = dbus_message_get_args (m, &f->e,
       DBUS_TYPE_STRING, &s,
       DBUS_TYPE_INVALID);
