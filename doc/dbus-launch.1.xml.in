@@ -29,6 +29,7 @@
     <arg choice='opt'>--binary-syntax </arg>
     <arg choice='opt'>--close-stderr </arg>
     <arg choice='opt'>--exit-with-session </arg>
+    <arg choice='opt'>--exit-with-x11 </arg>
     <arg choice='opt'>--autolaunch=<replaceable>MACHINEID</replaceable></arg>
     <arg choice='opt'>--config-file=<replaceable>FILENAME</replaceable></arg>
     <arg choice='opt'><replaceable>PROGRAM</replaceable></arg>
@@ -216,16 +217,35 @@ the --session argument. See the man page for dbus-daemon</para>
 
   </listitem>
   </varlistentry>
-  <varlistentry>
-  <term><option>--exit-with-session</option></term>
-  <listitem>
-<para>If this option is provided, a persistent "babysitter" process will be
-created that watches stdin for HUP and tries to connect to the X
-server. If this process gets a HUP on stdin or loses its X connection,
-it kills the message bus daemon.</para>
 
-  </listitem>
+  <varlistentry>
+    <term><option>--exit-with-x11</option></term>
+    <listitem>
+      <para>If this option is provided, a persistent "babysitter" process
+        will be created, and will connect to the X server. If it cannot
+        do so, launching fails. If the "babysitter" process loses its
+        X connection, it kills the message bus daemon, disconnecting
+        all of its clients (which should exit in response). This avoids
+        having leftover daemon processes from a user X session, after
+        the X session has ended.</para>
+    </listitem>
   </varlistentry>
+
+  <varlistentry>
+    <term><option>--exit-with-session</option></term>
+    <listitem>
+      <para>
+        If this option is provided, a persistent "babysitter" process will
+        be created, as if for --exit-with-x11. If it cannot connect to
+        the X server, it will monitor the terminal from which dbus-launch
+        was started instead, and if it gets a HUP on stdin, the message
+        bus daemon will be killed. This option is not recommended, since
+        it will consume input from the terminal where it was started;
+        it is mainly provided for backwards compatibility.
+      </para>
+    </listitem>
+  </varlistentry>
+
   <varlistentry>
   <term><option>--autolaunch=MACHINEID</option></term>
   <listitem>
