@@ -164,6 +164,10 @@ installable_tests += \
 	test-sd-activation \
 	$(NULL)
 
+dist_installable_test_scripts += \
+	test-dbus-daemon-fork.sh \
+	$(NULL)
+
 # Testing dbus-launch relies on special code in that binary.
 if DBUS_ENABLE_EMBEDDED_TESTS
 dist_installable_test_scripts += \
