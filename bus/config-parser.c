@@ -2316,7 +2316,7 @@ include_dir (BusConfigParser   *parser,
                    * also some layer inversion going on, if we want to use
                    * the bus context.) */
                   _dbus_log (DBUS_SYSTEM_LOG_INFO,
-                             "Encountered error '%s' while parsing '%s'\n",
+                             "Encountered error '%s' while parsing '%s'",
                              error->message,
                              _dbus_string_get_const_data (&full_path));
                   dbus_error_free (error);
