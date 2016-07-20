@@ -1372,20 +1372,6 @@ bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char
 {
   va_list args;
 
-  if (!context->syslog)
-    {
-      /* we're not syslogging; just output to stderr */
-      va_start (args, msg);
-      vfprintf (stderr, msg, args);
-      fprintf (stderr, "\n");
-      va_end (args);
-
-      if (severity == DBUS_SYSTEM_LOG_FATAL)
-        _dbus_exit (1);
-
-      return;
-    }
-
   va_start (args, msg);
 
   if (context->log_prefix)
@@ -1422,18 +1408,7 @@ bus_context_log_literal (BusContext            *context,
                          DBusSystemLogSeverity  severity,
                          const char            *msg)
 {
-  if (!context->syslog)
-    {
-      fputs (msg, stderr);
-      fputc ('\n', stderr);
-
-      if (severity == DBUS_SYSTEM_LOG_FATAL)
-        _dbus_exit (1);
-    }
-  else
-    {
-      _dbus_log (severity, "%s%s", nonnull (context->log_prefix, ""), msg);
-    }
+  _dbus_log (severity, "%s%s", nonnull (context->log_prefix, ""), msg);
 }
 
 void
