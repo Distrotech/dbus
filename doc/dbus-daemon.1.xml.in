@@ -29,6 +29,9 @@
     <arg choice='opt'><arg choice='plain'>--print-address </arg><arg choice='opt'><replaceable>=DESCRIPTOR</replaceable></arg></arg>
     <arg choice='opt'><arg choice='plain'>--print-pid </arg><arg choice='opt'><replaceable>=DESCRIPTOR</replaceable></arg></arg>
     <arg choice='opt'>--fork </arg>
+    <arg choice='opt'>--nosyslog </arg>
+    <arg choice='opt'>--syslog </arg>
+    <arg choice='opt'>--syslog-only </arg>
     <sbr/>
 </cmdsynopsis>
 </refsynopsisdiv>
@@ -164,6 +167,36 @@ files.</para>
 
   </listitem>
   </varlistentry>
+
+  <varlistentry>
+    <term><option>--syslog</option></term>
+    <listitem>
+      <para>Force the message bus to use the system log for messages,
+        in addition to writing to standard error, even if the configuration
+        file does not specify that it should. On Unix, this uses
+        the syslog; on Windows, this uses OutputDebugString().</para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><option>--syslog-only</option></term>
+    <listitem>
+      <para>Force the message bus to use the system log for messages,
+        and <emphasis>not</emphasis> duplicate them to standard error.
+        On Unix, this uses the syslog; on Windows, this uses
+        OutputDebugString().</para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><option>--nosyslog</option></term>
+    <listitem>
+      <para>Force the message bus to use only standard error for messages,
+        even if the configuration file specifies that it should use
+        the system log.</para>
+    </listitem>
+  </varlistentry>
+
 </variablelist>
 </refsect1>
 
@@ -325,7 +358,9 @@ This may be useful to avoid affecting the behavior of child processes.</para>
 
 </itemizedlist>
 
-<para>If present, the bus daemon will log to syslog.</para>
+<para>If present, the bus daemon will log to syslog. The
+  --syslog, --syslog-only and --nosyslog command-line options take precedence
+  over this setting.</para>
 
 <itemizedlist remap='TP'>
 

@@ -72,7 +72,10 @@ typedef enum
   BUS_CONTEXT_FLAG_FORK_ALWAYS = (1 << 1),
   BUS_CONTEXT_FLAG_FORK_NEVER = (1 << 2),
   BUS_CONTEXT_FLAG_WRITE_PID_FILE = (1 << 3),
-  BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION = (1 << 4)
+  BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION = (1 << 4),
+  BUS_CONTEXT_FLAG_SYSLOG_ALWAYS = (1 << 5),
+  BUS_CONTEXT_FLAG_SYSLOG_NEVER = (1 << 6),
+  BUS_CONTEXT_FLAG_SYSLOG_ONLY = (1 << 7)
 } BusContextFlags;
 
 BusContext*       bus_context_new                                (const DBusString *config_file,

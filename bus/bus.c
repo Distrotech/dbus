@@ -47,10 +47,6 @@
 #include <signal.h>
 #endif
 
-#ifdef HAVE_SYSTEMD
-#include <systemd/sd-daemon.h>
-#endif
-
 struct BusContext
 {
   int refcount;
@@ -285,6 +281,7 @@ process_config_first_time_only (BusContext       *context,
   DBusList **auth_mechanisms_list;
   int len;
   dbus_bool_t retval;
+  DBusLogFlags log_flags = DBUS_LOG_FLAGS_STDERR;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -292,25 +289,27 @@ process_config_first_time_only (BusContext       *context,
   auth_mechanisms = NULL;
   pidfile = NULL;
 
-  context->syslog = bus_config_parser_get_syslog (parser);
-
-  if (context->syslog)
+  if (flags & BUS_CONTEXT_FLAG_SYSLOG_ALWAYS)
     {
-#ifdef HAVE_SYSTEMD
-      /* If running under systemd, we don't want to log to both stderr and
-       * syslog, because our stderr is probably connected to journald too,
-       * so we'd duplicate all our messages. */
-      if (sd_booted () > 0)
-        _dbus_init_system_log ("dbus-daemon", DBUS_LOG_FLAGS_SYSTEM_LOG);
-      else
-#endif
-        _dbus_init_system_log ("dbus-daemon",
-            DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
+      context->syslog = TRUE;
+      log_flags |= DBUS_LOG_FLAGS_SYSTEM_LOG;
+
+      if (flags & BUS_CONTEXT_FLAG_SYSLOG_ONLY)
+        log_flags &= ~DBUS_LOG_FLAGS_STDERR;
+    }
+  else if (flags & BUS_CONTEXT_FLAG_SYSLOG_NEVER)
+    {
+      context->syslog = FALSE;
     }
   else
     {
-      _dbus_init_system_log ("dbus-daemon", DBUS_LOG_FLAGS_STDERR);
+      context->syslog = bus_config_parser_get_syslog (parser);
+
+      if (context->syslog)
+        log_flags |= DBUS_LOG_FLAGS_SYSTEM_LOG;
     }
+
+  _dbus_init_system_log ("dbus-daemon", log_flags);
 
   if (flags & BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION)
     context->systemd_activation = TRUE;
