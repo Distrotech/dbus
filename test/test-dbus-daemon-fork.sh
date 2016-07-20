@@ -44,7 +44,7 @@ if ! workdir="$(mktemp -d)"; then
     exit 0
 fi
 
-echo "1..1"
+echo "1..3"
 
 unset DBUS_SESSION_BUS_ADDRESS
 unset DBUS_SESSION_BUS_PID
@@ -64,5 +64,43 @@ ${DBUS_TEST_DBUS_SEND} --session --dest=org.freedesktop.DBus \
 kill "$DBUS_SESSION_BUS_PID"
 
 echo "ok 1 - normal dbus-daemon"
+
+unset DBUS_SESSION_BUS_ADDRESS
+unset DBUS_SESSION_BUS_PID
+rm -f "$workdir"/address "$workdir"/pid
+
+${DBUS_TEST_DAEMON} --fork --print-address=8 --print-pid=9 "$config" \
+    8>"$workdir/address" 9>"$workdir/pid" <&-
+
+export DBUS_SESSION_BUS_ADDRESS="$(cat "$workdir"/address)"
+test -n "$DBUS_SESSION_BUS_ADDRESS"
+DBUS_SESSION_BUS_PID="$(cat "$workdir"/pid)"
+kill -0 "$DBUS_SESSION_BUS_PID"
+
+${DBUS_TEST_DBUS_SEND} --session --dest=org.freedesktop.DBus \
+    --type=method_call --print-reply / org.freedesktop.DBus.ListNames >&2
+
+kill "$DBUS_SESSION_BUS_PID"
+
+echo "ok 2 - dbus-daemon with stdin closed"
+
+unset DBUS_SESSION_BUS_ADDRESS
+unset DBUS_SESSION_BUS_PID
+rm -f "$workdir"/address "$workdir"/pid
+
+${DBUS_TEST_DAEMON} --fork --print-address=8 --print-pid=9 "$config" \
+    8>"$workdir/address" 9>"$workdir/pid" <&- >&- 2>&-
+
+export DBUS_SESSION_BUS_ADDRESS="$(cat "$workdir"/address)"
+test -n "$DBUS_SESSION_BUS_ADDRESS"
+DBUS_SESSION_BUS_PID="$(cat "$workdir"/pid)"
+kill -0 "$DBUS_SESSION_BUS_PID"
+
+${DBUS_TEST_DBUS_SEND} --session --dest=org.freedesktop.DBus \
+    --type=method_call --print-reply / org.freedesktop.DBus.ListNames >&2
+
+kill "$DBUS_SESSION_BUS_PID"
+
+echo "ok 3 - dbus-daemon with stdin, stdout, stderr closed"
 
 rm -r "$workdir"
