@@ -47,7 +47,7 @@ setup (Fixture *f,
 
 /* hopefully clear enough that people don't think these messages in syslog
  * are a bug */
-#define MESSAGE "regression test for _dbus_system_log(): "
+#define MESSAGE "regression test for _dbus_log(): "
 
 static void
 test_syslog (Fixture *f,
@@ -57,7 +57,7 @@ test_syslog (Fixture *f,
   if (g_test_trap_fork (0, 0))
     {
       _dbus_init_system_log ("test-syslog", FALSE);
-      _dbus_system_log (DBUS_SYSTEM_LOG_FATAL, MESSAGE "%d", 23);
+      _dbus_log (DBUS_SYSTEM_LOG_FATAL, MESSAGE "%d", 23);
       /* should not be reached: exit 0 so the assertion in the main process
        * will fail */
       exit (0);
@@ -69,9 +69,9 @@ test_syslog (Fixture *f,
   if (g_test_trap_fork (0, 0))
     {
       _dbus_init_system_log ("test-syslog", FALSE);
-      _dbus_system_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
-      _dbus_system_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
-      _dbus_system_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
+      _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
+      _dbus_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
+      _dbus_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
       exit (0);
     }
 
@@ -80,9 +80,9 @@ test_syslog (Fixture *f,
 #endif
   /* manual test (this is the best we can do on Windows) */
   _dbus_init_system_log ("test-syslog", FALSE);
-  _dbus_system_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
-  _dbus_system_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
-  _dbus_system_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
+  _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
+  _dbus_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
+  _dbus_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
 }
 
 static void

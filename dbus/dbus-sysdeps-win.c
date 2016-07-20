@@ -3662,7 +3662,9 @@ _dbus_init_system_log (const char  *tag,
  * with an error code.
  */
 void
-_dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args)
+_dbus_logv (DBusSystemLogSeverity  severity,
+            const char            *msg,
+            va_list                args)
 {
   char *s = "";
   char buf[1024];

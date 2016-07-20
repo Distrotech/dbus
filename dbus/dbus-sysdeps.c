@@ -758,13 +758,15 @@ _dbus_strerror_from_errno (void)
  * @param msg a printf-style format string
  */
 void
-_dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...)
+_dbus_log (DBusSystemLogSeverity  severity,
+           const char            *msg,
+           ...)
 {
   va_list args;
 
   va_start (args, msg);
 
-  _dbus_system_logv (severity, msg, args);
+  _dbus_logv (severity, msg, args);
 
   va_end (args);
 }
