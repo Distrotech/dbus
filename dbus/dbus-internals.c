@@ -230,13 +230,17 @@ void
 _dbus_warn (const char *format,
             ...)
 {
+  DBusSystemLogSeverity severity = DBUS_SYSTEM_LOG_WARNING;
   va_list args;
 
   if (!warn_initted)
     init_warnings ();
-  
+
+  if (fatal_warnings)
+    severity = DBUS_SYSTEM_LOG_FATAL;
+
   va_start (args, format);
-  vfprintf (stderr, format, args);
+  _dbus_logv (severity, format, args);
   va_end (args);
 
   if (fatal_warnings)
@@ -248,7 +252,7 @@ _dbus_warn (const char *format,
 
 /**
  * Prints a "critical" warning to stderr when an assertion fails;
- * differs from _dbus_warn primarily in that it prefixes the pid and
+ * differs from _dbus_warn primarily in that it
  * defaults to fatal. This should be used only when a programming
  * error has been detected. (NOT for unavoidable errors that an app
  * might handle - those should be returned as DBusError.) Calling this
@@ -258,15 +262,17 @@ void
 _dbus_warn_check_failed(const char *format,
                         ...)
 {
+  DBusSystemLogSeverity severity = DBUS_SYSTEM_LOG_WARNING;
   va_list args;
   
   if (!warn_initted)
     init_warnings ();
 
-  fprintf (stderr, "process %lu: ", _dbus_pid_for_log ());
-  
+  if (fatal_warnings_on_check_failed)
+    severity = DBUS_SYSTEM_LOG_FATAL;
+
   va_start (args, format);
-  vfprintf (stderr, format, args);
+  _dbus_logv (severity, format, args);
   va_end (args);
 
   if (fatal_warnings_on_check_failed)
