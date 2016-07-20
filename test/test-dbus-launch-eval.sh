@@ -42,7 +42,7 @@ else
     config="--sh-syntax"
 fi
 
-echo "1..1"
+echo "1..3"
 
 unset DBUS_SESSION_BUS_ADDRESS
 unset DBUS_SESSION_BUS_PID
@@ -62,3 +62,42 @@ ${DBUS_TEST_DBUS_SEND} --session --dest=org.freedesktop.DBus \
 kill "$DBUS_SESSION_BUS_PID"
 
 echo "ok 1 - normal dbus-launch"
+
+unset DBUS_SESSION_BUS_ADDRESS
+unset DBUS_SESSION_BUS_PID
+
+eval "$(${DBUS_TEST_DBUS_LAUNCH} --sh-syntax "$config" <&-)"
+
+test -n "$DBUS_SESSION_BUS_ADDRESS"
+env | grep '^DBUS_SESSION_BUS_ADDRESS='
+
+test -n "$DBUS_SESSION_BUS_PID"
+test "x$(env | grep '^DBUS_SESSION_BUS_PID=')" = "x"
+kill -0 "$DBUS_SESSION_BUS_PID"
+
+${DBUS_TEST_DBUS_SEND} --session --dest=org.freedesktop.DBus \
+    --type=method_call --print-reply / org.freedesktop.DBus.ListNames >&2
+
+kill "$DBUS_SESSION_BUS_PID"
+
+echo "ok 2 - dbus-launch with stdin closed"
+
+unset DBUS_SESSION_BUS_ADDRESS
+unset DBUS_SESSION_BUS_PID
+
+# we can't close stdout because that breaks --sh-syntax
+eval "$(${DBUS_TEST_DBUS_LAUNCH} --sh-syntax "$config" <&- 2>&-)"
+
+test -n "$DBUS_SESSION_BUS_ADDRESS"
+env | grep '^DBUS_SESSION_BUS_ADDRESS='
+
+test -n "$DBUS_SESSION_BUS_PID"
+test "x$(env | grep '^DBUS_SESSION_BUS_PID=')" = "x"
+kill -0 "$DBUS_SESSION_BUS_PID"
+
+${DBUS_TEST_DBUS_SEND} --session --dest=org.freedesktop.DBus \
+    --type=method_call --print-reply / org.freedesktop.DBus.ListNames >&2
+
+kill "$DBUS_SESSION_BUS_PID"
+
+echo "ok 3 - dbus-launch with stdin and stderr closed"
