@@ -555,6 +555,7 @@ void _dbus_set_signal_handler (int               sig,
 dbus_bool_t _dbus_user_at_console (const char *username,
                                    DBusError  *error);
 
+DBUS_PRIVATE_EXPORT
 void _dbus_init_system_log (dbus_bool_t is_daemon);
 
 typedef enum {
@@ -564,7 +565,9 @@ typedef enum {
   DBUS_SYSTEM_LOG_FATAL
 } DBusSystemLogSeverity;
 
+DBUS_PRIVATE_EXPORT
 void _dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...) _DBUS_GNUC_PRINTF (2, 3);
+DBUS_PRIVATE_EXPORT
 void _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args);
 
 /* Define DBUS_VA_COPY() to do the right thing for copying va_list variables.

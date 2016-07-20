@@ -751,6 +751,24 @@ _dbus_strerror_from_errno (void)
   return _dbus_strerror (errno);
 }
 
+/**
+ * Log a message to the system log file (e.g. syslog on Unix).
+ *
+ * @param severity a severity value
+ * @param msg a printf-style format string
+ */
+void
+_dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...)
+{
+  va_list args;
+
+  va_start (args, msg);
+
+  _dbus_system_logv (severity, msg, args);
+
+  va_end (args);
+}
+
 /** @} end of sysdeps */
 
 /* tests in dbus-sysdeps-util.c */

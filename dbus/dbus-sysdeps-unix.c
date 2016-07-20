@@ -62,6 +62,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#endif
 #ifdef HAVE_WRITEV
 #include <sys/uio.h>
 #endif
@@ -4518,6 +4521,77 @@ void
 _dbus_restore_socket_errno (int saved_errno)
 {
   errno = saved_errno;
+}
+
+void
+_dbus_init_system_log (dbus_bool_t is_daemon)
+{
+#ifdef HAVE_SYSLOG_H
+  int logopts = LOG_PID;
+
+#if HAVE_DECL_LOG_PERROR
+#ifdef HAVE_SYSTEMD
+  if (!is_daemon || sd_booted () <= 0)
+#endif
+    logopts |= LOG_PERROR;
+#endif
+
+  openlog ("dbus", logopts, LOG_DAEMON);
+#endif
+}
+
+/**
+ * Log a message to the system log file (e.g. syslog on Unix).
+ *
+ * @param severity a severity value
+ * @param msg a printf-style format string
+ * @param args arguments for the format string
+ *
+ * If the FATAL severity is given, this function will terminate the program
+ * with an error code.
+ */
+void
+_dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args)
+{
+  va_list tmp;
+#ifdef HAVE_SYSLOG_H
+  int flags;
+  switch (severity)
+    {
+      case DBUS_SYSTEM_LOG_INFO:
+        flags =  LOG_DAEMON | LOG_NOTICE;
+        break;
+      case DBUS_SYSTEM_LOG_WARNING:
+        flags =  LOG_DAEMON | LOG_WARNING;
+        break;
+      case DBUS_SYSTEM_LOG_SECURITY:
+        flags = LOG_AUTH | LOG_NOTICE;
+        break;
+      case DBUS_SYSTEM_LOG_FATAL:
+        flags = LOG_DAEMON|LOG_CRIT;
+        break;
+      default:
+        return;
+    }
+
+  DBUS_VA_COPY (tmp, args);
+  vsyslog (flags, msg, tmp);
+  va_end (tmp);
+#endif
+
+#if !defined(HAVE_SYSLOG_H) || !HAVE_DECL_LOG_PERROR
+    {
+      /* vsyslog() won't write to stderr, so we'd better do it */
+      DBUS_VA_COPY (tmp, args);
+      fprintf (stderr, "dbus[" DBUS_PID_FORMAT "]: ", _dbus_getpid ());
+      vfprintf (stderr, msg, tmp);
+      fputc ('\n', stderr);
+      va_end (tmp);
+    }
+#endif
+
+  if (severity == DBUS_SYSTEM_LOG_FATAL)
+    exit (1);
 }
 
 /* tests in dbus-sysdeps-util.c */

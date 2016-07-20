@@ -296,63 +296,6 @@ _dbus_rlimit_free (DBusRLimit *lim)
   _dbus_assert (lim == NULL);
 }
 
-void
-_dbus_init_system_log (dbus_bool_t is_daemon)
-{
-  /* OutputDebugStringA doesn't need any special initialization, do nothing */
-}
-
-/**
- * Log a message to the system log file (e.g. syslog on Unix).
- *
- * @param severity a severity value
- * @param msg a printf-style format string
- */
-void
-_dbus_system_log (DBusSystemLogSeverity severity, const char *msg, ...)
-{
-  va_list args;
-
-  va_start (args, msg);
-
-  _dbus_system_logv (severity, msg, args);
-
-  va_end (args);
-}
-
-/**
- * Log a message to the system log file (e.g. syslog on Unix).
- *
- * @param severity a severity value
- * @param msg a printf-style format string
- * @param args arguments for the format string
- *
- * If the FATAL severity is given, this function will terminate the program
- * with an error code.
- */
-void
-_dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args)
-{
-  char *s = "";
-  char buf[1024];
-  char format[1024];
-
-  switch(severity) 
-   {
-     case DBUS_SYSTEM_LOG_INFO: s = "info"; break;
-     case DBUS_SYSTEM_LOG_WARNING: s = "warning"; break;
-     case DBUS_SYSTEM_LOG_SECURITY: s = "security"; break;
-     case DBUS_SYSTEM_LOG_FATAL: s = "fatal"; break;
-   }
-   
-  snprintf(format, sizeof(format), "%s%s", s ,msg);
-  vsnprintf(buf, sizeof(buf), format, args);
-  OutputDebugStringA(buf);
-  
-  if (severity == DBUS_SYSTEM_LOG_FATAL)
-    exit (1);
-}
-
 /** Installs a signal handler
  *
  * @param sig the signal to handle
