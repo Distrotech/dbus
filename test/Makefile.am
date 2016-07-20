@@ -124,6 +124,7 @@ EXTRA_DIST += dbus-test-runner
 testexecdir = $(libexecdir)/installed-tests/dbus
 testmetadir = $(datadir)/installed-tests/dbus
 
+dist_testexec_SCRIPTS =
 testexec_PROGRAMS =
 testmeta_DATA =
 
@@ -133,8 +134,10 @@ installable_tests = \
 	$(NULL)
 installable_manual_tests = \
 	manual-dir-iter \
-        manual-tcp \
-        $(NULL)
+	manual-tcp \
+	$(NULL)
+dist_installable_test_scripts = \
+	$(NULL)
 
 if DBUS_WIN
 installable_manual_tests += manual-paths
@@ -160,6 +163,14 @@ if DBUS_UNIX
 installable_tests += \
 	test-sd-activation \
 	$(NULL)
+
+# Testing dbus-launch relies on special code in that binary.
+if DBUS_ENABLE_EMBEDDED_TESTS
+dist_installable_test_scripts += \
+	test-dbus-launch-eval.sh \
+	$(NULL)
+endif DBUS_ENABLE_EMBEDDED_TESTS
+
 endif DBUS_UNIX
 
 installable_manual_tests += \
@@ -167,13 +178,21 @@ installable_manual_tests += \
 	$(NULL)
 endif DBUS_WITH_GLIB
 
-installable_test_meta = $(installable_tests:=.test)
-installable_test_meta_with_config = $(installable_tests:=_with_config.test)
+installable_test_meta = \
+	$(dist_installable_test_scripts:=.test) \
+	$(installable_tests:=.test) \
+	$(NULL)
+installable_test_meta_with_config = \
+	$(dist_installable_test_scripts:=_with_config.test) \
+	$(installable_tests:=_with_config.test) \
+	$(NULL)
 
 installcheck_tests =
 installcheck_environment = \
 	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
 	export DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT); \
+	export DBUS_TEST_DBUS_LAUNCH=$(DESTDIR)$(bindir)/dbus-launch$(EXEEXT); \
+	export DBUS_TEST_DBUS_SEND=$(DESTDIR)$(bindir)/dbus-send$(EXEEXT); \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
 	export DBUS_TEST_DATADIR=$(DESTDIR)$(datadir); \
 	${NULL}
@@ -182,6 +201,8 @@ AM_TESTS_ENVIRONMENT = \
 	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
 	export DBUS_FATAL_WARNINGS=1; \
 	export DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT); \
+	export DBUS_TEST_DBUS_LAUNCH=@abs_top_builddir@/tools/dbus-launch$(EXEEXT); \
+	export DBUS_TEST_DBUS_SEND=@abs_top_builddir@/tools/dbus-send$(EXEEXT); \
 	export DBUS_TEST_DATA=@abs_top_builddir@/test/data; \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
 	$(NULL)
@@ -268,12 +289,16 @@ test_fdpass_LDADD = \
     $(GLIB_LIBS) \
     $(NULL)
 
+TESTS += $(dist_installable_test_scripts)
+installcheck_tests += $(dist_installable_test_scripts)
+
 if DBUS_ENABLE_MODULAR_TESTS
 TESTS += $(installable_tests)
 installcheck_tests += $(installable_tests)
 
 if DBUS_ENABLE_INSTALLED_TESTS
   testexec_PROGRAMS += $(installable_tests) $(installable_manual_tests)
+  dist_testexec_SCRIPTS += $(dist_installable_test_scripts)
 
   testmeta_DATA += $(installable_test_meta)
   testmeta_DATA += $(installable_test_meta_with_config)
