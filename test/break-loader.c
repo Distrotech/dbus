@@ -509,10 +509,10 @@ find_breaks_based_on (const DBusString   *filename,
   retval = FALSE;
 
   if (!_dbus_string_init (&orig_data))
-    _dbus_assert_not_reached ("could not allocate string\n");
+    _dbus_assert_not_reached ("could not allocate string");
 
   if (!_dbus_string_init (&mutated))
-    _dbus_assert_not_reached ("could not allocate string\n");
+    _dbus_assert_not_reached ("could not allocate string");
 
   if (!dbus_internal_do_not_use_load_message_file (filename, is_raw,
                                                    &orig_data))

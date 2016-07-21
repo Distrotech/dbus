@@ -312,12 +312,12 @@ _dbus_string_test (void)
   while (i < 10)
     {
       if (!_dbus_string_append (&str, "a"))
-        _dbus_assert_not_reached ("failed to append string to string\n");
+        _dbus_assert_not_reached ("failed to append string to string");
 
       _dbus_assert (_dbus_string_get_length (&str) == i * 2 + 1);
 
       if (!_dbus_string_append_byte (&str, 'b'))
-        _dbus_assert_not_reached ("failed to append byte to string\n");
+        _dbus_assert_not_reached ("failed to append byte to string");
 
       _dbus_assert (_dbus_string_get_length (&str) == i * 2 + 2);
                     

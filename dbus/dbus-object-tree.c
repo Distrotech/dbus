@@ -1646,7 +1646,7 @@ run_decompose_tests (void)
               ++i;
             }
           _dbus_warn ("}\n");
-          _dbus_assert_not_reached ("path decompose failed\n");
+          _dbus_assert_not_reached ("path decompose failed");
         }
 
       dbus_free_string_array (result);

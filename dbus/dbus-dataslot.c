@@ -394,7 +394,7 @@ _dbus_data_slot_test (void)
       _dbus_data_slot_allocator_alloc (&allocator, &tmp);
 
       if (tmp != i)
-        _dbus_assert_not_reached ("did not allocate slots in numeric order\n");
+        _dbus_assert_not_reached ("did not allocate slots in numeric order");
 
       ++i;
     }

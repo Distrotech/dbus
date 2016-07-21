@@ -571,7 +571,7 @@ process_test_subdir (const DBusString          *test_base_dir,
   dir = NULL;
 
   if (!_dbus_string_init (&test_directory))
-    _dbus_assert_not_reached ("didn't allocate test_directory\n");
+    _dbus_assert_not_reached ("didn't allocate test_directory");
 
   _dbus_string_init_const (&filename, subdir);
 
@@ -584,7 +584,7 @@ process_test_subdir (const DBusString          *test_base_dir,
 
   _dbus_string_free (&filename);
   if (!_dbus_string_init (&filename))
-    _dbus_assert_not_reached ("didn't allocate filename string\n");
+    _dbus_assert_not_reached ("didn't allocate filename string");
 
   dir = _dbus_directory_open (&test_directory, &error);
   if (dir == NULL)

@@ -1699,7 +1699,7 @@ bus_context_check_security_policy (BusContext     *context,
         }
       else
         {
-          _dbus_assert_not_reached ("a message was somehow sent to an inactive recipient from a source other than the message bus\n");
+          _dbus_assert_not_reached ("a message was somehow sent to an inactive recipient from a source other than the message bus");
           recipient_policy = NULL;
         }
     }

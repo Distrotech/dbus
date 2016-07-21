@@ -112,7 +112,7 @@ check_hello_from_self_reply (DBusPendingCall *pcall,
       dbus_error_free (&error);
     }
   else
-     _dbus_assert_not_reached ("Unexpected message received\n");
+     _dbus_assert_not_reached ("Unexpected message received");
 
   hello_from_self_reply_received = TRUE;
   
