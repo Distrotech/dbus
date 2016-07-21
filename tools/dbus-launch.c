@@ -723,27 +723,15 @@ babysit (int   exit_with_session,
 static void
 do_close_stderr (void)
 {
-  int fd;
+  const char *err;
 
   fflush (stderr);
 
-  /* dbus-launch is a Unix-only program, so we can rely on /dev/null being there.
-   * We're including unistd.h and we're dealing with sh/csh launch sequences...
-   */
-  fd = open ("/dev/null", O_RDWR);
-  if (fd == -1)
+  if (!_dbus_ensure_standard_fds (DBUS_FORCE_STDERR_NULL, &err))
     {
-      fprintf (stderr, "Internal error: cannot open /dev/null: %s", strerror (errno));
+      fprintf (stderr, "%s: %s\n", err, strerror (errno));
       exit (1);
     }
-
-  close (2);
-  if (dup2 (fd, 2) == -1)
-    {
-      /* error; we can't report an error anymore... */
-      exit (1);
-    }
-  close (fd);
 }
 
 static void
