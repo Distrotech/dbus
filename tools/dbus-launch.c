@@ -1218,6 +1218,7 @@ main (int argc, char **argv)
 
             execl (test_daemon,
                    test_daemon,
+                   close_stderr ? "--syslog-only" : "--syslog",
                    "--fork",
                    "--print-pid", write_pid_fd_as_string,
                    "--print-address", write_address_fd_as_string,
@@ -1235,6 +1236,7 @@ main (int argc, char **argv)
 
       execl (DBUS_DAEMONDIR"/dbus-daemon",
              DBUS_DAEMONDIR"/dbus-daemon",
+             close_stderr ? "--syslog-only" : "--syslog",
              "--fork",
              "--print-pid", write_pid_fd_as_string,
              "--print-address", write_address_fd_as_string,
@@ -1254,6 +1256,7 @@ main (int argc, char **argv)
        */
       execlp ("dbus-daemon",
               "dbus-daemon",
+              close_stderr ? "--syslog-only" : "--syslog",
               "--fork",
               "--print-pid", write_pid_fd_as_string,
               "--print-address", write_address_fd_as_string,
