@@ -121,6 +121,7 @@ int               bus_context_get_max_match_rules_per_connection (BusContext    
 int               bus_context_get_max_replies_per_connection     (BusContext       *context);
 int               bus_context_get_reply_timeout                  (BusContext       *context);
 DBusRLimit *      bus_context_get_initial_fd_limit               (BusContext       *context);
+dbus_bool_t       bus_context_get_using_syslog                   (BusContext       *context);
 void              bus_context_log                                (BusContext       *context,
                                                                   DBusSystemLogSeverity severity,
                                                                   const char       *msg,

@@ -645,6 +645,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
                                    const char                *log_name,
                                    char                     **argv,
                                    char                     **envp,
+                                   DBusSpawnFlags             flags _DBUS_GNUC_UNUSED,
                                    DBusSpawnChildSetupFunc    child_setup _DBUS_GNUC_UNUSED,
                                    void                      *user_data _DBUS_GNUC_UNUSED,
                                    DBusError                 *error)

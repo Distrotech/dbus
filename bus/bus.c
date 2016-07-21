@@ -1366,6 +1366,12 @@ bus_context_get_initial_fd_limit (BusContext *context)
   return context->initial_fd_limit;
 }
 
+dbus_bool_t
+bus_context_get_using_syslog (BusContext *context)
+{
+  return context->syslog;
+}
+
 void
 bus_context_log (BusContext *context, DBusSystemLogSeverity severity, const char *msg, ...)
 {

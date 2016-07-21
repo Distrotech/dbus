@@ -64,7 +64,7 @@ check_spawn_nonexistent (void *data)
 
   argv[0] = "/this/does/not/exist/32542sdgafgafdg";
   if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_nonexistent", argv,
-                                         NULL, NULL, NULL,
+                                         NULL, DBUS_SPAWN_NONE, NULL, NULL,
                                          &error))
     {
       _dbus_babysitter_block_for_child_exit (sitter);
@@ -113,7 +113,7 @@ check_spawn_segfault (void *data)
     }
 
   if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_segfault", argv,
-                                         NULL, NULL, NULL,
+                                         NULL, DBUS_SPAWN_NONE, NULL, NULL,
                                          &error))
     {
       _dbus_babysitter_block_for_child_exit (sitter);
@@ -168,7 +168,7 @@ check_spawn_exit (void *data)
     }
 
   if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_exit", argv,
-                                         NULL, NULL, NULL,
+                                         NULL, DBUS_SPAWN_NONE, NULL, NULL,
                                          &error))
     {
       _dbus_babysitter_block_for_child_exit (sitter);
@@ -219,7 +219,7 @@ check_spawn_and_kill (void *data)
     }
 
   if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_and_kill", argv,
-                                         NULL, NULL, NULL,
+                                         NULL, DBUS_SPAWN_NONE, NULL, NULL,
                                          &error))
     {
       _dbus_babysitter_kill_child (sitter);

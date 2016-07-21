@@ -1661,6 +1661,7 @@ bus_activation_activate_service (BusActivation  *activation,
   dbus_bool_t was_pending_activation;
   DBusString command;
   int limit;
+  DBusSpawnFlags flags = DBUS_SPAWN_NONE;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -2097,10 +2098,14 @@ bus_activation_activate_service (BusActivation  *activation,
 
   dbus_error_init (&tmp_error);
 
+  if (bus_context_get_using_syslog (activation->context))
+    flags |= DBUS_SPAWN_REDIRECT_OUTPUT;
+
   if (!_dbus_spawn_async_with_babysitter (&pending_activation->babysitter,
                                           service_name,
                                           argv,
                                           envp,
+                                          flags,
                                           child_setup,
                                           activation,
                                           &tmp_error))
