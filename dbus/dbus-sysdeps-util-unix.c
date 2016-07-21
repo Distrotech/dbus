@@ -89,7 +89,7 @@ _dbus_become_daemon (const DBusString *pidfile,
 {
   const char *s;
   pid_t child_pid;
-  int dev_null_fd;
+  DBusEnsureStandardFdsFlags flags;
 
   _dbus_verbose ("Becoming a daemon...\n");
 
@@ -114,23 +114,18 @@ _dbus_become_daemon (const DBusString *pidfile,
     case 0:
       _dbus_verbose ("in child, closing std file descriptors\n");
 
-      /* silently ignore failures here, if someone
-       * doesn't have /dev/null we may as well try
-       * to continue anyhow
-       */
-      
-      dev_null_fd = open ("/dev/null", O_RDWR);
-      if (dev_null_fd >= 0)
+      flags = DBUS_FORCE_STDIN_NULL | DBUS_FORCE_STDOUT_NULL;
+      s = _dbus_getenv ("DBUS_DEBUG_OUTPUT");
+
+      if (s == NULL || *s == '\0')
+        flags |= DBUS_FORCE_STDERR_NULL;
+      else
+        _dbus_verbose ("keeping stderr open due to DBUS_DEBUG_OUTPUT\n");
+
+      if (!_dbus_ensure_standard_fds (flags, &s))
         {
-          dup2 (dev_null_fd, 0);
-          dup2 (dev_null_fd, 1);
-          
-          s = _dbus_getenv ("DBUS_DEBUG_OUTPUT");
-          if (s == NULL || *s == '\0')
-            dup2 (dev_null_fd, 2);
-          else
-            _dbus_verbose ("keeping stderr open due to DBUS_DEBUG_OUTPUT\n");
-          close (dev_null_fd);
+          _dbus_warn ("%s: %s", s, _dbus_strerror (errno));
+          _exit (1);
         }
 
       if (!keep_umask)
