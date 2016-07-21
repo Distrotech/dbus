@@ -166,8 +166,9 @@ _dbus_change_to_daemon_user  (const char    *user,
                               _dbus_strerror (errno));
               break;
             case -5:
-              _dbus_warn ("Failed to drop supplementary groups: %s\n",
-                          _dbus_strerror (errno));
+              dbus_set_error (error, _dbus_error_from_errno (errno),
+                              "Failed to drop supplementary groups: %s",
+                              _dbus_strerror (errno));
               break;
             case -6:
               dbus_set_error (error, _dbus_error_from_errno (errno),
