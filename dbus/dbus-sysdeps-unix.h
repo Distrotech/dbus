@@ -154,6 +154,17 @@ dbus_bool_t _dbus_append_address_from_socket (DBusSocket  fd,
 DBUS_PRIVATE_EXPORT
 void _dbus_fd_set_close_on_exec (int fd);
 
+typedef enum
+{
+  DBUS_FORCE_STDIN_NULL = (1 << 0),
+  DBUS_FORCE_STDOUT_NULL = (1 << 1),
+  DBUS_FORCE_STDERR_NULL = (1 << 2)
+} DBusEnsureStandardFdsFlags;
+
+DBUS_PRIVATE_EXPORT
+dbus_bool_t _dbus_ensure_standard_fds (DBusEnsureStandardFdsFlags   flags,
+                                       const char                 **error_str_p);
+
 /** @} */
 
 DBUS_END_DECLS
