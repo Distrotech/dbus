@@ -972,8 +972,8 @@ _dbus_real_assert (dbus_bool_t  condition,
 {
   if (_DBUS_UNLIKELY (!condition))
     {
-      _dbus_warn ("%lu: assertion failed \"%s\" file \"%s\" line %d function %s\n",
-                  _dbus_pid_for_log (), condition_text, file, line, func);
+      _dbus_warn ("assertion failed \"%s\" file \"%s\" line %d function %s",
+                  condition_text, file, line, func);
       _dbus_abort ();
     }
 }
@@ -993,8 +993,8 @@ _dbus_real_assert_not_reached (const char *explanation,
                                const char *file,
                                int         line)
 {
-  _dbus_warn ("File \"%s\" line %d process %lu should not have been reached: %s\n",
-              file, line, _dbus_pid_for_log (), explanation);
+  _dbus_warn ("File \"%s\" line %d should not have been reached: %s",
+              file, line, explanation);
   _dbus_abort ();
 }
 #endif /* DBUS_DISABLE_ASSERT */
