@@ -42,6 +42,10 @@
 #include "apparmor.h"
 #include "audit.h"
 
+#ifdef DBUS_UNIX
+#include <dbus/dbus-sysdeps-unix.h>
+#endif
+
 static BusContext *context;
 
 #ifdef DBUS_UNIX
@@ -378,6 +382,27 @@ main (int argc, char **argv)
   dbus_bool_t print_address;
   dbus_bool_t print_pid;
   BusContextFlags flags;
+#ifdef DBUS_UNIX
+  const char *error_str;
+
+  /* Redirect stdin from /dev/null since we will never need it, and
+   * redirect stdout and stderr to /dev/null if not already open.
+   *
+   * We should do this as the very first thing, to ensure that when we
+   * create other file descriptors (for example for epoll, inotify or
+   * a socket), they never get assigned as fd 0, 1 or 2. If they were,
+   * which could happen if our caller had (incorrectly) closed those
+   * standard fds, they'd get closed when we daemonize - for example,
+   * closing our listening socket would stop us listening, and closing
+   * a Linux epoll socket would cause the main loop to fail. */
+  if (!_dbus_ensure_standard_fds (DBUS_FORCE_STDIN_NULL, &error_str))
+    {
+      fprintf (stderr,
+               "dbus-daemon: fatal error setting up standard fds: %s: %s\n",
+               error_str, _dbus_strerror (errno));
+      return 1;
+    }
+#endif
 
   if (!_dbus_string_init (&config_file))
     return 1;
