@@ -288,7 +288,7 @@ process_config_first_time_only (BusContext       *context,
   auth_mechanisms = NULL;
   pidfile = NULL;
 
-  _dbus_init_system_log (TRUE);
+  _dbus_init_system_log ("dbus-daemon", TRUE);
 
   if (flags & BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION)
     context->systemd_activation = TRUE;

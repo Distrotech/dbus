@@ -4523,8 +4523,21 @@ _dbus_restore_socket_errno (int saved_errno)
   errno = saved_errno;
 }
 
+static const char *syslog_tag = "dbus";
+
+/**
+ * Initialize the system log.
+ *
+ * The "tag" is not copied, and must remain valid for the entire lifetime of
+ * the process or until _dbus_init_system_log() is called again. In practice
+ * it will normally be a constant.
+ *
+ * @param tag the name of the executable (syslog tag)
+ * @param is_daemon #TRUE if this is the dbus-daemon
+ */
 void
-_dbus_init_system_log (dbus_bool_t is_daemon)
+_dbus_init_system_log (const char *tag,
+                       dbus_bool_t is_daemon)
 {
 #ifdef HAVE_SYSLOG_H
   int logopts = LOG_PID;
@@ -4536,7 +4549,8 @@ _dbus_init_system_log (dbus_bool_t is_daemon)
     logopts |= LOG_PERROR;
 #endif
 
-  openlog ("dbus", logopts, LOG_DAEMON);
+  syslog_tag = tag;
+  openlog (tag, logopts, LOG_DAEMON);
 #endif
 }
 
@@ -4583,7 +4597,7 @@ _dbus_system_logv (DBusSystemLogSeverity severity, const char *msg, va_list args
     {
       /* vsyslog() won't write to stderr, so we'd better do it */
       DBUS_VA_COPY (tmp, args);
-      fprintf (stderr, "dbus[" DBUS_PID_FORMAT "]: ", _dbus_getpid ());
+      fprintf (stderr, "%s[" DBUS_PID_FORMAT "]: ", syslog_tag, _dbus_getpid ());
       vfprintf (stderr, msg, tmp);
       fputc ('\n', stderr);
       va_end (tmp);

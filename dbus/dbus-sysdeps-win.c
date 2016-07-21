@@ -3634,8 +3634,19 @@ _dbus_restore_socket_errno (int saved_errno)
   _dbus_win_set_errno (saved_errno);
 }
 
+/**
+ * Initialize the system log.
+ *
+ * The "tag" is not copied, and must remain valid for the entire lifetime of
+ * the process or until _dbus_init_system_log() is called again. In practice
+ * it will normally be a constant.
+ *
+ * @param tag the name of the executable (syslog tag)
+ * @param is_daemon #TRUE if this is the dbus-daemon
+ */
 void
-_dbus_init_system_log (dbus_bool_t is_daemon)
+_dbus_init_system_log (const char  *tag,
+                       dbus_bool_t  is_daemon)
 {
   /* OutputDebugStringA doesn't need any special initialization, do nothing */
 }

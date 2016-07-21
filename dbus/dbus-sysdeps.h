@@ -556,7 +556,8 @@ dbus_bool_t _dbus_user_at_console (const char *username,
                                    DBusError  *error);
 
 DBUS_PRIVATE_EXPORT
-void _dbus_init_system_log (dbus_bool_t is_daemon);
+void _dbus_init_system_log (const char  *tag,
+                            dbus_bool_t  is_daemon);
 
 typedef enum {
   DBUS_SYSTEM_LOG_INFO,
