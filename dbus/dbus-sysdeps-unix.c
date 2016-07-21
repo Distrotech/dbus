@@ -3605,21 +3605,35 @@ _read_subprocess_line_argv (const char *progpath,
   if (pid == 0)
     {
       /* child process */
-      int fd;
+      const char *error_str;
 
-      fd = open ("/dev/null", O_RDWR);
-      if (fd == -1)
-        /* huh?! can't open /dev/null? */
-        _exit (1);
+      if (!_dbus_ensure_standard_fds (DBUS_FORCE_STDIN_NULL, &error_str))
+        {
+          int saved_errno = errno;
 
-      _dbus_verbose ("/dev/null fd %d opened\n", fd);
+          /* Try to write details into the pipe, but don't bother
+           * trying too hard (no retry loop). */
+
+          if (write (errors_pipe[WRITE_END], error_str, strlen (error_str)) < 0 ||
+              write (errors_pipe[WRITE_END], ": ", 2) < 0)
+            {
+              /* ignore, not much we can do */
+            }
+
+          error_str = _dbus_strerror (saved_errno);
+
+          if (write (errors_pipe[WRITE_END], error_str, strlen (error_str)) < 0)
+            {
+              /* ignore, not much we can do */
+            }
+
+          _exit (1);
+        }
 
       /* set-up stdXXX */
       close (result_pipe[READ_END]);
       close (errors_pipe[READ_END]);
 
-      if (dup2 (fd, 0) == -1) /* setup stdin */
-        _exit (1);
       if (dup2 (result_pipe[WRITE_END], 1) == -1) /* setup stdout */
         _exit (1);
       if (dup2 (errors_pipe[WRITE_END], 2) == -1) /* setup stderr */
