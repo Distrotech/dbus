@@ -843,10 +843,25 @@ main (int argc, char **argv)
   char *config_file;
   dbus_bool_t user_bus_supported = FALSE;
   DBusString user_bus;
-  
+  const char *error_str;
+
   exit_with_session = FALSE;
   config_file = NULL;
-  
+
+  /* Ensure that the first three fds are open, to ensure that when we
+   * create other file descriptors (for example for epoll, inotify or
+   * a socket), they never get assigned as fd 0, 1 or 2. If they were,
+   * which could happen if our caller had (incorrectly) closed those
+   * standard fds, then we'd start dbus-daemon with those fds closed,
+   * which is unexpected and could cause it to misbehave. */
+  if (!_dbus_ensure_standard_fds (0, &error_str))
+    {
+      fprintf (stderr,
+               "dbus-launch: fatal error setting up standard fds: %s: %s\n",
+               error_str, _dbus_strerror (errno));
+      return 1;
+    }
+
   prev_arg = NULL;
   i = 1;
   while (i < argc)
