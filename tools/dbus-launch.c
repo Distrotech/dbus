@@ -612,8 +612,8 @@ babysit (int   exit_with_session,
          pid_t child_pid,
          int   read_bus_pid_fd)  /* read pid from here */
 {
+  DBusEnsureStandardFdsFlags flags;
   int ret;
-  int dev_null_fd;
   const char *s;
 
   verbose ("babysitting, exit_with_session = %d, child_pid = %ld, read_bus_pid_fd = %d\n",
@@ -633,28 +633,26 @@ babysit (int   exit_with_session,
       exit (1);
     }
 
+  flags = DBUS_FORCE_STDOUT_NULL;
+
+  if (!exit_with_session)
+    flags |= DBUS_FORCE_STDIN_NULL;
+
+  s = getenv ("DBUS_DEBUG_OUTPUT");
+
+  if (s == NULL || *s == '\0')
+    flags |= DBUS_FORCE_STDERR_NULL;
+
   /* Close stdout/stderr so we don't block an "eval" or otherwise
    * lock up. stdout is still chaining through to dbus-launch
    * and in turn to the parent shell.
    */
-  dev_null_fd = open ("/dev/null", O_RDWR);
-  if (dev_null_fd >= 0)
+  if (!_dbus_ensure_standard_fds (flags, &s))
     {
-      if (!exit_with_session)
-        dup2 (dev_null_fd, 0);
-      dup2 (dev_null_fd, 1);
-      s = getenv ("DBUS_DEBUG_OUTPUT");
-      if (s == NULL || *s == '\0')
-        dup2 (dev_null_fd, 2);
-      close (dev_null_fd);
+      fprintf (stderr, "%s: %s\n", s, strerror (errno));
+      exit (1);
     }
-  else
-    {
-      fprintf (stderr, "Failed to open /dev/null: %s\n",
-               strerror (errno));
-      /* continue, why not */
-    }
-  
+
   ret = fork ();
 
   if (ret < 0)
