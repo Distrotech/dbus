@@ -2325,7 +2325,7 @@ _dbus_get_tmpdir(void)
 
       if (!GetTempPathA (sizeof (buf), buf))
         {
-          _dbus_warn ("GetTempPath failed\n");
+          _dbus_warn ("GetTempPath failed");
           _dbus_abort ();
         }
 
@@ -3343,7 +3343,7 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
         static dbus_bool_t already_warned = FALSE;
         if (!already_warned)
           {
-            _dbus_warn ("Using your real home directory for testing, set DBUS_TEST_HOMEDIR to avoid\n");
+            _dbus_warn ("Using your real home directory for testing, set DBUS_TEST_HOMEDIR to avoid");
             already_warned = TRUE;
           }
       }
@@ -3565,7 +3565,7 @@ _dbus_win_warn_win_error (const char *message,
 
   dbus_error_init (&error);
   _dbus_win_set_error_from_win_error (&error, code);
-  _dbus_warn ("%s: %s\n", message, error.message);
+  _dbus_warn ("%s: %s", message, error.message);
   dbus_error_free (&error);
 }
 

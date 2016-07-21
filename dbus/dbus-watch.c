@@ -739,7 +739,7 @@ dbus_watch_handle (DBusWatch    *watch,
 #ifndef DBUS_DISABLE_CHECKS
   if (!_dbus_pollable_is_valid (watch->fd) || watch->flags == 0)
     {
-      _dbus_warn_check_failed ("Watch is invalid, it should have been removed\n");
+      _dbus_warn_check_failed ("Watch is invalid, it should have been removed");
       return TRUE;
     }
 #endif

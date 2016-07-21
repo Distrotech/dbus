@@ -171,15 +171,15 @@ socket_set_epoll_add (DBusSocketSet  *set,
         break;
 
       case EBADF:
-        _dbus_warn ("Bad fd %d\n", fd);
+        _dbus_warn ("Bad fd %d", fd);
         break;
 
       case EEXIST:
-        _dbus_warn ("fd %d added and then added again\n", fd);
+        _dbus_warn ("fd %d added and then added again", fd);
         break;
 
       default:
-        _dbus_warn ("Misc error when trying to watch fd %d: %s\n", fd,
+        _dbus_warn ("Misc error when trying to watch fd %d: %s", fd,
                     strerror (err));
         break;
     }
@@ -209,19 +209,19 @@ socket_set_epoll_enable (DBusSocketSet  *set,
   switch (err)
     {
       case EBADF:
-        _dbus_warn ("Bad fd %d\n", fd);
+        _dbus_warn ("Bad fd %d", fd);
         break;
 
       case ENOENT:
-        _dbus_warn ("fd %d enabled before it was added\n", fd);
+        _dbus_warn ("fd %d enabled before it was added", fd);
         break;
 
       case ENOMEM:
-        _dbus_warn ("Insufficient memory to change watch for fd %d\n", fd);
+        _dbus_warn ("Insufficient memory to change watch for fd %d", fd);
         break;
 
       default:
-        _dbus_warn ("Misc error when trying to watch fd %d: %s\n", fd,
+        _dbus_warn ("Misc error when trying to watch fd %d: %s", fd,
                     strerror (err));
         break;
     }
@@ -258,7 +258,7 @@ socket_set_epoll_disable (DBusSocketSet  *set,
     return;
 
   err = errno;
-  _dbus_warn ("Error when trying to watch fd %d: %s\n", fd,
+  _dbus_warn ("Error when trying to watch fd %d: %s", fd,
               strerror (err));
 }
 
@@ -276,7 +276,7 @@ socket_set_epoll_remove (DBusSocketSet  *set,
     return;
 
   err = errno;
-  _dbus_warn ("Error when trying to remove fd %d: %s\n", fd, strerror (err));
+  _dbus_warn ("Error when trying to remove fd %d: %s", fd, strerror (err));
 }
 
 /* Optimally, this should be the same as in DBusLoop: we use it to translate

@@ -199,7 +199,7 @@ cull_watches_for_invalid_fd (DBusLoop     *loop,
   DBusList *link;
   DBusList **watches;
 
-  _dbus_warn ("invalid request, socket fd %" DBUS_POLLABLE_FORMAT " not open\n",
+  _dbus_warn ("invalid request, socket fd %" DBUS_POLLABLE_FORMAT " not open",
               _dbus_pollable_printable (fd));
   watches = _dbus_hash_table_lookup_pollable (loop->watches, fd);
 
@@ -363,7 +363,7 @@ _dbus_loop_remove_watch (DBusLoop         *loop,
          }
      }
 
-  _dbus_warn ("could not find watch %p to remove\n", watch);
+  _dbus_warn ("could not find watch %p to remove", watch);
 }
 
 dbus_bool_t
@@ -415,7 +415,7 @@ _dbus_loop_remove_timeout (DBusLoop           *loop,
       link = next;
     }
 
-  _dbus_warn ("could not find timeout %p to remove\n", timeout);
+  _dbus_warn ("could not find timeout %p to remove", timeout);
 }
 
 /* Convolutions from GLib, there really must be a better way

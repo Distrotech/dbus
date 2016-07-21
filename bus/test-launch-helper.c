@@ -49,7 +49,7 @@ check_memleaks (const char *name)
   printf ("%s: checking for memleaks\n", name);
   if (_dbus_get_malloc_blocks_outstanding () != 0)
     {
-      _dbus_warn ("%d dbus_malloc blocks were not freed\n",
+      _dbus_warn ("%d dbus_malloc blocks were not freed",
                   _dbus_get_malloc_blocks_outstanding ());
       die ("memleaks");
     }
@@ -81,7 +81,7 @@ bus_activation_helper_oom_test (void *data)
       /* we failed, but a OOM is good */
       if (!dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY))
         {
-          _dbus_warn ("FAILED SELF TEST: Error: %s\n", error.message);
+          _dbus_warn ("FAILED SELF TEST: Error: %s", error.message);
           retval = FALSE;
         }
       dbus_error_free (&error);

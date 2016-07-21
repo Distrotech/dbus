@@ -2833,8 +2833,8 @@ dbus_connection_unref (DBusConnection *connection)
         {
           _dbus_warn_check_failed ("The last reference on a connection was dropped without closing the connection. This is a bug in an application. See dbus_connection_unref() documentation for details.\n%s",
                                    connection->shareable ?
-                                   "Most likely, the application called unref() too many times and removed a reference belonging to libdbus, since this is a shared connection.\n" : 
-                                    "Most likely, the application was supposed to call dbus_connection_close(), since this is a private connection.\n");
+                                   "Most likely, the application called unref() too many times and removed a reference belonging to libdbus, since this is a shared connection." :
+                                    "Most likely, the application was supposed to call dbus_connection_close(), since this is a private connection.");
           return;
         }
 #endif
@@ -2941,7 +2941,7 @@ dbus_connection_close (DBusConnection *connection)
     {
       CONNECTION_UNLOCK (connection);
 
-      _dbus_warn_check_failed ("Applications must not close shared connections - see dbus_connection_close() docs. This is a bug in the application.\n");
+      _dbus_warn_check_failed ("Applications must not close shared connections - see dbus_connection_close() docs. This is a bug in the application.");
       return;
     }
 #endif
@@ -5654,7 +5654,7 @@ dbus_connection_remove_filter (DBusConnection            *connection,
 #ifndef DBUS_DISABLE_CHECKS
   if (filter == NULL)
     {
-      _dbus_warn_check_failed ("Attempt to remove filter function %p user data %p, but no such filter has been added\n",
+      _dbus_warn_check_failed ("Attempt to remove filter function %p user data %p, but no such filter has been added",
                                function, user_data);
       return;
     }
@@ -5773,7 +5773,7 @@ dbus_connection_register_object_path (DBusConnection              *connection,
 
   if (dbus_error_has_name (&error, DBUS_ERROR_OBJECT_PATH_IN_USE))
     {
-      _dbus_warn ("%s\n", error.message);
+      _dbus_warn ("%s", error.message);
       dbus_error_free (&error);
       return FALSE;
     }
@@ -5845,7 +5845,7 @@ dbus_connection_register_fallback (DBusConnection              *connection,
 
   if (dbus_error_has_name (&error, DBUS_ERROR_OBJECT_PATH_IN_USE))
     {
-      _dbus_warn ("%s\n", error.message);
+      _dbus_warn ("%s", error.message);
       dbus_error_free (&error);
       return FALSE;
     }

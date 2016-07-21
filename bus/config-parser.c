@@ -1049,7 +1049,7 @@ start_busconfig_child (BusConfigParser   *parser,
                                                  &e->d.policy.gid_uid_or_at_console))
             e->d.policy.type = POLICY_USER;
           else
-            _dbus_warn ("Unknown username \"%s\" in message bus configuration file\n",
+            _dbus_warn ("Unknown username \"%s\" in message bus configuration file",
                         user);
         }
       else if (group != NULL)
@@ -1061,7 +1061,7 @@ start_busconfig_child (BusConfigParser   *parser,
                                                   &e->d.policy.gid_uid_or_at_console))
             e->d.policy.type = POLICY_GROUP;
           else
-            _dbus_warn ("Unknown group \"%s\" in message bus configuration file\n",
+            _dbus_warn ("Unknown group \"%s\" in message bus configuration file",
                         group);          
         }
       else if (at_console != NULL)
@@ -1581,7 +1581,7 @@ append_rule_from_element (BusConfigParser   *parser,
             }
           else
             {
-              _dbus_warn ("Unknown username \"%s\" on element <%s>\n",
+              _dbus_warn ("Unknown username \"%s\" on element <%s>",
                           user, element_name);
             }
         }
@@ -1613,7 +1613,7 @@ append_rule_from_element (BusConfigParser   *parser,
             }
           else
             {
-              _dbus_warn ("Unknown group \"%s\" on element <%s>\n",
+              _dbus_warn ("Unknown group \"%s\" on element <%s>",
                           group, element_name);
             }
         }
@@ -2840,12 +2840,12 @@ do_check_own_rules (BusPolicy  *policy)
               ret ? "allowed" : "not allowed");
       if (checks[i].allowed && !ret)
         {
-          _dbus_warn ("Cannot own %s\n", checks[i].name);
+          _dbus_warn ("Cannot own %s", checks[i].name);
           return FALSE;
         }
       if (!checks[i].allowed && ret)
         {
-          _dbus_warn ("Can own %s\n", checks[i].name);
+          _dbus_warn ("Can own %s", checks[i].name);
           return FALSE;
         }
       _dbus_string_free (&service_name);
@@ -2881,7 +2881,7 @@ do_load (const DBusString *full_path,
         }
       else if (validity == VALID)
         {
-          _dbus_warn ("Failed to load valid file but still had memory: %s\n",
+          _dbus_warn ("Failed to load valid file but still had memory: %s",
                       error.message);
 
           dbus_error_free (&error);
@@ -2906,7 +2906,7 @@ do_load (const DBusString *full_path,
 
       if (validity == INVALID)
         {
-          _dbus_warn ("Accepted invalid file\n");
+          _dbus_warn ("Accepted invalid file");
           return FALSE;
         }
 
@@ -2963,7 +2963,7 @@ process_test_valid_subdir (const DBusString *test_base_dir,
   dir = _dbus_directory_open (&test_directory, &error);
   if (dir == NULL)
     {
-      _dbus_warn ("Could not open %s: %s\n",
+      _dbus_warn ("Could not open %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);
@@ -3025,7 +3025,7 @@ process_test_valid_subdir (const DBusString *test_base_dir,
 
   if (dbus_error_is_set (&error))
     {
-      _dbus_warn ("Could not get next file in %s: %s\n",
+      _dbus_warn ("Could not get next file in %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);
@@ -3236,7 +3236,7 @@ all_are_equiv (const DBusString *target_directory)
   dir = _dbus_directory_open (target_directory, &error);
   if (dir == NULL)
     {
-      _dbus_warn ("Could not open %s: %s\n",
+      _dbus_warn ("Could not open %s: %s",
 		  _dbus_string_get_const_data (target_directory),
 		  error.message);
       dbus_error_free (&error);
@@ -3273,7 +3273,7 @@ all_are_equiv (const DBusString *target_directory)
 
       if (parser == NULL)
 	{
-	  _dbus_warn ("Could not load file %s: %s\n",
+	  _dbus_warn ("Could not load file %s: %s",
 		      _dbus_string_get_const_data (&full_path),
 		      error.message);
           _dbus_string_free (&full_path);
@@ -3342,7 +3342,7 @@ process_test_equiv_subdir (const DBusString *test_base_dir,
   dir = _dbus_directory_open (&test_directory, &error);
   if (dir == NULL)
     {
-      _dbus_warn ("Could not open %s: %s\n",
+      _dbus_warn ("Could not open %s: %s",
 		  _dbus_string_get_const_data (&test_directory),
 		  error.message);
       dbus_error_free (&error);

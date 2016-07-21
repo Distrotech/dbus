@@ -369,9 +369,9 @@ _dbus_babysitter_unref (DBusBabysitter *sitter)
           if (ret < 0)
             {
               if (errno == ECHILD)
-                _dbus_warn ("Babysitter process not available to be reaped; should not happen\n");
+                _dbus_warn ("Babysitter process not available to be reaped; should not happen");
               else
-                _dbus_warn ("Unexpected error %d in waitpid() for babysitter: %s\n",
+                _dbus_warn ("Unexpected error %d in waitpid() for babysitter: %s",
                             errno, _dbus_strerror (errno));
             }
           else
@@ -415,7 +415,7 @@ read_data (DBusBabysitter *sitter,
   switch (r)
     {
     case READ_STATUS_ERROR:
-      _dbus_warn ("Failed to read data from fd %d: %s\n", fd, error.message);
+      _dbus_warn ("Failed to read data from fd %d: %s", fd, error.message);
       dbus_error_free (&error);
       return r;
 
@@ -441,7 +441,7 @@ read_data (DBusBabysitter *sitter,
             switch (r)
               {
               case READ_STATUS_ERROR:
-                _dbus_warn ("Failed to read arg from fd %d: %s\n", fd, error.message);
+                _dbus_warn ("Failed to read arg from fd %d: %s", fd, error.message);
                 dbus_error_free (&error);
                 return r;
               case READ_STATUS_EOF:
@@ -501,7 +501,7 @@ read_data (DBusBabysitter *sitter,
             switch (r)
               {
               case READ_STATUS_ERROR:
-                _dbus_warn ("Failed to read PID from fd %d: %s\n", fd, error.message);
+                _dbus_warn ("Failed to read PID from fd %d: %s", fd, error.message);
                 dbus_error_free (&error);
                 return r;
               case READ_STATUS_EOF:
@@ -516,7 +516,7 @@ read_data (DBusBabysitter *sitter,
           }
           break;
         default:
-          _dbus_warn ("Unknown message received from babysitter process\n");
+          _dbus_warn ("Unknown message received from babysitter process");
           break;
         }
     }
@@ -960,7 +960,7 @@ do_write (int fd, const void *buf, size_t count)
         goto again;
       else
         {
-          _dbus_warn ("Failed to write data to pipe!\n");
+          _dbus_warn ("Failed to write data to pipe!");
           exit (1); /* give up, we suck */
         }
     }
@@ -1033,7 +1033,7 @@ do_exec (int                       child_err_report_fd,
       retval = fcntl (i, F_GETFD);
 
       if (retval != -1 && !(retval & FD_CLOEXEC))
-        _dbus_warn ("Fd %d did not have the close-on-exec flag set!\n", i);
+        _dbus_warn ("Fd %d did not have the close-on-exec flag set!", i);
     }
 #endif
 
@@ -1077,7 +1077,7 @@ check_babysit_events (pid_t grandchild_pid,
   else if (ret < 0)
     {
       /* This isn't supposed to happen. */
-      _dbus_warn ("unexpected waitpid() failure in check_babysit_events(): %s\n",
+      _dbus_warn ("unexpected waitpid() failure in check_babysit_events(): %s",
                   _dbus_strerror (errno));
       exit (1);
     }
@@ -1090,7 +1090,7 @@ check_babysit_events (pid_t grandchild_pid,
     }
   else
     {
-      _dbus_warn ("waitpid() reaped pid %d that we've never heard of\n",
+      _dbus_warn ("waitpid() reaped pid %d that we've never heard of",
                   (int) ret);
       exit (1);
     }
@@ -1138,7 +1138,7 @@ babysit (pid_t grandchild_pid,
    */
   if (pipe (sigchld_pipe) < 0)
     {
-      _dbus_warn ("Not enough file descriptors to create pipe in babysitter process\n");
+      _dbus_warn ("Not enough file descriptors to create pipe in babysitter process");
       exit (1);
     }
 
@@ -1164,7 +1164,7 @@ babysit (pid_t grandchild_pid,
       
       if (_dbus_poll (pfds, _DBUS_N_ELEMENTS (pfds), -1) < 0 && errno != EINTR)
         {
-          _dbus_warn ("_dbus_poll() error: %s\n", strerror (errno));
+          _dbus_warn ("_dbus_poll() error: %s", strerror (errno));
           exit (1);
         }
 
@@ -1379,7 +1379,7 @@ _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
           if (fd >= 0)
             {
               if (write (fd, "0", sizeof (char)) < 0)
-                _dbus_warn ("writing oom_score_adj error: %s\n", strerror (errno));
+                _dbus_warn ("writing oom_score_adj error: %s", strerror (errno));
               _dbus_close (fd, NULL);
             }
 #endif

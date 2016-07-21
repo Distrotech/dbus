@@ -270,14 +270,14 @@ bus_context_new_test (const DBusString *test_data_dir,
 
   if (!_dbus_string_init (&config_file))
     {
-      _dbus_warn ("No memory\n");
+      _dbus_warn ("No memory");
       return NULL;
     }
 
   if (!_dbus_string_copy (test_data_dir, 0,
                           &config_file, 0))
     {
-      _dbus_warn ("No memory\n");
+      _dbus_warn ("No memory");
       _dbus_string_free (&config_file);
       return NULL;
     }
@@ -286,7 +286,7 @@ bus_context_new_test (const DBusString *test_data_dir,
 
   if (!_dbus_concat_dir_and_file (&config_file, &relative))
     {
-      _dbus_warn ("No memory\n");
+      _dbus_warn ("No memory");
       _dbus_string_free (&config_file);
       return NULL;
     }
@@ -297,7 +297,7 @@ bus_context_new_test (const DBusString *test_data_dir,
     {
       _DBUS_ASSERT_ERROR_IS_SET (&error);
 
-      _dbus_warn ("Failed to create debug bus context from configuration file %s: %s\n",
+      _dbus_warn ("Failed to create debug bus context from configuration file %s: %s",
                   filename, error.message);
 
       dbus_error_free (&error);

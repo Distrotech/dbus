@@ -205,7 +205,7 @@ avc_create_thread (void (*run) (void))
   rc = pthread_create (&avc_notify_thread, NULL, (void *(*) (void *)) run, NULL);
   if (rc != 0)
     {
-      _dbus_warn ("Failed to start AVC thread: %s\n", _dbus_strerror (rc));
+      _dbus_warn ("Failed to start AVC thread: %s", _dbus_strerror (rc));
       exit (1);
     }
   return &avc_notify_thread;
@@ -227,7 +227,7 @@ avc_alloc_lock (void)
   avc_mutex = dbus_new (pthread_mutex_t, 1);
   if (avc_mutex == NULL)
     {
-      _dbus_warn ("Could not create mutex: %s\n", _dbus_strerror (errno));
+      _dbus_warn ("Could not create mutex: %s", _dbus_strerror (errno));
       exit (1);
     }
   pthread_mutex_init (avc_mutex, NULL);
@@ -286,7 +286,7 @@ bus_selinux_pre_init (void)
   r = is_selinux_enabled ();
   if (r < 0)
     {
-      _dbus_warn ("Could not tell if SELinux is enabled: %s\n",
+      _dbus_warn ("Could not tell if SELinux is enabled: %s",
                   _dbus_strerror (errno));
       return FALSE;
     }
@@ -339,7 +339,7 @@ bus_selinux_full_init (void)
 
   if (selinux_set_mapping (dbus_map) < 0)
     {
-      _dbus_warn ("Failed to set up security class mapping (selinux_set_mapping():%s).\n",
+      _dbus_warn ("Failed to set up security class mapping (selinux_set_mapping():%s).",
                    strerror (errno));
       return FALSE; 
     }
@@ -347,7 +347,7 @@ bus_selinux_full_init (void)
   avc_entry_ref_init (&aeref);
   if (avc_init ("avc", &mem_cb, &log_cb, &thread_cb, &lock_cb) < 0)
     {
-      _dbus_warn ("Failed to start Access Vector Cache (AVC).\n");
+      _dbus_warn ("Failed to start Access Vector Cache (AVC).");
       return FALSE;
     }
   else
@@ -358,7 +358,7 @@ bus_selinux_full_init (void)
   if (avc_add_callback (policy_reload_callback, AVC_CALLBACK_RESET,
                        NULL, NULL, 0, 0) < 0)
     {
-      _dbus_warn ("Failed to add policy reload callback: %s\n",
+      _dbus_warn ("Failed to add policy reload callback: %s",
                   _dbus_strerror (errno));
       avc_destroy ();
       return FALSE;
@@ -769,7 +769,7 @@ bus_selinux_init_connection_id (DBusConnection *connection,
                         "Error getting SID from context \"%s\": %s\n",
 			con, _dbus_strerror (errno));
       
-      _dbus_warn ("Error getting SID from context \"%s\": %s\n",
+      _dbus_warn ("Error getting SID from context \"%s\": %s",
 		  con, _dbus_strerror (errno));
       
       freecon (con);
@@ -850,7 +850,7 @@ bus_selinux_id_table_insert (DBusHashTable *service_table,
           return FALSE;
 	}
 
-      _dbus_warn ("Error getting SID from context \"%s\": %s\n",
+      _dbus_warn ("Error getting SID from context \"%s\": %s",
 		  (char *) service_context,
                   _dbus_strerror (errno));
       goto out;

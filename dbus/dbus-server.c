@@ -962,7 +962,7 @@ dbus_server_set_watch_functions (DBusServer              *server,
     }
   else
     {
-      _dbus_warn_check_failed ("Re-entrant call to %s\n", _DBUS_FUNCTION_NAME);
+      _dbus_warn_check_failed ("Re-entrant call to %s", _DBUS_FUNCTION_NAME);
       result = FALSE;
     }
   server->watches = watches;
@@ -1015,7 +1015,7 @@ dbus_server_set_timeout_functions (DBusServer                *server,
     }
   else
     {
-      _dbus_warn_check_failed ("Re-entrant call to %s\n", _DBUS_FUNCTION_NAME);
+      _dbus_warn_check_failed ("Re-entrant call to %s", _DBUS_FUNCTION_NAME);
       result = FALSE;
     }
   server->timeouts = timeouts;
@@ -1213,7 +1213,7 @@ _dbus_server_test (void)
       server = dbus_server_listen (valid_addresses[i], &error);
       if (server == NULL)
         {
-          _dbus_warn ("server listen error: %s: %s\n", error.name, error.message);
+          _dbus_warn ("server listen error: %s: %s", error.name, error.message);
           dbus_error_free (&error);
           _dbus_assert_not_reached ("Failed to listen for valid address.");
         }
@@ -1225,7 +1225,7 @@ _dbus_server_test (void)
 
       if (strstr (address, id) == NULL)
         {
-          _dbus_warn ("server id '%s' is not in the server address '%s'\n",
+          _dbus_warn ("server id '%s' is not in the server address '%s'",
                       id, address);
           _dbus_assert_not_reached ("bad server id or address");
         }

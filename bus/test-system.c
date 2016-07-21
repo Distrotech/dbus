@@ -48,7 +48,7 @@ check_memleaks (const char *name)
   printf ("%s: checking for memleaks\n", name);
   if (_dbus_get_malloc_blocks_outstanding () != 0)
     {
-      _dbus_warn ("%d dbus_malloc blocks were not freed\n",
+      _dbus_warn ("%d dbus_malloc blocks were not freed",
                   _dbus_get_malloc_blocks_outstanding ());
       die ("memleaks");
     }

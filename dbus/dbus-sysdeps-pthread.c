@@ -73,7 +73,7 @@ struct DBusCondVar {
 #define PTHREAD_CHECK(func_name, result_or_call) do {                                  \
     int tmp = (result_or_call);                                                        \
     if (tmp != 0) {                                                                    \
-      _dbus_warn_check_failed ("pthread function %s failed with %d %s in %s\n",        \
+      _dbus_warn_check_failed ("pthread function %s failed with %d %s in %s",          \
                                func_name, tmp, strerror(tmp), _DBUS_FUNCTION_NAME);    \
     }                                                                                  \
 } while (0)

@@ -69,7 +69,7 @@ process_test_subdir (const DBusString          *test_base_dir,
   dir = _dbus_directory_open (&test_directory, &error);
   if (dir == NULL)
     {
-      _dbus_warn ("Could not open %s: %s\n",
+      _dbus_warn ("Could not open %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);
@@ -113,7 +113,7 @@ process_test_subdir (const DBusString          *test_base_dir,
 
   if (dbus_error_is_set (&error))
     {
-      _dbus_warn ("Could not get next file in %s: %s\n",
+      _dbus_warn ("Could not get next file in %s: %s",
                   _dbus_string_get_const_data (&test_directory), error.message);
       dbus_error_free (&error);
       goto failed;

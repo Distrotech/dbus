@@ -250,7 +250,7 @@ _dbus_keyring_unlock (DBusKeyring *keyring)
 
   if (!_dbus_delete_file (&keyring->filename_lock, &error))
     {
-      _dbus_warn ("Failed to delete lock file: %s\n",
+      _dbus_warn ("Failed to delete lock file: %s",
                   error.message);
       dbus_error_free (&error);
     }
@@ -452,7 +452,7 @@ _dbus_keyring_reload (DBusKeyring *keyring,
   if (!_dbus_string_validate_ascii (&contents, 0,
                                     _dbus_string_get_length (&contents)))
     {
-      _dbus_warn ("Secret keyring file contains non-ASCII! Ignoring existing contents\n");
+      _dbus_warn ("Secret keyring file contains non-ASCII! Ignoring existing contents");
       _dbus_string_set_length (&contents, 0);
     }
 
@@ -621,7 +621,7 @@ _dbus_keyring_reload (DBusKeyring *keyring,
     {
       if (error && error->name)
         _dbus_verbose ("error is %s: %s\n", error->name, error->message);
-      _dbus_warn ("returning %d but error pointer %p name %s\n",
+      _dbus_warn ("returning %d but error pointer %p name %s",
                   retval, error, error->name ? error->name : "(none)");
       _dbus_assert_not_reached ("didn't handle errors properly");
     }

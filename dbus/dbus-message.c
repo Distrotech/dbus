@@ -636,7 +636,7 @@ close_unix_fds(int *fds, unsigned *n_fds)
     {
       if (!_dbus_close(fds[i], &e))
         {
-          _dbus_warn("Failed to close file descriptor: %s\n", e.message);
+          _dbus_warn("Failed to close file descriptor: %s", e.message);
           dbus_error_free(&e);
         }
     }
@@ -761,7 +761,7 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
 
   if (iter == NULL)
     {
-      _dbus_warn_check_failed ("dbus message iterator is NULL\n");
+      _dbus_warn_check_failed ("dbus message iterator is NULL");
       return FALSE;
     }
 
@@ -771,7 +771,7 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
     {
       if (iter->u.reader.byte_order != byte_order)
         {
-          _dbus_warn_check_failed ("dbus message changed byte order since iterator was created\n");
+          _dbus_warn_check_failed ("dbus message changed byte order since iterator was created");
           return FALSE;
         }
       /* because we swap the message into compiler order when you init an iter */
@@ -781,7 +781,7 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
     {
       if (iter->u.writer.byte_order != byte_order)
         {
-          _dbus_warn_check_failed ("dbus message changed byte order since append iterator was created\n");
+          _dbus_warn_check_failed ("dbus message changed byte order since append iterator was created");
           return FALSE;
         }
       /* because we swap the message into compiler order when you init an iter */
@@ -789,13 +789,13 @@ _dbus_message_iter_check (DBusMessageRealIter *iter)
     }
   else
     {
-      _dbus_warn_check_failed ("dbus message iterator looks uninitialized or corrupted\n");
+      _dbus_warn_check_failed ("dbus message iterator looks uninitialized or corrupted");
       return FALSE;
     }
 
   if (iter->changed_stamp != iter->message->changed_stamp)
     {
-      _dbus_warn_check_failed ("dbus message iterator invalid because the message has been modified (or perhaps the iterator is just uninitialized)\n");
+      _dbus_warn_check_failed ("dbus message iterator invalid because the message has been modified (or perhaps the iterator is just uninitialized)");
       return FALSE;
     }
 
@@ -995,7 +995,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
 #ifndef DBUS_DISABLE_CHECKS
           else
             {
-              _dbus_warn ("you can't read arrays of container types (struct, variant, array) with %s for now\n",
+              _dbus_warn ("you can't read arrays of container types (struct, variant, array) with %s for now",
                           _DBUS_FUNCTION_NAME);
               goto out;
             }
@@ -1004,7 +1004,7 @@ _dbus_message_iter_get_args_valist (DBusMessageIter *iter,
 #ifndef DBUS_DISABLE_CHECKS
       else
         {
-          _dbus_warn ("you can only read arrays and basic types with %s for now\n",
+          _dbus_warn ("you can only read arrays and basic types with %s for now",
                       _DBUS_FUNCTION_NAME);
           goto out;
         }
@@ -1928,7 +1928,7 @@ dbus_message_append_args_valist (DBusMessage *message,
             }
           else
             {
-              _dbus_warn ("arrays of %s can't be appended with %s for now\n",
+              _dbus_warn ("arrays of %s can't be appended with %s for now",
                           _dbus_type_to_string (element_type),
                           _DBUS_FUNCTION_NAME);
               goto failed;
@@ -1940,7 +1940,7 @@ dbus_message_append_args_valist (DBusMessage *message,
 #ifndef DBUS_DISABLE_CHECKS
       else
         {
-          _dbus_warn ("type %s isn't supported yet in %s\n",
+          _dbus_warn ("type %s isn't supported yet in %s",
                       _dbus_type_to_string (type), _DBUS_FUNCTION_NAME);
           goto failed;
         }
@@ -2664,7 +2664,7 @@ _dbus_message_iter_append_check (DBusMessageRealIter *iter)
 
   if (iter->message->locked)
     {
-      _dbus_warn_check_failed ("dbus append iterator can't be used: message is locked (has already been sent)\n");
+      _dbus_warn_check_failed ("dbus append iterator can't be used: message is locked (has already been sent)");
       return FALSE;
     }
 

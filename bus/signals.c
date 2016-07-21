@@ -2201,7 +2201,7 @@ check_parse (dbus_bool_t should_succeed,
 
   if (should_succeed && rule == NULL)
     {
-      _dbus_warn ("Failed to parse: %s: %s: \"%s\"\n",
+      _dbus_warn ("Failed to parse: %s: %s: \"%s\"",
                   error.name, error.message,
                   _dbus_string_get_const_data (&str));
       exit (1);
@@ -2209,7 +2209,7 @@ check_parse (dbus_bool_t should_succeed,
 
   if (!should_succeed && rule != NULL)
     {
-      _dbus_warn ("Failed to fail to parse: \"%s\"\n",
+      _dbus_warn ("Failed to fail to parse: \"%s\"",
                   _dbus_string_get_const_data (&str));
       exit (1);
     }
@@ -2549,7 +2549,7 @@ test_equality (void)
 
       if (!match_rule_equal (first, second))
         {
-          _dbus_warn ("rule %s and %s should have been equal\n",
+          _dbus_warn ("rule %s and %s should have been equal",
                       equality_tests[i].first,
                       equality_tests[i].second);
           exit (1);
@@ -2584,7 +2584,7 @@ test_equality (void)
 
               if (match_rule_equal (first, second))
                 {
-                  _dbus_warn ("rule %s and %s should not have been equal\n",
+                  _dbus_warn ("rule %s and %s should not have been equal",
                               equality_tests[i].first,
                               equality_tests[j].second);
                   exit (1);
@@ -2694,7 +2694,7 @@ check_matches (dbus_bool_t  expected_to_match,
 
   if (matched != expected_to_match)
     {
-      _dbus_warn ("Expected rule %s to %s message %d, failed\n",
+      _dbus_warn ("Expected rule %s to %s message %d, failed",
                   rule_text, expected_to_match ?
                   "match" : "not match", number);
       exit (1);
@@ -2823,7 +2823,7 @@ test_path_match (int type,
   if (matched != should_match)
     {
       _dbus_warn ("Expected rule %s to %s message "
-                  "with first arg %s of type '%c', failed\n",
+                  "with first arg %s of type '%c', failed",
                   rule_text,
                   should_match ? "match" : "not match",
                   path,

@@ -260,7 +260,7 @@ init_system_db (void)
           else
             {
               /* This really should not happen. */
-              _dbus_warn ("Could not get password database information for UID of current process: %s\n",
+              _dbus_warn ("Could not get password database information for UID of current process: %s",
                           error.message);
               dbus_error_free (&error);
               return FALSE;

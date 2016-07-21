@@ -364,7 +364,7 @@ check_guards (void       *free_block,
           dbus_uint32_t value = *(dbus_uint32_t*) &block[i];
           if (value != GUARD_VALUE)
             {
-              _dbus_warn ("Block of %lu bytes from %s had start guard value 0x%ux at %d expected 0x%x\n",
+              _dbus_warn ("Block of %lu bytes from %s had start guard value 0x%ux at %d expected 0x%x",
                           (long) requested_bytes, source_string (source),
                           value, i, GUARD_VALUE);
               failed = TRUE;
@@ -379,7 +379,7 @@ check_guards (void       *free_block,
           dbus_uint32_t value = *(dbus_uint32_t*) &block[i];
           if (value != GUARD_VALUE)
             {
-              _dbus_warn ("Block of %lu bytes from %s had end guard value 0x%ux at %d expected 0x%x\n",
+              _dbus_warn ("Block of %lu bytes from %s had end guard value 0x%ux at %d expected 0x%x",
                           (long) requested_bytes, source_string (source),
                           value, i, GUARD_VALUE);
               failed = TRUE;
@@ -486,7 +486,7 @@ dbus_malloc (size_t bytes)
         }
       else if (malloc_cannot_fail)
         {
-          _dbus_warn ("out of memory: malloc (%ld + %ld)\n",
+          _dbus_warn ("out of memory: malloc (%ld + %ld)",
               (long) bytes, (long) GUARD_EXTRA_SIZE);
           _dbus_abort ();
         }
@@ -506,7 +506,7 @@ dbus_malloc (size_t bytes)
         }
       else if (malloc_cannot_fail)
         {
-          _dbus_warn ("out of memory: malloc (%ld)\n", (long) bytes);
+          _dbus_warn ("out of memory: malloc (%ld)", (long) bytes);
           _dbus_abort ();
         }
 #endif
@@ -558,7 +558,7 @@ dbus_malloc0 (size_t bytes)
         }
       else if (malloc_cannot_fail)
         {
-          _dbus_warn ("out of memory: calloc (%ld + %ld, 1)\n",
+          _dbus_warn ("out of memory: calloc (%ld + %ld, 1)",
               (long) bytes, (long) GUARD_EXTRA_SIZE);
           _dbus_abort ();
         }
@@ -578,7 +578,7 @@ dbus_malloc0 (size_t bytes)
         }
       else if (malloc_cannot_fail)
         {
-          _dbus_warn ("out of memory: calloc (%ld)\n", (long) bytes);
+          _dbus_warn ("out of memory: calloc (%ld)", (long) bytes);
           _dbus_abort ();
         }
 #endif
@@ -636,7 +636,7 @@ dbus_realloc (void  *memory,
             {
               if (malloc_cannot_fail)
                 {
-                  _dbus_warn ("out of memory: realloc (%p, %ld + %ld)\n",
+                  _dbus_warn ("out of memory: realloc (%p, %ld + %ld)",
                       memory, (long) bytes, (long) GUARD_EXTRA_SIZE);
                   _dbus_abort ();
                 }
@@ -663,7 +663,7 @@ dbus_realloc (void  *memory,
             }
           else if (malloc_cannot_fail)
             {
-              _dbus_warn ("out of memory: malloc (%ld + %ld)\n",
+              _dbus_warn ("out of memory: malloc (%ld + %ld)",
                   (long) bytes, (long) GUARD_EXTRA_SIZE);
               _dbus_abort ();
             }
@@ -680,7 +680,7 @@ dbus_realloc (void  *memory,
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
       if (mem == NULL && malloc_cannot_fail)
         {
-          _dbus_warn ("out of memory: malloc (%ld)\n", (long) bytes);
+          _dbus_warn ("out of memory: malloc (%ld)", (long) bytes);
           _dbus_abort ();
         }
 

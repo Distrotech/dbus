@@ -190,7 +190,7 @@ introspect (void)
   exit (0);
 
  oom:
-  _dbus_warn ("Can not introspect - Out of memory\n");
+  _dbus_warn ("Can not introspect - Out of memory");
   exit (1);
 }
 
@@ -259,7 +259,7 @@ handle_reload_watch (DBusWatch    *watch,
   if ((reload_pipe[RELOAD_READ_END].fd > 0) &&
       _dbus_read_socket (reload_pipe[RELOAD_READ_END], &str, 1) != 1)
     {
-      _dbus_warn ("Couldn't read from reload pipe.\n");
+      _dbus_warn ("Couldn't read from reload pipe.");
       close_reload_pipe (&watch);
       return TRUE;
     }
@@ -285,7 +285,7 @@ handle_reload_watch (DBusWatch    *watch,
           _DBUS_ASSERT_ERROR_IS_SET (&error);
           _dbus_assert (dbus_error_has_name (&error, DBUS_ERROR_FAILED) ||
                         dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY));
-          _dbus_warn ("Unable to reload configuration: %s\n",
+          _dbus_warn ("Unable to reload configuration: %s",
                       error.message);
           dbus_error_free (&error);
         }
@@ -326,7 +326,7 @@ setup_reload_pipe (DBusLoop *loop)
   if (!_dbus_socketpair (&reload_pipe[0], &reload_pipe[1],
                          TRUE, &error))
     {
-      _dbus_warn ("Unable to create reload pipe: %s\n",
+      _dbus_warn ("Unable to create reload pipe: %s",
 		  error.message);
       dbus_error_free (&error);
       exit (1);
@@ -338,7 +338,7 @@ setup_reload_pipe (DBusLoop *loop)
 
   if (watch == NULL)
     {
-      _dbus_warn ("Unable to create reload watch: %s\n",
+      _dbus_warn ("Unable to create reload watch: %s",
 		  error.message);
       dbus_error_free (&error);
       exit (1);
@@ -346,7 +346,7 @@ setup_reload_pipe (DBusLoop *loop)
 
   if (!_dbus_loop_add_watch (loop, watch))
     {
-      _dbus_warn ("Unable to add reload watch to main loop: %s\n",
+      _dbus_warn ("Unable to add reload watch to main loop: %s",
 		  error.message);
       dbus_error_free (&error);
       exit (1);
@@ -659,13 +659,13 @@ main (int argc, char **argv)
 
   if (!bus_selinux_pre_init ())
     {
-      _dbus_warn ("SELinux pre-initialization failed\n");
+      _dbus_warn ("SELinux pre-initialization failed");
       exit (1);
     }
 
   if (!bus_apparmor_pre_init ())
     {
-      _dbus_warn ("AppArmor pre-initialization failed: out of memory\n");
+      _dbus_warn ("AppArmor pre-initialization failed: out of memory");
       exit (1);
     }
 
@@ -677,7 +677,7 @@ main (int argc, char **argv)
   _dbus_string_free (&config_file);
   if (context == NULL)
     {
-      _dbus_warn ("Failed to start message bus: %s\n",
+      _dbus_warn ("Failed to start message bus: %s",
                   error.message);
       dbus_error_free (&error);
       exit (1);

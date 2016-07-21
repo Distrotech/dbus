@@ -370,14 +370,14 @@ check_return_values (const DBusString *full_path)
   user = bus_config_parser_get_user (parser);
   if (user == NULL)
     {
-      _dbus_warn ("User was NULL!\n");
+      _dbus_warn ("User was NULL!");
       goto finish;
     }
 #if 0
   /* the username can be configured in configure.in so this test doesn't work */
   if (strcmp (user, "dbus") != 0)
     {
-      _dbus_warn ("User was invalid; '%s'!\n", user);
+      _dbus_warn ("User was invalid; '%s'!", user);
       goto finish;
     }
   printf ("    <user>dbus</user> OKAY!\n");  
@@ -387,12 +387,12 @@ check_return_values (const DBusString *full_path)
   type = bus_config_parser_get_type (parser);
   if (type == NULL)
     {
-      _dbus_warn ("Type was NULL!\n");
+      _dbus_warn ("Type was NULL!");
       goto finish;
     }
   if (strcmp (type, "system") != 0)
     {
-      _dbus_warn ("Type was invalid; '%s'!\n", user);
+      _dbus_warn ("Type was invalid; '%s'!", user);
       goto finish;
     }
   printf ("    <type>system</type> OKAY!\n");
@@ -401,7 +401,7 @@ check_return_values (const DBusString *full_path)
   dirs = bus_config_parser_get_service_dirs (parser);
   if (dirs == NULL)
     {
-      _dbus_warn ("Service dirs are NULL!\n");
+      _dbus_warn ("Service dirs are NULL!");
       goto finish;
     }
   printf ("    <standard_system_service_dirs/> OKAY!\n");
@@ -440,7 +440,7 @@ do_load (const DBusString *full_path,
         }
       else if (validity == VALID)
         {
-          _dbus_warn ("Failed to load valid file but still had memory: %s\n",
+          _dbus_warn ("Failed to load valid file but still had memory: %s",
                       error.message);
 
           dbus_error_free (&error);
@@ -460,7 +460,7 @@ do_load (const DBusString *full_path,
 
       if (validity == INVALID)
         {
-          _dbus_warn ("Accepted invalid file\n");
+          _dbus_warn ("Accepted invalid file");
           return FALSE;
         }
 
@@ -516,7 +516,7 @@ process_test_valid_subdir (const DBusString *test_base_dir,
   dir = _dbus_directory_open (&test_directory, &error);
   if (dir == NULL)
     {
-      _dbus_warn ("Could not open %s: %s\n",
+      _dbus_warn ("Could not open %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);
@@ -576,7 +576,7 @@ process_test_valid_subdir (const DBusString *test_base_dir,
 
   if (dbus_error_is_set (&error))
     {
-      _dbus_warn ("Could not get next file in %s: %s\n",
+      _dbus_warn ("Could not get next file in %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);

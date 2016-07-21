@@ -76,14 +76,14 @@ check_spawn_nonexistent (void *data)
 
   if (!dbus_error_is_set (&error))
     {
-      _dbus_warn ("Did not get an error launching nonexistent executable\n");
+      _dbus_warn ("Did not get an error launching nonexistent executable");
       return FALSE;
     }
 
   if (!(dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY) ||
         dbus_error_has_name (&error, DBUS_ERROR_SPAWN_EXEC_FAILED)))
     {
-      _dbus_warn ("Not expecting error when launching nonexistent executable: %s: %s\n",
+      _dbus_warn ("Not expecting error when launching nonexistent executable: %s: %s",
                   error.name, error.message);
       dbus_error_free (&error);
       return FALSE;
@@ -127,7 +127,7 @@ check_spawn_segfault (void *data)
 
   if (!dbus_error_is_set (&error))
     {
-      _dbus_warn ("Did not get an error launching segfaulting binary\n");
+      _dbus_warn ("Did not get an error launching segfaulting binary");
       return FALSE;
     }
 
@@ -138,7 +138,7 @@ check_spawn_segfault (void *data)
         dbus_error_has_name (&error, DBUS_ERROR_SPAWN_CHILD_SIGNALED)))
 #endif
     {
-      _dbus_warn ("Not expecting error when launching segfaulting executable: %s: %s\n",
+      _dbus_warn ("Not expecting error when launching segfaulting executable: %s: %s",
                   error.name, error.message);
       dbus_error_free (&error);
       return FALSE;
@@ -182,14 +182,14 @@ check_spawn_exit (void *data)
 
   if (!dbus_error_is_set (&error))
     {
-      _dbus_warn ("Did not get an error launching binary that exited with failure code\n");
+      _dbus_warn ("Did not get an error launching binary that exited with failure code");
       return FALSE;
     }
 
   if (!(dbus_error_has_name (&error, DBUS_ERROR_NO_MEMORY) ||
         dbus_error_has_name (&error, DBUS_ERROR_SPAWN_CHILD_EXITED)))
     {
-      _dbus_warn ("Not expecting error when launching exiting executable: %s: %s\n",
+      _dbus_warn ("Not expecting error when launching exiting executable: %s: %s",
                   error.name, error.message);
       dbus_error_free (&error);
       return FALSE;
@@ -236,7 +236,7 @@ check_spawn_and_kill (void *data)
 
   if (!dbus_error_is_set (&error))
     {
-      _dbus_warn ("Did not get an error after killing spawned binary\n");
+      _dbus_warn ("Did not get an error after killing spawned binary");
       return FALSE;
     }
 
@@ -247,7 +247,7 @@ check_spawn_and_kill (void *data)
         dbus_error_has_name (&error, DBUS_ERROR_SPAWN_CHILD_SIGNALED)))
 #endif
     {
-      _dbus_warn ("Not expecting error when killing executable: %s: %s\n",
+      _dbus_warn ("Not expecting error when killing executable: %s: %s",
                   error.name, error.message);
       dbus_error_free (&error);
       return FALSE;

@@ -535,7 +535,7 @@ check_sha_binary (const unsigned char *input,
 
   if (!_dbus_string_equal (&expected_str, &results))
     {
-      _dbus_warn ("Expected hash %s got %s for SHA-1 sum\n",
+      _dbus_warn ("Expected hash %s got %s for SHA-1 sum",
                   expected,
                   _dbus_string_get_const_data (&results));
       _dbus_string_free (&results);

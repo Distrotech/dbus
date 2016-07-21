@@ -1218,8 +1218,7 @@ _dbus_listen_unix_socket (const char     *path,
    * and continue, maybe it will be good enough.
    */
   if (!abstract && chmod (path, 0777) < 0)
-    _dbus_warn ("Could not set mode 0777 on socket %s\n",
-                path);
+    _dbus_warn ("Could not set mode 0777 on socket %s", path);
 
   return listen_fd;
 }
@@ -3400,7 +3399,7 @@ _dbus_socketpair (DBusSocket *fd1,
 
   return TRUE;
 #else
-  _dbus_warn ("_dbus_socketpair() not implemented on this OS\n");
+  _dbus_warn ("_dbus_socketpair() not implemented on this OS");
   dbus_set_error (error, DBUS_ERROR_FAILED,
                   "_dbus_socketpair() not implemented on this OS");
   return FALSE;
@@ -4205,7 +4204,7 @@ _dbus_append_keyring_directory_for_credentials (DBusString      *directory,
         static dbus_bool_t already_warned = FALSE;
         if (!already_warned)
           {
-            _dbus_warn ("Using your real home directory for testing, set DBUS_TEST_HOMEDIR to avoid\n");
+            _dbus_warn ("Using your real home directory for testing, set DBUS_TEST_HOMEDIR to avoid");
             already_warned = TRUE;
           }
       }

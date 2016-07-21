@@ -583,7 +583,7 @@ _dbus_marshal_read_basic (const DBusString      *str,
       }
       break;
     default:
-      _dbus_warn_check_failed ("type %s %d not a basic type\n",
+      _dbus_warn_check_failed ("type %s %d not a basic type",
                                _dbus_type_to_string (type), type);
       _dbus_assert_not_reached ("not a basic type");
       break;
@@ -698,7 +698,7 @@ marshal_len_followed_by_bytes (int                  marshal_as,
 
   _dbus_assert (byte_order == DBUS_LITTLE_ENDIAN || byte_order == DBUS_BIG_ENDIAN);
   if (insert_at > _dbus_string_get_length (str))
-    _dbus_warn ("insert_at = %d string len = %d data_len = %d\n",
+    _dbus_warn ("insert_at = %d string len = %d data_len = %d",
                 insert_at, _dbus_string_get_length (str), data_len);
   
   if (marshal_as == MARSHAL_AS_BYTE_ARRAY)
@@ -1129,7 +1129,7 @@ _dbus_marshal_skip_basic (const DBusString      *str,
       }
       break;
     default:
-      _dbus_warn ("type %s not a basic type\n",
+      _dbus_warn ("type %s not a basic type",
                   _dbus_type_to_string (type));
       _dbus_assert_not_reached ("not a basic type");
       break;
@@ -1548,7 +1548,7 @@ swap_test_array (void *array,
       {                                                                                 \
         _dbus_verbose_bytes_of_string (&str, dump_pos,                                  \
                                        _dbus_string_get_length (&str) - dump_pos);      \
-        _dbus_warn ("literal '%s'\nvalue  '%s'\n", literal, v_##typename);              \
+        _dbus_warn ("literal '%s'\nvalue  '%s'", literal, v_##typename);              \
         _dbus_assert_not_reached ("demarshaled wrong value");                           \
       }                                                                                 \
   } while (0)

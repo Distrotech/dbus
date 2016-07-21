@@ -304,7 +304,7 @@ real_check_expected_type (DBusTypeReader *reader,
 
   if (t != expected)
     {
-      _dbus_warn ("Read type %s while expecting %s at %s line %d\n",
+      _dbus_warn ("Read type %s while expecting %s at %s line %d",
                   _dbus_type_to_string (t),
                   _dbus_type_to_string (expected),
                   funcname, line);
@@ -317,7 +317,7 @@ real_check_expected_type (DBusTypeReader *reader,
 
 #define NEXT_EXPECTING_TRUE(reader)  do { if (!_dbus_type_reader_next (reader))         \
  {                                                                                      \
-    _dbus_warn ("_dbus_type_reader_next() should have returned TRUE at %s %d\n",        \
+    _dbus_warn ("_dbus_type_reader_next() should have returned TRUE at %s %d",          \
                               _DBUS_FUNCTION_NAME, __LINE__);                           \
     _dbus_assert_not_reached ("test failed");                                           \
  }                                                                                      \
@@ -325,7 +325,7 @@ real_check_expected_type (DBusTypeReader *reader,
 
 #define NEXT_EXPECTING_FALSE(reader) do { if (_dbus_type_reader_next (reader))          \
  {                                                                                      \
-    _dbus_warn ("_dbus_type_reader_next() should have returned FALSE at %s %d\n",       \
+    _dbus_warn ("_dbus_type_reader_next() should have returned FALSE at %s %d",         \
                               _DBUS_FUNCTION_NAME, __LINE__);                           \
     _dbus_assert_not_reached ("test failed");                                           \
  }                                                                                      \
@@ -1320,7 +1320,7 @@ run_test_delete_values (NodeIterationData *nid)
               while (elem > 0)
                 {
                   if (!_dbus_type_reader_next (&array))
-                    _dbus_assert_not_reached ("should have had another element\n");
+                    _dbus_assert_not_reached ("should have had another element");
                   --elem;
                 }
 
@@ -1395,7 +1395,7 @@ run_test_nodes_iteration (void *data)
   if (!_dbus_string_equal_substring (nid->signature, 0, _dbus_string_get_length (nid->signature),
                                      &nid->block->signature, nid->type_offset))
     {
-      _dbus_warn ("Expected signature '%s' and got '%s' with initial offset %d\n",
+      _dbus_warn ("Expected signature '%s' and got '%s' with initial offset %d",
                   _dbus_string_get_const_data (nid->signature),
                   _dbus_string_get_const_data_len (&nid->block->signature, nid->type_offset, 0),
                   nid->type_offset);
@@ -2185,7 +2185,7 @@ int16_read_multi (TestTypeNode   *node,
                                       &n_elements);
 
   if (n_elements != count)
-    _dbus_warn ("got %d elements expected %d\n", n_elements, count);
+    _dbus_warn ("got %d elements expected %d", n_elements, count);
   _dbus_assert (n_elements == count);
 
   for (i = 0; i < count; i++)
@@ -2322,7 +2322,7 @@ int32_read_multi (TestTypeNode   *node,
                                       &n_elements);
 
   if (n_elements != count)
-    _dbus_warn ("got %d elements expected %d\n", n_elements, count);
+    _dbus_warn ("got %d elements expected %d", n_elements, count);
   _dbus_assert (n_elements == count);
 
   for (i = 0; i < count; i++)
@@ -2477,7 +2477,7 @@ string_read_value (TestTypeNode   *node,
 
   if (strcmp (buf, v) != 0)
     {
-      _dbus_warn ("read string '%s' expected '%s'\n",
+      _dbus_warn ("read string '%s' expected '%s'",
                   v, buf);
       _dbus_assert_not_reached ("test failed");
     }
@@ -2648,7 +2648,7 @@ double_read_value (TestTypeNode   *node,
 
   if (!_DBUS_DOUBLES_BITWISE_EQUAL (v, expected))
     {
-      _dbus_warn ("Expected double %g got %g\n bits = 0x%" PRIx64 " vs.\n bits = 0x%" PRIx64 ")\n",
+      _dbus_warn ("Expected double %g got %g\n bits = 0x%" PRIx64 " vs.\n bits = 0x%" PRIx64 ")",
                   expected, v,
                   *(dbus_uint64_t*)(char*)&expected,
                   *(dbus_uint64_t*)(char*)&v);
@@ -2745,7 +2745,7 @@ object_path_read_value (TestTypeNode   *node,
 
   if (strcmp (buf, v) != 0)
     {
-      _dbus_warn ("read object path '%s' expected '%s'\n",
+      _dbus_warn ("read object path '%s' expected '%s'",
                   v, buf);
       _dbus_assert_not_reached ("test failed");
     }
@@ -2820,7 +2820,7 @@ signature_read_value (TestTypeNode   *node,
 
   if (strcmp (buf, v) != 0)
     {
-      _dbus_warn ("read signature value '%s' expected '%s'\n",
+      _dbus_warn ("read signature value '%s' expected '%s'",
                   v, buf);
       _dbus_assert_not_reached ("test failed");
     }

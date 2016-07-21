@@ -647,7 +647,7 @@ _dbus_object_tree_unregister_and_unlock (DBusObjectTree          *tree,
 #ifndef DBUS_DISABLE_CHECKS
   if (found_subtree == FALSE)
     {
-      _dbus_warn ("Attempted to unregister path (path[0] = %s path[1] = %s) which isn't registered\n",
+      _dbus_warn ("Attempted to unregister path (path[0] = %s path[1] = %s) which isn't registered",
                   path[0] ? path[0] : "null",
                   (path[0] && path[1]) ? path[1] : "null");
       goto unlock;    
@@ -1634,7 +1634,7 @@ run_decompose_tests (void)
                          (const char**) result) != STR_EQUAL)
         {
           int real_len = _dbus_string_array_length ((const char**)result);
-          _dbus_warn ("Expected decompose of %s to have len %d, returned %d, appears to have %d\n",
+          _dbus_warn ("Expected decompose of %s to have len %d, returned %d, appears to have %d",
                       decompose_tests[i].path, expected_len, result_len,
                       real_len);
           _dbus_warn ("Decompose resulted in elements: { ");
@@ -1645,7 +1645,7 @@ run_decompose_tests (void)
                           (i + 1) == real_len ? "" : ", ");
               ++i;
             }
-          _dbus_warn ("}\n");
+          _dbus_warn ("}");
           _dbus_assert_not_reached ("path decompose failed");
         }
 

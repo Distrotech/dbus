@@ -132,7 +132,7 @@ check_memleaks (void)
 
   if (_dbus_get_malloc_blocks_outstanding () != 0)
     {
-      _dbus_warn ("%d dbus_malloc blocks were not freed in %s\n",
+      _dbus_warn ("%d dbus_malloc blocks were not freed in %s",
                   _dbus_get_malloc_blocks_outstanding (), __FILE__);
       _dbus_assert_not_reached ("memleaks");
     }
@@ -230,7 +230,7 @@ _dbus_check_fdleaks_leave (DBusInitialFDs *fds)
           if (FD_ISSET (fd, &fds->set))
             continue;
 
-          _dbus_warn ("file descriptor %i leaked in %s.\n", fd, __FILE__);
+          _dbus_warn ("file descriptor %i leaked in %s.", fd, __FILE__);
           _dbus_assert_not_reached ("fdleaks");
         }
 
@@ -254,7 +254,7 @@ check_have_valid_message (DBusMessageLoader *loader)
 
   if (_dbus_message_loader_get_is_corrupted (loader))
     {
-      _dbus_warn ("loader corrupted on message that was expected to be valid; invalid reason %d\n",
+      _dbus_warn ("loader corrupted on message that was expected to be valid; invalid reason %d",
                   loader->corruption_reason);
       goto failed;
     }
@@ -262,13 +262,13 @@ check_have_valid_message (DBusMessageLoader *loader)
   message = _dbus_message_loader_pop_message (loader);
   if (message == NULL)
     {
-      _dbus_warn ("didn't load message that was expected to be valid (message not popped)\n");
+      _dbus_warn ("didn't load message that was expected to be valid (message not popped)");
       goto failed;
     }
 
   if (_dbus_string_get_length (&loader->data) > 0)
     {
-      _dbus_warn ("had leftover bytes from expected-to-be-valid single message\n");
+      _dbus_warn ("had leftover bytes from expected-to-be-valid single message");
       goto failed;
     }
 
@@ -303,7 +303,7 @@ check_invalid_message (DBusMessageLoader *loader,
 
   if (!_dbus_message_loader_get_is_corrupted (loader))
     {
-      _dbus_warn ("loader not corrupted on message that was expected to be invalid\n");
+      _dbus_warn ("loader not corrupted on message that was expected to be invalid");
       goto failed;
     }
 
@@ -312,7 +312,7 @@ check_invalid_message (DBusMessageLoader *loader,
   if (expected_validity != DBUS_INVALID_FOR_UNKNOWN_REASON &&
       loader->corruption_reason != expected_validity)
     {
-      _dbus_warn ("expected message to be corrupted for reason %d and was corrupted for %d instead\n",
+      _dbus_warn ("expected message to be corrupted for reason %d and was corrupted for %d instead",
                   expected_validity, loader->corruption_reason);
       goto failed;
     }
@@ -334,7 +334,7 @@ check_incomplete_message (DBusMessageLoader *loader)
 
   if (_dbus_message_loader_get_is_corrupted (loader))
     {
-      _dbus_warn ("loader corrupted on message that was expected to be valid (but incomplete), corruption reason %d\n",
+      _dbus_warn ("loader corrupted on message that was expected to be valid (but incomplete), corruption reason %d",
                   loader->corruption_reason);
       goto failed;
     }
@@ -342,7 +342,7 @@ check_incomplete_message (DBusMessageLoader *loader)
   message = _dbus_message_loader_pop_message (loader);
   if (message != NULL)
     {
-      _dbus_warn ("loaded message that was expected to be incomplete\n");
+      _dbus_warn ("loaded message that was expected to be incomplete");
       goto failed;
     }
 
@@ -400,7 +400,7 @@ dbus_internal_do_not_use_load_message_file (const DBusString    *filename,
   _dbus_verbose ("Loading raw %s\n", _dbus_string_get_const_data (filename));
   if (!_dbus_file_get_contents (data, filename, &error))
     {
-      _dbus_warn ("Could not load message file %s: %s\n",
+      _dbus_warn ("Could not load message file %s: %s",
                   _dbus_string_get_const_data (filename),
                   error.message);
       dbus_error_free (&error);
@@ -432,7 +432,7 @@ dbus_internal_do_not_use_try_message_file (const DBusString    *filename,
   retval = FALSE;
 
   if (!_dbus_string_init (&data))
-    _dbus_assert_not_reached ("could not allocate string\n");
+    _dbus_assert_not_reached ("could not allocate string");
 
   if (!dbus_internal_do_not_use_load_message_file (filename, &data))
     goto failed;
@@ -447,7 +447,7 @@ dbus_internal_do_not_use_try_message_file (const DBusString    *filename,
         _dbus_verbose_bytes_of_string (&data, 0,
                                        _dbus_string_get_length (&data));
 
-      _dbus_warn ("Failed message loader test on %s\n",
+      _dbus_warn ("Failed message loader test on %s",
                   _dbus_string_get_const_data (filename));
     }
 
@@ -589,7 +589,7 @@ process_test_subdir (const DBusString          *test_base_dir,
   dir = _dbus_directory_open (&test_directory, &error);
   if (dir == NULL)
     {
-      _dbus_warn ("Could not open %s: %s\n",
+      _dbus_warn ("Could not open %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);
@@ -643,7 +643,7 @@ process_test_subdir (const DBusString          *test_base_dir,
 
   if (dbus_error_is_set (&error))
     {
-      _dbus_warn ("Could not get next file in %s: %s\n",
+      _dbus_warn ("Could not get next file in %s: %s",
                   _dbus_string_get_const_data (&test_directory),
                   error.message);
       dbus_error_free (&error);
@@ -874,7 +874,7 @@ verify_test_message (DBusMessage *message)
                                    &our_string_array, &our_string_array_len,
 				   0))
     {
-      _dbus_warn ("error: %s - %s\n", error.name,
+      _dbus_warn ("error: %s - %s", error.name,
                   (error.message != NULL) ? error.message : "no message");
       _dbus_assert_not_reached ("Could not get arguments");
     }
@@ -1005,7 +1005,7 @@ verify_test_message_args_ignored (DBusMessage *message)
   if (!dbus_message_iter_get_args (&iter, &error,
                                    DBUS_TYPE_INVALID))
     {
-      _dbus_warn ("error: %s - %s\n", error.name,
+      _dbus_warn ("error: %s - %s", error.name,
                      (error.message != NULL) ? error.message : "no message");
     }
   else
@@ -1020,7 +1020,7 @@ verify_test_message_args_ignored (DBusMessage *message)
                                    DBUS_TYPE_UINT32, &our_uint,
                                    DBUS_TYPE_INVALID))
     {
-      _dbus_warn ("error: %s - %s\n", error.name,
+      _dbus_warn ("error: %s - %s", error.name,
                      (error.message != NULL) ? error.message : "no message");
     }
   else
@@ -1076,7 +1076,7 @@ verify_test_message_memleak (DBusMessage *message)
     }
   else
     {
-      _dbus_warn ("error: parse with wrong signature: 'uashuu'.\n");
+      _dbus_warn ("error: parse with wrong signature: 'uashuu'.");
     }
 
   /* parse with wrong signature: "uashuashu" */
@@ -1110,7 +1110,7 @@ verify_test_message_memleak (DBusMessage *message)
     }
   else
     {
-      _dbus_warn ("error: parse with wrong signature: 'uashuashu'.\n");
+      _dbus_warn ("error: parse with wrong signature: 'uashuashu'.");
     }
 
   /* parse with correct signature: "uashuash" */
@@ -1131,7 +1131,7 @@ verify_test_message_memleak (DBusMessage *message)
 #endif
                                    DBUS_TYPE_INVALID))
     {
-      _dbus_warn ("error: %s - %s\n", error.name,
+      _dbus_warn ("error: %s - %s", error.name,
                   (error.message != NULL) ? error.message : "no message");
       _dbus_assert_not_reached ("Could not get arguments");
     }
@@ -1748,7 +1748,7 @@ _dbus_message_test (const char *test_data_dir)
         if (!dbus_internal_do_not_use_try_message_data (&mdata.data,
                                                         mdata.expected_validity))
           {
-            _dbus_warn ("expected validity %d and did not get it\n",
+            _dbus_warn ("expected validity %d and did not get it",
                         mdata.expected_validity);
             _dbus_assert_not_reached ("message data failed");
           }

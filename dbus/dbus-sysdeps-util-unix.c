@@ -345,7 +345,7 @@ _dbus_change_to_daemon_user  (const char    *user,
    * is going to work then setgroups() should also work.
    */
   if (setgroups (0, NULL) < 0)
-    _dbus_warn ("Failed to drop supplementary groups: %s\n",
+    _dbus_warn ("Failed to drop supplementary groups: %s",
                 _dbus_strerror (errno));
 
   /* Set GID first, or the setuid may remove our permission

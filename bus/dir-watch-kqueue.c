@@ -137,7 +137,7 @@ _init_kqueue (BusContext *context)
       kq = kqueue ();
       if (kq < 0)
         {
-          _dbus_warn ("Cannot create kqueue; error '%s'\n", _dbus_strerror (errno));
+          _dbus_warn ("Cannot create kqueue; error '%s'", _dbus_strerror (errno));
           goto out;
         }
 
@@ -149,7 +149,7 @@ _init_kqueue (BusContext *context)
 
       if (watch == NULL)
         {
-          _dbus_warn ("Unable to create kqueue watch\n");
+          _dbus_warn ("Unable to create kqueue watch");
           goto out1;
         }
 
@@ -276,7 +276,7 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
             {
               if (errno != ENOENT)
                 {
-                  _dbus_warn ("Cannot open directory '%s'; error '%s'\n", new_dirs[i], _dbus_strerror (errno));
+                  _dbus_warn ("Cannot open directory '%s'; error '%s'", new_dirs[i], _dbus_strerror (errno));
                   goto out;
                 }
               else
@@ -297,7 +297,7 @@ bus_set_watched_dirs (BusContext *context, DBusList **directories)
                   NOTE_DELETE | NOTE_EXTEND | NOTE_WRITE | NOTE_RENAME, 0, 0);
           if (kevent (kq, &ev, 1, NULL, 0, NULL) == -1)
             {
-              _dbus_warn ("Cannot setup a kevent for '%s'; error '%s'\n", new_dirs[i], _dbus_strerror (errno));
+              _dbus_warn ("Cannot setup a kevent for '%s'; error '%s'", new_dirs[i], _dbus_strerror (errno));
               close (fd);
               goto out;
             }

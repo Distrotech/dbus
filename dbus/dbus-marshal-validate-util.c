@@ -57,7 +57,7 @@ run_validity_tests (const ValidityTest *tests,
 
       if (v != tests[i].expected)
         {
-          _dbus_warn ("Improper validation result %d for '%s'\n",
+          _dbus_warn ("Improper validation result %d for '%s'",
                       v, tests[i].data);
           _dbus_assert_not_reached ("test failed");
         }
@@ -243,7 +243,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_path (&str, 0,
                                 _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Path \"%s\" should have been valid\n", valid_paths[i]);
+          _dbus_warn ("Path \"%s\" should have been valid", valid_paths[i]);
           _dbus_assert_not_reached ("invalid path");
         }
 
@@ -258,7 +258,7 @@ _dbus_marshal_validate_test (void)
       if (_dbus_validate_path (&str, 0,
                                _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Path \"%s\" should have been invalid\n", invalid_paths[i]);
+          _dbus_warn ("Path \"%s\" should have been invalid", invalid_paths[i]);
           _dbus_assert_not_reached ("valid path");
         }
 
@@ -274,7 +274,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_interface (&str, 0,
                                      _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Interface \"%s\" should have been valid\n", valid_interfaces[i]);
+          _dbus_warn ("Interface \"%s\" should have been valid", valid_interfaces[i]);
           _dbus_assert_not_reached ("invalid interface");
         }
 
@@ -289,7 +289,7 @@ _dbus_marshal_validate_test (void)
       if (_dbus_validate_interface (&str, 0,
                                     _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Interface \"%s\" should have been invalid\n", invalid_interfaces[i]);
+          _dbus_warn ("Interface \"%s\" should have been invalid", invalid_interfaces[i]);
           _dbus_assert_not_reached ("valid interface");
         }
 
@@ -307,7 +307,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_bus_name (&str, 0,
                                    _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Bus name \"%s\" should have been valid\n", valid_interfaces[i]);
+          _dbus_warn ("Bus name \"%s\" should have been valid", valid_interfaces[i]);
           _dbus_assert_not_reached ("invalid bus name");
         }
 
@@ -324,7 +324,7 @@ _dbus_marshal_validate_test (void)
           if (_dbus_validate_bus_name (&str, 0,
                                        _dbus_string_get_length (&str)))
             {
-              _dbus_warn ("Bus name \"%s\" should have been invalid\n", invalid_interfaces[i]);
+              _dbus_warn ("Bus name \"%s\" should have been invalid", invalid_interfaces[i]);
               _dbus_assert_not_reached ("valid bus name");
             }
         }
@@ -341,7 +341,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_bus_name (&str, 0,
                                     _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Bus name \"%s\" should have been valid\n", valid_unique_names[i]);
+          _dbus_warn ("Bus name \"%s\" should have been valid", valid_unique_names[i]);
           _dbus_assert_not_reached ("invalid unique name");
         }
 
@@ -356,7 +356,7 @@ _dbus_marshal_validate_test (void)
       if (_dbus_validate_bus_name (&str, 0,
                                    _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Bus name \"%s\" should have been invalid\n", invalid_unique_names[i]);
+          _dbus_warn ("Bus name \"%s\" should have been invalid", invalid_unique_names[i]);
           _dbus_assert_not_reached ("valid unique name");
         }
 
@@ -374,7 +374,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_error_name (&str, 0,
                                       _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Error name \"%s\" should have been valid\n", valid_interfaces[i]);
+          _dbus_warn ("Error name \"%s\" should have been valid", valid_interfaces[i]);
           _dbus_assert_not_reached ("invalid error name");
         }
 
@@ -391,7 +391,7 @@ _dbus_marshal_validate_test (void)
           if (_dbus_validate_error_name (&str, 0,
                                          _dbus_string_get_length (&str)))
             {
-              _dbus_warn ("Error name \"%s\" should have been invalid\n", invalid_interfaces[i]);
+              _dbus_warn ("Error name \"%s\" should have been invalid", invalid_interfaces[i]);
               _dbus_assert_not_reached ("valid error name");
             }
         }
@@ -408,7 +408,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_member (&str, 0,
                                   _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Member \"%s\" should have been valid\n", valid_members[i]);
+          _dbus_warn ("Member \"%s\" should have been valid", valid_members[i]);
           _dbus_assert_not_reached ("invalid member");
         }
 
@@ -423,7 +423,7 @@ _dbus_marshal_validate_test (void)
       if (_dbus_validate_member (&str, 0,
                                  _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Member \"%s\" should have been invalid\n", invalid_members[i]);
+          _dbus_warn ("Member \"%s\" should have been invalid", invalid_members[i]);
           _dbus_assert_not_reached ("valid member");
         }
 
@@ -439,7 +439,7 @@ _dbus_marshal_validate_test (void)
       if (!_dbus_validate_signature (&str, 0,
                                      _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Signature \"%s\" should have been valid\n", valid_signatures[i]);
+          _dbus_warn ("Signature \"%s\" should have been valid", valid_signatures[i]);
           _dbus_assert_not_reached ("invalid signature");
         }
 
@@ -454,7 +454,7 @@ _dbus_marshal_validate_test (void)
       if (_dbus_validate_signature (&str, 0,
                                     _dbus_string_get_length (&str)))
         {
-          _dbus_warn ("Signature \"%s\" should have been invalid\n", invalid_signatures[i]);
+          _dbus_warn ("Signature \"%s\" should have been invalid", invalid_signatures[i]);
           _dbus_assert_not_reached ("valid signature");
         }
 
@@ -537,7 +537,7 @@ _dbus_marshal_validate_test (void)
                                                     _dbus_string_get_length (&body));
         if (validity != DBUS_VALID)
           {
-            _dbus_warn ("invalid code %d expected valid on sequence %d little endian\n",
+            _dbus_warn ("invalid code %d expected valid on sequence %d little endian",
                         validity, sequence);
             _dbus_verbose_bytes_of_string (&signature, 0, _dbus_string_get_length (&signature));
             _dbus_verbose_bytes_of_string (&body, 0, _dbus_string_get_length (&body));
@@ -562,7 +562,7 @@ _dbus_marshal_validate_test (void)
                                                     _dbus_string_get_length (&body));
         if (validity != DBUS_VALID)
           {
-            _dbus_warn ("invalid code %d expected valid on sequence %d big endian\n",
+            _dbus_warn ("invalid code %d expected valid on sequence %d big endian",
                         validity, sequence);
             _dbus_verbose_bytes_of_string (&signature, 0, _dbus_string_get_length (&signature));
             _dbus_verbose_bytes_of_string (&body, 0, _dbus_string_get_length (&body));

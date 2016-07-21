@@ -97,7 +97,7 @@ check_dirname (const char *filename,
 
   if (!_dbus_string_equal_c_str (&d, dirname))
     {
-      _dbus_warn ("For filename \"%s\" got dirname \"%s\" and expected \"%s\"\n",
+      _dbus_warn ("For filename \"%s\" got dirname \"%s\" and expected \"%s\"",
                   filename,
                   _dbus_string_get_const_data (&d),
                   dirname);
@@ -117,7 +117,7 @@ check_path_absolute (const char *path,
 
   if (_dbus_path_is_absolute (&p) != expected)
     {
-      _dbus_warn ("For path \"%s\" expected absolute = %d got %d\n",
+      _dbus_warn ("For path \"%s\" expected absolute = %d got %d",
                   path, expected, _dbus_path_is_absolute (&p));
       exit (1);
     }
