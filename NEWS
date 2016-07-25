@@ -13,11 +13,28 @@ Fixes:
 • Fix memory leaks and thread safety in subprocess starting on Windows
   (fd.o #95191, Ralf Habacker)
 
+• Do not require systemd to have a service file if using it for activation
+  (fd.o #93194; Simon McVittie; backport from 1.11.0)
+
 • Stop test-dbus-daemon incorrectly failing on platforms that cannot
   discover the process ID of clients (fd.o #96653, Руслан Ижбулатов)
 
 • In tests that exercise correct handling of crashing D-Bus services,
   suppress Windows crash handler (fd.o #95155; Yiyang Fei, Ralf Habacker)
+
+• Merge dbus-1.10-ci branch, containing backports from 1.11.0 in build/test
+  code to support continuous integration (fd.o #93194, Simon McVittie)
+
+  · Avoid -Wunused-label when compiling with libselinux but no libaudit
+  · In development builds, allow OOM tests to be disabled as documented
+  · Accept and ignore the --tap argument in all "embedded tests", and run
+    all automated tests with that argument for better diagnostics
+  · Fix the systemd activation test under CMake by installing the required
+    files
+  · In Automake, fix shell syntax for installcheck-local with no DESTDIR
+  · In Automake, don't try to run manual tests in installcheck
+  · In CMake, don't run manual-tcp test as an automated test
+  · Add travis-ci.org build machinery
 
 D-Bus 1.10.8 (2016-03-07)
 ==
