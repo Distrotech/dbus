@@ -1066,6 +1066,12 @@ _dbus_test_oom_handling (const char             *description,
       max_failures_to_try = 4;
     }
 
+  if (max_failures_to_try < 1)
+    {
+      _dbus_verbose ("not testing OOM handling\n");
+      return TRUE;
+    }
+
   i = setting ? max_failures_to_try - 1 : 1;
   while (i < max_failures_to_try)
     {

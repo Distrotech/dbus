@@ -1,0 +1,50 @@
+sudo: required
+dist: trusty
+language: c
+install:
+  # travis-ci has a sources list for Chrome which doesn't support i386
+  - ": | sudo tee /etc/apt/sources.list.d/google-chrome.list"
+  - test "$dbus_ci_host" != mingw || sudo dpkg --add-architecture i386
+  - sudo apt-get -qq -y update
+  - sudo apt-get -qq -y build-dep dbus
+  - >
+    sudo apt-get -qq -y install
+    automake
+    autotools-dev
+    debhelper
+    dh-autoreconf
+    doxygen
+    dpkg-dev
+    gnome-desktop-testing
+    libapparmor-dev
+    libaudit-dev
+    libcap-ng-dev
+    libexpat-dev
+    libglib2.0-dev
+    libselinux1-dev
+    libx11-dev
+    python
+    python-dbus
+    python-gi
+    valgrind
+    xmlto
+    xsltproc
+  - >
+    test "$dbus_ci_host" != mingw || sudo apt-get -qq -y install
+    binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
+script:
+  # python-dbus and python-gi aren't available to Travis's version of
+  # Python in /opt, which it uses as a default
+  - PYTHON=/usr/bin/python dbus_ci_parallel=2 dbus_ci_sudo=yes ./tools/ci-build.sh
+
+env:
+  - dbus_ci_variant=release
+  - dbus_ci_variant=debug
+  - dbus_ci_variant=reduced
+  - dbus_ci_variant=legacy
+  - dbus_ci_buildsys=cmake
+  - dbus_ci_host=mingw
+  - dbus_ci_host=mingw dbus_ci_variant=debug
+  - dbus_ci_host=mingw dbus_ci_buildsys=cmake
+
+# vim:set sw=2 sts=2 et:

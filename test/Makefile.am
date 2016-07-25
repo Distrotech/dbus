@@ -294,7 +294,7 @@ if DBUS_ENABLE_INSTALLED_TESTS
 	$(installcheck_environment) \
 		$(srcdir)/dbus-test-runner \
 		$(testexecdir) \
-		$(testexec_PROGRAMS) }
+		$(installable_tests); }
 endif DBUS_ENABLE_INSTALLED_TESTS
 
 in_data = \

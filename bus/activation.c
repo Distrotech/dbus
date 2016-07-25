@@ -1418,7 +1418,8 @@ pending_activation_finished_cb (DBusBabysitter *babysitter,
             {
               BusPendingActivation *p = _dbus_hash_iter_get_value (&iter);
 
-              if (p != pending_activation && strcmp (p->exec, pending_activation->exec) == 0)
+              if (p != pending_activation && p->exec != NULL &&
+                  strcmp (p->exec, pending_activation->exec) == 0)
                 pending_activation_failed (p, &error);
             }
 
@@ -1744,9 +1745,19 @@ bus_activation_activate_service (BusActivation  *activation,
       return FALSE;
     }
 
-  entry = activation_find_entry (activation, service_name, error);
-  if (!entry)
-    return FALSE;
+  if (bus_context_get_systemd_activation (activation->context) &&
+      strcmp (service_name, "org.freedesktop.systemd1") == 0)
+    {
+      /* if we're doing systemd activation, we assume systemd will connect
+       * eventually, and it does not need a .service file */
+      entry = NULL;
+    }
+  else
+    {
+      entry = activation_find_entry (activation, service_name, error);
+      if (!entry)
+        return FALSE;
+    }
 
   /* Bypass the registry lookup if we're auto-activating, bus_dispatch would not
    * call us if the service is already active.
@@ -1853,17 +1864,20 @@ bus_activation_activate_service (BusActivation  *activation,
           return FALSE;
         }
 
-      pending_activation->exec = _dbus_strdup (entry->exec);
-      if (!pending_activation->exec)
+      if (entry != NULL)
         {
-          _dbus_verbose ("Failed to copy service exec for pending activation\n");
-          BUS_SET_OOM (error);
-          bus_pending_activation_unref (pending_activation);
-          bus_pending_activation_entry_free (pending_activation_entry);
-          return FALSE;
+          pending_activation->exec = _dbus_strdup (entry->exec);
+          if (!pending_activation->exec)
+            {
+              _dbus_verbose ("Failed to copy service exec for pending activation\n");
+              BUS_SET_OOM (error);
+              bus_pending_activation_unref (pending_activation);
+              bus_pending_activation_entry_free (pending_activation_entry);
+              return FALSE;
+            }
         }
 
-      if (entry->systemd_service)
+      if (entry != NULL && entry->systemd_service != NULL)
         {
           pending_activation->systemd_service = _dbus_strdup (entry->systemd_service);
           if (!pending_activation->systemd_service)
@@ -2054,6 +2068,11 @@ bus_activation_activate_service (BusActivation  *activation,
       /* OK, we have no configured systemd service, hence let's
          proceed with traditional activation. */
     }
+
+  /* If entry was NULL, it would be because we were doing systemd activation
+   * and activating systemd itself; but we already handled that case with
+   * an early-return */
+  _dbus_assert (entry != NULL);
 
   /* use command as system and session different */
   if (!_dbus_string_init (&command))
