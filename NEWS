@@ -10,11 +10,16 @@ Enhancements:
   minimizing failed connections under heavy load
   (fd.o #95264, Lennart Poettering)
 
+• Add a new dbus-launch --exit-with-x11 option (fd.o #39197, Simon McVittie)
+
 • Use the same regression tests for subprocess starting on Unix and Windows
   (fd.o #95191, Ralf Habacker)
 
 • Print timestamps and thread IDs in verbose messages
   (fd.o #95191, Ralf Habacker)
+
+• On Unix, unify the various places that reopen stdin, stdout and/or stderr
+  pointing to /dev/null (fd.o #97008, Simon McVittie)
 
 Fixes:
 
@@ -24,6 +29,10 @@ Fixes:
 • On Linux, when dbus-daemon is run with reduced susceptibility to the
   OOM killer (typically via systemd), do not let child processes inherit
   that setting (fd.o #32851; Kimmo Hämäläinen, WaLyong Cho)
+
+• On Unix, make dbus-launch and dbus-daemon --fork work as intended
+  even if a parent process incorrectly starts them with stdin, stdout
+  and/or stderr closed (fd.o #97008, Simon McVittie)
 
 • Output valid shell syntax in ~/.dbus/session-bus/ if the bus address
   contains a semicolon (fd.o #94746, Thiago Macieira)
@@ -36,6 +45,15 @@ Fixes:
 
 • In tests that exercise correct handling of crashing D-Bus services,
   suppress Windows crash handler (fd.o #95155; Yiyang Fei, Ralf Habacker)
+
+• In tests, add an invalid DBusAuthState to avoid undefined behaviour
+  in some test cases (fd.o #93909, Nick Lewycky)
+
+• Add assertions to reassure a static analysis tool
+  (fd.o #93210, Deepika Aggarwal)
+
+• Be explicit about enum comparison when loading XML
+  (fd.o #93205, Deepika Aggarwal)
 
 D-Bus 1.11.2 (2016-03-07)
 ==
