@@ -699,6 +699,8 @@ AC_CHECK_HEADERS(byteswap.h)
 
 AC_CHECK_HEADERS(unistd.h)
 
+AC_CHECK_HEADERS([stdint.h])
+
 AC_CHECK_HEADERS(ws2tcpip.h)
 
 AC_CHECK_HEADERS(alloca.h)
