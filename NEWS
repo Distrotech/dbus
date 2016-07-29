@@ -22,6 +22,8 @@ Fixes:
 • In tests that exercise correct handling of crashing D-Bus services,
   suppress Windows crash handler (fd.o #95155; Yiyang Fei, Ralf Habacker)
 
+• Explicitly check for stdint.h (Ioan-Adrian Ratiu)
+
 • Merge dbus-1.10-ci branch, containing backports from 1.11.0 in build/test
   code to support continuous integration (fd.o #93194, Simon McVittie)
 
