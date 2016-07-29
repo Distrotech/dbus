@@ -46,6 +46,8 @@ Fixes:
 • In tests that exercise correct handling of crashing D-Bus services,
   suppress Windows crash handler (fd.o #95155; Yiyang Fei, Ralf Habacker)
 
+• Explicitly check for stdint.h (Ioan-Adrian Ratiu)
+
 • In tests, add an invalid DBusAuthState to avoid undefined behaviour
   in some test cases (fd.o #93909, Nick Lewycky)
 
