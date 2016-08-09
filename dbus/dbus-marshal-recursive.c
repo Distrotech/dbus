@@ -989,8 +989,8 @@ void
 _dbus_type_reader_recurse (DBusTypeReader *reader,
                            DBusTypeReader *sub)
 {
-  const DBusTypeReaderClass *klass;
   int t;
+  const DBusTypeReaderClass *klass = NULL;
 
   t = _dbus_first_type_in_signature (reader->type_str, reader->type_pos);
 
@@ -1030,6 +1030,7 @@ _dbus_type_reader_recurse (DBusTypeReader *reader,
       _dbus_assert_not_reached ("don't yet handle recursing into this type");
     }
 
+  _dbus_assert (klass != NULL);
   _dbus_assert (klass == all_reader_classes[klass->id]);
 
   (* klass->recurse) (sub, reader);
