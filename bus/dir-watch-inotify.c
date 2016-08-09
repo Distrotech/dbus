@@ -59,7 +59,9 @@ _handle_inotify_watch (DBusWatch *passed_watch, unsigned int flags, void *data)
 {
   char buffer[INOTIFY_BUF_LEN];
   ssize_t ret = 0;
+#ifdef DBUS_ENABLE_VERBOSE_MODE
   int i = 0;
+#endif
 
   ret = read (inotify_fd, buffer, INOTIFY_BUF_LEN);
   if (ret < 0)
