@@ -1055,14 +1055,18 @@ recover_unused_bytes (DBusTransport *transport)
     {
       const DBusString *bytes;
       DBusString *buffer;
+#ifdef DBUS_ENABLE_VERBOSE_MODE
       int orig_len;
+#endif
       dbus_bool_t succeeded;
 
       _dbus_message_loader_get_buffer (transport->loader,
                                        &buffer);
-                
+
+#ifdef DBUS_ENABLE_VERBOSE_MODE
       orig_len = _dbus_string_get_length (buffer);
-                
+#endif
+
       _dbus_auth_get_unused_bytes (transport->auth,
                                    &bytes);
 
