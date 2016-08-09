@@ -419,15 +419,15 @@ tokenize_command_line (const char *command_line, DBusError *error)
             {
             case '\n':
               if (!delimit_token (&current_token, &retval, error))
-		goto error;
+                goto error;
 
-		_dbus_string_free (&current_token);
+              _dbus_string_free (&current_token);
 
-		if (!_dbus_string_init (&current_token))
-		  {
-		    _DBUS_SET_OOM (error);
-		    goto init_error;
-		  }
+              if (!_dbus_string_init (&current_token))
+                {
+                  _DBUS_SET_OOM (error);
+                  goto init_error;
+                }
 
               break;
 
