@@ -205,6 +205,7 @@ xstrdup (const char *str)
   return copy;
 }
 
+#ifdef DBUS_ENABLE_EMBEDDED_TESTS
 static char *
 concat2 (const char *a,
     const char *b)
@@ -224,6 +225,7 @@ concat2 (const char *a,
   memcpy (ret + la, b, lb + 1);
   return ret;
 }
+#endif /* DBUS_ENABLE_EMBEDDED_TESTS */
 
 typedef enum
 {
