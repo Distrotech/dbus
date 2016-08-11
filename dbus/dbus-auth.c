@@ -282,6 +282,9 @@ static const DBusAuthStateData client_state_need_send_auth = {
 static const DBusAuthStateData client_state_waiting_for_data = {
   "WaitingForData", handle_client_state_waiting_for_data
 };
+/* The WaitingForOK state doesn't appear to be used.
+ * See https://bugs.freedesktop.org/show_bug.cgi?id=97298 */
+_DBUS_GNUC_UNUSED
 static const DBusAuthStateData client_state_waiting_for_ok = {
   "WaitingForOK", handle_client_state_waiting_for_ok
 };
