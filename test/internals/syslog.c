@@ -74,11 +74,33 @@ test_syslog (Fixture *f,
       _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
       _dbus_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
       _dbus_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
+
+      _dbus_init_system_log ("test-syslog-stderr", DBUS_LOG_FLAGS_STDERR);
+      _dbus_log (DBUS_SYSTEM_LOG_INFO,
+          MESSAGE "this should not appear in the syslog");
+      _dbus_init_system_log ("test-syslog-both",
+          DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
+      _dbus_log (DBUS_SYSTEM_LOG_INFO,
+          MESSAGE "this should appear in the syslog and on stderr");
+      _dbus_init_system_log ("test-syslog-only", DBUS_LOG_FLAGS_SYSTEM_LOG);
+      _dbus_log (DBUS_SYSTEM_LOG_INFO,
+          MESSAGE "this should appear in the syslog only");
+
       exit (0);
     }
 
   g_test_trap_assert_passed ();
-  g_test_trap_assert_stderr ("*" MESSAGE "42\n*" MESSAGE "45\n*" MESSAGE "666\n*");
+  g_test_trap_assert_stderr ("*" MESSAGE "42\n"
+                             "*" MESSAGE "45\n"
+                             "*" MESSAGE "666\n"
+                             "*test-syslog-stderr*" MESSAGE
+                               "this should not appear in the syslog\n"
+                             "*test-syslog-both*" MESSAGE
+                               "this should appear in the syslog and "
+                               "on stderr\n");
+  g_test_trap_assert_stderr_unmatched ("*this should appear in the syslog "
+                                       "only*");
+  g_test_trap_assert_stderr_unmatched ("*test-syslog-only*");
 #endif
   /* manual test (this is the best we can do on Windows) */
   _dbus_init_system_log ("test-syslog",
@@ -86,6 +108,14 @@ test_syslog (Fixture *f,
   _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
   _dbus_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
   _dbus_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
+
+  _dbus_init_system_log ("test-syslog-stderr", DBUS_LOG_FLAGS_STDERR);
+  _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "this should not appear in the syslog");
+  _dbus_init_system_log ("test-syslog-both",
+      DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
+  _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "this should appear in the syslog and on stderr");
+  _dbus_init_system_log ("test-syslog-only", DBUS_LOG_FLAGS_SYSTEM_LOG);
+  _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "this should appear in the syslog only");
 }
 
 static void
