@@ -71,7 +71,6 @@ AC_HEADER_STDC
 AC_C_INLINE
 AM_PROG_LIBTOOL
 AC_PROG_MKDIR_P
-COMPILER_COVERAGE
 COMPILER_OPTIMISATIONS
 PKG_PROG_PKG_CONFIG
 
@@ -333,10 +332,14 @@ AH_BOTTOM([
 #  define DBUS_ENABLE_CHECKS 1
 #endif])
 
-if test x$enable_compiler_coverage = xyes; then
-     ## so that config.h changes when you toggle gcov support
-     AC_DEFINE_UNQUOTED(DBUS_GCOV_ENABLED, 1, [Defined if gcov is enabled to force a rebuild due to config.h changing])
-fi
+# Test for code-coverage tools if --enable-code-coverage
+AX_CODE_COVERAGE
+
+AS_IF([test x$enable_code_coverage = xyes],[
+    AC_DEFINE_UNQUOTED(
+      [DBUS_GCOV_ENABLED], [1],
+      [Defined if gcov is enabled to force a rebuild due to config.h changing])
+  ])
 
 #### Integer sizes
 
@@ -1893,7 +1896,7 @@ echo "
 
 echo "
         Rebuilding generated files: ${USE_MAINTAINER_MODE}
-        gcc coverage profiling:   ${enable_compiler_coverage}
+        gcc coverage profiling:   ${enable_code_coverage}
         Building embedded tests:  ${enable_embedded_tests}
         Building modular tests:   ${enable_modular_tests}
             - with GLib:          ${with_glib}
@@ -1937,9 +1940,9 @@ fi
 if test x$enable_embedded_tests = xyes -a x$enable_asserts = xno; then
         echo "NOTE: building with embedded tests but without assertions means tests may not properly report failures (this configuration is only useful when doing something like profiling the tests)"
 fi
-if test x$enable_compiler_coverage = xyes; then
-        echo "NOTE: building with coverage profiling is definitely for developers only."
-fi
+AS_IF([test x$enable_code_coverage = xyes],[
+    AC_MSG_WARN([Building with coverage profiling is definitely for developers only.])
+  ])
 if test x$enable_verbose_mode = xyes; then
         echo "NOTE: building with verbose mode increases library size, may slightly increase security risk, and decreases performance."
 fi

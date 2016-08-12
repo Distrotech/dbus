@@ -3,6 +3,7 @@ legacydbusdatadir=$(sysconfdir)/dbus-1
 dbus_daemon_execdir = $(DBUS_DAEMONDIR)
 
 DBUS_BUS_LIBS = \
+	$(CODE_COVERAGE_LDFLAGS) \
 	$(XML_LIBS) \
 	$(SELINUX_LIBS) \
 	$(APPARMOR_LIBS) \
@@ -12,12 +13,14 @@ DBUS_BUS_LIBS = \
 	$(NULL)
 
 DBUS_LAUNCHER_LIBS = \
+	$(CODE_COVERAGE_LDFLAGS) \
 	$(XML_LIBS) \
 	$(THREAD_LIBS) \
 	$(NETWORK_libs) \
 	$(NULL)
 
 AM_CPPFLAGS = \
+	$(CODE_COVERAGE_CPPFLAGS) \
 	-I$(top_srcdir) \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	$(XML_CFLAGS) \
@@ -28,6 +31,10 @@ AM_CPPFLAGS = \
 
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+
+AM_CFLAGS = \
+	$(CODE_COVERAGE_CFLAGS) \
+	$(NULL)
 
 EFENCE=
 
@@ -233,10 +240,6 @@ test_bus_LDADD = \
 	$(DBUS_BUS_LIBS) \
 	$(NULL)
 
-## mop up the gcov files
-clean-local:
-	/bin/rm *.bb *.bbg *.da *.gcov || true
-
 install-data-hook:
 	$(mkinstalldirs) $(DESTDIR)$(dbusdatadir)/session.d
 	$(mkinstalldirs) $(DESTDIR)$(dbusdatadir)/services
@@ -326,6 +329,9 @@ systemduserunit_DATA = \
 	systemd-user/dbus.socket \
 	$(NULL)
 endif
+
+# Add rules for code-coverage testing, as defined by AX_CODE_COVERAGE
+@CODE_COVERAGE_RULES@
 
 #### Extra dist
 

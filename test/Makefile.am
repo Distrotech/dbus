@@ -1,13 +1,14 @@
-## the "name-test" subdir in fact contains a bunch of tests now that need a temporary bus 
+## the "name-test" subdir in fact contains a bunch of tests now that need a temporary bus
 ## to be running to do stuff with. The directory should be renamed.
 ## We want to build the current directory first to pick up the testutils lib
-SUBDIRS= . name-test 
+SUBDIRS= . name-test
 DIST_SUBDIRS=name-test
 
 CLEANFILES =
 EXTRA_DIST =
 
 AM_CPPFLAGS = \
+	$(CODE_COVERAGE_CPPFLAGS) \
 	-I$(top_srcdir) \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	-DDBUS_COMPILATION \
@@ -16,6 +17,10 @@ AM_CPPFLAGS = \
 
 # improve backtraces from test stuff
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+
+AM_CFLAGS = \
+	$(CODE_COVERAGE_CFLAGS) \
+	$(NULL)
 
 noinst_LTLIBRARIES = libdbus-testutils.la
 
@@ -34,6 +39,7 @@ endif
 libdbus_testutils_la_LIBADD = \
 	$(top_builddir)/dbus/libdbus-1.la \
 	$(top_builddir)/dbus/libdbus-internal.la \
+	$(CODE_COVERAGE_LDFLAGS) \
 	$(NULL)
 
 TEST_EXTENSIONS = .sh
@@ -555,3 +561,6 @@ $(installable_test_meta_with_config): %_with_config.test: %$(EXEEXT) Makefile
 		echo 'Output=TAP'; \
 		echo 'Exec=env DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$* --tap'; \
 	) > $@.tmp && mv $@.tmp $@
+
+# Add rules for code-coverage testing, as defined by AX_CODE_COVERAGE
+@CODE_COVERAGE_RULES@

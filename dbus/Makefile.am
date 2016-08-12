@@ -2,6 +2,7 @@
 dbusdatadir=$(datadir)/dbus-1
 
 AM_CPPFLAGS = \
+	$(CODE_COVERAGE_CPPFLAGS) \
 	-I$(top_builddir) \
 	-I$(top_srcdir) \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
@@ -13,7 +14,9 @@ AM_CPPFLAGS = \
 	-DDBUS_SESSION_CONFIG_FILE=\""$(dbusdatadir)/session.conf"\" \
 	$(NULL)
 
-AM_CFLAGS =
+AM_CFLAGS = \
+	$(CODE_COVERAGE_CFLAGS) \
+	$(NULL)
 
 if HAVE_VISIBILITY
 if !DBUS_WIN
@@ -306,6 +309,10 @@ libdbus_1_la_LDFLAGS = \
 libdbus_internal_la_LIBADD=$(LIBDBUS_LIBS) libdbus-1.la
 
 if DBUS_WIN
+AM_CXXFLAGS = \
+	$(CODE_COVERAGE_CXXFLAGS) \
+	$(NULL)
+
 # This must be a separate convenience library, otherwise libtool notices
 # that libdbus-1 might contain C++, links it with g++ and links in libstdc++,
 # even on Unix where in fact it doesn't contain any C++. For Windows, where
@@ -327,6 +334,5 @@ test_dbus_SOURCES=				\
 
 test_dbus_LDADD = libdbus-internal.la
 
-## mop up the gcov files
-clean-local:
-	/bin/rm *.bb *.bbg *.da *.gcov .libs/*.da .libs/*.bbg || true
+# Add rules for code-coverage testing, as defined by AX_CODE_COVERAGE
+@CODE_COVERAGE_RULES@

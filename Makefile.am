@@ -33,4 +33,5 @@ DISTCHECK_CONFIGURE_FLAGS = \
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-include tools/lcov.am
+# Add rules for code-coverage testing, as defined by AX_CODE_COVERAGE
+@CODE_COVERAGE_RULES@
