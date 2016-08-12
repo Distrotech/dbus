@@ -63,6 +63,12 @@ Fixes:
 • Avoid various compiler warnings with gcc 6
   (fd.o #97282; Thomas Zimmermann, Simon McVittie)
 
+• On Unix when configured to use the system log, report as "dbus-daemon",
+  not as "dbus" (fd.o #97009, Simon McVittie)
+
+• During unit tests, reduce the amount we write to the system log
+  (fd.o #97009, Simon McVittie)
+
 D-Bus 1.11.2 (2016-03-07)
 ==
 
