@@ -7,6 +7,7 @@ m4_define([dbus_micro_version], [7])
 m4_define([dbus_version],
           [dbus_major_version.dbus_minor_version.dbus_micro_version])
 AC_INIT([dbus],[dbus_version],[https://bugs.freedesktop.org/enter_bug.cgi?product=dbus],[dbus])
+
 AC_CONFIG_AUX_DIR([build-aux])
 
 m4_pattern_forbid([^AX_],
@@ -63,6 +64,35 @@ AC_SUBST(DBUS_MAJOR_VERSION)
 AC_SUBST(DBUS_MINOR_VERSION)
 AC_SUBST(DBUS_MICRO_VERSION)
 AC_SUBST(DBUS_VERSION)
+
+dnl
+dnl Build configuration
+dnl
+
+dnl This must come first: other options use this to set their defaults. Don't
+dnl enable developer mode on production builds.
+AC_ARG_ENABLE([developer],
+  [AS_HELP_STRING([--enable-developer],
+    [set defaults to be appropriate for a D-Bus developer instead of a distribution/end-user])],
+  [enable_developer=$enableval],
+  [enable_developer=no])
+
+dnl 'disable_developer' is the negation of 'enable_developer'. If
+dnl 'enable-developer' is set to 'no' (the default), the value of
+dnl 'disable_developer' is set to 'yes', and vice versa. It's used
+dnl for macros that require the opposite of 'enable_developer', such
+dnl as several AX_ macros.
+dnl See https://bugs.freedesktop.org/show_bug.cgi?id=97357
+AS_IF([test "x$enable_developer" = "xyes"],[
+    disable_developer=no
+  ],[
+    disable_developer=yes
+  ])
+
+# The debugging check must run before the compiler tests. Other command-line
+# options also use it to set their defaults. We disable debugging by default,
+# except for developer builds.
+AX_CHECK_ENABLE_DEBUG([$enable_developer])
 
 AC_PROG_CC
 AM_PROG_CC_C_O
@@ -148,13 +178,6 @@ AM_CONDITIONAL(DBUS_WIN, test "$dbus_win" = yes)
 AM_CONDITIONAL(DBUS_WINCE, test "$dbus_wince" = yes)
 AM_CONDITIONAL(DBUS_UNIX, test "$dbus_unix" = yes)
 AM_CONDITIONAL(DBUS_CYGWIN, test "$dbus_cygwin" = yes)
-
-# this must come first: other options use this to set their defaults
-AC_ARG_ENABLE([developer],
-  [AS_HELP_STRING([--enable-developer],
-    [set defaults to be appropriate for a D-Bus developer instead of a distribution/end-user])],
-  [],
-  [enable_developer=no])
 
 DBUS_STATIC_BUILD_CPPFLAGS=
 if test "x$enable_shared" = xno; then
