@@ -4524,6 +4524,9 @@ _dbus_restore_socket_errno (int saved_errno)
 }
 
 static const char *syslog_tag = "dbus";
+#ifdef HAVE_SYSLOG_H
+static DBusLogFlags log_flags = DBUS_LOG_FLAGS_STDERR;
+#endif
 
 /**
  * Initialize the system log.
@@ -4532,30 +4535,33 @@ static const char *syslog_tag = "dbus";
  * the process or until _dbus_init_system_log() is called again. In practice
  * it will normally be a constant.
  *
+ * On platforms that do not support a system log, the
+ * #DBUS_LOG_FLAGS_SYSTEM_LOG flag is treated as equivalent to
+ * #DBUS_LOG_FLAGS_STDERR.
+ *
  * @param tag the name of the executable (syslog tag)
- * @param is_daemon #TRUE if this is the dbus-daemon
+ * @param mode whether to log to stderr, the system log or both
  */
 void
-_dbus_init_system_log (const char *tag,
-                       dbus_bool_t is_daemon)
+_dbus_init_system_log (const char   *tag,
+                       DBusLogFlags  flags)
 {
-#ifdef HAVE_SYSLOG_H
-  int logopts = LOG_PID;
-
-#if HAVE_DECL_LOG_PERROR
-#ifdef HAVE_SYSTEMD
-  if (!is_daemon || sd_booted () <= 0)
-#endif
-    logopts |= LOG_PERROR;
-#endif
+  /* We never want to turn off logging completely */
+  _dbus_assert (
+      (flags & (DBUS_LOG_FLAGS_STDERR | DBUS_LOG_FLAGS_SYSTEM_LOG)) != 0);
 
   syslog_tag = tag;
-  openlog (tag, logopts, LOG_DAEMON);
+
+#ifdef HAVE_SYSLOG_H
+  log_flags = flags;
+
+  if (log_flags & DBUS_LOG_FLAGS_SYSTEM_LOG)
+    openlog (tag, LOG_PID, LOG_DAEMON);
 #endif
 }
 
 /**
- * Log a message to the system log file (e.g. syslog on Unix).
+ * Log a message to the system log file (e.g. syslog on Unix) and/or stderr.
  *
  * @param severity a severity value
  * @param msg a printf-style format string
@@ -4571,40 +4577,43 @@ _dbus_logv (DBusSystemLogSeverity  severity,
 {
   va_list tmp;
 #ifdef HAVE_SYSLOG_H
-  int flags;
-  switch (severity)
+  if (log_flags & DBUS_LOG_FLAGS_SYSTEM_LOG)
     {
-      case DBUS_SYSTEM_LOG_INFO:
-        flags =  LOG_DAEMON | LOG_NOTICE;
-        break;
-      case DBUS_SYSTEM_LOG_WARNING:
-        flags =  LOG_DAEMON | LOG_WARNING;
-        break;
-      case DBUS_SYSTEM_LOG_SECURITY:
-        flags = LOG_AUTH | LOG_NOTICE;
-        break;
-      case DBUS_SYSTEM_LOG_FATAL:
-        flags = LOG_DAEMON|LOG_CRIT;
-        break;
-      default:
-        return;
+      int flags;
+      switch (severity)
+        {
+          case DBUS_SYSTEM_LOG_INFO:
+            flags =  LOG_DAEMON | LOG_NOTICE;
+            break;
+          case DBUS_SYSTEM_LOG_WARNING:
+            flags =  LOG_DAEMON | LOG_WARNING;
+            break;
+          case DBUS_SYSTEM_LOG_SECURITY:
+            flags = LOG_AUTH | LOG_NOTICE;
+            break;
+          case DBUS_SYSTEM_LOG_FATAL:
+            flags = LOG_DAEMON|LOG_CRIT;
+            break;
+          default:
+            return;
+        }
+
+      DBUS_VA_COPY (tmp, args);
+      vsyslog (flags, msg, tmp);
+      va_end (tmp);
     }
 
-  DBUS_VA_COPY (tmp, args);
-  vsyslog (flags, msg, tmp);
-  va_end (tmp);
+  /* If we don't have syslog.h, we always behave as though stderr was in
+   * the flags */
+  if (log_flags & DBUS_LOG_FLAGS_STDERR)
 #endif
-
-#if !defined(HAVE_SYSLOG_H) || !HAVE_DECL_LOG_PERROR
     {
-      /* vsyslog() won't write to stderr, so we'd better do it */
       DBUS_VA_COPY (tmp, args);
       fprintf (stderr, "%s[" DBUS_PID_FORMAT "]: ", syslog_tag, _dbus_getpid ());
       vfprintf (stderr, msg, tmp);
       fputc ('\n', stderr);
       va_end (tmp);
     }
-#endif
 
   if (severity == DBUS_SYSTEM_LOG_FATAL)
     exit (1);

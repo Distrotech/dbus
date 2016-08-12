@@ -3634,6 +3634,9 @@ _dbus_restore_socket_errno (int saved_errno)
   _dbus_win_set_errno (saved_errno);
 }
 
+static const char *log_tag = "dbus";
+static DBusLogFlags log_flags = DBUS_LOG_FLAGS_STDERR;
+
 /**
  * Initialize the system log.
  *
@@ -3642,13 +3645,18 @@ _dbus_restore_socket_errno (int saved_errno)
  * it will normally be a constant.
  *
  * @param tag the name of the executable (syslog tag)
- * @param is_daemon #TRUE if this is the dbus-daemon
+ * @param mode whether to log to stderr, the system log or both
  */
 void
-_dbus_init_system_log (const char  *tag,
-                       dbus_bool_t  is_daemon)
+_dbus_init_system_log (const char   *tag,
+                       DBusLogFlags  flags)
 {
-  /* OutputDebugStringA doesn't need any special initialization, do nothing */
+  /* We never want to turn off logging completely */
+  _dbus_assert (
+      (flags & (DBUS_LOG_FLAGS_STDERR | DBUS_LOG_FLAGS_SYSTEM_LOG)) != 0);
+
+  log_tag = tag;
+  log_flags = flags;
 }
 
 /**
@@ -3667,8 +3675,7 @@ _dbus_logv (DBusSystemLogSeverity  severity,
             va_list                args)
 {
   char *s = "";
-  char buf[1024];
-  char format[1024];
+  va_list tmp;
 
   switch(severity)
    {
@@ -3678,9 +3685,26 @@ _dbus_logv (DBusSystemLogSeverity  severity,
      case DBUS_SYSTEM_LOG_FATAL: s = "fatal"; break;
    }
 
-  snprintf(format, sizeof(format), "%s%s", s ,msg);
-  vsnprintf(buf, sizeof(buf), format, args);
-  OutputDebugStringA(buf);
+  if (log_flags & DBUS_LOG_FLAGS_SYSTEM_LOG)
+    {
+      char buf[1024];
+      char format[1024];
+
+      DBUS_VA_COPY (tmp, args);
+      snprintf (format, sizeof (format), "%s: %s", s, msg);
+      vsnprintf(buf, sizeof(buf), format, tmp);
+      OutputDebugStringA(buf);
+      va_end (tmp);
+    }
+
+  if (log_flags & DBUS_LOG_FLAGS_STDERR)
+    {
+      DBUS_VA_COPY (tmp, args);
+      fprintf (stderr, "%s[%lu]: %s: ", log_tag, _dbus_pid_for_log (), s);
+      vfprintf (stderr, msg, tmp);
+      fprintf (stderr, "\n");
+      va_end (tmp);
+    }
 
   if (severity == DBUS_SYSTEM_LOG_FATAL)
     exit (1);

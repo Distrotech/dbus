@@ -555,9 +555,14 @@ void _dbus_set_signal_handler (int               sig,
 dbus_bool_t _dbus_user_at_console (const char *username,
                                    DBusError  *error);
 
+typedef enum {
+  DBUS_LOG_FLAGS_STDERR = (1 << 0),
+  DBUS_LOG_FLAGS_SYSTEM_LOG = (1 << 1)
+} DBusLogFlags;
+
 DBUS_PRIVATE_EXPORT
-void _dbus_init_system_log (const char  *tag,
-                            dbus_bool_t  is_daemon);
+void _dbus_init_system_log (const char   *tag,
+                            DBusLogFlags  flags);
 
 typedef enum {
   DBUS_SYSTEM_LOG_INFO,

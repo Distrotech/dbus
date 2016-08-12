@@ -752,7 +752,7 @@ _dbus_strerror_from_errno (void)
 }
 
 /**
- * Log a message to the system log file (e.g. syslog on Unix).
+ * Log a message to the system log file (e.g. syslog on Unix) and/or stderr.
  *
  * @param severity a severity value
  * @param msg a printf-style format string

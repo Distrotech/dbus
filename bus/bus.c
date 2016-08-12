@@ -47,6 +47,10 @@
 #include <signal.h>
 #endif
 
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 struct BusContext
 {
   int refcount;
@@ -288,7 +292,25 @@ process_config_first_time_only (BusContext       *context,
   auth_mechanisms = NULL;
   pidfile = NULL;
 
-  _dbus_init_system_log ("dbus-daemon", TRUE);
+  context->syslog = bus_config_parser_get_syslog (parser);
+
+  if (context->syslog)
+    {
+#ifdef HAVE_SYSTEMD
+      /* If running under systemd, we don't want to log to both stderr and
+       * syslog, because our stderr is probably connected to journald too,
+       * so we'd duplicate all our messages. */
+      if (sd_booted () > 0)
+        _dbus_init_system_log ("dbus-daemon", DBUS_LOG_FLAGS_SYSTEM_LOG);
+      else
+#endif
+        _dbus_init_system_log ("dbus-daemon",
+            DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
+    }
+  else
+    {
+      _dbus_init_system_log ("dbus-daemon", DBUS_LOG_FLAGS_STDERR);
+    }
 
   if (flags & BUS_CONTEXT_FLAG_SYSTEMD_ACTIVATION)
     context->systemd_activation = TRUE;
@@ -470,7 +492,6 @@ process_config_first_time_only (BusContext       *context,
     }
 
   context->fork = bus_config_parser_get_fork (parser);
-  context->syslog = bus_config_parser_get_syslog (parser);
   context->keep_umask = bus_config_parser_get_keep_umask (parser);
   context->allow_anonymous = bus_config_parser_get_allow_anonymous (parser);
 

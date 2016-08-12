@@ -56,7 +56,8 @@ test_syslog (Fixture *f,
 #ifndef G_OS_WIN32
   if (g_test_trap_fork (0, 0))
     {
-      _dbus_init_system_log ("test-syslog", FALSE);
+      _dbus_init_system_log ("test-syslog",
+          DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
       _dbus_log (DBUS_SYSTEM_LOG_FATAL, MESSAGE "%d", 23);
       /* should not be reached: exit 0 so the assertion in the main process
        * will fail */
@@ -68,7 +69,8 @@ test_syslog (Fixture *f,
 
   if (g_test_trap_fork (0, 0))
     {
-      _dbus_init_system_log ("test-syslog", FALSE);
+      _dbus_init_system_log ("test-syslog",
+          DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
       _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
       _dbus_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
       _dbus_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);
@@ -79,7 +81,8 @@ test_syslog (Fixture *f,
   g_test_trap_assert_stderr ("*" MESSAGE "42\n*" MESSAGE "45\n*" MESSAGE "666\n*");
 #endif
   /* manual test (this is the best we can do on Windows) */
-  _dbus_init_system_log ("test-syslog", FALSE);
+  _dbus_init_system_log ("test-syslog",
+          DBUS_LOG_FLAGS_SYSTEM_LOG | DBUS_LOG_FLAGS_STDERR);
   _dbus_log (DBUS_SYSTEM_LOG_INFO, MESSAGE "%d", 42);
   _dbus_log (DBUS_SYSTEM_LOG_WARNING, MESSAGE "%d", 45);
   _dbus_log (DBUS_SYSTEM_LOG_SECURITY, MESSAGE "%d", 666);

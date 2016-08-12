@@ -2310,11 +2310,13 @@ include_dir (BusConfigParser   *parser,
             {
               if (dbus_error_is_set (error))
                 {
-                  /* We log to syslog unconditionally here, because this is
+                  /* We use both syslog and stderr here, because this is
                    * the configuration parser, so we don't yet know whether
-                   * this bus is going to want to write to syslog! (There's
-                   * also some layer inversion going on, if we want to use
-                   * the bus context.) */
+                   * this bus is going to want to write to syslog! Err on
+                   * the side of making sure the message gets to the sysadmin
+                   * somehow. */
+                  _dbus_init_system_log ("dbus-daemon",
+                      DBUS_LOG_FLAGS_STDERR | DBUS_LOG_FLAGS_SYSTEM_LOG);
                   _dbus_log (DBUS_SYSTEM_LOG_INFO,
                              "Encountered error '%s' while parsing '%s'",
                              error->message,
