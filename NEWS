@@ -57,6 +57,12 @@ Fixes:
 • Be explicit about enum comparison when loading XML
   (fd.o #93205, Deepika Aggarwal)
 
+• update-activation-environment: produce better diagnostics on error
+  (fd.o #96653, Simon McVittie)
+
+• Avoid various compiler warnings with gcc 6
+  (fd.o #97282; Thomas Zimmermann, Simon McVittie)
+
 D-Bus 1.11.2 (2016-03-07)
 ==
 

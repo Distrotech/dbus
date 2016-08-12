@@ -378,7 +378,8 @@ next:
       exit (EX_UNAVAILABLE);
     }
 
-  if (!dbus_message_get_args (msg, &error, DBUS_TYPE_INVALID))
+  if (dbus_set_error_from_message (&error, msg) ||
+      !dbus_message_get_args (msg, &error, DBUS_TYPE_INVALID))
     {
       fprintf (stderr,
           "%s: error from dbus-daemon: %s: %s\n",
@@ -402,7 +403,8 @@ next:
               "%s: warning: error sending to systemd: %s: %s\n",
               PROGNAME, error.name, error.message);
         }
-      else if (!dbus_message_get_args (msg, &error, DBUS_TYPE_INVALID))
+      else if (dbus_set_error_from_message (&error, msg) ||
+          !dbus_message_get_args (msg, &error, DBUS_TYPE_INVALID))
         {
           fprintf (stderr,
               "%s: warning: error from systemd: %s: %s\n",
