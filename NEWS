@@ -24,6 +24,12 @@ Fixes:
 
 • Explicitly check for stdint.h (Ioan-Adrian Ratiu)
 
+• update-activation-environment: produce better diagnostics on error
+  (fd.o #96653, Simon McVittie)
+
+• Don't fail the build with an unused const variable warning under gcc 6
+  (fd.o #97282; Thomas Zimmermann, Simon McVittie)
+
 • Merge dbus-1.10-ci branch, containing backports from 1.11.0 in build/test
   code to support continuous integration (fd.o #93194, Simon McVittie)
 
