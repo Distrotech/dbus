@@ -172,6 +172,7 @@ dist_installable_test_scripts += \
 if DBUS_ENABLE_EMBEDDED_TESTS
 dist_installable_test_scripts += \
 	test-dbus-launch-eval.sh \
+	test-dbus-launch-x11.sh \
 	$(NULL)
 endif DBUS_ENABLE_EMBEDDED_TESTS
 
@@ -196,6 +197,7 @@ installcheck_environment = \
 	export XDG_RUNTIME_DIR=@abs_top_builddir@/test/XDG_RUNTIME_DIR; \
 	export DBUS_TEST_DAEMON=$(DESTDIR)$(DBUS_DAEMONDIR)/dbus-daemon$(EXEEXT); \
 	export DBUS_TEST_DBUS_LAUNCH=$(DESTDIR)$(bindir)/dbus-launch$(EXEEXT); \
+	export DBUS_TEST_DBUS_MONITOR=$(DESTDIR)$(bindir)/dbus-monitor$(EXEEXT); \
 	export DBUS_TEST_DBUS_SEND=$(DESTDIR)$(bindir)/dbus-send$(EXEEXT); \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
 	export DBUS_TEST_DATADIR=$(DESTDIR)$(datadir); \
@@ -206,6 +208,7 @@ AM_TESTS_ENVIRONMENT = \
 	export DBUS_FATAL_WARNINGS=1; \
 	export DBUS_TEST_DAEMON=@abs_top_builddir@/bus/dbus-daemon$(EXEEXT); \
 	export DBUS_TEST_DBUS_LAUNCH=@abs_top_builddir@/tools/dbus-launch$(EXEEXT); \
+	export DBUS_TEST_DBUS_MONITOR=@abs_top_builddir@/tools/dbus-monitor$(EXEEXT); \
 	export DBUS_TEST_DBUS_SEND=@abs_top_builddir@/tools/dbus-send$(EXEEXT); \
 	export DBUS_TEST_DATA=@abs_top_builddir@/test/data; \
 	export DBUS_TEST_HOMEDIR=@abs_top_builddir@/dbus; \
