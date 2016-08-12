@@ -27,8 +27,10 @@ install:
     python-dbus
     python-gi
     valgrind
+    xauth
     xmlto
     xsltproc
+    xvfb
   - >
     test "$dbus_ci_host" != mingw || sudo apt-get -qq -y install
     binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
