@@ -126,12 +126,13 @@ test_disconnection () {
 }
 
 test_exit_with_x11 () {
+    arg="$1"
     unset DBUS_SESSION_BUS_ADDRESS
     unset DBUS_SESSION_BUS_PID
     unset DBUS_SESSION_BUS_WINDOWID
 
     start_xvfb
-    eval "$($DBUS_TEST_DBUS_LAUNCH --sh-syntax --exit-with-session "$launch_config" </dev/null)"
+    eval "$($DBUS_TEST_DBUS_LAUNCH --sh-syntax "$arg" "$launch_config" </dev/null)"
 
     test -n "$DBUS_SESSION_BUS_ADDRESS"
     env | grep '^DBUS_SESSION_BUS_ADDRESS='
@@ -149,7 +150,7 @@ test_exit_with_x11 () {
     test_disconnection
 
     test_num=$(($test_num + 1))
-    echo "ok ${test_num} - dbus-launch --exit-with-session"
+    echo "ok ${test_num} - dbus-launch $arg"
 }
 
 test_autolaunch () {
@@ -246,8 +247,9 @@ test_xdg_runtime_dir () {
     echo "ok ${test_num} - dbus-launch --autolaunch with XDG_RUNTIME_DIR"
 }
 
-echo "1..3"
-test_exit_with_x11
+echo "1..4"
+test_exit_with_x11 --exit-with-session
+test_exit_with_x11 --exit-with-x11
 test_autolaunch
 test_xdg_runtime_dir
 
