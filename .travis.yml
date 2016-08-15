@@ -9,7 +9,6 @@ install:
   - sudo apt-get -qq -y build-dep dbus
   - >
     sudo apt-get -qq -y install
-    autoconf-archive
     automake
     autotools-dev
     debhelper
@@ -35,6 +34,12 @@ install:
   - >
     test "$dbus_ci_host" != mingw || sudo apt-get -qq -y install
     binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
+  # Ubuntu 14.04's autoconf-archive is too old
+  - >
+    wget
+    http://httpredir.debian.org/debian/pool/main/a/autoconf-archive/autoconf-archive_20150925-1_all.deb
+  - 'sudo dpkg -i autoconf-archive_*_all.deb'
+  - 'rm autoconf-archive_*_all.deb'
 script:
   # python-dbus and python-gi aren't available to Travis's version of
   # Python in /opt, which it uses as a default
