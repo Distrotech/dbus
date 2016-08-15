@@ -9,6 +9,9 @@ m4_define([dbus_version],
 AC_INIT([dbus],[dbus_version],[https://bugs.freedesktop.org/enter_bug.cgi?product=dbus],[dbus])
 AC_CONFIG_AUX_DIR([build-aux])
 
+m4_pattern_forbid([^AX_],
+  [Unexpanded AX_ macro found. Please install GNU autoconf-archive])
+
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS([config.h])

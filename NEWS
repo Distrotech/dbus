@@ -1,6 +1,17 @@
 D-Bus 1.11.4 (UNRELEASED)
 ==
 
+Dependencies:
+
+• Building from git (but not from tarballs) now requires
+  macros from the GNU Autoconf Archive, for example the autoconf-archive
+  package in Debian or Fedora derivatives.
+
+Build-time configuration:
+
+• The option to enable coverage instrumentation has changed from
+  --enable-compiler-coverage to --enable-code-coverage.
+
 Enhancements:
 
 • D-Bus Specification version 0.28
@@ -20,6 +31,9 @@ Enhancements:
 
 • On Unix, unify the various places that reopen stdin, stdout and/or stderr
   pointing to /dev/null (fd.o #97008, Simon McVittie)
+
+• Use AX_CODE_COVERAGE instead of our own COMPILER_COVERAGE
+  (fd.o #88922, Thomas Zimmermann)
 
 Fixes:
 
