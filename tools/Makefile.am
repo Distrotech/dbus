@@ -6,6 +6,10 @@ AM_CPPFLAGS = \
 	-DDBUS_MACHINE_UUID_FILE=\""$(localstatedir)/lib/dbus/machine-id"\" \
 	$(NULL)
 
+AM_CFLAGS = \
+	$(CODE_COVERAGE_CFLAGS) \
+	$(NULL)
+
 # if assertions are enabled, improve backtraces
 AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
 
