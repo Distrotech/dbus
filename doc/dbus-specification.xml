@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.27</releaseinfo>
-    <date>2015-12-02</date>
+    <releaseinfo>Version 0.28</releaseinfo>
+    <date>2016-08-15</date>
     <authorgroup>
       <author>
         <firstname>Havoc</firstname>
@@ -70,6 +70,12 @@
       </author>
     </authorgroup>
    <revhistory>
+     <revision>
+       <revnumber>0.28</revnumber>
+       <date>2016-08-15</date>
+       <authorinitials>PW</authorinitials>
+       <revremark>Clarify serialization</revremark>
+     </revision>
      <revision>
        <revnumber>0.27</revnumber>
        <date>2015-12-02</date>
