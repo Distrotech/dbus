@@ -1,5 +1,7 @@
-D-Bus 1.10.10 (UNRELEASED)
+D-Bus 1.10.10 (2016-08-15)
 ==
+
+The “tungsten door” release.
 
 Fixes:
 
