@@ -42,7 +42,11 @@ void _dbus_warn               (const char *format,
 DBUS_PRIVATE_EXPORT
 void _dbus_warn_check_failed  (const char *format,
                                ...) _DBUS_GNUC_PRINTF (1, 2);
-
+DBUS_PRIVATE_EXPORT
+void _dbus_warn_return_if_fail (const char *function,
+                                const char *assertion,
+                                const char *file,
+                                int line);
 
 #if defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #define _DBUS_FUNCTION_NAME __func__
@@ -165,22 +169,17 @@ void _dbus_real_assert_not_reached (const char *explanation,
 #define _dbus_return_val_if_fail(condition, val)
 #else
 
-DBUS_PRIVATE_EXPORT
-extern const char *_dbus_return_if_fail_warning_format;
-
 #define _dbus_return_if_fail(condition) do {                                       \
    _dbus_assert ((*(const char*)_DBUS_FUNCTION_NAME) != '_');                      \
   if (!(condition)) {                                                              \
-    _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,                  \
-                             _DBUS_FUNCTION_NAME, #condition, __FILE__, __LINE__); \
+    _dbus_warn_return_if_fail (_DBUS_FUNCTION_NAME, #condition, __FILE__, __LINE__); \
     return;                                                                        \
   } } while (0)
 
 #define _dbus_return_val_if_fail(condition, val) do {                                   \
    _dbus_assert ((*(const char*)_DBUS_FUNCTION_NAME) != '_');                           \
   if (!(condition)) {                                                                   \
-    _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,                       \
-                             _DBUS_FUNCTION_NAME, #condition, __FILE__, __LINE__);      \
+    _dbus_warn_return_if_fail (_DBUS_FUNCTION_NAME, #condition, __FILE__, __LINE__); \
     return (val);                                                                       \
   } } while (0)
 

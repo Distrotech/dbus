@@ -704,9 +704,8 @@ dbus_server_ref (DBusServer *server)
   if (_DBUS_UNLIKELY (old_refcount <= 0))
     {
       _dbus_atomic_dec (&server->refcount);
-      _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,
-                               _DBUS_FUNCTION_NAME, "old_refcount > 0",
-                               __FILE__, __LINE__);
+      _dbus_warn_return_if_fail (_DBUS_FUNCTION_NAME, "old_refcount > 0",
+                                 __FILE__, __LINE__);
       return NULL;
     }
 #endif
@@ -746,9 +745,8 @@ dbus_server_unref (DBusServer *server)
        * Bug: https://bugs.freedesktop.org/show_bug.cgi?id=68303
        */
       _dbus_atomic_inc (&server->refcount);
-      _dbus_warn_check_failed (_dbus_return_if_fail_warning_format,
-                               _DBUS_FUNCTION_NAME, "old_refcount > 0",
-                               __FILE__, __LINE__);
+      _dbus_warn_return_if_fail (_DBUS_FUNCTION_NAME, "old_refcount > 0",
+                                 __FILE__, __LINE__);
       return;
     }
 #endif

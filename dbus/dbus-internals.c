@@ -944,10 +944,17 @@ _dbus_get_local_machine_uuid_encoded (DBusString *uuid_str,
 }
 
 #ifndef DBUS_DISABLE_CHECKS
-/** String used in _dbus_return_if_fail macro */
-const char *_dbus_return_if_fail_warning_format =
-"arguments to %s() were incorrect, assertion \"%s\" failed in file %s line %d.\n"
-"This is normally a bug in some application using the D-Bus library.\n";
+void
+_dbus_warn_return_if_fail (const char *function,
+                           const char *assertion,
+                           const char *file,
+                           int line)
+{
+  _dbus_warn_check_failed (
+      "arguments to %s() were incorrect, assertion \"%s\" failed in file %s line %d.\n"
+      "This is normally a bug in some application using the D-Bus library.\n",
+      function, assertion, file, line);
+}
 #endif
 
 #ifndef DBUS_DISABLE_ASSERT
