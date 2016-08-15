@@ -324,14 +324,24 @@ if test x$enable_verbose_mode = xyes; then
     AC_DEFINE(DBUS_ENABLE_VERBOSE_MODE,1,[Support a verbose mode])
 fi
 
+dnl Intentional:
+dnl - $DISABLE_WARNINGS disables unused-label warnings if not
+dnl   checking or not asserting (tested further below)
+dnl - missing field initializers being 0 is a C feature, not a bug
+dnl - unused-parameter is to make writing callbacks less annoying
+DISABLE_WARNINGS="$DISABLE_WARNINGS
+                  -Wno-missing-field-initializers
+                  -Wno-unused-parameter"
+
 if test x$enable_asserts = xno; then
     AC_DEFINE(DBUS_DISABLE_ASSERT,1,[Disable assertion checking])
-    DISABLE_UNUSED_WARNINGS="unused-label"
+    DISABLE_WARNINGS="$DISABLE_WARNINGS -Wno-unused-label"
     R_DYNAMIC_LDFLAG=""
     if test x$enable_embedded_tests = xyes; then
-        DISABLE_UNUSED_WARNINGS="$DISABLE_UNUSED_WARNINGS \
-                unused-but-set-variable unused-variable \
-                unused-function"
+        DISABLE_WARNINGS="$DISABLE_WARNINGS
+                          -Wno-unused-but-set-variable
+                          -Wno-unused-variable
+                          -Wno-unused-function"
     fi
 else
     # -rdynamic is needed for glibc's backtrace_symbols to work.
@@ -349,7 +359,7 @@ AC_SUBST(R_DYNAMIC_LDFLAG)
 if test x$enable_checks = xno; then
     AC_DEFINE(DBUS_DISABLE_CHECKS,1,[Disable public API sanity checking])
     AC_DEFINE(G_DISABLE_CHECKS,1,[Disable GLib public API sanity checking])
-    DISABLE_UNUSED_WARNINGS="unused-label"
+    DISABLE_WARNINGS="$DISABLE_WARNINGS -Wno-unused-label"
 fi
 
 AH_BOTTOM([
@@ -1337,77 +1347,59 @@ fi
 AC_SUBST([DBUS_X_CFLAGS])
 AC_SUBST([DBUS_X_LIBS])
 
-#### gcc warning flags
+# We're treating -fno-common like a warning: it makes the linker more
+# strict, because on some systems the linker is *always* this strict
+TEST_CFLAGS="$TEST_CFLAGS -fno-common"
 
-cc_supports_flag() {
-  AC_MSG_CHECKING(whether $CC supports "$*")
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="$*"
-  AC_TRY_COMPILE([], [], [rc=yes], [rc=no])
-  CFLAGS="$save_CFLAGS"
-  AC_MSG_RESULT([$rc])
-  test "x$rc" = xyes
-}
-
-TP_COMPILER_WARNINGS([WARNING_CFLAGS],
-  dnl Use -Werror by default if:
-  dnl - we're in developer mode (a D-Bus developer, not a distro or end-user)
-  dnl Override with --enable-Werror or --disable-Werror
-  [x$enable_developer = xyes],
-
-  dnl Enable these warnings if possible:
-  [all \
-   extra \
-   char-subscripts \
-   implicit \
-   missing-declarations \
-   missing-prototypes \
-   nested-externs \
-   pointer-arith \
-   pointer-sign \
-   old-style-declaration \
-   old-style-definition \
-   shadow \
-   strict-prototypes \
-   type-limits \
-   cast-align \
-   no-address \
-   float-equal \
-   declaration-after-statement \
-  ],
-
-  dnl Disable these warnings if possible, make them non-fatal if possible,
-  dnl and don't enable -Werror unless we succeeded.
-  dnl
-  dnl Intentional:
-  dnl - $DISABLE_UNUSED_WARNINGS disables unused-label warnings if not
-  dnl   checking or not asserting
-  dnl - missing field initializers being 0 is a C feature, not a bug
-  dnl - unused-parameter is to make writing callbacks less annoying
-  [$DISABLE_UNUSED_WARNINGS \
-   missing-field-initializers \
-   unused-parameter \
+AS_IF([test "x$enable_ansi" = "xyes"],[
+    TEST_CFLAGS="$TEST_CFLAGS -ansi -pedantic"
+    AC_DEFINE([_POSIX_C_SOURCE],[199309L],[Define to enable POSIX features])
+    AC_DEFINE([_BSD_SOURCE],[1],[Define to enable BSD features])
   ])
 
-if test "x$GCC" = "xyes"; then
-  # We're treating -fno-common like a warning: it makes the linker more
-  # strict, because on some systems the linker is *always* this strict
-  TP_ADD_COMPILER_FLAG([WARNING_CFLAGS], [-fno-common])
+dnl TODO: The compiler flags below disable warnings that the
+dnl       compiler emits while building dbus. Fix the source
+dnl       code and remove these flags.
+DISABLE_WARNINGS="$DISABLE_WARNINGS
+                  -Wno-suggest-attribute=format
+                  -Wno-suggest-attribute=noreturn
+                  -Wno-switch-default
+                  -Wno-switch-enum
+                  "
 
-  # http://bugs.freedesktop.org/show_bug.cgi?id=10599
-  TP_ADD_COMPILER_FLAG([WARNING_CFLAGS], [-fno-strict-aliasing])
+dnl We are only calling this for its side-effect of setting up
+dnl --enable-compile-warnings; the WARN_CFLAGS, etc. are ignored,
+dnl to work around https://github.com/peti/autoconf-archive/pull/96
+AX_COMPILER_FLAGS([], [], [$disable_developer])
 
-  if test "x$enable_ansi" = "xyes"; then
-    TP_ADD_COMPILER_FLAG([WARNING_CFLAGS],
-      [-ansi -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -pedantic])
-  fi
-fi
+dnl Work around https://github.com/peti/autoconf-archive/pull/96 by using
+dnl a non-default variable name here (in particular there is no way to tell
+dnl AX_COMPILER_FLAGS to not use WARN_CXXFLAGS)
+AX_COMPILER_FLAGS_CFLAGS([EXTRA_CFLAGS],
+                         [$disable_developer],
+                         [$TEST_CFLAGS],
+                         [-Wchar-subscripts \
+                          -Wfloat-equal \
+                          -Wpointer-sign \
+                          $DISABLE_WARNINGS])
+dnl cc1plus: warning: command line option ‘-Wpointer-sign’ is valid for
+dnl C/ObjC but not for C++
+AX_COMPILER_FLAGS_CXXFLAGS([EXTRA_CXXFLAGS],
+                           [$disable_developer],
+                           [],
+                           [-Wchar-subscripts \
+                            -Wfloat-equal \
+                            $DISABLE_WARNINGS])
+AX_COMPILER_FLAGS_LDFLAGS([EXTRA_LDFLAGS],
+                          [$disable_developer])
 
-dnl In principle we should put WARNING_CFLAGS in each Makefile.am like
+dnl TODO: In principle we should put EXTRA_CFLAGS in each Makefile.am like
 dnl telepathy-glib does, since CFLAGS is meant to be reserved for the user...
 dnl but prepending to CFLAGS (so the user can override it with later CFLAGS)
-dnl is the next best thing
-CFLAGS="$WARNING_CFLAGS $CFLAGS"
+dnl is the next best thing.
+CFLAGS="$EXTRA_CFLAGS $CFLAGS"
+CXXFLAGS="$EXTRA_CXXFLAGS $CXXFLAGS"
+LDFLAGS="$EXTRA_LDFLAGS $LDFLAGS"
 
 case $host_os in
     solaris*)
@@ -1918,6 +1910,7 @@ echo "
 	cflags:		          ${CFLAGS}
 	cppflags:		  ${CPPFLAGS}
 	cxxflags:		  ${CXXFLAGS}
+	ldflags:		  ${LDFLAGS}
 	64-bit int:		  ${DBUS_INT64_TYPE}
 	32-bit int:		  ${DBUS_INT32_TYPE}
 	16-bit int:		  ${DBUS_INT16_TYPE}
