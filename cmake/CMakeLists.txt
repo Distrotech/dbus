@@ -388,9 +388,6 @@ if(CMAKE_COMPILER_IS_GNUCC AND NOT DBUS_ENABLE_ANSI)
     endif(UNAME_EXECUTABLE)
 endif(CMAKE_COMPILER_IS_GNUCC AND NOT DBUS_ENABLE_ANSI)
 
-set (DBUS_HAVE_ATOMIC_INT ${atomic_int} CACHE STRING "Some atomic integer implementation present")
-set (DBUS_USE_ATOMIC_INT_486 ${atomic_int_486} CACHE STRING "Use atomic integer implementation for 486")
-
 if(X11_FOUND)
   option (DBUS_BUILD_X11 "Build with X11 autolaunch support " ON)
 endif(X11_FOUND)

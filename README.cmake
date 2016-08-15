@@ -123,9 +123,6 @@ DBUS_ENABLE_VERBOSE_MODE:BOOL=ON
 // build XML  documentation (requires xmlto or meinproc4)
 DBUS_ENABLE_XML_DOCS:BOOL=ON
 
-// Some atomic integer implementation present
-DBUS_HAVE_ATOMIC_INT:BOOL=OFF
-
 // install required system libraries
 DBUS_INSTALL_SYSTEM_LIBS:BOOL=OFF
 
@@ -137,9 +134,6 @@ DBUS_SESSION_BUS_CONNECT_ADDRESS:STRING=autolaunch:
 
 // system bus default address (only useful on Unix)
 DBUS_SYSTEM_BUS_DEFAULT_ADDRESS:STRING=unix:path=/var/run/dbus/system_bus_socket
-
-// Use atomic integer implementation for 486
-DBUS_USE_ATOMIC_INT_486:BOOL=OFF
 
 win32 only:
 // enable win32 debug port for message output

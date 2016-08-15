@@ -68,13 +68,6 @@
 #cmakedefine HAVE_CONSOLE_OWNER_FILE 1
 #define DBUS_CONSOLE_OWNER_FILE "@DBUS_CONSOLE_OWNER_FILE@"
 
-#cmakedefine DBUS_HAVE_ATOMIC_INT 1
-#cmakedefine DBUS_USE_ATOMIC_INT_486 1
-#if (defined(__i386__) || defined(__x86_64__))
-# define DBUS_HAVE_ATOMIC_INT 1
-# define DBUS_USE_ATOMIC_INT_486 1
-#endif
-
 #cmakedefine DBUS_BUILD_X11 1
 /* For the moment, the cmake build system doesn't have an equivalent of
  * the autoconf build system's --disable-x11-autolaunch */
