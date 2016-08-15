@@ -81,7 +81,10 @@ $ACLOCAL -I m4 $ACLOCAL_FLAGS
 (autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader
 
 $AUTOMAKE -a $am_opt
-autoconf || echo "autoconf failed - version 2.5x is probably required"
+if ! autoconf; then
+  echo "autoconf failed - version 2.5x is probably required" >&2
+  exit 1
+fi
 
 cd $ORIGDIR
 
