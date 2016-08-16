@@ -248,7 +248,11 @@ with_glib=yes
 AS_IF([test "x$enable_modular_tests" != xno],
   [
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.36, gio-2.0 >= 2.36],
-    [],
+    [
+      AS_IF([test "x$dbus_unix" = xyes],
+        [PKG_CHECK_MODULES([GIO_UNIX], [gio-unix-2.0],
+           [AC_DEFINE([HAVE_GIO_UNIX], [1], [Define if you have gio-unix-2.0])], [])])
+    ],
     [if test "x$enable_modular_tests" = xyes; then
       AC_MSG_NOTICE([Full test coverage (--enable-modular-tests=yes or --enable-tests=yes) requires GLib])
       AC_MSG_ERROR([$GLIB_ERRORS])

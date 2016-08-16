@@ -34,6 +34,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gio/gio.h>
 
 #include "test-utils-glib.h"
 
@@ -42,6 +43,11 @@
 #ifdef DBUS_UNIX
 # include <unistd.h>
 # include <sys/types.h>
+
+# ifdef HAVE_GIO_UNIX
+    /* The CMake build system doesn't know how to check for this yet */
+#   include <gio/gunixfdmessage.h>
+# endif
 #endif
 
 /* Platforms where we know that credentials-passing passes both the
@@ -913,6 +919,117 @@ test_max_names_per_connection (Fixture *f,
   g_assert_cmpint (ret, ==, DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER);
 }
 
+#if defined(DBUS_UNIX) && defined(HAVE_UNIX_FD_PASSING) && defined(HAVE_GIO_UNIX)
+
+static DBusHandlerResult
+wait_for_disconnected_cb (DBusConnection *client_conn,
+    DBusMessage *message,
+    void *data)
+{
+  gboolean *disconnected = data;
+
+  if (dbus_message_is_signal (message, DBUS_INTERFACE_LOCAL, "Disconnected"))
+    {
+      *disconnected = TRUE;
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static const guchar partial_message[] =
+{
+  DBUS_LITTLE_ENDIAN,
+  DBUS_MESSAGE_TYPE_METHOD_CALL,
+  0, /* flags */
+  1, /* version */
+  0xff, 0xff, 0, 0, /* length of body = 65535 bytes */
+  1, 2, 3, 4, /* cookie */
+  0xff, 0xff, 0, 0, /* length of header fields array = 65535 bytes */
+  42 /* pretending to be the beginning of the header fields array */
+};
+
+static void
+send_all_with_fd (GSocket *socket,
+                  const guchar *partial_message,
+                  gsize len,
+                  int fd)
+{
+  GSocketControlMessage *fdm = g_unix_fd_message_new ();
+  GError *error = NULL;
+  gssize sent;
+  GOutputVector vector = { partial_message, len };
+
+  g_unix_fd_message_append_fd (G_UNIX_FD_MESSAGE (fdm), fd, &error);
+  g_assert_no_error (error);
+
+  sent = g_socket_send_message (socket, NULL, &vector, 1, &fdm, 1,
+      G_SOCKET_MSG_NONE, NULL, &error);
+  g_assert_no_error (error);
+  g_assert_cmpint (sent, >=, 1);
+  g_assert_cmpint (sent, <=, vector.size);
+
+  while (((gsize) sent) < vector.size)
+    {
+      vector.size -= sent;
+      vector.buffer = ((const guchar *) vector.buffer) + sent;
+      sent = g_socket_send_message (socket, NULL, &vector, 1, NULL, 0,
+          G_SOCKET_MSG_NONE, NULL, &error);
+      g_assert_no_error (error);
+      g_assert_cmpint (sent, >=, 1);
+      g_assert_cmpint (sent, <=, vector.size);
+    }
+
+  g_object_unref (fdm);
+}
+
+static void
+test_pending_fd_timeout (Fixture *f,
+    gconstpointer context)
+{
+  GError *error = NULL;
+  gint64 start;
+  int fd;
+  GSocket *socket;
+  gboolean have_mem;
+  gboolean disconnected = FALSE;
+
+  if (f->skip)
+    return;
+
+  have_mem = dbus_connection_add_filter (f->left_conn, wait_for_disconnected_cb,
+      &disconnected, NULL);
+  g_assert (have_mem);
+
+  /* This is not API. Never do this. */
+
+  if (!dbus_connection_get_socket (f->left_conn, &fd))
+    g_error ("failed to steal fd from left connection");
+
+  socket = g_socket_new_from_fd (fd, &error);
+  g_assert_no_error (error);
+  g_assert (socket != NULL);
+
+  /* We send part of a message that contains a fd, then stop. */
+  start = g_get_monotonic_time ();
+  send_all_with_fd (socket, partial_message, G_N_ELEMENTS (partial_message),
+                    fd);
+
+  while (!disconnected)
+    {
+      test_progress ('.');
+      test_main_context_iterate (f->ctx, TRUE);
+
+      /* It should take no longer than 500ms to get disconnected. We'll
+       * be generous and allow 1000ms. */
+      g_assert_cmpint (g_get_monotonic_time (), <=, start + G_USEC_PER_SEC);
+    }
+
+  g_object_unref (socket);
+}
+
+#endif
+
 static void
 teardown (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
@@ -1022,6 +1139,13 @@ static Config max_names_per_connection_config = {
     SPECIFY_ADDRESS
 };
 
+#if defined(DBUS_UNIX) && defined(HAVE_UNIX_FD_PASSING) && defined(HAVE_GIO_UNIX)
+static Config pending_fd_timeout_config = {
+    NULL, 1, "valid-config-files/pending-fd-timeout.conf",
+    SPECIFY_ADDRESS
+};
+#endif
+
 int
 main (int argc,
     char **argv)
@@ -1054,6 +1178,13 @@ main (int argc,
   g_test_add ("/limits/max-names-per-connection", Fixture,
       &max_names_per_connection_config,
       setup, test_max_names_per_connection, teardown);
+
+#if defined(DBUS_UNIX) && defined(HAVE_UNIX_FD_PASSING) && defined(HAVE_GIO_UNIX)
+  g_test_add ("/limits/pending-fd-timeout", Fixture,
+      &pending_fd_timeout_config,
+      setup, test_pending_fd_timeout, teardown);
+#endif
+
 #ifdef DBUS_UNIX
   /* We can't test this in loopback.c with the rest of unix:runtime=yes,
    * because dbus_bus_get[_private] is the only way to use the default,

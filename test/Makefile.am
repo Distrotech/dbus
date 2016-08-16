@@ -13,6 +13,7 @@ AM_CPPFLAGS = \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	-DDBUS_COMPILATION \
 	$(GLIB_CFLAGS) \
+	$(GIO_UNIX_CFLAGS) \
 	$(NULL)
 
 # improve backtraces from test stuff
@@ -252,6 +253,7 @@ test_dbus_daemon_SOURCES = dbus-daemon.c
 test_dbus_daemon_LDADD = \
     libdbus-testutils.la \
     $(GLIB_LIBS) \
+    $(GIO_UNIX_LIBS) \
     $(NULL)
 
 test_dbus_daemon_eavesdrop_SOURCES = dbus-daemon-eavesdrop.c
@@ -353,6 +355,7 @@ in_data = \
 	data/valid-config-files/max-names-per-connection.conf.in \
 	data/valid-config-files/max-replies-per-connection.conf.in \
 	data/valid-config-files/multi-user.conf.in \
+	data/valid-config-files/pending-fd-timeout.conf.in \
 	data/valid-config-files/systemd-activation.conf.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoExec.service.in \
 	data/invalid-service-files-system/org.freedesktop.DBus.TestSuiteNoService.service.in \
