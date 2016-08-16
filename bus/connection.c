@@ -671,6 +671,18 @@ static dbus_bool_t
 pending_unix_fds_timeout_cb (void *data)
 {
   DBusConnection *connection = data;
+  BusConnectionData *d = BUS_CONNECTION_DATA (connection);
+  int limit;
+
+  _dbus_assert (d != NULL);
+  limit = bus_context_get_pending_fd_timeout (d->connections->context);
+  bus_context_log (d->connections->context, DBUS_SYSTEM_LOG_WARNING,
+      "Connection \"%s\" (%s) has had Unix fds pending for too long, "
+      "closing it (pending_fd_timeout=%d ms)",
+      d->name != NULL ? d->name : "(null)",
+      bus_connection_get_loginfo (connection),
+      limit);
+
   dbus_connection_close (connection);
   return TRUE;
 }
