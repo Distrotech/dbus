@@ -254,8 +254,10 @@ if(MSVC_IDE)
 	project_source_group(${GROUP_CODE} DBUS_UTIL_SOURCES DBUS_UTIL_SOURCES)
 endif(MSVC_IDE)
 
-### Client library
+# for clock_getres() on e.g. GNU/Linux (but not Android)
+find_library(LIBRT rt)
 
+### Client library
 add_library(dbus-1 SHARED
 			${libdbus_SOURCES}
 			${libdbus_HEADERS}
@@ -282,7 +284,10 @@ else(WIN32)
     if(DEFINED DBUS_LIBRARY_REVISION)
         set_target_properties(dbus-1 PROPERTIES VERSION ${DBUS_LIBRARY_MAJOR}.${DBUS_LIBRARY_AGE}.${DBUS_LIBRARY_REVISION} SOVERSION ${DBUS_LIBRARY_MAJOR})
     endif()
-    target_link_libraries(dbus-1 ${CMAKE_THREAD_LIBS_INIT} rt)
+    target_link_libraries(dbus-1 ${CMAKE_THREAD_LIBS_INIT})
+    if(LIBRT)
+        target_link_libraries(dbus-1 ${LIBRT})
+    endif()
 endif(WIN32)
 
 # Assume that Linux has -Wl,--version-script and other platforms do not
@@ -309,7 +314,10 @@ if(WIN32)
         target_link_libraries(dbus-internal ws2_32 advapi32 netapi32 iphlpapi)
     endif(WINCE)
 else(WIN32)
-    target_link_libraries(dbus-internal ${CMAKE_THREAD_LIBS_INIT} rt)
+    target_link_libraries(dbus-internal ${CMAKE_THREAD_LIBS_INIT})
+    if(LIBRT)
+        target_link_libraries(dbus-internal ${LIBRT})
+    endif()
 endif(WIN32)
 
 if (DBUS_ENABLE_EMBEDDED_TESTS)
