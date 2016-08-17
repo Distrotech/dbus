@@ -257,6 +257,9 @@ endif(MSVC_IDE)
 # for clock_getres() on e.g. GNU/Linux (but not Android)
 find_library(LIBRT rt)
 
+# for socket() on QNX
+find_library(LIBSOCKET socket)
+
 ### Client library
 add_library(dbus-1 SHARED
 			${libdbus_SOURCES}
@@ -288,6 +291,9 @@ else(WIN32)
     if(LIBRT)
         target_link_libraries(dbus-1 ${LIBRT})
     endif()
+    if(LIBSOCKET)
+        target_link_libraries(dbus-1 ${LIBSOCKET})
+    endif()
 endif(WIN32)
 
 # Assume that Linux has -Wl,--version-script and other platforms do not
@@ -317,6 +323,9 @@ else(WIN32)
     target_link_libraries(dbus-internal ${CMAKE_THREAD_LIBS_INIT})
     if(LIBRT)
         target_link_libraries(dbus-internal ${LIBRT})
+    endif()
+    if(LIBSOCKET)
+        target_link_libraries(dbus-internal ${LIBSOCKET})
     endif()
 endif(WIN32)
 
