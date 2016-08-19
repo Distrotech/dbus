@@ -1316,9 +1316,11 @@ _dbus_poll (DBusPollFD *fds,
 
 #else   /* USE_CHRIS_IMPL */
 
+#ifdef DBUS_ENABLE_VERBOSE_MODE
 #define DBUS_POLL_CHAR_BUFFER_SIZE 2000
   char msg[DBUS_POLL_CHAR_BUFFER_SIZE];
   char *msgp;
+#endif
 
   fd_set read_set, write_set, err_set;
   SOCKET max_fd = 0;
