@@ -631,12 +631,12 @@ _dbus_write_socket_two (DBusSocket        fd,
     {
       DBUS_SOCKET_SET_ERRNO ();
       _dbus_verbose ("WSASend: failed: %s\n", _dbus_strerror_from_errno ());
-      bytes_written = -1;
+      bytes_written = (DWORD) -1;
     }
   else
     _dbus_verbose ("WSASend: = %ld\n", bytes_written);
     
-  if (bytes_written < 0 && errno == EINTR)
+  if (bytes_written == (DWORD) -1 && errno == EINTR)
     goto again;
       
   return bytes_written;
