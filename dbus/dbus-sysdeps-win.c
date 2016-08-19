@@ -99,7 +99,7 @@ _dbus_win_set_errno (int err)
 #endif
 }
 
-static BOOL is_winxp_sp3_or_lower();
+static BOOL is_winxp_sp3_or_lower (void);
 
 /*
  * _MIB_TCPROW_EX and friends are not available in system headers
@@ -941,7 +941,8 @@ _dbus_pid_for_log (void)
 
 #ifndef DBUS_WINCE
 
-static BOOL is_winxp_sp3_or_lower()
+static BOOL
+is_winxp_sp3_or_lower (void)
 {
    OSVERSIONINFOEX osvi;
    DWORDLONG dwlConditionMask = 0;
@@ -2550,7 +2551,8 @@ static DWORD WINAPI dump_thread_proc (LPVOID lpParameter)
 
 /* cannot get valid context from current thread, so we have to execute
  * backtrace from another thread */
-static void dump_backtrace ()
+static void
+dump_backtrace (void)
 {
   HANDLE hCurrentThread;
   HANDLE hThread;

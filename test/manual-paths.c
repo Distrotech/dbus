@@ -12,7 +12,8 @@
 
 #include <stdio.h>
 
-static dbus_bool_t print_install_root()
+static dbus_bool_t
+print_install_root (void)
 {
   DBusString runtime_prefix;
 
@@ -42,7 +43,8 @@ static dbus_bool_t print_install_root()
   return TRUE;
 }
 
-static dbus_bool_t print_service_dirs()
+static dbus_bool_t
+print_service_dirs (void)
 {
   DBusList *dirs;
   DBusList *link;
