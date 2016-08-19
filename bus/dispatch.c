@@ -3698,6 +3698,8 @@ check_launch_service_file_missing (BusContext     *context,
   return retval;
 }
 
+#ifndef DBUS_WIN
+
 #define SERVICE_USER_MISSING_NAME "org.freedesktop.DBus.TestSuiteNoUser"
 
 /* returns TRUE if the correct thing happens,
@@ -4001,6 +4003,7 @@ check_launch_service_service_missing (BusContext     *context,
 
   return retval;
 }
+#endif
 
 #define SHELL_FAIL_SERVICE_NAME "org.freedesktop.DBus.TestSuiteShellEchoServiceFail"
 
@@ -4952,6 +4955,7 @@ bus_dispatch_test_conf (const DBusString *test_data_dir,
   return TRUE;
 }
 
+#ifndef DBUS_WIN
 static dbus_bool_t
 bus_dispatch_test_conf_fail (const DBusString *test_data_dir,
 		             const char       *filename)
@@ -5008,6 +5012,7 @@ bus_dispatch_test_conf_fail (const DBusString *test_data_dir,
 
   return TRUE;
 }
+#endif
 
 dbus_bool_t
 bus_dispatch_test (const DBusString *test_data_dir)

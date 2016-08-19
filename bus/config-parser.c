@@ -3525,20 +3525,13 @@ out:
   return ret;
 }
 
+#ifndef DBUS_WIN
 static const char *test_system_service_dir_matches[] = 
         {
-#ifdef DBUS_UNIX
          "/usr/local/share/dbus-1/system-services",
          "/usr/share/dbus-1/system-services",
-#endif
          DBUS_DATADIR"/dbus-1/system-services",
-#ifdef DBUS_UNIX
          "/lib/dbus-1/system-services",
-#endif
-
-#ifdef DBUS_WIN
-         NULL,
-#endif
          NULL
         };
 
@@ -3548,9 +3541,6 @@ test_default_system_servicedirs (void)
   DBusList *dirs;
   DBusList *link;
   DBusString progs;
-#ifndef DBUS_UNIX
-  const char *common_progs;
-#endif
   int i;
 
   /* On Unix we don't actually use this variable, but it's easier to handle the
@@ -3558,25 +3548,6 @@ test_default_system_servicedirs (void)
   if (!_dbus_string_init (&progs))
     _dbus_assert_not_reached ("OOM allocating progs");
 
-#ifndef DBUS_UNIX
-  common_progs = _dbus_getenv ("CommonProgramFiles");
-
-  if (common_progs) 
-    {
-      if (!_dbus_string_append (&progs, common_progs)) 
-        {
-          _dbus_string_free (&progs);
-          return FALSE;
-        }
-
-      if (!_dbus_string_append (&progs, "/dbus-1/system-services")) 
-        {
-          _dbus_string_free (&progs);
-          return FALSE;
-        }
-      test_system_service_dir_matches[1] = _dbus_string_get_const_data(&progs);
-    }
-#endif
   dirs = NULL;
 
   printf ("Testing retrieving the default system service directories\n");
@@ -3603,13 +3574,12 @@ test_default_system_servicedirs (void)
       _dbus_list_free_link (link);
     }
 
-#ifdef DBUS_UNIX
   if (!dbus_setenv ("XDG_DATA_HOME", "/testhome/foo/.testlocal/testshare"))
     _dbus_assert_not_reached ("couldn't setenv XDG_DATA_HOME");
 
   if (!dbus_setenv ("XDG_DATA_DIRS", ":/testusr/testlocal/testshare: :/testusr/testshare:"))
     _dbus_assert_not_reached ("couldn't setenv XDG_DATA_DIRS");
-#endif
+
   if (!_dbus_get_standard_system_servicedirs (&dirs))
     _dbus_assert_not_reached ("couldn't get stardard dirs");
 
@@ -3657,6 +3627,7 @@ test_default_system_servicedirs (void)
   _dbus_string_free (&progs);
   return TRUE;
 }
+#endif
 		   
 dbus_bool_t
 bus_config_parser_test (const DBusString *test_data_dir)
