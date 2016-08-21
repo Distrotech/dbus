@@ -951,14 +951,14 @@ static const guchar partial_message[] =
 
 static void
 send_all_with_fd (GSocket *socket,
-                  const guchar *partial_message,
+                  const guchar *local_partial_message,
                   gsize len,
                   int fd)
 {
   GSocketControlMessage *fdm = g_unix_fd_message_new ();
   GError *error = NULL;
   gssize sent;
-  GOutputVector vector = { partial_message, len };
+  GOutputVector vector = { local_partial_message, len };
 
   g_unix_fd_message_append_fd (G_UNIX_FD_MESSAGE (fdm), fd, &error);
   g_assert_no_error (error);

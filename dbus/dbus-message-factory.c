@@ -139,11 +139,11 @@ generate_trivial_inner (DBusMessageDataIter *iter,
         _dbus_assert_not_reached ("oom");
       
       {
-        DBusMessageIter iter;
+        DBusMessageIter iter2;
         const char *v_STRING = "This is an error";
         
-        dbus_message_iter_init_append (message, &iter);
-        if (!dbus_message_iter_append_basic (&iter,
+        dbus_message_iter_init_append (message, &iter2);
+        if (!dbus_message_iter_append_basic (&iter2,
                                              DBUS_TYPE_STRING,
                                              &v_STRING))
           _dbus_assert_not_reached ("oom");

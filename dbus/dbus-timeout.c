@@ -262,12 +262,12 @@ _dbus_timeout_list_set_functions (DBusTimeoutList           *timeout_list,
               link2 = _dbus_list_get_first_link (&timeout_list->timeouts);
               while (link2 != link)
                 {
-                  DBusList *next = _dbus_list_get_next_link (&timeout_list->timeouts,
-                                                             link2);
+                  DBusList *next2 = _dbus_list_get_next_link (&timeout_list->timeouts,
+                                                              link2);
 
                   (* remove_function) (link2->data, data);
                   
-                  link2 = next;
+                  link2 = next2;
                 }
 
               return FALSE;

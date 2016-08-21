@@ -354,14 +354,14 @@ append_unescaped_value (DBusString       *unescaped,
  * in the semicolon-separated list should be tried first.
  * 
  * @param address the address.
- * @param entry return location to an array of entries.
+ * @param entry_result return location to an array of entries.
  * @param array_len return location for array length.
  * @param error address where an error can be returned.
  * @returns #TRUE on success, #FALSE otherwise.
  */
 dbus_bool_t
 dbus_parse_address (const char         *address,
-		    DBusAddressEntry ***entry,
+		    DBusAddressEntry ***entry_result,
 		    int                *array_len,
                     DBusError          *error)
 {
@@ -553,7 +553,7 @@ dbus_parse_address (const char         *address,
     }
 
   _dbus_list_clear (&entries);
-  *entry = entry_array;
+  *entry_result = entry_array;
 
   return TRUE;
 

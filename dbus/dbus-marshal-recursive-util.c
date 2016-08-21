@@ -3068,10 +3068,10 @@ array_write_value (TestTypeNode   *node,
           link = _dbus_list_get_first_link (&container->children);
           while (link != NULL)
             {
-              TestTypeNode *child = link->data;
+              TestTypeNode *child2 = link->data;
               DBusList *next = _dbus_list_get_next_link (&container->children, link);
 
-              if (!node_write_value (child, block, &sub, seed + i))
+              if (!node_write_value (child2, block, &sub, seed + i))
                 goto oom;
 
               link = next;
@@ -3132,20 +3132,20 @@ array_read_or_set_value (TestTypeNode   *node,
               link = _dbus_list_get_first_link (&container->children);
               while (link != NULL)
                 {
-                  TestTypeNode *child = link->data;
+                  TestTypeNode *child2 = link->data;
                   DBusList *next = _dbus_list_get_next_link (&container->children, link);
 
-                  _dbus_assert (child->klass->typecode ==
+                  _dbus_assert (child2->klass->typecode ==
                                 _dbus_type_reader_get_element_type (reader));
 
                   if (realign_root == NULL)
                     {
-                      if (!node_read_value (child, &sub, seed + i))
+                      if (!node_read_value (child2, &sub, seed + i))
                         return FALSE;
                     }
                   else
                     {
-                      if (!node_set_value (child, &sub, realign_root, seed + i))
+                      if (!node_set_value (child2, &sub, realign_root, seed + i))
                         return FALSE;
                     }
 

@@ -1044,8 +1044,6 @@ _dbus_list_test (void)
     {
       DBusList *got_link1;
       DBusList *got_link2;
-
-      DBusList *link2;
       
       void *data1_indirect;
       void *data1;

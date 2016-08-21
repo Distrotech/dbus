@@ -43,7 +43,7 @@ static Atom address_atom;
 static Atom pid_atom;
 
 static int
-x_io_error_handler (Display *xdisplay)
+x_io_error_handler (Display *local_xdisplay)
 {
   verbose ("X IO error\n");
   kill_bus_and_exit (0);

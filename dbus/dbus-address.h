@@ -42,7 +42,7 @@ typedef struct DBusAddressEntry DBusAddressEntry;
 
 DBUS_EXPORT
 dbus_bool_t dbus_parse_address            (const char         *address,
-					   DBusAddressEntry ***entry,
+					   DBusAddressEntry ***entry_result,
 					   int                *array_len,
 					   DBusError          *error);
 DBUS_EXPORT

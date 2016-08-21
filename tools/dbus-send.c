@@ -457,13 +457,13 @@ main (int argc, char *argv[])
     {
       char *arg;
       char *c;
-      int type;
+      int type2;
       int secondary_type;
       int container_type;
       DBusMessageIter *target_iter;
       DBusMessageIter container_iter;
 
-      type = DBUS_TYPE_INVALID;
+      type2 = DBUS_TYPE_INVALID;
       arg = argv[i++];
       c = strchr (arg, ':');
 
@@ -497,9 +497,9 @@ main (int argc, char *argv[])
 	}
 
       if (arg[0] == 0)
-	type = DBUS_TYPE_STRING;
+	type2 = DBUS_TYPE_STRING;
       else
-	type = type_from_name (arg);
+	type2 = type_from_name (arg);
 
       if (container_type == DBUS_TYPE_DICT_ENTRY)
 	{
@@ -514,7 +514,7 @@ main (int argc, char *argv[])
 	  *(c++) = 0;
 	  secondary_type = type_from_name (arg);
 	  sig[0] = DBUS_DICT_ENTRY_BEGIN_CHAR;
-	  sig[1] = type;
+	  sig[1] = type2;
 	  sig[2] = secondary_type;
 	  sig[3] = DBUS_DICT_ENTRY_END_CHAR;
 	  sig[4] = '\0';
@@ -527,7 +527,7 @@ main (int argc, char *argv[])
       else if (container_type != DBUS_TYPE_INVALID)
 	{
 	  char sig[2];
-	  sig[0] = type;
+	  sig[0] = type2;
 	  sig[1] = '\0';
 	  dbus_message_iter_open_container (&iter,
 					    container_type,
@@ -540,14 +540,14 @@ main (int argc, char *argv[])
 
       if (container_type == DBUS_TYPE_ARRAY)
 	{
-	  append_array (target_iter, type, c);
+	  append_array (target_iter, type2, c);
 	}
       else if (container_type == DBUS_TYPE_DICT_ENTRY)
 	{
-	  append_dict (target_iter, type, secondary_type, c);
+	  append_dict (target_iter, type2, secondary_type, c);
 	}
       else
-	append_arg (target_iter, type, c);
+	append_arg (target_iter, type2, c);
 
       if (container_type != DBUS_TYPE_INVALID)
 	{
