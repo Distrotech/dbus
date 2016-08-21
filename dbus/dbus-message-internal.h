@@ -78,14 +78,18 @@ DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_return_buffer         (DBusMessageLoader  *loader,
                                                                DBusString         *buffer);
 
+
+#ifdef HAVE_UNIX_FD_PASSING
 DBUS_PRIVATE_EXPORT
 dbus_bool_t        _dbus_message_loader_get_unix_fds          (DBusMessageLoader  *loader,
                                                                int               **fds,
                                                                unsigned           *max_n_fds);
+
 DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_return_unix_fds       (DBusMessageLoader  *loader,
                                                                int                *fds,
                                                                unsigned            n_fds);
+#endif
 
 DBUS_PRIVATE_EXPORT
 dbus_bool_t        _dbus_message_loader_queue_messages        (DBusMessageLoader  *loader);

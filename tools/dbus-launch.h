@@ -44,7 +44,7 @@
 /* defined in dbus-launch.c */
 void verbose (const char *format, ...);
 char *xstrdup (const char *str);
-void kill_bus_and_exit (int exitcode);
+void kill_bus_and_exit (int exitcode) _DBUS_GNUC_NORETURN;
 
 const char* get_machine_uuid (void);
 

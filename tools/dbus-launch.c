@@ -609,7 +609,7 @@ kill_bus_when_session_ends (void)
     }
 }
 
-static void
+_DBUS_GNUC_NORETURN static void
 babysit (int   exit_with_session,
          pid_t child_pid,
          int   read_bus_pid_fd)  /* read pid from here */

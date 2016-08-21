@@ -4065,6 +4065,7 @@ _dbus_message_loader_return_buffer (DBusMessageLoader  *loader,
   loader->buffer_outstanding = FALSE;
 }
 
+#ifdef HAVE_UNIX_FD_PASSING
 /**
  * Gets the buffer to use for reading unix fds from the network.
  *
@@ -4080,7 +4081,6 @@ _dbus_message_loader_get_unix_fds(DBusMessageLoader  *loader,
                                   int               **fds,
                                   unsigned           *max_n_fds)
 {
-#ifdef HAVE_UNIX_FD_PASSING
   _dbus_assert (!loader->unix_fds_outstanding);
 
   /* Allocate space where we can put the fds we read. We allocate
@@ -4108,10 +4108,6 @@ _dbus_message_loader_get_unix_fds(DBusMessageLoader  *loader,
 
   loader->unix_fds_outstanding = TRUE;
   return TRUE;
-#else
-  _dbus_assert_not_reached("Platform doesn't support unix fd passing");
-  return FALSE;
-#endif
 }
 
 /**
@@ -4129,7 +4125,6 @@ _dbus_message_loader_return_unix_fds(DBusMessageLoader  *loader,
                                      int                *fds,
                                      unsigned            n_fds)
 {
-#ifdef HAVE_UNIX_FD_PASSING
   _dbus_assert(loader->unix_fds_outstanding);
   _dbus_assert(loader->unix_fds + loader->n_unix_fds == fds);
   _dbus_assert(loader->n_unix_fds + n_fds <= loader->n_unix_fds_allocated);
@@ -4139,10 +4134,8 @@ _dbus_message_loader_return_unix_fds(DBusMessageLoader  *loader,
 
   if (n_fds && loader->unix_fds_change)
     loader->unix_fds_change (loader->unix_fds_change_data);
-#else
-  _dbus_assert_not_reached("Platform doesn't support unix fd passing");
-#endif
 }
+#endif
 
 /*
  * FIXME when we move the header out of the buffer, that memmoves all
