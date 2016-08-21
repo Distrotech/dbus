@@ -666,9 +666,6 @@ dbus_pid_t    _dbus_getpid (void);
 DBUS_PRIVATE_EXPORT
 dbus_uid_t    _dbus_getuid (void);
 
-dbus_bool_t _dbus_change_to_daemon_user (const char *user,
-                                         DBusError  *error);
-
 DBUS_PRIVATE_EXPORT
 void _dbus_flush_caches (void);
 

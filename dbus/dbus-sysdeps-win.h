@@ -82,8 +82,6 @@ _dbus_win_sid_to_name_and_domain (dbus_uid_t uid,
                                   wchar_t  **wdomain,
                                   DBusError *error);
 
-dbus_bool_t _dbus_file_exists (const char *filename);
-
 DBUS_PRIVATE_EXPORT
 dbus_bool_t _dbus_get_install_root (DBusString *str);
 
