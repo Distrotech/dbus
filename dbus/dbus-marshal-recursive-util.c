@@ -1701,14 +1701,14 @@ make_and_run_values_inside_container (const TestTypeNodeClass *container_klass,
 }
 
 static void
-start_next_test (const char *format,
+start_next_test (const char *description,
                  int         expected)
 {
   n_iterations_completed_this_test = 0;
   n_iterations_expected_this_test = expected;
 
-  fprintf (stderr, ">>> >>> ");
-  fprintf (stderr, format,
+  fprintf (stderr, ">>> >>> %s %d iterations\n",
+           description,
            n_iterations_expected_this_test);
 }
 
@@ -1749,7 +1749,7 @@ make_and_run_test_nodes (void)
 
   /* FIXME test just an empty body, no types at all */
 
-  start_next_test ("Each value by itself %d iterations\n", N_VALUES);
+  start_next_test ("Each value by itself", N_VALUES);
   {
     TestTypeNode *node;
     i = 0;
@@ -1761,7 +1761,7 @@ make_and_run_test_nodes (void)
       }
   }
 
-  start_next_test ("Each value by itself with arrays as blocks %d iterations\n", N_VALUES);
+  start_next_test ("Each value by itself with arrays as blocks", N_VALUES);
   arrays_write_fixed_in_blocks = TRUE;
   {
     TestTypeNode *node;
@@ -1775,7 +1775,7 @@ make_and_run_test_nodes (void)
   }
   arrays_write_fixed_in_blocks = FALSE;
 
-  start_next_test ("All values in one big toplevel %d iteration\n", 1);
+  start_next_test ("All values in one big toplevel", 1);
   {
     TestTypeNode *nodes[N_VALUES];
     TestTypeNode *node;
@@ -1792,7 +1792,7 @@ make_and_run_test_nodes (void)
       node_destroy (nodes[i]);
   }
 
-  start_next_test ("Each value,value pair combination as toplevel, in both orders %d iterations\n",
+  start_next_test ("Each value,value pair combination as toplevel, in both orders",
                    N_VALUES * N_VALUES);
   {
     TestTypeNode *nodes[2];
@@ -1812,7 +1812,7 @@ make_and_run_test_nodes (void)
       }
   }
 
-  start_next_test ("Each container containing each value %d iterations\n",
+  start_next_test ("Each container containing each value",
                    N_CONTAINERS * N_VALUES);
   for (i = 0; i < N_CONTAINERS; i++)
     {
@@ -1821,7 +1821,7 @@ make_and_run_test_nodes (void)
       make_and_run_values_inside_container (container_klass, 1);
     }
 
-  start_next_test ("Each container containing each value with arrays as blocks %d iterations\n",
+  start_next_test ("Each container containing each value with arrays as blocks",
                    N_CONTAINERS * N_VALUES);
   arrays_write_fixed_in_blocks = TRUE;
   for (i = 0; i < N_CONTAINERS; i++)
@@ -1832,7 +1832,7 @@ make_and_run_test_nodes (void)
     }
   arrays_write_fixed_in_blocks = FALSE;
 
-  start_next_test ("Each container of same container of each value %d iterations\n",
+  start_next_test ("Each container of same container of each value",
                    N_CONTAINERS * N_VALUES);
   for (i = 0; i < N_CONTAINERS; i++)
     {
@@ -1841,7 +1841,7 @@ make_and_run_test_nodes (void)
       make_and_run_values_inside_container (container_klass, 2);
     }
 
-  start_next_test ("Each container of same container of same container of each value %d iterations\n",
+  start_next_test ("Each container of same container of same container of each value",
                    N_CONTAINERS * N_VALUES);
   for (i = 0; i < N_CONTAINERS; i++)
     {
@@ -1850,7 +1850,7 @@ make_and_run_test_nodes (void)
       make_and_run_values_inside_container (container_klass, 3);
     }
 
-  start_next_test ("Each value,value pair inside a struct %d iterations\n",
+  start_next_test ("Each value,value pair inside a struct",
                    N_VALUES * N_VALUES);
   {
     TestTypeNode *val1, *val2;
@@ -1879,8 +1879,7 @@ make_and_run_test_nodes (void)
     node_destroy (node);
   }
 
-  start_next_test ("All values in one big struct %d iteration\n",
-                   1);
+  start_next_test ("All values in one big struct", 1);
   {
     TestTypeNode *node;
     TestTypeNode *child;
@@ -1896,8 +1895,7 @@ make_and_run_test_nodes (void)
     node_destroy (node);
   }
 
-  start_next_test ("Each value in a large array %d iterations\n",
-                   N_VALUES);
+  start_next_test ("Each value in a large array", N_VALUES);
   {
     TestTypeNode *val;
     TestTypeNode *node;
@@ -1928,7 +1926,7 @@ make_and_run_test_nodes (void)
       goto out;
     }
 
-  start_next_test ("Each container of each container of each value %d iterations\n",
+  start_next_test ("Each container of each container of each value",
                    N_CONTAINERS * N_CONTAINERS * N_VALUES);
   for (i = 0; i < N_CONTAINERS; i++)
     {
@@ -1959,7 +1957,7 @@ make_and_run_test_nodes (void)
       node_destroy (outer_container);
     }
 
-  start_next_test ("Each container of each container of each container of each value %d iterations\n",
+  start_next_test ("Each container of each container of each container of each value",
                    N_CONTAINERS * N_CONTAINERS * N_CONTAINERS * N_VALUES);
   for (i = 0; i < N_CONTAINERS; i++)
     {
@@ -2009,7 +2007,7 @@ make_and_run_test_nodes (void)
       goto out;
     }
 
-  start_next_test ("Each value,value,value triplet combination as toplevel, in all orders %d iterations\n",
+  start_next_test ("Each value,value,value triplet combination as toplevel, in all orders",
                    N_VALUES * N_VALUES * N_VALUES);
   {
     TestTypeNode *nodes[3];
