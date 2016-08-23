@@ -898,7 +898,9 @@ _dbus_validity_to_error_message (DBusValidity validity)
     case DBUS_INVALID_DICT_ENTRY_HAS_TOO_MANY_FIELDS:              return "Dict entry has too many fields";
     case DBUS_INVALID_DICT_ENTRY_NOT_INSIDE_ARRAY:                 return "Dict entry not inside array";
     case DBUS_INVALID_DICT_KEY_MUST_BE_BASIC_TYPE:                 return "Dict key must be basic type";
+    case DBUS_INVALID_MISSING_UNIX_FDS:                            return "Unix file descriptor missing";
     case DBUS_INVALID_NESTED_TOO_DEEPLY:                           return "Variants cannot be used to create a hugely recursive tree of values";
+    case DBUS_VALIDITY_LAST:
     default:
       return "Invalid";
     }
