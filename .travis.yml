@@ -37,7 +37,7 @@ install:
   # Ubuntu 14.04's autoconf-archive is too old
   - >
     wget
-    http://httpredir.debian.org/debian/pool/main/a/autoconf-archive/autoconf-archive_20150925-1_all.deb
+    http://snapshot.debian.org/archive/debian/20160905T163745Z/pool/main/a/autoconf-archive/autoconf-archive_20160320-1_all.deb
   - 'sudo dpkg -i autoconf-archive_*_all.deb'
   - 'rm autoconf-archive_*_all.deb'
 script:
