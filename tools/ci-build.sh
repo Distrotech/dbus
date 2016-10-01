@@ -4,7 +4,7 @@ set -e
 set -x
 
 if [ -z "$dbus_ci_variant" ]; then
-	dbus_ci_variant=release
+	dbus_ci_variant=production
 fi
 
 if [ -z "$dbus_ci_host" ]; then
@@ -74,7 +74,7 @@ case "$dbus_ci_buildsys" in
 				# an older system or one that does not have
 				# all the optional libraries.
 				set _ "$@"
-				# No LSMs (the release build has both)
+				# No LSMs (the production build has both)
 				set "$@" --disable-selinux --disable-apparmor
 				# No inotify (we will use dnotify)
 				set "$@" --disable-inotify

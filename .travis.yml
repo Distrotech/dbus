@@ -46,7 +46,7 @@ script:
   - PYTHON=/usr/bin/python dbus_ci_parallel=2 dbus_ci_sudo=yes ./tools/ci-build.sh
 
 env:
-  - dbus_ci_variant=release
+  - dbus_ci_variant=production
   - dbus_ci_variant=debug
   - dbus_ci_variant=reduced
   - dbus_ci_variant=legacy
