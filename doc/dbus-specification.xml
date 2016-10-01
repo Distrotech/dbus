@@ -587,6 +587,15 @@
         </para>
 
         <para>
+          Using an object path of <literal>/</literal> is allowed, but
+          recommended against, as it makes versioning of interfaces hard. Any
+          signals emitted from a D-Bus object have the service’s unique bus name
+          associated with them, rather than its well-known name. This means that
+          receipients of the signals must rely entirely on the signal name and
+          object path to work out which interface the signal originated from.
+        </para>
+
+        <para>
           For instance, if the owner of <literal>example.com</literal> is
           developing a D-Bus API for a music player, they might use the
           hierarchy of object paths that start with
