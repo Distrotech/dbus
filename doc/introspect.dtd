@@ -16,7 +16,7 @@
 <!ELEMENT signal (arg|annotation)*>
 <!ATTLIST signal name CDATA #REQUIRED>
 
-<!ELEMENT arg EMPTY>
+<!ELEMENT arg (annotation)*>
 <!ATTLIST arg name CDATA #IMPLIED>
 <!ATTLIST arg type CDATA #REQUIRED>
 <!-- Method arguments SHOULD include "direction",

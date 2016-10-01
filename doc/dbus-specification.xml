@@ -4045,7 +4045,7 @@
       </itemizedlist>
     </para>
     <para>
-        Method, interface, property, and signal elements may have
+        Method, interface, property, signal, and argument elements may have
         "annotations", which are generic key/value pairs of metadata.
         They are similar conceptually to Java's annotations and C# attributes.
         Well-known annotations:
