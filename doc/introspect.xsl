@@ -97,7 +97,7 @@
 
 <xsl:template match="annotation"> 
   <li>
-    <span class="keyword">annotation</span>
+    <span class="keyword">annotation</span><xsl:text> </xsl:text>
     <code><xsl:value-of select="@name"/></code><xsl:text> = </xsl:text>
     <code><xsl:value-of select="@value"/></code>
   </li>
