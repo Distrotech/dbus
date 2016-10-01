@@ -20,7 +20,8 @@ endif
 
 MAN_HTML_FILES = $(patsubst %.1,%.1.html,$(man_pages))
 
-DTDS = \
+dtddir = $(datadir)/xml/dbus-1
+dist_dtd_DATA = \
 	busconfig.dtd \
 	introspect.dtd
 
@@ -34,8 +35,7 @@ STATIC_DOCS = \
 	dbus-tutorial.xml \
 	dbus-api-design.duck \
 	dcop-howto.txt \
-	introspect.xsl \
-	$(DTDS)
+	introspect.xsl
 
 EXTRA_DIST = \
 	file-boilerplate.c \
@@ -141,10 +141,11 @@ BONUS_FILES = \
 	$(top_srcdir)/COPYING \
 	$(top_srcdir)/ChangeLog
 
-dbus-docs: $(STATIC_DOCS) $(MAN_XML_FILES) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp $(XMLTO_HTML) $(YELP_HTML) $(YELP_STATIC_HTML)
+dbus-docs: $(STATIC_DOCS) $(dist_dtd_DATA) $(MAN_XML_FILES) $(dist_doc_DATA) $(dist_html_DATA) $(MAN_HTML_FILES) $(BONUS_FILES) doxygen.stamp $(XMLTO_HTML) $(YELP_HTML) $(YELP_STATIC_HTML)
 	$(AM_V_at)rm -rf $@ $@.tmp
 	$(AM_V_GEN)$(MKDIR_P) $@.tmp/api
 	$(AM_V_at)cd $(srcdir) && cp $(STATIC_DOCS) @abs_builddir@/$@.tmp
+	$(AM_V_at)cd $(srcdir) && cp $(dist_dtd_DATA) @abs_builddir@/$@.tmp
 	$(AM_V_at)cd $(srcdir) && cp $(dist_doc_DATA) @abs_builddir@/$@.tmp
 	$(AM_V_at)cd $(srcdir) && cp $(STATIC_HTML) @abs_builddir@/$@.tmp
 	$(AM_V_at)cp $(XMLTO_HTML) @abs_builddir@/$@.tmp
@@ -169,7 +170,7 @@ maintainer-upload-docs: dbus-docs.tar.gz dbus-docs
 	scp dbus-docs.tar.gz $(DOC_SERVER):$(DOC_WWW_DIR)/
 	rsync -rpvzP --chmod=Dg+s,ug+rwX,o=rX \
 		dbus-docs/ $(DOC_SERVER):$(DOC_WWW_DIR)/doc/
-	cd $(srcdir) && scp -p $(DTDS) $(SPECIFICATION_SERVER):$(SPECIFICATION_PATH)/
+	cd $(srcdir) && scp -p $(dist_dtd_DATA) $(SPECIFICATION_SERVER):$(SPECIFICATION_PATH)/
 else
 maintainer-upload-docs:
 	@echo "Can't upload documentation! Re-run configure with"
