@@ -1965,9 +1965,11 @@ bus_activation_activate_service (BusActivation  *activation,
           if (service != NULL)
             {
               bus_context_log (activation->context,
-                               DBUS_SYSTEM_LOG_INFO, "Activating via systemd: service name='%s' unit='%s'",
+                               DBUS_SYSTEM_LOG_INFO, "Activating via systemd: service name='%s' unit='%s' requested by '%s' (%s)",
                                service_name,
-                               entry->systemd_service);
+                               entry->systemd_service,
+                               bus_connection_get_name (connection),
+                               bus_connection_get_loginfo (connection));
               /* Wonderful, systemd is connected, let's just send the msg */
               retval = bus_dispatch_matches (activation_transaction, NULL,
                                              systemd, message, error);
@@ -1975,9 +1977,11 @@ bus_activation_activate_service (BusActivation  *activation,
           else
             {
               bus_context_log (activation->context,
-                               DBUS_SYSTEM_LOG_INFO, "Activating systemd to hand-off: service name='%s' unit='%s'",
+                               DBUS_SYSTEM_LOG_INFO, "Activating systemd to hand-off: service name='%s' unit='%s' requested by '%s' (%s)",
                                service_name,
-                               entry->systemd_service);
+                               entry->systemd_service,
+                               bus_connection_get_name (connection),
+                               bus_connection_get_loginfo (connection));
               /* systemd is not around, let's "activate" it. */
               retval = bus_activation_activate_service (activation, NULL, activation_transaction, TRUE,
                                                         message, "org.freedesktop.systemd1", error);
@@ -2089,12 +2093,16 @@ bus_activation_activate_service (BusActivation  *activation,
   _dbus_verbose ("Spawning %s ...\n", argv[0]);
   if (servicehelper != NULL)
     bus_context_log (activation->context,
-                     DBUS_SYSTEM_LOG_INFO, "Activating service name='%s' (using servicehelper)",
-                     service_name);
+                     DBUS_SYSTEM_LOG_INFO, "Activating service name='%s' requested by '%s' (%s) (using servicehelper)",
+                     service_name,
+                     bus_connection_get_name (connection),
+                     bus_connection_get_loginfo (connection));
   else
     bus_context_log (activation->context,
-                     DBUS_SYSTEM_LOG_INFO, "Activating service name='%s'",
-                     service_name);
+                     DBUS_SYSTEM_LOG_INFO, "Activating service name='%s' requested by '%s' (%s)",
+                     service_name,
+                     bus_connection_get_name (connection),
+                     bus_connection_get_loginfo (connection));
 
   dbus_error_init (&tmp_error);
 
