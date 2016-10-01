@@ -4341,13 +4341,13 @@ _dbus_close_all (void)
     {
       for (;;)
         {
-          struct dirent buf, *de;
-          int k, fd;
+          struct dirent *de;
+          int fd;
           long l;
           char *e = NULL;
 
-          k = readdir_r (d, &buf, &de);
-          if (k != 0 || !de)
+          de = readdir (d);
+          if (!de)
             break;
 
           if (de->d_name[0] == '.')
