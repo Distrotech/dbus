@@ -1,7 +1,26 @@
 D-Bus 1.11.6 (UNRELEASED)
 ==
 
-...
+Enhancements:
+
+• D-Bus Specification version 0.29
+  · Recommend not using '/' for object paths (fd.o #37095, Philip Withnall)
+  · Allow <annotation> in <arg> elements (fd.o #86162, Philip Withnall)
+
+• Log to syslog when we exceed various anti-DoS limits, and add test
+  coverage for them (fd.o #86442, Simon McVittie)
+
+• Improve syslog handling so that _dbus_warn() and similar warnings
+  go to syslog, add dbus-daemon --syslog|--nosyslog|--syslog-only options,
+  and log to syslog (instead of /dev/null) when dbus-daemon is started by
+  dbus-launch. (fd.o #97009, Simon McVittie)
+
+Fixes:
+
+• Fix CMake build for Unix platforms that do not have -lrt, such as Android,
+  or that do need -lsocket, such as QNX (fd.o #94096, Ralf Habacker)
+
+• autogen.sh: fail cleanly if autoconf fails (Simon McVittie)
 
 D-Bus 1.11.4 (2016-08-15)
 ==
