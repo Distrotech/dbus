@@ -1166,14 +1166,18 @@ dbus_bool_t
 dbus_message_set_reply_serial (DBusMessage   *message,
                                dbus_uint32_t  reply_serial)
 {
+  DBusBasicValue value;
+
   _dbus_return_val_if_fail (message != NULL, FALSE);
   _dbus_return_val_if_fail (!message->locked, FALSE);
   _dbus_return_val_if_fail (reply_serial != 0, FALSE); /* 0 is invalid */
 
+  value.u32 = reply_serial;
+
   return _dbus_header_set_field_basic (&message->header,
                                        DBUS_HEADER_FIELD_REPLY_SERIAL,
                                        DBUS_TYPE_UINT32,
-                                       &reply_serial);
+                                       &value);
 }
 
 /**
