@@ -17,6 +17,9 @@ Enhancements:
 
 Fixes:
 
+• Avoid undefined behaviour when setting reply serial number without going
+  via union DBusBasicValue (fd.o #98035, Marc Mutz)
+
 • Fix CMake build for Unix platforms that do not have -lrt, such as Android,
   or that do need -lsocket, such as QNX (fd.o #94096, Ralf Habacker)
 
