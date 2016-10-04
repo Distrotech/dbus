@@ -584,7 +584,7 @@ cache_peer_loginfo_string (BusConnectionData *d,
   DBusString loginfo_buf;
   unsigned long uid;
   unsigned long pid;
-  char *windows_sid;
+  char *windows_sid, *security_label;
   dbus_bool_t prev_added;
 
   if (!_dbus_string_init (&loginfo_buf))
@@ -613,16 +613,46 @@ cache_peer_loginfo_string (BusConnectionData *d,
       _dbus_command_for_pid (pid, &loginfo_buf, MAX_LOG_COMMAND_LEN, NULL);
       if (!_dbus_string_append_byte (&loginfo_buf, '"'))
         goto oom;
+      else
+        prev_added = TRUE;
     }
 
   if (dbus_connection_get_windows_user (connection, &windows_sid))
     {
       dbus_bool_t did_append;
+
+      if (prev_added)
+        {
+          if (!_dbus_string_append_byte (&loginfo_buf, ' '))
+            goto oom;
+        }
+
       did_append = _dbus_string_append_printf (&loginfo_buf,
-                                               "sid=\"%s\" ", windows_sid);
+                                               "sid=\"%s\"", windows_sid);
       dbus_free (windows_sid);
       if (!did_append)
         goto oom;
+      else
+        prev_added = TRUE;
+    }
+
+  if (_dbus_connection_get_linux_security_label (connection, &security_label))
+    {
+      dbus_bool_t did_append;
+
+      if (prev_added)
+        {
+          if (!_dbus_string_append_byte (&loginfo_buf, ' '))
+            goto oom;
+        }
+
+      did_append = _dbus_string_append_printf (&loginfo_buf,
+                                               "label=\"%s\"", security_label);
+      dbus_free (security_label);
+      if (!did_append)
+        goto oom;
+      else
+        prev_added = TRUE;
     }
 
   if (!_dbus_string_steal_data (&loginfo_buf, &(d->cached_loginfo_string)))
