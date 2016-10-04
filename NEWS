@@ -3,6 +3,9 @@ D-Bus 1.10.11 (UNRELEASED)
 
 Fixes:
 
+• Avoid undefined behaviour when setting reply serial number without going
+  via union DBusBasicValue (fd.o #98035, Marc Mutz)
+
 • autogen.sh: fail cleanly if autoconf fails (Simon McVittie)
 
 D-Bus 1.10.10 (2016-08-15)
