@@ -18,6 +18,12 @@ Enhancements:
 • Install introspect.dtd and busconfig.dtd to ${datadir}/xml/dbus-1
   (fd.o #89011, Philip Withnall)
 
+• When logging messages about service activation, mention which peer
+  requested the activation (fd.o #68212, Philip Withnall)
+
+• On Linux, mention the LSM label (if available) whenever we print
+  debug information about a peer (fd.o #68212, Philip Withnall)
+
 Fixes:
 
 • Avoid undefined behaviour when setting reply serial number without going
