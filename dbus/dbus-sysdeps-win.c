@@ -507,7 +507,7 @@ _dbus_close_socket (DBusSocket fd,
                       fd.sock, _dbus_strerror_from_errno ());
       return FALSE;
     }
-  _dbus_verbose ("_dbus_close_socket: socket=%Iu, \n", fd.sock);
+  _dbus_verbose ("socket=%Iu, \n", fd.sock);
 
   return TRUE;
 }

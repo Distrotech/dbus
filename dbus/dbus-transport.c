@@ -1146,9 +1146,9 @@ _dbus_transport_queue_messages (DBusTransport *transport)
   DBusDispatchStatus status;
 
 #if 0
-  _dbus_verbose ("_dbus_transport_queue_messages()\n");
+  _dbus_verbose ("enter\n");
 #endif
-  
+
   /* Queue any messages */
   while ((status = _dbus_transport_get_dispatch_status (transport)) == DBUS_DISPATCH_DATA_REMAINS)
     {
