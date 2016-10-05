@@ -15,6 +15,9 @@ Enhancements:
   and log to syslog (instead of /dev/null) when dbus-daemon is started by
   dbus-launch. (fd.o #97009, Simon McVittie)
 
+• Install introspect.dtd and busconfig.dtd to ${datadir}/xml/dbus-1
+  (fd.o #89011, Philip Withnall)
+
 Fixes:
 
 • Avoid undefined behaviour when setting reply serial number without going
