@@ -39,6 +39,8 @@
 # include <dbus/dbus-sysdeps-unix.h>
 #endif
 
+static void die (const char *failure) _DBUS_GNUC_NORETURN;
+
 static void
 die (const char *failure)
 {

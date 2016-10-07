@@ -29,6 +29,8 @@
 #include <stdlib.h>
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
+static void die (const char *failure) _DBUS_GNUC_NORETURN;
+
 static void
 die (const char *failure)
 {

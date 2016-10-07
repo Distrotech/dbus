@@ -164,6 +164,8 @@ verbose (const char *format,
 #endif /* DBUS_ENABLE_VERBOSE_MODE */
 }
 
+static void usage (int ecode) _DBUS_GNUC_NORETURN;
+
 static void
 usage (int ecode)
 {
@@ -173,6 +175,8 @@ usage (int ecode)
            " [--config-file=FILENAME] [PROGRAM] [ARGS...]\n");
   exit (ecode);
 }
+
+static void version (void) _DBUS_GNUC_NORETURN;
 
 static void
 version (void)
@@ -470,6 +474,8 @@ signal_handler (int sig)
     }
 }
 
+static void kill_bus_when_session_ends (void) _DBUS_GNUC_NORETURN;
+
 static void
 kill_bus_when_session_ends (void)
 {
@@ -607,6 +613,7 @@ kill_bus_when_session_ends (void)
             }
         }
     }
+  /* not reached */
 }
 
 _DBUS_GNUC_NORETURN static void
@@ -735,6 +742,12 @@ do_close_stderr (void)
       exit (1);
     }
 }
+
+static void pass_info (const char *runprog, const char *bus_address,
+                       pid_t bus_pid, long bus_wid, int c_shell_syntax,
+                       int bourne_shell_syntax, int binary_syntax,
+                       int argc, char **argv,
+                       int remaining_args) _DBUS_GNUC_NORETURN;
 
 static void
 pass_info (const char *runprog, const char *bus_address, pid_t bus_pid,

@@ -40,6 +40,8 @@ static int sleep_ms = -1;
 static dbus_bool_t noreply = FALSE;
 static dbus_bool_t noread = FALSE;
 
+static void usage_echo (int exit_with) _DBUS_GNUC_NORETURN;
+
 static void
 usage_echo (int exit_with)
 {
@@ -59,6 +61,8 @@ usage_echo (int exit_with)
            );
   exit (exit_with);
 }
+
+static void usage_black_hole (int exit_with) _DBUS_GNUC_NORETURN;
 
 static void
 usage_black_hole (int exit_with)

@@ -1,6 +1,9 @@
 #include <config.h>
 #include "../test-utils.h"
 
+static void die (const char *message,
+                 ...) _DBUS_GNUC_NORETURN _DBUS_GNUC_PRINTF (1, 2);
+
 static void
 die (const char *message, ...)
 {

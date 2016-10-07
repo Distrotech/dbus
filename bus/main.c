@@ -132,6 +132,8 @@ signal_handler (int sig)
 }
 #endif /* DBUS_UNIX */
 
+static void usage (void) _DBUS_GNUC_NORETURN;
+
 static void
 usage (void)
 {
@@ -158,6 +160,8 @@ usage (void)
   exit (1);
 }
 
+static void version (void) _DBUS_GNUC_NORETURN;
+
 static void
 version (void)
 {
@@ -168,6 +172,8 @@ version (void)
           DBUS_VERSION_STRING);
   exit (0);
 }
+
+static void introspect (void) _DBUS_GNUC_NORETURN;
 
 static void
 introspect (void)

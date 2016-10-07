@@ -34,6 +34,8 @@
 #error This file is only relevant for the embedded tests on Unix
 #endif
 
+static void die (const char *failure) _DBUS_GNUC_NORETURN;
+
 static void
 die (const char *failure)
 {

@@ -151,6 +151,8 @@ test_connection_setup (TestMainContext *ctx,
   return FALSE;
 }
 
+static void die (const char *message) _DBUS_GNUC_NORETURN;
+
 static void
 die (const char *message)
 {

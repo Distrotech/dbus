@@ -22,6 +22,8 @@ quit (void)
     }
 }
 
+static void die (const char *message) _DBUS_GNUC_NORETURN;
+
 static void
 die (const char *message)
 {

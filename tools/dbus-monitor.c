@@ -262,6 +262,8 @@ binary_filter_func (DBusConnection *connection,
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static void usage (char *name, int ecode) _DBUS_GNUC_NORETURN;
+
 static void
 usage (char *name, int ecode)
 {

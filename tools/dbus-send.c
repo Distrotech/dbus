@@ -49,6 +49,8 @@
 
 static const char *appname;
 
+static void usage (int ecode) _DBUS_GNUC_NORETURN;
+
 static void
 usage (int ecode)
 {

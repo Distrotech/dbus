@@ -976,6 +976,8 @@ do_write (int fd, const void *buf, size_t count)
     goto again;
 }
 
+static void write_err_and_exit (int fd, int msg) _DBUS_GNUC_NORETURN;
+
 static void
 write_err_and_exit (int fd, int msg)
 {
@@ -996,6 +998,8 @@ write_pid (int fd, pid_t pid)
   do_write (fd, &pid, sizeof (pid));
 }
 
+static void write_status_and_exit (int fd, int status) _DBUS_GNUC_NORETURN;
+
 static void
 write_status_and_exit (int fd, int status)
 {
@@ -1006,6 +1010,12 @@ write_status_and_exit (int fd, int status)
   
   exit (0);
 }
+
+static void do_exec (int                       child_err_report_fd,
+                     char             * const *argv,
+                     char             * const *envp,
+                     DBusSpawnChildSetupFunc   child_setup,
+                     void                     *user_data) _DBUS_GNUC_NORETURN;
 
 static void
 do_exec (int                       child_err_report_fd,
@@ -1124,6 +1134,9 @@ babysit_signal_handler (int signo)
     if (errno == EINTR)
       goto again;
 }
+
+static void babysit (pid_t grandchild_pid,
+                     int   parent_pipe) _DBUS_GNUC_NORETURN;
 
 static void
 babysit (pid_t grandchild_pid,

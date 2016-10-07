@@ -42,7 +42,7 @@
 #define MAX_ADDR_LEN 512
 
 /* defined in dbus-launch.c */
-void verbose (const char *format, ...);
+void verbose (const char *format, ...) _DBUS_GNUC_PRINTF (1, 2);
 char *xstrdup (const char *str);
 void kill_bus_and_exit (int exitcode) _DBUS_GNUC_NORETURN;
 

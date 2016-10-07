@@ -429,6 +429,8 @@ time_out (gpointer data)
 }
 
 #ifdef G_OS_UNIX
+static void wrap_abort (int signal) _DBUS_GNUC_NORETURN;
+
 static void
 wrap_abort (int signal)
 {

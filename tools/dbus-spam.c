@@ -35,6 +35,8 @@
 
 static dbus_bool_t ignore_errors = FALSE;
 
+static void usage (int ecode) _DBUS_GNUC_NORETURN;
+
 static void
 usage (int ecode)
 {
