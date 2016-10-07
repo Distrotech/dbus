@@ -2664,6 +2664,14 @@ bus_driver_handle_message (DBusConnection *connection,
           return TRUE;
         }
 
+      if (!bus_context_get_systemd_activation (context))
+        {
+          bus_context_log (context, DBUS_SYSTEM_LOG_WARNING,
+                           "Ignoring unexpected ActivationFailure message "
+                           "while not using systemd activation");
+          return FALSE;
+        }
+
       return dbus_activation_systemd_failure(bus_context_get_activation(context), message);
     }
 
