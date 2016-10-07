@@ -73,7 +73,7 @@ _dbus_file_read (HANDLE            hnd,
     {
       char *emsg = _dbus_win_error_string (GetLastError ());
       dbus_set_error (error, _dbus_win_error_from_last_error (),
-                      "Failed to read from 0x%x: %s", hnd, emsg);
+                      "Failed to read from %p: %s", hnd, emsg);
       _dbus_win_free_error_string (emsg);
       return -1;
     }
