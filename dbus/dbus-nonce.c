@@ -64,7 +64,7 @@ do_check_nonce (DBusSocket fd, const DBusString *nonce, DBusError *error)
         _dbus_sleep_milliseconds (100);
       else if (n==-1)
         {
-          dbus_set_error (error, DBUS_ERROR_IO_ERROR, "Could not read nonce from socket (fd=%d)", fd );
+          dbus_set_error (error, DBUS_ERROR_IO_ERROR, "Could not read nonce from socket (fd=%" DBUS_SOCKET_FORMAT ")", _dbus_socket_printable (fd));
           _dbus_string_free (&p);
           _dbus_string_free (&buffer);
           return FALSE;
@@ -73,7 +73,7 @@ do_check_nonce (DBusSocket fd, const DBusString *nonce, DBusError *error)
         {
           _dbus_string_free (&p);
           _dbus_string_free (&buffer);
-          dbus_set_error (error, DBUS_ERROR_IO_ERROR, "Could not read nonce from socket (fd=%d)", fd );
+          dbus_set_error (error, DBUS_ERROR_IO_ERROR, "Could not read nonce from socket (fd=%" DBUS_SOCKET_FORMAT ")", _dbus_socket_printable (fd));
           return FALSE;
         }
       else
@@ -91,7 +91,7 @@ do_check_nonce (DBusSocket fd, const DBusString *nonce, DBusError *error)
 
   result =  _dbus_string_equal_len (&buffer, nonce, 16);
   if (!result)
-    dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED, "Nonces do not match, access denied (fd=%d)", fd );
+    dbus_set_error (error, DBUS_ERROR_ACCESS_DENIED, "Nonces do not match, access denied (fd=%" DBUS_SOCKET_FORMAT ")", _dbus_socket_printable (fd));
 
   _dbus_string_free (&p);
   _dbus_string_free (&buffer);
@@ -245,8 +245,9 @@ _dbus_send_nonce (DBusSocket        fd,
     {
       dbus_set_error (error,
                       _dbus_error_from_system_errno (),
-                      "Failed to send nonce (fd=%d): %s",
-                      fd, _dbus_strerror_from_errno ());
+                      "Failed to send nonce (fd=%" DBUS_SOCKET_FORMAT "): %s",
+                      _dbus_socket_printable (fd),
+                      _dbus_strerror_from_errno ());
       return FALSE;
     }
 
