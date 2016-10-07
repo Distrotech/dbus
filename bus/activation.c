@@ -2249,7 +2249,7 @@ dbus_activation_systemd_failure (BusActivation *activation,
                              DBUS_TYPE_STRING, &code,
                              DBUS_TYPE_STRING, &str,
                              DBUS_TYPE_INVALID))
-    dbus_set_error(&error, code, str);
+    dbus_set_error (&error, code, "%s", str);
 
 
   if (unit)
