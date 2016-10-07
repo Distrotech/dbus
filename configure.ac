@@ -1347,6 +1347,7 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl - type-limits is probably a bug too, but having the rest of -Wextra
   dnl   is better than nothing
   [$DISABLE_UNUSED_WARNINGS \
+   deprecated-declarations \
    missing-field-initializers \
    unused-parameter \
    sign-compare \
