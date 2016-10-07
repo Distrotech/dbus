@@ -1609,7 +1609,7 @@ _dbus_listen_tcp_socket (const char     *host,
                                       NI_NUMERICHOST | NI_NUMERICSERV)) != 0)
                 {
                   dbus_set_error (error, _dbus_error_from_errno (errno),
-                                  "Failed to resolve port \"%s:%s\": %s (%s)",
+                                  "Failed to resolve port \"%s:%s\": %s (%d)",
                                   host ? host : "*", port, gai_strerror(res), res);
                   goto failed;
                 }
