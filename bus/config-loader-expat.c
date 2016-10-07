@@ -254,10 +254,13 @@ bus_config_load (const DBusString      *file,
               dbus_set_error (error, DBUS_ERROR_NO_MEMORY, NULL);
             else
               dbus_set_error (error, DBUS_ERROR_FAILED,
-                              "Error in file %s, line %d, column %d: %s\n",
+                              "Error in file %s, line %lu, column %lu: %s\n",
                               filename,
-                              XML_GetCurrentLineNumber (expat),
-                              XML_GetCurrentColumnNumber (expat),
+                              /* The XML_Size type varies according to
+                               * build options, so cast to something we can
+                               * cope with. */
+                              (unsigned long) XML_GetCurrentLineNumber (expat),
+                              (unsigned long) XML_GetCurrentColumnNumber (expat),
                               XML_ErrorString (e));
           }
 
