@@ -69,7 +69,7 @@ DBUS_EXPORT
 void        dbus_set_error       (DBusError       *error,
                                   const char      *name,
                                   const char      *message,
-                                  ...);
+                                  ...) _DBUS_GNUC_PRINTF (3, 4);
 DBUS_EXPORT
 void        dbus_set_error_const (DBusError       *error,
                                   const char      *name,

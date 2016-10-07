@@ -203,7 +203,7 @@ dbus_bool_t   _dbus_string_append_printf         (DBusString        *str,
 DBUS_PRIVATE_EXPORT
 dbus_bool_t   _dbus_string_append_printf_valist  (DBusString        *str,
                                                   const char        *format,
-                                                  va_list            args);
+                                                  va_list            args) _DBUS_GNUC_PRINTF (2, 0);
 dbus_bool_t   _dbus_string_insert_2_aligned      (DBusString        *str,
                                                   int                insert_at,
                                                   const unsigned char octets[2]);

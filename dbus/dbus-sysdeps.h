@@ -483,7 +483,7 @@ void _dbus_exit (int code) _DBUS_GNUC_NORETURN;
 
 DBUS_PRIVATE_EXPORT
 int _dbus_printf_string_upper_bound (const char *format,
-                                     va_list args);
+                                     va_list args) _DBUS_GNUC_PRINTF (1, 0);
 
 #ifdef DBUS_ENABLE_VERBOSE_MODE
 DBUS_PRIVATE_EXPORT
@@ -568,7 +568,7 @@ void _dbus_log  (DBusSystemLogSeverity  severity,
 DBUS_PRIVATE_EXPORT
 void _dbus_logv (DBusSystemLogSeverity  severity,
                  const char            *msg,
-                 va_list args);
+                 va_list args) _DBUS_GNUC_PRINTF (2, 0);
 
 /* Define DBUS_VA_COPY() to do the right thing for copying va_list variables.
  * config.h may have already defined DBUS_VA_COPY as va_copy or __va_copy.

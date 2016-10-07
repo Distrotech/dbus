@@ -71,7 +71,7 @@ static security_id_t bus_sid = SECSID_WILD;
 static pthread_t avc_notify_thread;
 
 /* Prototypes for AVC callback functions.  */
-static void log_callback (const char *fmt, ...);
+static void log_callback (const char *fmt, ...) _DBUS_GNUC_PRINTF (1, 2);
 static void log_audit_callback (void *data, security_class_t class, char *buf, size_t bufleft);
 static void *avc_create_thread (void (*run) (void));
 static void avc_stop_thread (void *thread);
