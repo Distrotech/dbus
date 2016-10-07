@@ -52,6 +52,8 @@
 #elif (defined __APPLE__)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
+#elif HAVE_DECL_ENVIRON && defined(HAVE_UNISTD_H)
+# include <unistd.h>
 #else
 extern char **environ;
 #endif

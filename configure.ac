@@ -491,6 +491,10 @@ case $host_os in
 		;;
 esac
 
+# As a GNU extension, glibc declares environ in unistd.h, which is one of
+# the AC_INCLUDES_DEFAULT.
+AC_CHECK_DECLS([environ])
+
 dnl **********************************
 dnl *** va_copy checks (from GLib) ***
 dnl **********************************

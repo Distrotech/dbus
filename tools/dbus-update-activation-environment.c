@@ -62,9 +62,12 @@
 #ifdef DBUS_WIN
 /* The Windows C runtime uses a different name */
 #define environ _environ
+#elif defined(__APPLE__)
+# include <crt_externs.h>
+# define environ (*_NSGetEnviron ())
+#elif HAVE_DECL_ENVIRON && defined(HAVE_UNISTD_H)
+# include <unistd.h>
 #else
-/* apparently this is the portable way to get the entire environment...
- * GNU platforms also put it in unistd.h but that's not portable */
 extern char **environ;
 #endif
 
