@@ -367,7 +367,8 @@ set_address_in_x11(char *address, pid_t pid)
   wid = XCreateWindow (xdisplay, RootWindow (xdisplay, 0), -20, -20, 10, 10,
                        0, CopyFromParent, InputOnly, CopyFromParent,
                        0, NULL);
-  verbose ("Created window %d\n", wid);
+  /* The type of a Window varies, so cast it to something reasonable */
+  verbose ("Created window %lu\n", (unsigned long) wid);
 
   /* Save the property in the window */
   XChangeProperty (xdisplay, wid, address_atom, XA_STRING, 8, PropModeReplace,
