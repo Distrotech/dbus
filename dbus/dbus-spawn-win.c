@@ -412,8 +412,8 @@ handle_watch (DBusWatch       *watch,
 
 /* protect_argv lifted from GLib, relicensed by author, Tor Lillqvist */
 static int
-protect_argv (char  **argv,
-              char ***new_argv)
+protect_argv (char  * const *argv,
+              char        ***new_argv)
 {
   int i;
   int argc = 0;
@@ -440,7 +440,7 @@ protect_argv (char  **argv,
    */
   for (i = 0; i < argc; i++)
     {
-      char *p = argv[i];
+      const char *p = argv[i];
       char *q;
       int len = 0;
       int need_dblquotes = FALSE;
@@ -452,7 +452,7 @@ protect_argv (char  **argv,
             len++;
           else if (*p == '\\')
             {
-              char *pp = p;
+              const char *pp = p;
               while (*pp && *pp == '\\')
                 pp++;
               if (*pp == '"')
@@ -479,7 +479,7 @@ protect_argv (char  **argv,
             *q++ = '\\';
           else if (*p == '\\')
             {
-              char *pp = p;
+              const char *pp = p;
               while (*pp && *pp == '\\')
                 pp++;
               if (*pp == '"')
@@ -643,7 +643,7 @@ babysitter (void *parameter)
 dbus_bool_t
 _dbus_spawn_async_with_babysitter (DBusBabysitter           **sitter_p,
                                    const char                *log_name,
-                                   char                     **argv,
+                                   char              * const *argv,
                                    char                     **envp,
                                    DBusSpawnFlags             flags _DBUS_GNUC_UNUSED,
                                    DBusSpawnChildSetupFunc    child_setup _DBUS_GNUC_UNUSED,

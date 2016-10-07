@@ -88,7 +88,7 @@ static unsigned char valid[256] = {
 };
 
 static void report_error (BusDesktopFileParser *parser,
-			  char                 *message,
+			  const char           *message,
 			  const char           *error_name,
 			  DBusError            *error);
 
@@ -579,7 +579,7 @@ parse_key_value (BusDesktopFileParser *parser, DBusError *error)
 
 static void
 report_error (BusDesktopFileParser *parser,
-	      char                 *message,
+	      const char           *message,
 	      const char           *error_name,
 	      DBusError            *error)
 {

@@ -130,7 +130,7 @@ main (int argc, char **argv)
 
   if (!_dbus_test_oom_handling ("dbus-daemon-launch-helper",
                                 bus_activation_helper_oom_test,
-                                "org.freedesktop.DBus.TestSuiteEchoService"))
+                                (char *) "org.freedesktop.DBus.TestSuiteEchoService"))
     die ("OOM failed");
 
   test_post_hook (argv[0]);

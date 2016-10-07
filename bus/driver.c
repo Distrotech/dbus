@@ -1528,6 +1528,8 @@ bus_driver_handle_list_queued_owners (DBusConnection *connection,
 				      DBusMessage    *message,
 				      DBusError      *error)
 {
+  static const char dbus_service_name[] = DBUS_SERVICE_DBUS;
+
   const char *text;
   DBusList *base_names;
   DBusList *link;
@@ -1536,7 +1538,6 @@ bus_driver_handle_list_queued_owners (DBusConnection *connection,
   BusService *service;
   DBusMessage *reply;
   DBusMessageIter iter, array_iter;
-  char *dbus_service_name = DBUS_SERVICE_DBUS;
 
   _DBUS_ASSERT_ERROR_IS_CLEAR (error);
 
@@ -1557,7 +1558,7 @@ bus_driver_handle_list_queued_owners (DBusConnection *connection,
       _dbus_string_equal_c_str (&str, DBUS_SERVICE_DBUS))
     {
       /* ORG_FREEDESKTOP_DBUS owns itself */
-      if (! _dbus_list_append (&base_names, dbus_service_name))
+      if (! _dbus_list_append (&base_names, (char *) dbus_service_name))
         goto oom;
     }
   else if (service == NULL)

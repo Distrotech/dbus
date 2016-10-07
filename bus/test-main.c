@@ -74,7 +74,7 @@ test_pre_hook (void)
   initial_fds = _dbus_check_fdleaks_enter ();
 }
 
-static char *progname = "";
+static const char *progname = "";
 
 static void
 test_post_hook (void)

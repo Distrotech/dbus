@@ -2810,7 +2810,7 @@ static dbus_bool_t
 do_check_own_rules (BusPolicy  *policy)
 {
   const struct {
-    char *name;
+    const char *name;
     dbus_bool_t allowed;
   } checks[] = {
     {"org.freedesktop", FALSE},

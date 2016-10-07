@@ -2183,9 +2183,9 @@ _dbus_memory_pause_based_on_timeout (int timeout_milliseconds)
 }
 
 static DBusMessage *
-generate_local_error_message (dbus_uint32_t serial, 
-                              char *error_name, 
-                              char *error_msg)
+generate_local_error_message (dbus_uint32_t serial,
+                              const char *error_name,
+                              const char *error_msg)
 {
   DBusMessage *message;
   message = dbus_message_new (DBUS_MESSAGE_TYPE_ERROR);

@@ -20,7 +20,7 @@ _run_iteration (DBusConnection *conn)
   DBusPendingCall *dbus_pending;
   DBusMessage *method;
   DBusMessage *reply;
-  char *echo = "echo";
+  const char *echo = "echo";
 
   /* send the first message */
   method = dbus_message_new_method_call ("org.freedesktop.DBus.TestSuiteEchoService",

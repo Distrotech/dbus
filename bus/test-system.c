@@ -59,7 +59,7 @@ test_pre_hook (void)
 {
 }
 
-static char *progname = "";
+static const char *progname = "";
 static void
 test_post_hook (void)
 {

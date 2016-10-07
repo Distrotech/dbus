@@ -17,7 +17,7 @@ _method_call (DBusConnection *conn,
   DBusPendingCall *pending;
   DBusMessage *method;
   DBusMessage *reply;
-  char *echo = "echo";
+  const char *echo = "echo";
 
   /* send the message */
   method = dbus_message_new_method_call ("org.freedesktop.DBus.TestSuiteEchoService",

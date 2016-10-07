@@ -28,7 +28,8 @@
 #include <dbus/dbus.h>
 
 static void
-usage (char *name, int ecode)
+usage (const char *name,
+       int ecode)
 {
   if (name == NULL)
     name = "dbus-uuidgen";

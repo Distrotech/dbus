@@ -3678,7 +3678,7 @@ _dbus_logv (DBusSystemLogSeverity  severity,
             const char            *msg,
             va_list                args)
 {
-  char *s = "";
+  const char *s = "";
   va_list tmp;
 
   switch(severity)

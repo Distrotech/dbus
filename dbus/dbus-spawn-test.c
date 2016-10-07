@@ -56,14 +56,17 @@ get_test_exec (const char *exe,
 static dbus_bool_t
 check_spawn_nonexistent (void *data)
 {
-  char *argv[4] = { NULL, NULL, NULL, NULL };
+  static const char arg_does_not_exist[] = "/this/does/not/exist/32542sdgafgafdg";
+
+  const char *argv[4] = { NULL, NULL, NULL, NULL };
   DBusBabysitter *sitter = NULL;
   DBusError error = DBUS_ERROR_INIT;
 
   /*** Test launching nonexistent binary */
 
-  argv[0] = "/this/does/not/exist/32542sdgafgafdg";
-  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_nonexistent", argv,
+  argv[0] = arg_does_not_exist;
+  if (_dbus_spawn_async_with_babysitter (&sitter, "spawn_nonexistent",
+                                         (char * const *) argv,
                                          NULL, DBUS_SPAWN_NONE, NULL, NULL,
                                          &error))
     {

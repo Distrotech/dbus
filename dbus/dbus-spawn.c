@@ -1004,8 +1004,8 @@ write_status_and_exit (int fd, int status)
 
 static void
 do_exec (int                       child_err_report_fd,
-	 char                    **argv,
-	 char                    **envp,
+	 char             * const *argv,
+	 char             * const *envp,
 	 DBusSpawnChildSetupFunc   child_setup,
 	 void                     *user_data)
 {
@@ -1214,7 +1214,7 @@ babysit (pid_t grandchild_pid,
 dbus_bool_t
 _dbus_spawn_async_with_babysitter (DBusBabysitter          **sitter_p,
                                    const char               *log_name,
-                                   char                    **argv,
+                                   char             * const *argv,
                                    char                    **env,
                                    DBusSpawnFlags            flags,
                                    DBusSpawnChildSetupFunc   child_setup,

@@ -1069,7 +1069,7 @@ _dbus_connect_exec (const char     *path,
 
       _dbus_close_all ();
 
-      execvp (path, argv);
+      execvp (path, (char * const *) argv);
 
       fprintf (stderr, "Failed to execute process %s: %s\n", path, _dbus_strerror (errno));
 
@@ -3545,7 +3545,7 @@ _dbus_get_tmpdir(void)
 static dbus_bool_t
 _read_subprocess_line_argv (const char *progpath,
                             dbus_bool_t path_fallback,
-                            char       * const *argv,
+                            const char * const *argv,
                             DBusString *result,
                             DBusError  *error)
 {
@@ -3648,7 +3648,7 @@ _read_subprocess_line_argv (const char *progpath,
       /* If it looks fully-qualified, try execv first */
       if (progpath[0] == '/')
         {
-          execv (progpath, argv);
+          execv (progpath, (char * const *) argv);
           /* Ok, that failed.  Now if path_fallback is given, let's
            * try unqualified.  This is mostly a hack to work
            * around systems which ship dbus-launch in /usr/bin
@@ -3657,10 +3657,10 @@ _read_subprocess_line_argv (const char *progpath,
            */
           if (path_fallback)
             /* We must have a slash, because we checked above */
-            execvp (strrchr (progpath, '/')+1, argv);
+            execvp (strrchr (progpath, '/')+1, (char * const *) argv);
         }
       else
-        execvp (progpath, argv);
+        execvp (progpath, (char * const *) argv);
 
       /* still nothing, we failed */
       _exit (1);
@@ -3758,12 +3758,17 @@ _dbus_get_autolaunch_address (const char *scope,
                               DBusError  *error)
 {
 #ifdef DBUS_ENABLE_X11_AUTOLAUNCH
+  static const char arg_dbus_launch[] = "dbus-launch";
+  static const char arg_autolaunch[] = "--autolaunch";
+  static const char arg_binary_syntax[] = "--binary-syntax";
+  static const char arg_close_stderr[] = "--close-stderr";
+
   /* Perform X11-based autolaunch. (We also support launchd-based autolaunch,
    * but that's done elsewhere, and if it worked, this function wouldn't
    * be called.) */
   const char *display;
   const char *progpath;
-  char *argv[6];
+  const char *argv[6];
   int i;
   DBusString uuid;
   dbus_bool_t retval;
@@ -3818,15 +3823,15 @@ _dbus_get_autolaunch_address (const char *scope,
    * see fd.o#69716
    */
   i = 0;
-  argv[i] = "dbus-launch";
+  argv[i] = arg_dbus_launch;
   ++i;
-  argv[i] = "--autolaunch";
+  argv[i] = arg_autolaunch;
   ++i;
   argv[i] = _dbus_string_get_data (&uuid);
   ++i;
-  argv[i] = "--binary-syntax";
+  argv[i] = arg_binary_syntax;
   ++i;
-  argv[i] = "--close-stderr";
+  argv[i] = arg_close_stderr;
   ++i;
   argv[i] = NULL;
   ++i;

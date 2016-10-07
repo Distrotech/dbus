@@ -38,7 +38,7 @@
 #define wcscpy_s my_wcscpy_s
 
 static errno_t
-wcscat_s (wchar_t *dest, size_t size, wchar_t *src) 
+wcscat_s (wchar_t *dest, size_t size, const wchar_t *src)
 {
   assert (sizeof (wchar_t) * (wcslen (dest) + wcslen (src) + 1) <= size);
   wcscat (dest, src);
@@ -47,7 +47,7 @@ wcscat_s (wchar_t *dest, size_t size, wchar_t *src)
 
 
 static errno_t
-wcscpy_s (wchar_t *dest, size_t size, wchar_t *src)
+wcscpy_s (wchar_t *dest, size_t size, const wchar_t *src)
 {
   assert (sizeof (wchar_t) * (wcslen (src) + 1) <= size);
   wcscpy (dest, src);
@@ -87,7 +87,7 @@ main (int argc, char **argv)
   wchar_t dbusDaemonPath[MAX_PATH * 2 + 1];
   wchar_t command[MAX_PATH * 2 + 1];
   wchar_t *p;
-  wchar_t *daemon_name;
+  const wchar_t *daemon_name;
   int result;
 
 #ifdef DBUS_WINCE
