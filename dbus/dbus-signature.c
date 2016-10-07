@@ -244,7 +244,8 @@ dbus_signature_validate (const char       *signature,
     return TRUE;
   else
     {
-      dbus_set_error (error, DBUS_ERROR_INVALID_SIGNATURE, _dbus_validity_to_error_message (reason));
+      dbus_set_error (error, DBUS_ERROR_INVALID_SIGNATURE, "%s",
+          _dbus_validity_to_error_message (reason));
       return FALSE;
     }
 }
