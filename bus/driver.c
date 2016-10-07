@@ -2637,6 +2637,15 @@ bus_driver_handle_message (DBusConnection *connection,
       BusContext *context;
       DBusConnection *systemd;
 
+      /* This is a directed signal, not a method call, so the log message
+       * is a little weird (it talks about "calling" ActivationFailure),
+       * but it's close enough */
+      if (!bus_driver_check_caller_is_privileged (connection,
+                                                  transaction,
+                                                  message,
+                                                  error))
+        return FALSE;
+
       context = bus_connection_get_context (connection);
       systemd = bus_driver_get_owner_of_name (connection,
           "org.freedesktop.systemd1");
