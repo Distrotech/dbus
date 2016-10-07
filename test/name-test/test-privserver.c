@@ -95,7 +95,7 @@ main (int argc, char *argv[])
   server = dbus_server_listen ("unix:tmpdir=/tmp", &error);
 #endif
   if (!server)
-    die (error.message);
+    die ("%s", error.message);
   testdata->private_addr = dbus_server_get_address (server);
   fprintf (stderr, "test server listening on %s\n", testdata->private_addr);
 
