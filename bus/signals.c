@@ -871,7 +871,7 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
       else
         {
           dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
-              "Key '%s' in match rule contains junk after argument number (%u). Only 'arg%upath' (for example) or 'arg0namespace' are valid", key, arg, arg);
+              "Key '%s' in match rule contains junk after argument number (%lu). Only 'arg%lupath' (for example) or 'arg0namespace' are valid", key, arg, arg);
           goto failed;
         }
     }
@@ -889,7 +889,7 @@ bus_match_rule_parse_arg_match (BusMatchRule     *rule,
       rule->args[arg] != NULL)
     {
       dbus_set_error (error, DBUS_ERROR_MATCH_RULE_INVALID,
-                      "Argument %d matched more than once in match rule\n", key);
+                      "Argument %s matched more than once in match rule\n", key);
       goto failed;
     }
   
