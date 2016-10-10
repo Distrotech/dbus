@@ -1356,11 +1356,17 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   [all \
    extra \
    char-subscripts \
+   implicit \
    missing-declarations \
    missing-prototypes \
    nested-externs \
    pointer-arith \
    pointer-sign \
+   old-style-declaration \
+   old-style-definition \
+   shadow \
+   strict-prototypes \
+   type-limits \
    cast-align \
    no-address \
    float-equal \
@@ -1375,15 +1381,9 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl   checking or not asserting
   dnl - missing field initializers being 0 is a C feature, not a bug
   dnl - unused-parameter is to make writing callbacks less annoying
-  dnl
-  dnl To be fixed one day:
-  dnl - pointer-sign is a workaround for fd.o #15522
-  dnl - type-limits is probably a bug too, but having the rest of -Wextra
-  dnl   is better than nothing
   [$DISABLE_UNUSED_WARNINGS \
    missing-field-initializers \
    unused-parameter \
-   type-limits \
   ])
 
 if test "x$GCC" = "xyes"; then
