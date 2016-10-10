@@ -29,7 +29,7 @@
 #include "dbus-protocol.h"
 #include <string.h>
 
-#if HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD
 #include <systemd/sd-login.h>
 #endif
 

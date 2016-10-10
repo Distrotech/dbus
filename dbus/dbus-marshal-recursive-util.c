@@ -35,6 +35,9 @@
 #define PRIx64 "I64x"
 #endif
 
+/** turn this on to get deluged in TypeWriter verbose spam */
+#define RECURSIVE_MARSHAL_WRITE_TRACE 0
+
 static void
 basic_value_zero (DBusBasicValue *value)
 {

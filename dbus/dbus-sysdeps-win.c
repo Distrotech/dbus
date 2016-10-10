@@ -2464,7 +2464,7 @@ static void dump_backtrace_for_thread (HANDLE hThread)
   sf.AddrFrame.Mode   = AddrModeFlat;
   sf.AddrPC.Offset    = context.Eip;
   sf.AddrPC.Mode      = AddrModeFlat;
-#elif _M_X64
+#elif defined(_M_X64)
   dwImageType         = IMAGE_FILE_MACHINE_AMD64;
   sf.AddrPC.Offset    = context.Rip;
   sf.AddrPC.Mode      = AddrModeFlat;
@@ -2472,7 +2472,7 @@ static void dump_backtrace_for_thread (HANDLE hThread)
   sf.AddrFrame.Mode   = AddrModeFlat;
   sf.AddrStack.Offset = context.Rsp;
   sf.AddrStack.Mode   = AddrModeFlat;
-#elif _M_IA64
+#elif defined(_M_IA64)
   dwImageType         = IMAGE_FILE_MACHINE_IA64;
   sf.AddrPC.Offset    = context.StIIP;
   sf.AddrPC.Mode      = AddrModeFlat;

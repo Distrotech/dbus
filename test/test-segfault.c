@@ -44,7 +44,7 @@ main (int argc, char **argv)
   SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)&exception_handler);
 #endif
 
-#if HAVE_SETRLIMIT
+#ifdef HAVE_SETRLIMIT
   /* No core dumps please, we know we crashed. */
   struct rlimit r = { 0, };
   
