@@ -1350,7 +1350,7 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl - we're not on Windows (too many warnings), and
   dnl - we're in developer mode (a D-Bus developer, not a distro or end-user)
   dnl Override with --enable-Werror or --disable-Werror
-  [test x$dbus_win != xyes -a x$dbus_cygwin != xyes -a x$enable_developer = xyes],
+  [x$enable_developer = xyes],
 
   dnl Enable these warnings if possible:
   [all \
