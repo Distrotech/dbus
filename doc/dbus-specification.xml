@@ -6,7 +6,7 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.28</releaseinfo>
+    <releaseinfo>Version 0.29</releaseinfo>
     <date>2016-08-15</date>
     <authorgroup>
       <author>
@@ -70,6 +70,15 @@
       </author>
     </authorgroup>
    <revhistory>
+     <revision>
+       <revnumber>0.29</revnumber>
+       <date>2016-10-10</date>
+       <authorinitials>PW</authorinitials>
+       <revremark>
+         Introspection arguments may contain annotations; recommend against
+         using the object path '/'
+       </revremark>
+     </revision>
      <revision>
        <revnumber>0.28</revnumber>
        <date>2016-08-15</date>
