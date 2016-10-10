@@ -1347,7 +1347,6 @@ cc_supports_flag() {
 
 TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl Use -Werror by default if:
-  dnl - we're not on Windows (too many warnings), and
   dnl - we're in developer mode (a D-Bus developer, not a distro or end-user)
   dnl Override with --enable-Werror or --disable-Werror
   [x$enable_developer = xyes],
