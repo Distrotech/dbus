@@ -1,7 +1,30 @@
-D-Bus 1.10.11 (UNRELEASED)
+D-Bus 1.10.12 (2016-10-10)
 ==
 
-Fixes:
+The “not excessively inhospitable” release.
+
+Security fixes:
+
+• Do not treat ActivationFailure message received from root-owned systemd
+  name as a format string. In principle this is a security vulnerability,
+  but we do not believe it is exploitable in practice, because only
+  privileged processes can own the org.freedesktop.systemd1 bus name, and
+  systemd does not appear to send activation failures that contain "%".
+
+  Please note that this probably *was* exploitable in dbus versions
+  older than 1.6.30, 1.8.16 and 1.9.10 due to a missing check which at
+  the time was only thought to be a denial of service vulnerability
+  (CVE-2015-0245). If you are still running one of those versions,
+  patch or upgrade immediately.
+
+  (fd.o #98157, Simon McVittie)
+
+Other fixes:
+
+• Harden dbus-daemon against malicious or incorrect ActivationFailure
+  messages by rejecting them if they do not come from a privileged
+  process, or if systemd activation is not enabled
+  (fd.o #98157, Simon McVittie)
 
 • Avoid undefined behaviour when setting reply serial number without going
   via union DBusBasicValue (fd.o #98035, Marc Mutz)
