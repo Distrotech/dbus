@@ -1,7 +1,23 @@
-D-Bus 1.8.22 (UNRELEASED)
+D-Bus 1.8.22 (2016-10-10)
 ==
 
-...
+The “barren and lifeless” release.
+
+Security fixes:
+
+• Do not treat ActivationFailure message received from root-owned systemd
+  name as a format string. In principle this is a security vulnerability,
+  but we do not believe it is exploitable in practice, because only
+  privileged processes can own the org.freedesktop.systemd1 bus name, and
+  systemd does not appear to send activation failures that contain "%".
+
+  Please note that this probably *was* exploitable in dbus versions
+  older than 1.6.30, 1.8.16 and 1.9.10 due to a missing check which at
+  the time was only thought to be a denial of service vulnerability
+  (CVE-2015-0245). If you are still running one of those versions,
+  patch or upgrade immediately.
+
+  (fd.o #98157, Simon McVittie)
 
 D-Bus 1.8.20 (2015-07-21)
 ==
