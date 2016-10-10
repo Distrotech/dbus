@@ -17,8 +17,9 @@
 #include <stdio.h>
 #include <windows.h>
 
-int
-exception_handler(LPEXCEPTION_POINTERS p);
+#include <dbus/dbus-macros.h>
+
+int exception_handler (LPEXCEPTION_POINTERS p) _DBUS_GNUC_NORETURN;
 
 /* Explicit Windows exception handlers needed to supress OS popups */
 int
