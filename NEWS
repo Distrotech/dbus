@@ -1,7 +1,23 @@
 D-Bus 1.11.8 (UNRELEASED)
 ==
 
-...
+Build-time configuration:
+
+• The new --enable-debug configure option provides an easy way to
+  enable debug symbols, disable optimization and/or enable profiling.
+
+• The --enable-compile-warnings configure option can be used to control
+  compiler warnings.
+
+• The --disable-compiler-optimisations configure option is no longer
+  supported. Use --enable-debug=yes or CFLAGS=-O0 instead.
+
+Enhancements:
+
+• Fix and enable a lot of compiler warnings to improve future code
+  quality. This might incidentally also fix some environment variable
+  accesses on OS X.
+  (fd.o #97357, fd.o #98192; Thomas Zimmermann, Simon McVittie)
 
 D-Bus 1.11.6 (2016-10-10)
 ==
