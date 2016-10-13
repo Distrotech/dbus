@@ -670,9 +670,9 @@ _dbus_error_from_errno (int error_number)
     case ENOENT:
       return DBUS_ERROR_FILE_NOT_FOUND;
 #endif
+    default:
+      return DBUS_ERROR_FAILED;
     }
-
-  return DBUS_ERROR_FAILED;
 }
 
 /**

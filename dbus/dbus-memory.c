@@ -334,9 +334,10 @@ source_string (BlockSource source)
       return "malloc0";
     case SOURCE_REALLOC_NULL:
       return "realloc(NULL)";
+    default:
+      _dbus_assert_not_reached ("Invalid malloc block source ID");
+      return "invalid!";
     }
-  _dbus_assert_not_reached ("Invalid malloc block source ID");
-  return "invalid!";
 }
 
 static void

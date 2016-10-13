@@ -323,9 +323,10 @@ _dbus_win_error_from_last_error (void)
     case ERROR_FILE_NOT_FOUND:
     case ERROR_PATH_NOT_FOUND:
       return DBUS_ERROR_FILE_NOT_FOUND;
+
+    default:
+      return DBUS_ERROR_FAILED;
     }
-  
-  return DBUS_ERROR_FAILED;
 }
 
 

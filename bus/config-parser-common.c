@@ -187,10 +187,9 @@ bus_config_parser_element_type_to_name (ElementType type)
       return "allow_anonymous";
     case ELEMENT_APPARMOR:
       return "apparmor";
+    default:
+      _dbus_assert_not_reached ("bad element type");
+      return NULL;
     }
-
-  _dbus_assert_not_reached ("bad element type");
-
-  return NULL;
 }
 

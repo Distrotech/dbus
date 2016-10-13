@@ -267,10 +267,10 @@ _dbus_credentials_include (DBusCredentials    *credentials,
       return credentials->linux_security_label != NULL;
     case DBUS_CREDENTIAL_ADT_AUDIT_DATA_ID:
       return credentials->adt_audit_data != NULL;
+    default:
+      _dbus_assert_not_reached ("Unknown credential enum value");
+      return FALSE;
     }
-
-  _dbus_assert_not_reached ("Unknown credential enum value");
-  return FALSE;
 }
 
 /**
