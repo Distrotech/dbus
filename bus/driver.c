@@ -1659,6 +1659,8 @@ bus_driver_handle_get_connection_unix_user (DBusConnection *connection,
           uid = DBUS_UID_UNSET;
         break;
       case BUS_DRIVER_FOUND_ERROR:
+        /* fall through */
+      default:
         goto failed;
     }
 
@@ -1726,6 +1728,8 @@ bus_driver_handle_get_connection_unix_process_id (DBusConnection *connection,
           pid = DBUS_PID_UNSET;
         break;
       case BUS_DRIVER_FOUND_ERROR:
+        /* fall through */
+      default:
         goto failed;
     }
 
@@ -1923,6 +1927,8 @@ bus_driver_handle_get_connection_credentials (DBusConnection *connection,
           ulong_uid = DBUS_UID_UNSET;
         break;
       case BUS_DRIVER_FOUND_ERROR:
+        /* fall through */
+      default:
         goto failed;
     }
 
