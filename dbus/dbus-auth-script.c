@@ -164,6 +164,8 @@ auth_state_to_string (DBusAuthState state)
       return "NEED_DISCONNECT";
     case DBUS_AUTH_STATE_AUTHENTICATED:
       return "AUTHENTICATED";
+    case DBUS_AUTH_STATE_INVALID:
+      return "INVALID";
     default:
       break;
     }
