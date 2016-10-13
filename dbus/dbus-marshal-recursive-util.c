@@ -2070,27 +2070,15 @@ int16_from_seed (int seed)
    * just use seed itself, but that would only ever touch one byte of
    * the int so would miss some kinds of bug.
    */
-  dbus_int16_t v;
+  static const dbus_int16_t v_of_seed[5] = {
+    SAMPLE_INT16,
+    SAMPLE_INT16_ALTERNATE,
+    -1,
+    _DBUS_INT16_MAX,
+    1
+  };
 
-  v = 42; /* just to quiet compiler afaik */
-  switch (seed % 5)
-    {
-    case 0:
-      v = SAMPLE_INT16;
-      break;
-    case 1:
-      v = SAMPLE_INT16_ALTERNATE;
-      break;
-    case 2:
-      v = -1;
-      break;
-    case 3:
-      v = _DBUS_INT16_MAX;
-      break;
-    case 4:
-      v = 1;
-      break;
-    }
+  dbus_int16_t v = v_of_seed[seed % _DBUS_N_ELEMENTS(v_of_seed)];
 
   if (seed > 1)
     v *= seed; /* wraps around eventually, which is fine */
@@ -2207,27 +2195,15 @@ int32_from_seed (int seed)
    * just use seed itself, but that would only ever touch one byte of
    * the int so would miss some kinds of bug.
    */
-  dbus_int32_t v;
+  static const dbus_int32_t v_of_seed[5] = {
+    SAMPLE_INT32,
+    SAMPLE_INT32_ALTERNATE,
+    -1,
+    _DBUS_INT_MAX,
+    1
+  };
 
-  v = 42; /* just to quiet compiler afaik */
-  switch (seed % 5)
-    {
-    case 0:
-      v = SAMPLE_INT32;
-      break;
-    case 1:
-      v = SAMPLE_INT32_ALTERNATE;
-      break;
-    case 2:
-      v = -1;
-      break;
-    case 3:
-      v = _DBUS_INT_MAX;
-      break;
-    case 4:
-      v = 1;
-      break;
-    }
+  dbus_int32_t v = v_of_seed[seed % _DBUS_N_ELEMENTS(v_of_seed)];
 
   if (seed > 1)
     v *= seed; /* wraps around eventually, which is fine */
