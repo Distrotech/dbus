@@ -3816,6 +3816,17 @@
         possibilities).
       </para>
       <para>
+        If <literal>org.freedesktop.DBus.Properties.GetAll</literal> is called
+        with a valid interface name which contains no properties, an empty array
+        should be returned. If it is called with a valid interface name for
+        which some properties are not accessible to the caller (for example, due
+        to per-property access control implemented in the service), those
+        properties should be silently omitted from the result array.
+        If <literal>org.freedesktop.DBus.Properties.Get</literal> is called for
+        any such properties, an appropriate access control error should be
+        returned.
+      </para>
+      <para>
         If one or more properties change on an object, the
         <literal>org.freedesktop.DBus.Properties.PropertiesChanged</literal>
         signal may be emitted (this signal was added in 0.14):
