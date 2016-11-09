@@ -34,6 +34,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static void do_test (int minimum,
+                     const char *format,
+                     ...) _DBUS_GNUC_PRINTF (2, 3);
+
 static void
 do_test (int minimum,
     const char *format,

@@ -87,7 +87,7 @@ DBUS_EXPORT
 DBusMessage* dbus_message_new_error_printf  (DBusMessage *reply_to,
                                              const char  *error_name,
                                              const char  *error_format,
-					     ...);
+                                             ...) _DBUS_GNUC_PRINTF (3, 4);
 
 DBUS_EXPORT
 DBusMessage* dbus_message_copy              (const DBusMessage *message);
