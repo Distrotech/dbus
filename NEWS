@@ -17,7 +17,7 @@ Enhancements:
 • Fix and enable a lot of compiler warnings to improve future code
   quality. This might incidentally also fix some environment variable
   accesses on OS X.
-  (fd.o #97357, fd.o #98192; Thomas Zimmermann, Simon McVittie)
+  (fd.o #97357, fd.o #98192, fd.o #98195; Thomas Zimmermann, Simon McVittie)
 
 D-Bus 1.11.6 (2016-10-10)
 ==
