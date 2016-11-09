@@ -5152,6 +5152,39 @@
           property on screen 0 of the display, pointing to this bus.
         </para>
       </sect3>
+
+      <sect3 id="message-bus-starting-services-systemd">
+        <title>systemd Activation</title>
+
+        <para>
+          Service description files may contain a
+          <literal>SystemdService</literal> key. Its value is the name of a
+          <ulink
+            url="https://www.freedesktop.org/wiki/Software/systemd/">systemd</ulink>
+          service, for example
+          <literal>dbus-com.example.MyDaemon.service</literal>.
+        </para>
+
+        <para>
+          If this key is present, the bus daemon may carry out activation for
+          this D-Bus service by sending a request to systemd asking it to
+          start the systemd service whose name is the value of
+          <literal>SystemdService</literal>. For example, the reference
+          <literal>dbus-daemon</literal> has a
+          <literal>--systemd-activation</literal> option that enables this
+          feature, and that option is given when it is started by systemd.
+        </para>
+
+        <para>
+          On the well-known system bus, it is a common practice to set
+          <literal>SystemdService</literal> to <literal>dbus-</literal>,
+          followed by the well-known bus name, followed by
+          <literal>.service</literal>, then register that name as an alias
+          for the real systemd service. This allows D-Bus activation of a
+          service to be enabled or disabled independently of whether the
+          service is started by systemd during boot.
+        </para>
+      </sect3>
     </sect2>
 
     <sect2 id="message-bus-types">
