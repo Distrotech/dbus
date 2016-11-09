@@ -172,8 +172,13 @@ dist_installable_test_scripts += \
 if DBUS_ENABLE_EMBEDDED_TESTS
 dist_installable_test_scripts += \
 	test-dbus-launch-eval.sh \
+	$(NULL)
+
+if DBUS_ENABLE_X11_AUTOLAUNCH
+dist_installable_test_scripts += \
 	test-dbus-launch-x11.sh \
 	$(NULL)
+endif DBUS_ENABLE_X11_AUTOLAUNCH
 endif DBUS_ENABLE_EMBEDDED_TESTS
 
 endif DBUS_UNIX

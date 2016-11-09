@@ -1336,6 +1336,8 @@ fi
 if test "x$enable_x11_autolaunch" = xyes ; then
    AC_DEFINE([DBUS_ENABLE_X11_AUTOLAUNCH], [1], [Define to enable X11 auto-launch])
 fi
+AM_CONDITIONAL([DBUS_ENABLE_X11_AUTOLAUNCH],
+  [test "x$enable_x11_autolaunch" = xyes])
 
 AC_SUBST([DBUS_X_CFLAGS])
 AC_SUBST([DBUS_X_LIBS])
