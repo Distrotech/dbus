@@ -997,6 +997,12 @@ test_pending_fd_timeout (Fixture *f,
   if (f->skip)
     return;
 
+  if (getuid () == 0)
+    {
+      g_test_skip ("Cannot test, uid 0 is immune to this limit");
+      return;
+    }
+
   have_mem = dbus_connection_add_filter (f->left_conn, wait_for_disconnected_cb,
       &disconnected, NULL);
   g_assert (have_mem);
