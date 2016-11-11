@@ -672,10 +672,24 @@ pending_unix_fds_timeout_cb (void *data)
 {
   DBusConnection *connection = data;
   BusConnectionData *d = BUS_CONNECTION_DATA (connection);
+  unsigned long uid;
   int limit;
 
   _dbus_assert (d != NULL);
   limit = bus_context_get_pending_fd_timeout (d->connections->context);
+
+  if (dbus_connection_get_unix_user (connection, &uid) && uid == 0)
+    {
+      bus_context_log (d->connections->context, DBUS_SYSTEM_LOG_WARNING,
+                       "Connection \"%s\" (%s) has had Unix fds pending for "
+                       "too long (pending_fd_timeout=%dms); tolerating it, "
+                       "because it has uid 0",
+                       d->name != NULL ? d->name : "(null)",
+                       bus_connection_get_loginfo (connection),
+                       limit);
+      return TRUE;
+    }
+
   bus_context_log (d->connections->context, DBUS_SYSTEM_LOG_WARNING,
       "Connection \"%s\" (%s) has had Unix fds pending for too long, "
       "closing it (pending_fd_timeout=%d ms)",
