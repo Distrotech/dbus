@@ -17,7 +17,20 @@ Enhancements:
 • Fix and enable a lot of compiler warnings to improve future code
   quality. This might incidentally also fix some environment variable
   accesses on OS X.
-  (fd.o #97357, fd.o #98192, fd.o #98195; Thomas Zimmermann, Simon McVittie)
+  (fd.o #97357, fd.o #98192, fd.o #98195, fd.o #98658;
+  Thomas Zimmermann, Simon McVittie)
+
+Fixes:
+
+• Work around an undesired effect of the fix for CVE-2014-3637
+  (fd.o #80559), in which processes that frequently send fds, such as
+  logind during a flood of new PAM sessions, can get disconnected for
+  continuously having at least one fd "in flight" for too long;
+  dbus-daemon interprets that as a potential denial of service attack.
+  The workaround is to disable that check for uid 0 process such as
+  logind, with a message in the system log. The bug remains open while
+  we look for a more general solution.
+  (fd.o #95263, LP#1591411; Simon McVittie)
 
 D-Bus 1.11.6 (2016-10-10)
 ==
