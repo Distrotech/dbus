@@ -1847,8 +1847,8 @@
           Error names have the same naming conventions as interface
           names, and often contain <literal>.Error.</literal>; for instance,
           the owner of <literal>example.com</literal> might define the
-          errors <literal>com.example.MusicPlayer.Error.FileNotFound</literal>
-          and <literal>com.example.MusicPlayer.Error.OutOfMemory</literal>.
+          errors <literal>com.example.MusicPlayer1.Error.FileNotFound</literal>
+          and <literal>com.example.MusicPlayer1.Error.OutOfMemory</literal>.
           The errors defined by D-Bus itself, such as
           <literal>org.freedesktop.DBus.Error.Failed</literal>, follow a
           similar pattern.
@@ -3931,7 +3931,7 @@
       <para>
         <programlisting>
           org.freedesktop.DBus.AddMatch (bus_proxy,
-                                         "type='signal',name='org.example.App',path_namespace='/org/example/App'");
+                                         "type='signal',name='org.example.App2',path_namespace='/org/example/App2'");
           objects = org.freedesktop.DBus.ObjectManager.GetManagedObjects (app_proxy);
         </programlisting>
       </para>
@@ -3973,8 +3973,8 @@
       <programlisting>
         &lt;!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
          "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd"&gt;
-        &lt;node name="/com/example/sample_object"&gt;
-          &lt;interface name="com.example.SampleInterface"&gt;
+        &lt;node name="/com/example/sample_object0"&gt;
+          &lt;interface name="com.example.SampleInterface0"&gt;
             &lt;method name="Frobate"&gt;
               &lt;arg name="foo" type="i" direction="in"/&gt;
               &lt;arg name="bar" type="s" direction="out"/&gt;
@@ -4151,7 +4151,7 @@
         unique-for-the-lifetime-of-the-bus name automatically assigned.
         Applications may request additional names for a connection. Additional
         names are usually "well-known names" such as
-        "com.example.TextEditor". When a name is bound to a connection,
+        "com.example.TextEditor1". When a name is bound to a connection,
         that connection is said to <firstterm>own</firstterm> the name.
       </para>
       <para>
@@ -4173,7 +4173,7 @@
 
       <para>
         This feature causes the right thing to happen if you start two text
-        editors for example; the first one may request "com.example.TextEditor",
+        editors for example; the first one may request "com.example.TextEditor1",
         and the second will be queued as a possible owner of that name. When
         the first exits, the second will take over.
       </para>
@@ -4927,11 +4927,11 @@
                       first argument is an interface name.</para>
 
                     <para>For example, the match rule
-                      <literal>member='NameOwnerChanged',arg0namespace='com.example.backend'</literal>
+                      <literal>member='NameOwnerChanged',arg0namespace='com.example.backend1'</literal>
                       matches name owner changes for bus names such as
-                      <literal>com.example.backend.foo</literal>,
-                      <literal>com.example.backend.foo.bar</literal>, and
-                      <literal>com.example.backend</literal> itself.</para>
+                      <literal>com.example.backend1.foo</literal>,
+                      <literal>com.example.backend1.foo.bar</literal>, and
+                      <literal>com.example.backend1</literal> itself.</para>
 
                     <para>See also <xref linkend='bus-messages-name-owner-changed'/>.</para>
                     <para>
@@ -4987,7 +4987,7 @@
         <firstterm>auto-starting</firstterm>, which is one form of activation.
         In auto-starting, applications send a
         message to a particular well-known name, such as
-        <literal>com.example.TextEditor</literal>, without specifying the
+        <literal>com.example.TextEditor1</literal>, without specifying the
         <literal>NO_AUTO_START</literal> flag in the message header.
         If no application on the bus owns the requested name, but the bus
         daemon does know how to start an activatable service for that name,
@@ -5004,7 +5004,7 @@
 
       <para>
         In either case, this implies a contract documented along with the name
-        <literal>com.example.TextEditor</literal> for which object
+        <literal>com.example.TextEditor1</literal> for which object
         the owner of that name will provide, and what interfaces those
         objects will have.
       </para>
@@ -5032,7 +5032,7 @@
         On the well-known system bus, the name of a service description file
         must be its well-known name plus <literal>.service</literal>,
         for instance
-        <literal>com.example.ConfigurationDatabase.service</literal>.
+        <literal>com.example.ConfigurationDatabase1.service</literal>.
       </para>
 
       <para>
@@ -5062,7 +5062,7 @@
           <programlisting>
             # Sample service description file
             [D-BUS Service]
-            Name=com.example.ConfigurationDatabase
+            Name=com.example.ConfigurationDatabase1
             Exec=/usr/bin/sample-configd
           </programlisting>
         </figure>
@@ -6671,9 +6671,9 @@
           A service is an executable that can be launched by the bus daemon.
           Services normally guarantee some particular features, for example they
           may guarantee that they will request a specific name such as
-          "com.example.Screensaver", have a singleton object
-          "/com/example/Application", and that object will implement the
-          interface "com.example.Screensaver.Control".
+          "com.example.Screensaver1", have a singleton object
+          "/com/example/Screensaver1", and that object will implement the
+          interface "com.example.Screensaver1.Control".
         </para>
       </glossdef>
     </glossentry>
