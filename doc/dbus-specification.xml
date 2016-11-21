@@ -1930,7 +1930,9 @@
         <para>
           Unless a message has the flag <literal>NO_AUTO_START</literal>, if the
           destination name does not exist then a program to own the destination
-          name will be started before the message is delivered.  The message
+          name will be started before the message is delivered. See
+          <xref linkend="message-bus-starting-services"/>.
+          The message
           will be held until the new program is successfully started or has
           failed to start; in case of failure, an error will be returned. This
           flag is only relevant in the context of a message bus, it is ignored
@@ -4979,15 +4981,34 @@
         <firstterm>service</firstterm> or an
         <firstterm>activatable service</firstterm>.
       </para>
+
       <para>
-        With D-Bus, starting a service is normally done by name. That is,
-        applications ask the message bus to start some program that will own a
-        well-known name, such as <literal>com.example.TextEditor</literal>.
-        This implies a contract documented along with the name
+        In D-Bus, starting a service is normally done by
+        <firstterm>auto-starting</firstterm>, which is one form of activation.
+        In auto-starting, applications send a
+        message to a particular well-known name, such as
+        <literal>com.example.TextEditor</literal>, without specifying the
+        <literal>NO_AUTO_START</literal> flag in the message header.
+        If no application on the bus owns the requested name, but the bus
+        daemon does know how to start an activatable service for that name,
+        then the bus daemon will start that service, wait for it to request
+        that name, and deliver the message to it.
+      </para>
+
+      <para>
+        It is also possible for applications to send an explicit request to
+        start a service: this is another form of activation, distinct from
+        auto-starting. See
+        <xref linkend="bus-messages-start-service-by-name"/> for details.
+      </para>
+
+      <para>
+        In either case, this implies a contract documented along with the name
         <literal>com.example.TextEditor</literal> for which object
         the owner of that name will provide, and what interfaces those
         objects will have.
       </para>
+
       <para>
         To find an executable corresponding to a particular name, the bus daemon
         looks for <firstterm>service description files</firstterm>.  Service
@@ -5762,8 +5783,27 @@
             </tbody>
           </tgroup>
         </informaltable>
-          Tries to launch the executable associated with a name. For more information, see <xref linkend="message-bus-starting-services"/>.
-
+        Tries to launch the executable associated with a name (service
+        activation), as an explicit request. This is an alternative to
+        relying on auto-starting. For more information on how services
+        are activated and the difference between auto-starting and explicit
+        activation, see
+        <xref linkend="message-bus-starting-services"/>.
+        </para>
+        <para>
+          It is often preferable to carry out auto-starting
+          instead of calling this method. This is because calling this method
+          is subject to a
+          <ulink url="https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use">time-of-check/time-of-use</ulink>
+          issue: if a caller asks the message bus to start a service so that
+          the same caller can make follow-up method calls to that service,
+          the fact that the message bus was able to start the required
+          service is no guarantee that it will not have crashed or otherwise
+          exited by the time the caller makes those follow-up method calls.
+          As a result, calling this method does not remove the need for
+          the caller to handle errors from method calls. Given that fact,
+          it is usually simpler to rely on auto-starting, in which the
+          required service starts as a side-effect of the first method call.
         </para>
         <para>
           The return value can be one of the following values:
