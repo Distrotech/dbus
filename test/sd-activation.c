@@ -575,43 +575,11 @@ test_deny_send (Fixture *f,
   dbus_connection_send (f->caller, m, NULL);
   dbus_message_unref (m);
 
-  /* The fake systemd connects to the bus. */
-  f->systemd = test_connect_to_bus (f->ctx, f->address);
-  if (!dbus_connection_add_filter (f->systemd, systemd_filter, f, NULL))
-    g_error ("OOM");
-  f->systemd_filter_added = TRUE;
-  f->systemd_name = dbus_bus_get_unique_name (f->systemd);
-  take_well_known_name (f, f->systemd, "org.freedesktop.systemd1");
+  /* Even before the fake systemd connects to the bus, we get an error
+   * back: activation is not allowed. */
 
-  /* It gets its activation request. */
-  while (f->caller_message == NULL && f->systemd_message == NULL)
+  while (f->caller_message == NULL)
     test_main_context_iterate (f->ctx, TRUE);
-
-  g_assert (f->caller_message == NULL);
-  g_assert (f->systemd_message != NULL);
-
-  m = f->systemd_message;
-  f->systemd_message = NULL;
-  assert_signal (m, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
-      "org.freedesktop.systemd1.Activator", "ActivationRequest", "s",
-      "org.freedesktop.systemd1");
-  dbus_message_unref (m);
-
-  /* systemd starts the activatable service. */
-  f->activated = test_connect_to_bus (f->ctx, f->address);
-  if (!dbus_connection_add_filter (f->activated, activated_filter,
-        f, NULL))
-    g_error ("OOM");
-  f->activated_filter_added = TRUE;
-  f->activated_name = dbus_bus_get_unique_name (f->activated);
-  take_well_known_name (f, f->activated, "com.example.SendDenied");
-
-  /* We re-do the message matching, and now the message is
-   * forbidden by the receive policy. */
-  while (f->activated_message == NULL && f->caller_message == NULL)
-    test_main_context_iterate (f->ctx, TRUE);
-
-  g_assert (f->activated_message == NULL);
 
   m = f->caller_message;
   f->caller_message = NULL;

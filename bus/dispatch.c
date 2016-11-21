@@ -70,6 +70,7 @@ send_one_message (DBusConnection *connection,
                                           addressed_recipient,
                                           connection,
                                           message,
+                                          NULL,
                                           &stack_error))
     {
       if (!bus_transaction_capture_error_reply (transaction, sender,
@@ -147,7 +148,7 @@ bus_dispatch_matches (BusTransaction *transaction,
       if (!bus_context_check_security_policy (context, transaction,
                                               sender, addressed_recipient,
                                               addressed_recipient,
-                                              message, error))
+                                              message, NULL, error))
         return FALSE;
 
       if (dbus_message_contains_unix_fds (message) &&
@@ -380,7 +381,8 @@ bus_dispatch (DBusConnection *connection,
         }
 
       if (!bus_context_check_security_policy (context, transaction,
-                                              connection, NULL, NULL, message, &error))
+                                              connection, NULL, NULL, message,
+                                              NULL, &error))
         {
           _dbus_verbose ("Security policy rejected message\n");
           goto out;
@@ -426,12 +428,13 @@ bus_dispatch (DBusConnection *connection,
               goto out;
             }
 
-          /* We can't do the security policy check here, since the addressed
-           * recipient service doesn't exist yet. We do it before sending the
-           * message after the service has been created.
-           */
           activation = bus_connection_get_activation (connection);
 
+          /* This will do as much of a security policy check as it can.
+           * We can't do the full security policy check here, since the
+           * addressed recipient service doesn't exist yet. We do it before
+           * sending the message after the service has been created.
+           */
           if (!bus_activation_activate_service (activation, connection, transaction, TRUE,
                                                 message, service_name, &error))
             {

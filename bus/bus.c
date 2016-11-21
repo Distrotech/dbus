@@ -1511,7 +1511,11 @@ complain_about_message (BusContext     *context,
  *
  * sender is the sender of the message.
  *
- * NULL for proposed_recipient or sender definitely means the bus driver.
+ * NULL for sender definitely means the bus driver.
+ *
+ * NULL for proposed_recipient may mean the bus driver, or may mean
+ * we are checking whether service-activation is allowed as a first
+ * pass before all details of the activated service are known.
  *
  * NULL for addressed_recipient may mean the bus driver, or may mean
  * no destination was specified in the message (e.g. a signal).
@@ -1523,6 +1527,7 @@ bus_context_check_security_policy (BusContext     *context,
                                    DBusConnection *addressed_recipient,
                                    DBusConnection *proposed_recipient,
                                    DBusMessage    *message,
+                                   BusActivationEntry *activation_entry,
                                    DBusError      *error)
 {
   const char *src, *dest;
@@ -1543,6 +1548,7 @@ bus_context_check_security_policy (BusContext     *context,
                 (sender == NULL && !bus_connection_is_active (proposed_recipient)));
   _dbus_assert (type == DBUS_MESSAGE_TYPE_SIGNAL ||
                 addressed_recipient != NULL ||
+                activation_entry != NULL ||
                 strcmp (dest, DBUS_SERVICE_DBUS) == 0);
 
   switch (type)
@@ -1608,7 +1614,9 @@ bus_context_check_security_policy (BusContext     *context,
 				    dbus_message_get_interface (message),
 				    dbus_message_get_member (message),
 				    dbus_message_get_error_name (message),
-				    dest ? dest : DBUS_SERVICE_DBUS, error))
+				    dest ? dest : DBUS_SERVICE_DBUS,
+				    activation_entry,
+				    error))
         {
           if (error != NULL && !dbus_error_is_set (error))
             {
@@ -1637,6 +1645,7 @@ bus_context_check_security_policy (BusContext     *context,
                                      dbus_message_get_error_name (message),
                                      dest ? dest : DBUS_SERVICE_DBUS,
                                      src ? src : DBUS_SERVICE_DBUS,
+                                     activation_entry,
                                      error))
         return FALSE;
 
@@ -1769,6 +1778,10 @@ bus_context_check_security_policy (BusContext     *context,
   /* Record that we will allow a reply here in the future (don't
    * bother if the recipient is the bus or this is an eavesdropping
    * connection). Only the addressed recipient may reply.
+   *
+   * This isn't done for activation attempts because they have no addressed
+   * or proposed recipient; when we check whether to actually deliver the
+   * message, later, we'll record the reply expectation at that point.
    */
   if (type == DBUS_MESSAGE_TYPE_METHOD_CALL &&
       sender &&

@@ -553,6 +553,7 @@ bus_selinux_allows_send (DBusConnection     *sender,
 			 const char         *member,
 			 const char         *error_name,
 			 const char         *destination,
+			 BusActivationEntry *activation_entry,
 			 DBusError          *error)
 {
 #ifdef HAVE_SELINUX
@@ -564,6 +565,10 @@ bus_selinux_allows_send (DBusConnection     *sender,
   dbus_bool_t string_alloced;
 
   if (!selinux_enabled)
+    return TRUE;
+
+  /* We do not mediate activation attempts yet. */
+  if (activation_entry)
     return TRUE;
 
   if (!sender || !dbus_connection_get_unix_process_id (sender, &spid))
@@ -633,7 +638,8 @@ bus_selinux_allows_send (DBusConnection     *sender,
     }
 
   sender_sid = bus_connection_get_selinux_id (sender);
-  /* A NULL proposed_recipient means the bus itself. */
+
+  /* A NULL proposed_recipient with no activation entry means the bus itself. */
   if (proposed_recipient)
     recipient_sid = bus_connection_get_selinux_id (proposed_recipient);
   else

@@ -61,6 +61,7 @@ dbus_bool_t bus_selinux_allows_send            (DBusConnection *sender,
 						const char     *member,
 						const char     *error_name,
 						const char     *destination,
+						BusActivationEntry *activation_entry,
 						DBusError      *error);
 
 BusSELinuxID* bus_selinux_init_connection_id (DBusConnection *connection,

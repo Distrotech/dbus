@@ -993,6 +993,11 @@ bus_client_policy_check_can_send (BusClientPolicy *policy,
            * message bus itself, we check the strings in that case as
            * built-in services don't have a DBusConnection but messages
            * to them have a destination service name.
+           *
+           * Similarly, receiver can be NULL when we're deciding whether
+           * activation should be allowed; we make the authorization decision
+           * on the assumption that the activated service will have the
+           * requested name and no others.
            */
           if (receiver == NULL)
             {

@@ -56,6 +56,7 @@ dbus_bool_t bus_apparmor_allows_send (DBusConnection     *sender,
                                       const char         *error_name,
                                       const char         *destination,
                                       const char         *source,
+                                      BusActivationEntry *activation_entry,
                                       DBusError          *error);
 
 dbus_bool_t bus_apparmor_allows_eavesdropping (DBusConnection     *connection,

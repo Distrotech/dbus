@@ -64,7 +64,7 @@ typedef struct
   DBusHashTable *entries;
 } BusServiceDirectory;
 
-typedef struct
+struct BusActivationEntry
 {
   int refcount;
   char *name;
@@ -74,7 +74,7 @@ typedef struct
   unsigned long mtime;
   BusServiceDirectory *s_dir;
   char *filename;
-} BusActivationEntry;
+};
 
 typedef struct BusPendingActivationEntry BusPendingActivationEntry;
 
@@ -1689,6 +1689,24 @@ bus_activation_activate_service (BusActivation  *activation,
       entry = activation_find_entry (activation, service_name, error);
       if (!entry)
         return FALSE;
+    }
+
+  if (auto_activation &&
+      entry != NULL &&
+      !bus_context_check_security_policy (activation->context,
+        transaction,
+        connection, /* sender */
+        NULL, /* addressed recipient */
+        NULL, /* proposed recipient */
+        activation_message,
+        entry,
+        error))
+    {
+      _DBUS_ASSERT_ERROR_IS_SET (error);
+      _dbus_verbose ("activation not authorized: %s: %s\n",
+          error != NULL ? error->name : "(error ignored)",
+          error != NULL ? error->message : "(error ignored)");
+      return FALSE;
     }
 
   /* Bypass the registry lookup if we're auto-activating, bus_dispatch would not

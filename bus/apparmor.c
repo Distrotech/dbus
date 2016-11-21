@@ -739,6 +739,7 @@ bus_apparmor_allows_send (DBusConnection     *sender,
                           const char         *error_name,
                           const char         *destination,
                           const char         *source,
+                          BusActivationEntry *activation_entry,
                           DBusError          *error)
 {
 #ifdef HAVE_APPARMOR
@@ -753,6 +754,10 @@ bus_apparmor_allows_send (DBusConnection     *sender,
   const char *msgtypestr = dbus_message_type_to_string(msgtype);
 
   if (!apparmor_enabled)
+    return TRUE;
+
+  /* We do not mediate activation attempts yet. */
+  if (activation_entry != NULL)
     return TRUE;
 
   _dbus_assert (sender != NULL);
