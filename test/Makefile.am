@@ -12,6 +12,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(DBUS_STATIC_BUILD_CPPFLAGS) \
 	-DDBUS_COMPILATION \
+	$(APPARMOR_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	$(GIO_UNIX_CFLAGS) \
 	$(NULL)
@@ -138,6 +139,8 @@ dist_testexec_SCRIPTS =
 testexec_PROGRAMS =
 testmeta_DATA =
 
+installable_helpers = \
+	$(NULL)
 installable_tests = \
 	test-shell \
 	test-printf \
@@ -148,6 +151,8 @@ installable_manual_tests = \
 	manual-tcp \
 	$(NULL)
 dist_installable_test_scripts = \
+	$(NULL)
+dist_installed_test_scripts = \
 	$(NULL)
 
 if DBUS_WIN
@@ -171,12 +176,22 @@ installable_tests += \
 	$(NULL)
 
 if DBUS_UNIX
+# These binaries are used in tests but are not themselves tests
+installable_helpers += \
+	test-apparmor-activation \
+	$(NULL)
+
 installable_tests += \
 	test-sd-activation \
 	$(NULL)
 
 dist_installable_test_scripts += \
 	test-dbus-daemon-fork.sh \
+	$(NULL)
+
+# Only runnable when installed, not from the source tree
+dist_installed_test_scripts += \
+	test-apparmor-activation.sh \
 	$(NULL)
 
 # Testing dbus-launch relies on special code in that binary.
@@ -201,10 +216,12 @@ endif DBUS_WITH_GLIB
 
 installable_test_meta = \
 	$(dist_installable_test_scripts:=.test) \
+	$(dist_installed_test_scripts:=.test) \
 	$(installable_tests:=.test) \
 	$(NULL)
 installable_test_meta_with_config = \
 	$(dist_installable_test_scripts:=_with_config.test) \
+	$(dist_installed_test_scripts:=_with_config.test) \
 	$(installable_tests:=_with_config.test) \
 	$(NULL)
 
@@ -235,6 +252,21 @@ manual_authz_LDADD = \
     libdbus-testutils.la \
     $(GLIB_LIBS) \
     $(NULL)
+
+if DBUS_UNIX
+test_apparmor_activation_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -DDBUS_TEST_APPARMOR_ACTIVATION \
+    $(NULL)
+test_apparmor_activation_SOURCES = \
+    sd-activation.c \
+    $(NULL)
+test_apparmor_activation_LDADD = \
+    libdbus-testutils.la \
+    $(APPARMOR_LIBS) \
+    $(GLIB_LIBS) \
+    $(NULL)
+endif
 
 test_corrupt_SOURCES = corrupt.c
 test_corrupt_LDADD = \
@@ -321,7 +353,10 @@ TESTS += $(installable_tests)
 installcheck_tests += $(installable_tests)
 
 if DBUS_ENABLE_INSTALLED_TESTS
-  testexec_PROGRAMS += $(installable_tests) $(installable_manual_tests)
+  testexec_PROGRAMS += $(installable_helpers)
+  testexec_PROGRAMS += $(installable_manual_tests)
+  testexec_PROGRAMS += $(installable_tests)
+  dist_testexec_SCRIPTS += $(dist_installed_test_scripts)
   dist_testexec_SCRIPTS += $(dist_installable_test_scripts)
 
   testmeta_DATA += $(installable_test_meta)
@@ -347,6 +382,9 @@ if DBUS_ENABLE_INSTALLED_TESTS
 endif DBUS_ENABLE_INSTALLED_TESTS
 
 in_data = \
+	data/dbus-installed-tests.aaprofile.in \
+	data/systemd-activation/com.example.ReceiveDeniedByAppArmorLabel.service.in \
+	data/systemd-activation/com.example.SendDeniedByAppArmorLabel.service.in \
 	data/valid-config-files-system/debug-allow-all-fail.conf.in \
 	data/valid-config-files-system/debug-allow-all-pass.conf.in \
 	data/valid-config-files/debug-allow-all-sha1.conf.in \
@@ -432,6 +470,7 @@ static_data = \
 	data/sha-1/byte-messages.sha1 \
 	data/systemd-activation/com.example.ReceiveDenied.service \
 	data/systemd-activation/com.example.SendDenied.service \
+	data/systemd-activation/com.example.SendDeniedByAppArmorName.service \
 	data/systemd-activation/com.example.SystemdActivatable1.service \
 	data/systemd-activation/com.example.SystemdActivatable2.service \
 	data/systemd-activation/com.example.SystemdActivatable3.service \
@@ -574,7 +613,7 @@ $(installable_test_meta_with_config): %_with_config.test: %$(EXEEXT) Makefile
 		echo '[Test]'; \
 		echo 'Type=session'; \
 		echo 'Output=TAP'; \
-		echo 'Exec=env DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$* --tap'; \
+		echo 'Exec=env DBUS_TEST_EXEC=$(testexecdir) DBUS_TEST_DATA=$(testexecdir)/data $(testexecdir)/$* --tap'; \
 	) > $@.tmp && mv $@.tmp $@
 
 # Add rules for code-coverage testing, as defined by AX_CODE_COVERAGE

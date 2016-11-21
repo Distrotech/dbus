@@ -1066,7 +1066,7 @@ fi
 AS_IF([test x$enable_apparmor = xno],
   [have_apparmor=no],
   [
-  PKG_CHECK_MODULES([APPARMOR], [libapparmor >= 2.8.95],
+  PKG_CHECK_MODULES([APPARMOR], [libapparmor >= 2.10],
                     [have_apparmor=yes], [have_apparmor=no])
 
   AS_IF([test x$enable_apparmor = xauto && test x$have_apparmor = xno],

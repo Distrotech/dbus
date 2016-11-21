@@ -1,4 +1,7 @@
-/* Unit tests for systemd activation.
+/* Unit tests for systemd activation, with or without AppArmor.
+ *
+ * We compile this source file twice: once with AppArmor support (if available)
+ * and once without.
  *
  * Copyright © 2010-2011 Nokia Corporation
  * Copyright © 2015 Collabora Ltd.
@@ -26,7 +29,14 @@
 
 #include <config.h>
 
+#include <errno.h>
+#include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+
+#if defined(HAVE_APPARMOR) && defined(DBUS_TEST_APPARMOR_ACTIVATION)
+#include <sys/apparmor.h>
+#endif
 
 #include "test-utils-glib.h"
 
@@ -196,6 +206,40 @@ static void
 setup (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && !defined(HAVE_APPARMOR)
+
+  g_test_skip ("AppArmor support not compiled");
+  return;
+
+#else
+
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION)
+  aa_features *features;
+
+  if (!aa_is_enabled ())
+    {
+      g_test_message ("aa_is_enabled() -> %s", g_strerror (errno));
+      g_test_skip ("AppArmor not enabled");
+      return;
+    }
+
+  if (aa_features_new_from_kernel (&features) != 0)
+    {
+      g_test_skip ("Unable to check AppArmor features");
+      return;
+    }
+
+  if (!aa_features_supports (features, "dbus/mask/send") ||
+      !aa_features_supports (features, "dbus/mask/receive"))
+    {
+      g_test_skip ("D-Bus send/receive mediation unavailable");
+      aa_features_unref (features);
+      return;
+    }
+
+  aa_features_unref (features);
+#endif
+
   f->ctx = test_main_context_get ();
 
   f->ge = NULL;
@@ -208,8 +252,31 @@ setup (Fixture *f,
   if (f->address == NULL)
     return;
 
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION)
+  /*
+   * Make use of the fact that the LSM security label (and other process
+   * properties) that are used for access-control are whatever was current
+   * at the time the connection was opened.
+   *
+   * 42 is arbitrary. In a real use of AppArmor it would be a securely-random
+   * value, to prevent less-privileged code (that does not know the magic
+   * value) from changing back.
+   */
+  if (aa_change_hat ("caller", 42) != 0)
+    g_error ("Unable to change profile to ...//^caller: %s",
+             g_strerror (errno));
+#endif
+
   f->caller = test_connect_to_bus (f->ctx, f->address);
   f->caller_name = dbus_bus_get_unique_name (f->caller);
+
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION)
+  if (aa_change_hat (NULL, 42) != 0)
+    g_error ("Unable to change back to initial profile: %s",
+             g_strerror (errno));
+#endif
+
+#endif
 }
 
 static void
@@ -557,6 +624,7 @@ test_deny_send (Fixture *f,
     gconstpointer context)
 {
   DBusMessage *m;
+  const char *bus_name = context;
 
   if (f->address == NULL)
     return;
@@ -567,7 +635,7 @@ test_deny_send (Fixture *f,
   f->caller_filter_added = TRUE;
 
   /* The sender sends a message to an activatable service. */
-  m = dbus_message_new_method_call ("com.example.SendDenied", "/foo",
+  m = dbus_message_new_method_call (bus_name, "/foo",
       "com.example.bar", "Call");
   if (m == NULL)
     g_error ("OOM");
@@ -575,8 +643,20 @@ test_deny_send (Fixture *f,
   dbus_connection_send (f->caller, m, NULL);
   dbus_message_unref (m);
 
-  /* Even before the fake systemd connects to the bus, we get an error
-   * back: activation is not allowed. */
+  /*
+   * Even before the fake systemd connects to the bus, we get an error
+   * back: activation is not allowed.
+   *
+   * In the normal case, this is because the XML policy does not allow
+   * anyone to send messages to the bus name com.example.SendDenied.
+   *
+   * In the AppArmor case, this is because the AppArmor policy does not allow
+   * this process to send messages to the bus name
+   * com.example.SendDeniedByAppArmorName, or to the label
+   * @DBUS_TEST_EXEC@/com.example.SendDeniedByAppArmorLabel that we assume the
+   * service com.example.SendDeniedByAppArmorLabel will receive after systemd
+   * runs it.
+   */
 
   while (f->caller_message == NULL)
     test_main_context_iterate (f->ctx, TRUE);
@@ -593,6 +673,7 @@ test_deny_receive (Fixture *f,
     gconstpointer context)
 {
   DBusMessage *m;
+  const char *bus_name = context;
 
   if (f->address == NULL)
     return;
@@ -602,9 +683,10 @@ test_deny_receive (Fixture *f,
 
   f->caller_filter_added = TRUE;
 
-  /* The sender sends a message to an activatable service. */
-  m = dbus_message_new_method_call ("com.example.ReceiveDenied", "/foo",
-      "com.example.ReceiveDenied", "Call");
+  /* The sender sends a message to an activatable service.
+   * We set the interface name equal to the bus name to make it
+   * easier to write the necessary policy rules. */
+  m = dbus_message_new_method_call (bus_name, "/foo", bus_name, "Call");
   if (m == NULL)
     g_error ("OOM");
 
@@ -631,16 +713,44 @@ test_deny_receive (Fixture *f,
   dbus_message_unref (m);
 
   /* systemd starts the activatable service. */
+
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && defined(HAVE_APPARMOR)
+  /* The use of 42 here is arbitrary, see setup(). */
+  if (aa_change_hat (bus_name, 42) != 0)
+    g_error ("Unable to change profile to ...//^%s: %s",
+             bus_name, g_strerror (errno));
+#endif
+
   f->activated = test_connect_to_bus (f->ctx, f->address);
   if (!dbus_connection_add_filter (f->activated, activated_filter,
         f, NULL))
     g_error ("OOM");
   f->activated_filter_added = TRUE;
   f->activated_name = dbus_bus_get_unique_name (f->activated);
-  take_well_known_name (f, f->activated, "com.example.ReceiveDenied");
+  take_well_known_name (f, f->activated, bus_name);
 
-  /* We re-do the message matching, and now the message is
-   * forbidden by the receive policy. */
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && defined(HAVE_APPARMOR)
+  if (aa_change_hat (NULL, 42) != 0)
+    g_error ("Unable to change back to initial profile: %s",
+             g_strerror (errno));
+#endif
+
+  /*
+   * We re-do the message matching, and now the message is
+   * forbidden by the receive policy.
+   *
+   * In the normal case, this is because the XML policy does not allow
+   * receiving any message with interface com.example.ReceiveDenied.
+   * We can't use the recipient's bus name here because the XML policy
+   * has no syntax for preventing the owner of a name from receiving
+   * messages - that would be pointless, because the sender could just
+   * open another connection and not own the same name on that connection.
+   *
+   * In the AppArmor case, this is because the AppArmor policy does not allow
+   * receiving messages with interface com.example.ReceiveDeniedByAppArmor
+   * from a peer with the same label we have. Again, we can't use the
+   * recipient's bus name because there is no syntax for this.
+   */
   while (f->caller_message == NULL)
     test_main_context_iterate (f->ctx, TRUE);
 
@@ -707,10 +817,24 @@ main (int argc,
       setup, test_activation, teardown);
   g_test_add ("/sd-activation/uae", Fixture, NULL,
       setup, test_uae, teardown);
-  g_test_add ("/sd-activation/deny-send", Fixture, NULL,
+  g_test_add ("/sd-activation/deny-send", Fixture,
+      "com.example.SendDenied",
       setup, test_deny_send, teardown);
-  g_test_add ("/sd-activation/deny-receive", Fixture, NULL,
+  g_test_add ("/sd-activation/deny-receive", Fixture,
+      "com.example.ReceiveDenied",
       setup, test_deny_receive, teardown);
+
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION)
+  g_test_add ("/sd-activation/apparmor/deny-send/by-label", Fixture,
+      "com.example.SendDeniedByAppArmorLabel",
+      setup, test_deny_send, teardown);
+  g_test_add ("/sd-activation/apparmor/deny-send/by-name", Fixture,
+      "com.example.SendDeniedByAppArmorName",
+      setup, test_deny_send, teardown);
+  g_test_add ("/sd-activation/apparmor/deny-receive/by-label", Fixture,
+      "com.example.ReceiveDeniedByAppArmorLabel",
+      setup, test_deny_receive, teardown);
+#endif
 
   return g_test_run ();
 }
