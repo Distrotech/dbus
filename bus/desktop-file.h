@@ -35,6 +35,7 @@
 #define DBUS_SERVICE_EXEC     "Exec"
 #define DBUS_SERVICE_USER     "User"
 #define DBUS_SERVICE_SYSTEMD_SERVICE "SystemdService"
+#define DBUS_SERVICE_ASSUMED_APPARMOR_LABEL "AssumedAppArmorLabel"
 
 typedef struct BusDesktopFile BusDesktopFile;
 

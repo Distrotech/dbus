@@ -64,5 +64,6 @@ dbus_bool_t    bus_activation_send_pending_auto_activation_messages (BusActivati
 								     BusService        *service,
 								     BusTransaction    *transaction);
 
+const char *bus_activation_entry_get_assumed_apparmor_label (BusActivationEntry *entry);
 
 #endif /* BUS_ACTIVATION_H */

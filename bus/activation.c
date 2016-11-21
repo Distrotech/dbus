@@ -71,6 +71,7 @@ struct BusActivationEntry
   char *exec;
   char *user;
   char *systemd_service;
+  char *assumed_apparmor_label;
   unsigned long mtime;
   BusServiceDirectory *s_dir;
   char *filename;
@@ -244,6 +245,7 @@ bus_activation_entry_unref (BusActivationEntry *entry)
   dbus_free (entry->user);
   dbus_free (entry->filename);
   dbus_free (entry->systemd_service);
+  dbus_free (entry->assumed_apparmor_label);
 
   dbus_free (entry);
 }
@@ -256,6 +258,7 @@ update_desktop_file_entry (BusActivation       *activation,
                            DBusError           *error)
 {
   char *name, *exec, *user, *exec_tmp, *systemd_service;
+  char *assumed_apparmor_label;
   BusActivationEntry *entry;
   DBusStat stat_buf;
   DBusString file_path;
@@ -272,6 +275,7 @@ update_desktop_file_entry (BusActivation       *activation,
   exec_tmp = NULL;
   entry = NULL;
   systemd_service = NULL;
+  assumed_apparmor_label = NULL;
 
   dbus_error_init (&tmp_error);
 
@@ -367,6 +371,28 @@ update_desktop_file_entry (BusActivation       *activation,
         }
     }
 
+  /* assumed AppArmor label is never required */
+  if (!bus_desktop_file_get_string (desktop_file,
+                                    DBUS_SERVICE_SECTION,
+                                    DBUS_SERVICE_ASSUMED_APPARMOR_LABEL,
+                                    &assumed_apparmor_label, &tmp_error))
+    {
+      _DBUS_ASSERT_ERROR_IS_SET (&tmp_error);
+      /* if we got OOM, then exit */
+      if (dbus_error_has_name (&tmp_error, DBUS_ERROR_NO_MEMORY))
+        {
+          dbus_move_error (&tmp_error, error);
+          goto out;
+        }
+      else
+        {
+          /* if we have error because we didn't find anything then continue */
+          dbus_error_free (&tmp_error);
+          dbus_free (assumed_apparmor_label);
+          assumed_apparmor_label = NULL;
+        }
+    }
+
   _DBUS_ASSERT_ERROR_IS_CLEAR (&tmp_error);
 
   entry = _dbus_hash_table_lookup_string (s_dir->entries,
@@ -395,6 +421,7 @@ update_desktop_file_entry (BusActivation       *activation,
       entry->exec = exec;
       entry->user = user;
       entry->systemd_service = systemd_service;
+      entry->assumed_apparmor_label = assumed_apparmor_label;
       entry->refcount = 1;
 
       /* ownership has been transferred to entry, do not free separately */
@@ -402,6 +429,7 @@ update_desktop_file_entry (BusActivation       *activation,
       exec = NULL;
       user = NULL;
       systemd_service = NULL;
+      assumed_apparmor_label = NULL;
 
       entry->s_dir = s_dir;
       entry->filename = _dbus_strdup (_dbus_string_get_const_data (filename));
@@ -459,6 +487,10 @@ update_desktop_file_entry (BusActivation       *activation,
       entry->systemd_service = systemd_service;
       systemd_service = NULL;
 
+      dbus_free (entry->assumed_apparmor_label);
+      entry->assumed_apparmor_label = assumed_apparmor_label;
+      assumed_apparmor_label = NULL;
+
       if (!_dbus_hash_table_insert_string (activation->entries,
                                            entry->name, bus_activation_entry_ref(entry)))
         {
@@ -481,6 +513,7 @@ out:
   dbus_free (exec);
   dbus_free (user);
   dbus_free (systemd_service);
+  dbus_free (assumed_apparmor_label);
   _dbus_string_free (&file_path);
 
   if (entry)
@@ -2267,6 +2300,12 @@ dbus_activation_systemd_failure (BusActivation *activation,
   dbus_error_free(&error);
 
   return TRUE;
+}
+
+const char *
+bus_activation_entry_get_assumed_apparmor_label (BusActivationEntry *entry)
+{
+  return entry->assumed_apparmor_label;
 }
 
 #ifdef DBUS_ENABLE_EMBEDDED_TESTS
