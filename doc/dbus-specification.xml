@@ -4970,12 +4970,14 @@
       </sect3>
     </sect2>
     <sect2 id="message-bus-starting-services">
-      <title>Message Bus Starting Services</title>
+      <title>Message Bus Starting Services (Activation)</title>
       <para>
         The message bus can start applications on behalf of other applications.
-        In CORBA terms, this would be called <firstterm>activation</firstterm>.
+        This is referred to as <firstterm>service activation</firstterm> or
+        <firstterm>activation</firstterm>.
         An application that can be started in this way is called a
-        <firstterm>service</firstterm>.
+        <firstterm>service</firstterm> or an
+        <firstterm>activatable service</firstterm>.
       </para>
       <para>
         With D-Bus, starting a service is normally done by name. That is,
