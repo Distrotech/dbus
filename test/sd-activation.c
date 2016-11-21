@@ -828,6 +828,9 @@ main (int argc,
   g_test_add ("/sd-activation/apparmor/deny-send/by-label", Fixture,
       "com.example.SendDeniedByAppArmorLabel",
       setup, test_deny_send, teardown);
+  g_test_add ("/sd-activation/apparmor/deny-send/by-nonexistent-label", Fixture,
+      "com.example.SendDeniedByNonexistentAppArmorLabel",
+      setup, test_deny_send, teardown);
   g_test_add ("/sd-activation/apparmor/deny-send/by-name", Fixture,
       "com.example.SendDeniedByAppArmorName",
       setup, test_deny_send, teardown);

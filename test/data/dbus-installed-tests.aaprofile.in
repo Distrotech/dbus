@@ -50,6 +50,9 @@
 
     deny dbus send peer=(label=@DBUS_TEST_EXEC@/test-apparmor-activation//com.example.SendDeniedByAppArmorLabel),
     deny dbus send peer=(name=com.example.SendDeniedByAppArmorName),
+
+    # There is no profile of this name. That's deliberate.
+    deny dbus send peer=(label=@DBUS_TEST_EXEC@/test-apparmor-activation-com.example.SendDeniedByNonexistentAppArmorLabel),
   }
 
   # Used when we check that XML-based policy still works.

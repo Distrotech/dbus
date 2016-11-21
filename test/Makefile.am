@@ -385,6 +385,8 @@ in_data = \
 	data/dbus-installed-tests.aaprofile.in \
 	data/systemd-activation/com.example.ReceiveDeniedByAppArmorLabel.service.in \
 	data/systemd-activation/com.example.SendDeniedByAppArmorLabel.service.in \
+	data/systemd-activation/com.example.SendDeniedByNonexistentAppArmorLabel.service.in \
+	data/systemd-activation/com.example.SystemdActivatable3.service.in \
 	data/valid-config-files-system/debug-allow-all-fail.conf.in \
 	data/valid-config-files-system/debug-allow-all-pass.conf.in \
 	data/valid-config-files/debug-allow-all-sha1.conf.in \
@@ -473,7 +475,6 @@ static_data = \
 	data/systemd-activation/com.example.SendDeniedByAppArmorName.service \
 	data/systemd-activation/com.example.SystemdActivatable1.service \
 	data/systemd-activation/com.example.SystemdActivatable2.service \
-	data/systemd-activation/com.example.SystemdActivatable3.service \
 	data/systemd-activation/org.freedesktop.systemd1.service \
 	data/valid-config-files/basic.conf \
 	data/valid-config-files/basic.d/basic.conf \
