@@ -19,7 +19,8 @@ Enhancements:
   · Define the jargon term "auto-starting", which is one form of activation
   · Document the optional SystemdService key in service files
   · Use versioned interface and bus names in most examples
-  (fd.o #98671; Simon McVittie)
+  · Clarify intended behaviour of Properties.GetAll
+  (fd.o #36190, fd.o #98671; Philip Withnall, Simon McVittie)
 
 • Fix and enable a lot of compiler warnings to improve future code
   quality. This might incidentally also fix some environment variable
