@@ -122,7 +122,7 @@ case "$dbus_ci_buildsys" in
 		case "$dbus_ci_host" in
 			(mingw)
 				set _ "$@"
-				set "$@" --build="$(config.guess)"
+				set "$@" --build="$(build-aux/config.guess)"
 				set "$@" --host=i686-w64-mingw32
 				set "$@" LDFLAGS=-L"${mingw}/lib"
 				set "$@" CPPFLAGS=-I"${mingw}/include"
