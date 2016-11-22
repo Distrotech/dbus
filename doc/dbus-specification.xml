@@ -1930,7 +1930,7 @@
         <para>
           Unless a message has the flag <literal>NO_AUTO_START</literal>, if the
           destination name does not exist then a program to own the destination
-          name will be started before the message is delivered. See
+          name will be started (activated) before the message is delivered. See
           <xref linkend="message-bus-starting-services"/>.
           The message
           will be held until the new program is successfully started or has
@@ -4994,8 +4994,13 @@
       </para>
 
       <para>
-        In D-Bus, starting a service is normally done by
-        <firstterm>auto-starting</firstterm>, which is one form of activation.
+        <firstterm>Starting a service</firstterm> should be read as synonymous
+        with service activation.
+      </para>
+
+      <para>
+        In D-Bus, service activation is normally done by
+        <firstterm>auto-starting</firstterm>.
         In auto-starting, applications send a
         message to a particular well-known name, such as
         <literal>com.example.TextEditor1</literal>, without specifying the
