@@ -14,6 +14,13 @@ Build-time configuration:
 
 Enhancements:
 
+• D-Bus Specification version 0.30
+  · Define the jargon term "activation" more clearly
+  · Define the jargon term "auto-starting", which is one form of activation
+  · Document the optional SystemdService key in service files
+  · Use versioned interface and bus names in most examples
+  (fd.o #98671; Simon McVittie)
+
 • Fix and enable a lot of compiler warnings to improve future code
   quality. This might incidentally also fix some environment variable
   accesses on OS X.
