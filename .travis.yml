@@ -6,6 +6,9 @@ install:
   - ": | sudo tee /etc/apt/sources.list.d/google-chrome.list"
   - test "$dbus_ci_host" != mingw || sudo dpkg --add-architecture i386
   - sudo apt-get -qq -y update
+  - >
+    test "$dbus_ci_host" != mingw || sudo apt-get -qq -y install
+    binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
   - sudo apt-get -qq -y build-dep dbus
   - >
     sudo apt-get -qq -y install
@@ -31,9 +34,6 @@ install:
     xmlto
     xsltproc
     xvfb
-  - >
-    test "$dbus_ci_host" != mingw || sudo apt-get -qq -y install
-    binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
   # Ubuntu 14.04's autoconf-archive is too old
   - >
     wget
