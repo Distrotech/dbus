@@ -1,3 +1,12 @@
+D-Bus 1.10.14 (UNRELEASED)
+==
+
+Fixes:
+
+• Don't run the test test-dbus-launch-x11.sh if X11 autolaunching
+  was disabled at compile time. That test is not expected to work
+  in that configuration. (fd.o #98665, Simon McVittie)
+
 D-Bus 1.10.12 (2016-10-10)
 ==
 
