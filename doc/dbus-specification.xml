@@ -5201,6 +5201,83 @@
           service is started by systemd during boot.
         </para>
       </sect3>
+
+      <sect3 id="message-bus-starting-services-apparmor">
+        <title>Mediating Activation with AppArmor</title>
+
+        <para>
+          Please refer to
+          <ulink url="http://wiki.apparmor.net/index.php/Documentation">AppArmor documentation</ulink>
+          for general information on AppArmor, and how it mediates D-Bus
+          messages when used in conjunction with a kernel and
+          <literal>dbus-daemon</literal> that support this.
+        </para>
+
+        <para>
+          In recent versions of the reference <literal>dbus-daemon</literal>,
+          AppArmor policy rules of type <literal>dbus send</literal>
+          are also used to control auto-starting: if a message is sent to
+          the well-known name of an activatable service, the
+          <literal>dbus-daemon</literal> will attempt to determine whether
+          it would deliver the message to that service
+          <emphasis>before</emphasis>auto-starting it, by making some
+          assumptions about the resulting process's credentials.
+        </para>
+
+        <para>
+          If it does proceed with auto-starting, when the service appears, the
+          <literal>dbus-daemon</literal> repeats the policy check (with
+          the service's true credentials, which might not be identical)
+          before delivering the message. In practice, this second check will
+          usually be more strict than the first; the first check would only
+          be more strict if there are "blacklist"-style rules like
+          <literal>deny dbus send peer=(label=/usr/bin/protected)</literal>
+          that match on the peer's specific credentials, but AppArmor is
+          normally used in a "whitelist" style where this does not apply.
+        </para>
+
+        <para>
+          To support this process, service description files may contain a
+          <literal>AssumedAppArmorLabel</literal> key. Its value is the name
+          of an AppArmor label, for example
+          <literal>/usr/sbin/mydaemon</literal>.
+          If present, AppArmor mediation of messages that auto-start a
+          service will decide whether to allow auto-starting to occur based
+          on the assumption that the activated service will be confined
+          under the specified label; in particular, rules of the form
+          <literal>dbus send peer=(label=/usr/sbin/mydaemon)</literal> or
+          <literal>deny dbus send peer=(label=/usr/sbin/mydaemon)</literal>
+          will match it, allowing or denying as appropriate
+          (even if there is in fact no profile of that name loaded).
+        </para>
+
+        <para>
+          Otherwise, AppArmor mediation of messages that auto-start a
+          service will decide whether to allow auto-starting to occur
+          without specifying any particular label. In particular, any rule of
+          the form <literal>dbus send peer=(label=X)</literal> or
+          <literal>deny dbus send peer=(label=X)</literal>
+          (for any value of X, including the special label
+          <literal>unconfined</literal>) will not influence whether the
+          auto-start is allowed.
+        </para>
+
+        <para>
+          Rules of type <literal>dbus receive</literal> are not checked
+          when deciding whether to allow auto-starting; they are only checked
+          against the service's profile after the service has started, when
+          deciding whether to deliver the message that caused the auto-starting
+          operation.
+        </para>
+
+        <para>
+          Explicit activation via
+          <xref linkend="bus-messages-start-service-by-name"/> is not currently
+          affected by this mediation: if a confined process is to be prevented
+          from starting arbitrary services, then it must not be allowed to call
+          that method.
+        </para>
+      </sect3>
     </sect2>
 
     <sect2 id="message-bus-types">
