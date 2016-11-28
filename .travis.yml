@@ -24,44 +24,7 @@ sudo: required
 dist: trusty
 language: c
 install:
-  # travis-ci has a sources list for Chrome which doesn't support i386
-  - ": | sudo tee /etc/apt/sources.list.d/google-chrome.list"
-  - test "$ci_host" != mingw || sudo dpkg --add-architecture i386
-  - sudo apt-get -qq -y update
-  - >
-    test "$ci_host" != mingw || sudo apt-get -qq -y install
-    binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
-  - sudo apt-get -qq -y build-dep dbus
-  - >
-    sudo apt-get -qq -y install
-    automake
-    autotools-dev
-    debhelper
-    dh-autoreconf
-    doxygen
-    dpkg-dev
-    gnome-desktop-testing
-    libapparmor-dev
-    libaudit-dev
-    libcap-ng-dev
-    libexpat-dev
-    libglib2.0-dev
-    libselinux1-dev
-    libx11-dev
-    python
-    python-dbus
-    python-gi
-    valgrind
-    xauth
-    xmlto
-    xsltproc
-    xvfb
-  # Ubuntu 14.04's autoconf-archive is too old
-  - >
-    wget
-    http://snapshot.debian.org/archive/debian/20160905T163745Z/pool/main/a/autoconf-archive/autoconf-archive_20160320-1_all.deb
-  - 'sudo dpkg -i autoconf-archive_*_all.deb'
-  - 'rm autoconf-archive_*_all.deb'
+  - ./tools/ci-install.sh
 script:
   # python-dbus and python-gi aren't available to Travis's version of
   # Python in /opt, which it uses as a default
