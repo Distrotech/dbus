@@ -152,9 +152,9 @@ case "$ci_buildsys" in
                 set "$@" CXXFLAGS=-static-libgcc
                 # don't run tests yet, Wine needs Xvfb and
                 # more msys2 libraries
-                ci_test=
+                ci_test=no
                 # don't "make install" system-wide
-                ci_sudo=
+                ci_sudo=no
                 shift
                 ;;
         esac
@@ -167,30 +167,30 @@ case "$ci_buildsys" in
             "$@"
 
         ${make}
-        [ -z "$ci_test" ] || ${make} check || [ -z "$ci_test_fatal" ]
+        [ "$ci_test" = no ] || ${make} check || [ "$ci_test_fatal" = no ]
         cat test/test-suite.log || :
-        [ -z "$ci_test" ] || ${make} distcheck || \
-            [ -z "$ci_test_fatal" ]
+        [ "$ci_test" = no ] || ${make} distcheck || \
+            [ "$ci_test_fatal" = no ]
 
         ${make} install DESTDIR=$(pwd)/DESTDIR
         ( cd DESTDIR && find . )
 
-        if [ -n "$ci_sudo" ] && [ -n "$ci_test" ]; then
+        if [ "$ci_sudo" = yes ] && [ "$ci_test" = yes ]; then
             sudo ${make} install
             LD_LIBRARY_PATH=/usr/local/lib ${make} installcheck || \
-                [ -z "$ci_test_fatal" ]
+                [ "$ci_test_fatal" = no ]
             cat test/test-suite.log || :
 
             # re-run them with gnome-desktop-testing
             env LD_LIBRARY_PATH=/usr/local/lib \
             gnome-desktop-testing-runner -d /usr/local/share dbus/ || \
-                [ -z "$ci_test_fatal" ]
+                [ "$ci_test_fatal" = no ]
 
             # these tests benefit from being re-run as root
             sudo env LD_LIBRARY_PATH=/usr/local/lib \
             gnome-desktop-testing-runner -d /usr/local/share \
                 dbus/test-uid-permissions_with_config.test || \
-                [ -z "$ci_test_fatal" ]
+                [ "$ci_test_fatal" = no ]
         fi
         ;;
 
@@ -209,7 +209,7 @@ case "$ci_buildsys" in
                 shift
                 # don't run tests yet, Wine needs Xvfb and more
                 # msys2 libraries
-                ci_test=
+                ci_test=no
                 ;;
         esac
 
@@ -219,7 +219,7 @@ case "$ci_buildsys" in
         # The test coverage for OOM-safety is too verbose to be useful on
         # travis-ci.
         export DBUS_TEST_MALLOC_FAILURES=0
-        [ -z "$ci_test" ] || ctest -VV || [ -z "$ci_test_fatal" ]
+        [ "$ci_test" = no ] || ctest -VV || [ "$ci_test_fatal" = no ]
         ${make} install DESTDIR=$(pwd)/DESTDIR
         ( cd DESTDIR && find . )
         ;;
