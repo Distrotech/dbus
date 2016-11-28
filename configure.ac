@@ -1383,6 +1383,8 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   dnl   checking or not asserting
   dnl - missing field initializers being 0 is a C feature, not a bug
   dnl - unused-parameter is to make writing callbacks less annoying
+  dnl - misleading-indentation is disabled for this stable branch because
+  dnl   gcc can't cope with inconsistent tab/space indentation
   dnl
   dnl To be fixed one day:
   dnl - pointer-sign is a workaround for fd.o #15522
@@ -1391,6 +1393,7 @@ TP_COMPILER_WARNINGS([WARNING_CFLAGS],
   [$DISABLE_UNUSED_WARNINGS \
    deprecated-declarations \
    missing-field-initializers \
+   misleading-indentation \
    unused-parameter \
    pointer-sign \
    type-limits \
