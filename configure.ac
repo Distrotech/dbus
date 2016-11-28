@@ -1066,8 +1066,10 @@ fi
 AS_IF([test x$enable_apparmor = xno],
   [have_apparmor=no],
   [
-  PKG_CHECK_MODULES([APPARMOR], [libapparmor >= 2.10],
+  PKG_CHECK_MODULES([APPARMOR], [libapparmor >= 2.8.95],
                     [have_apparmor=yes], [have_apparmor=no])
+  PKG_CHECK_MODULES([APPARMOR_2_10], [libapparmor >= 2.10],
+                    [have_apparmor_2_10=yes], [have_apparmor_2_10=no])
 
   AS_IF([test x$enable_apparmor = xauto && test x$have_apparmor = xno],
         [AC_MSG_WARN([Sufficiently new AppArmor library not found])])
@@ -1077,6 +1079,9 @@ AS_IF([test x$enable_apparmor = xno],
 
 AS_IF([test x$have_apparmor = xyes],
       [AC_DEFINE([HAVE_APPARMOR], [1], [AppArmor Support])])
+AS_IF([test x$have_apparmor_2_10 = xyes],
+      [AC_DEFINE([HAVE_APPARMOR_2_10], [1],
+                 [Define if libapparmor is version 2.10 or later])])
 
 # inotify checks
 if test x$enable_inotify = xno ; then

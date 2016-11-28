@@ -34,7 +34,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#if defined(HAVE_APPARMOR) && defined(DBUS_TEST_APPARMOR_ACTIVATION)
+#if defined(HAVE_APPARMOR_2_10) && defined(DBUS_TEST_APPARMOR_ACTIVATION)
 #include <sys/apparmor.h>
 #endif
 
@@ -206,9 +206,9 @@ static void
 setup (Fixture *f,
     gconstpointer context G_GNUC_UNUSED)
 {
-#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && !defined(HAVE_APPARMOR)
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && !defined(HAVE_APPARMOR_2_10)
 
-  g_test_skip ("AppArmor support not compiled");
+  g_test_skip ("AppArmor support not compiled or AppArmor 2.10 unavailable");
   return;
 
 #else
@@ -714,7 +714,7 @@ test_deny_receive (Fixture *f,
 
   /* systemd starts the activatable service. */
 
-#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && defined(HAVE_APPARMOR)
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && defined(HAVE_APPARMOR_2_10)
   /* The use of 42 here is arbitrary, see setup(). */
   if (aa_change_hat (bus_name, 42) != 0)
     g_error ("Unable to change profile to ...//^%s: %s",
@@ -729,7 +729,7 @@ test_deny_receive (Fixture *f,
   f->activated_name = dbus_bus_get_unique_name (f->activated);
   take_well_known_name (f, f->activated, bus_name);
 
-#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && defined(HAVE_APPARMOR)
+#if defined(DBUS_TEST_APPARMOR_ACTIVATION) && defined(HAVE_APPARMOR_2_10)
   if (aa_change_hat (NULL, 42) != 0)
     g_error ("Unable to change back to initial profile: %s",
              g_strerror (errno));
