@@ -25,34 +25,34 @@
 set -e
 set -x
 
-if [ -z "$dbus_ci_variant" ]; then
-    dbus_ci_variant=production
+if [ -z "$ci_variant" ]; then
+    ci_variant=production
 fi
 
-if [ -z "$dbus_ci_host" ]; then
-    dbus_ci_host=native
+if [ -z "$ci_host" ]; then
+    ci_host=native
 fi
 
-if [ -z "$dbus_ci_buildsys" ]; then
-    dbus_ci_buildsys=autotools
+if [ -z "$ci_buildsys" ]; then
+    ci_buildsys=autotools
 fi
 
-if [ -z "$dbus_ci_parallel" ]; then
-    dbus_ci_parallel=1
+if [ -z "$ci_parallel" ]; then
+    ci_parallel=1
 fi
 
-dbus_test=yes
-dbus_test_fatal=yes
+ci_test=yes
+ci_test_fatal=yes
 
 NOCONFIGURE=1 ./autogen.sh
 
 srcdir="$(pwd)"
-mkdir ci-build-${dbus_ci_variant}-${dbus_ci_host}
-cd ci-build-${dbus_ci_variant}-${dbus_ci_host}
+mkdir ci-build-${ci_variant}-${ci_host}
+cd ci-build-${ci_variant}-${ci_host}
 
-make="make -j${dbus_ci_parallel} V=1 VERBOSE=1"
+make="make -j${ci_parallel} V=1 VERBOSE=1"
 
-case "$dbus_ci_host" in
+case "$ci_host" in
     (mingw)
         mirror=http://sourceforge.net/projects/msys2/files/REPOS/MINGW/i686/
         mingw="$(pwd)/mingw32"
@@ -77,9 +77,9 @@ case "$dbus_ci_host" in
         ;;
 esac
 
-case "$dbus_ci_buildsys" in
+case "$ci_buildsys" in
     (autotools)
-        case "$dbus_ci_variant" in
+        case "$ci_variant" in
             (debug)
                 # Full developer/debug build.
                 set _ "$@"
@@ -141,7 +141,7 @@ case "$dbus_ci_buildsys" in
                 ;;
         esac
 
-        case "$dbus_ci_host" in
+        case "$ci_host" in
             (mingw)
                 set _ "$@"
                 set "$@" --build="$(build-aux/config.guess)"
@@ -152,9 +152,9 @@ case "$dbus_ci_buildsys" in
                 set "$@" CXXFLAGS=-static-libgcc
                 # don't run tests yet, Wine needs Xvfb and
                 # more msys2 libraries
-                dbus_test=
+                ci_test=
                 # don't "make install" system-wide
-                dbus_ci_sudo=
+                ci_sudo=
                 shift
                 ;;
         esac
@@ -167,35 +167,35 @@ case "$dbus_ci_buildsys" in
             "$@"
 
         ${make}
-        [ -z "$dbus_test" ] || ${make} check || [ -z "$dbus_test_fatal" ]
+        [ -z "$ci_test" ] || ${make} check || [ -z "$ci_test_fatal" ]
         cat test/test-suite.log || :
-        [ -z "$dbus_test" ] || ${make} distcheck || \
-            [ -z "$dbus_test_fatal" ]
+        [ -z "$ci_test" ] || ${make} distcheck || \
+            [ -z "$ci_test_fatal" ]
 
         ${make} install DESTDIR=$(pwd)/DESTDIR
         ( cd DESTDIR && find . )
 
-        if [ -n "$dbus_ci_sudo" ] && [ -n "$dbus_test" ]; then
+        if [ -n "$ci_sudo" ] && [ -n "$ci_test" ]; then
             sudo ${make} install
             LD_LIBRARY_PATH=/usr/local/lib ${make} installcheck || \
-                [ -z "$dbus_test_fatal" ]
+                [ -z "$ci_test_fatal" ]
             cat test/test-suite.log || :
 
             # re-run them with gnome-desktop-testing
             env LD_LIBRARY_PATH=/usr/local/lib \
             gnome-desktop-testing-runner -d /usr/local/share dbus/ || \
-                [ -z "$dbus_test_fatal" ]
+                [ -z "$ci_test_fatal" ]
 
             # these tests benefit from being re-run as root
             sudo env LD_LIBRARY_PATH=/usr/local/lib \
             gnome-desktop-testing-runner -d /usr/local/share \
                 dbus/test-uid-permissions_with_config.test || \
-                [ -z "$dbus_test_fatal" ]
+                [ -z "$ci_test_fatal" ]
         fi
         ;;
 
     (cmake)
-        case "$dbus_ci_host" in
+        case "$ci_host" in
             (mingw)
                 set _ "$@"
                 set "$@" -D CMAKE_TOOLCHAIN_FILE="${srcdir}/cmake/i686-w64-mingw32.cmake"
@@ -209,7 +209,7 @@ case "$dbus_ci_buildsys" in
                 shift
                 # don't run tests yet, Wine needs Xvfb and more
                 # msys2 libraries
-                dbus_test=
+                ci_test=
                 ;;
         esac
 
@@ -219,7 +219,7 @@ case "$dbus_ci_buildsys" in
         # The test coverage for OOM-safety is too verbose to be useful on
         # travis-ci.
         export DBUS_TEST_MALLOC_FAILURES=0
-        [ -z "$dbus_test" ] || ctest -VV || [ -z "$dbus_test_fatal" ]
+        [ -z "$ci_test" ] || ctest -VV || [ -z "$ci_test_fatal" ]
         ${make} install DESTDIR=$(pwd)/DESTDIR
         ( cd DESTDIR && find . )
         ;;
