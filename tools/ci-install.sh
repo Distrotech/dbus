@@ -27,7 +27,9 @@ set -x
 
 NULL=
 : "${ci_distro:=ubuntu}"
+: "${ci_docker:=}"
 : "${ci_host:=native}"
+: "${ci_in_docker:=}"
 : "${ci_suite:=trusty}"
 
 if [ $(id -u) = 0 ]; then
@@ -36,8 +38,25 @@ else
     sudo=sudo
 fi
 
+if [ -n "$ci_docker" ]; then
+    sed \
+        -e "s/@ci_distro@/${ci_distro}/" \
+        -e "s/@ci_docker@/${ci_docker}/" \
+        -e "s/@ci_suite@/${ci_suite}/" \
+        < tools/ci-Dockerfile.in > Dockerfile
+    exec docker build -t ci-image .
+fi
+
 case "$ci_distro" in
     (debian|ubuntu)
+        # Don't ask questions, just do it
+        sudo="$sudo env DEBIAN_FRONTEND=noninteractive"
+
+        # Debian Docker images use httpredir.debian.org but it seems to be
+        # unreliable; use a CDN instead
+        $sudo sed -i -e 's/httpredir\.debian\.org/deb.debian.org/g' \
+            /etc/apt/sources.list
+
         # travis-ci has a sources list for Chrome which doesn't support i386
         : | $sudo tee /etc/apt/sources.list.d/google-chrome.list
 
@@ -55,13 +74,13 @@ case "$ci_distro" in
                 ${NULL}
         fi
 
-        $sudo apt-get -qq -y build-dep dbus
-
         $sudo apt-get -qq -y install \
+            autoconf-archive \
             automake \
             autotools-dev \
             debhelper \
             dh-autoreconf \
+            dh-exec \
             doxygen \
             dpkg-dev \
             gnome-desktop-testing \
@@ -76,11 +95,30 @@ case "$ci_distro" in
             python-dbus \
             python-gi \
             valgrind \
+            wget \
             xauth \
             xmlto \
             xsltproc \
             xvfb \
             ${NULL}
+
+        case "$ci_suite" in
+            (trusty)
+                $sudo apt-get -qq -y install libsystemd-daemon-dev
+                ;;
+            (*)
+                $sudo apt-get -qq -y install libsystemd-dev
+                ;;
+        esac
+
+        if [ -n "$ci_in_docker" ]; then
+            # Add the user that we will use to do the build inside the
+            # Docker container, and let them use sudo
+            adduser --disabled-password user </dev/null
+            apt-get -y install sudo
+            echo "user ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/nopasswd
+            chmod 0440 /etc/sudoers.d/nopasswd
+        fi
 
         case "$ci_suite" in
             (trusty|jessie)

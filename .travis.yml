@@ -23,9 +23,8 @@
 sudo: required
 dist: trusty
 language: c
-install:
-  - ./tools/ci-install.sh
 script:
+  - ./tools/ci-install.sh
   # python-dbus and python-gi aren't available to Travis's version of
   # Python in /opt, which it uses as a default
   - PYTHON=/usr/bin/python ci_parallel=2 ci_sudo=yes ./tools/ci-build.sh
@@ -39,5 +38,8 @@ env:
   - ci_host=mingw
   - ci_host=mingw ci_variant=debug
   - ci_host=mingw ci_buildsys=cmake
+  - ci_docker=ubuntu:xenial ci_distro=ubuntu ci_suite=xenial
+  - ci_docker=debian:jessie-slim ci_distro=debian ci_suite=jessie
+  - ci_docker=debian:stretch-slim ci_distro=debian ci_suite=stretch
 
 # vim:set sw=2 sts=2 et:

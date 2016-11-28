@@ -27,12 +27,28 @@ set -x
 
 NULL=
 : "${ci_buildsys:=autotools}"
+: "${ci_docker:=}"
 : "${ci_host:=native}"
 : "${ci_parallel:=1}"
 : "${ci_sudo:=no}"
 : "${ci_test:=yes}"
 : "${ci_test_fatal:=yes}"
 : "${ci_variant:=production}"
+
+if [ -n "$ci_docker" ]; then
+    exec docker run \
+        --env=ci_buildsys="${ci_buildsys}" \
+        --env=ci_docker="" \
+        --env=ci_host="${ci_host}" \
+        --env=ci_parallel="${ci_parallel}" \
+        --env=ci_sudo=yes \
+        --env=ci_test="${ci_test}" \
+        --env=ci_test_fatal="${ci_test_fatal}" \
+        --env=ci_variant="${ci_variant}" \
+        --privileged \
+        ci-image \
+        tools/ci-build.sh
+fi
 
 maybe_fail_tests () {
     if [ "$ci_test_fatal" = yes ]; then
