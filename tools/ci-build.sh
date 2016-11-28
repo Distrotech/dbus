@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright © 2015-2016 Collabora Ltd.
 #
@@ -22,27 +22,17 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set -e
+set -euo pipefail
 set -x
 
-if [ -z "$ci_variant" ]; then
-    ci_variant=production
-fi
-
-if [ -z "$ci_host" ]; then
-    ci_host=native
-fi
-
-if [ -z "$ci_buildsys" ]; then
-    ci_buildsys=autotools
-fi
-
-if [ -z "$ci_parallel" ]; then
-    ci_parallel=1
-fi
-
-ci_test=yes
-ci_test_fatal=yes
+NULL=
+: "${ci_buildsys:=autotools}"
+: "${ci_host:=native}"
+: "${ci_parallel:=1}"
+: "${ci_sudo:=no}"
+: "${ci_test:=yes}"
+: "${ci_test_fatal:=yes}"
+: "${ci_variant:=production}"
 
 NOCONFIGURE=1 ./autogen.sh
 
