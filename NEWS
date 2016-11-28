@@ -1,5 +1,7 @@
-D-Bus 1.11.8 (UNRELEASED)
+D-Bus 1.11.8 (2016-11-28)
 ==
+
+The “panics in the face of breakfast foods” release.
 
 Build-time configuration:
 
@@ -25,8 +27,19 @@ Enhancements:
 • Fix and enable a lot of compiler warnings to improve future code
   quality. This might incidentally also fix some environment variable
   accesses on OS X.
+  · In particular, printf-style functions in the libdbus API are now annotated
+    with __attribute__((__format__(__printf__, *, *))) when compiling with
+    gcc or clang. This might make printf bugs in other software visible
+    at compile time.
   (fd.o #97357, fd.o #98192, fd.o #98195, fd.o #98658;
   Thomas Zimmermann, Simon McVittie)
+
+• When running with AppArmor mediation (for example using Ubuntu's patched
+  Linux kernel), clients can no longer auto-start services unless they would
+  have been able to send the auto-starting message to the service after it
+  starts. StartServiceByName() is unaffected, and continues to be allowed by
+  default in AppArmor's <abstractions/dbus-strict> and
+  <abstractions/dbus-session-strict>. (fd.o #98666, Simon McVittie)
 
 Fixes:
 

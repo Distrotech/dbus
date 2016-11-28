@@ -6,8 +6,8 @@
 <article id="index">
   <articleinfo>
     <title>D-Bus Specification</title>
-    <releaseinfo>Version 0.29</releaseinfo>
-    <date>2016-08-15</date>
+    <releaseinfo>Version 0.30</releaseinfo>
+    <date>2016-11-28</date>
     <authorgroup>
       <author>
         <firstname>Havoc</firstname>
@@ -70,6 +70,19 @@
       </author>
     </authorgroup>
    <revhistory>
+     <revision>
+       <revnumber>0.30</revnumber>
+       <date>2016-11-28</date>
+       <authorinitials>smcv, PW</authorinitials>
+       <revremark>
+         Define the jargon terms service activation and auto-starting more
+         clearly. Document the SystemdService key in service files.
+         Document how AppArmor interacts with service activation, and the
+         new AssumedAppArmorLabel key in service files (dbus-daemon 1.11.8).
+         Clarify intended behaviour of Properties.GetAll.
+         Use versioned interface and bus names in most examples.
+       </revremark>
+     </revision>
      <revision>
        <revnumber>0.29</revnumber>
        <date>2016-10-10</date>
