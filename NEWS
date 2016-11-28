@@ -1,7 +1,19 @@
-D-Bus 1.10.14 (UNRELEASED)
+D-Bus 1.10.14 (2016-11-28)
 ==
 
+The “Well, other bands know more than three chords” release.
+
 Fixes:
+
+• Work around an undesired effect of the fix for CVE-2014-3637
+  (fd.o #80559), in which processes that frequently send fds, such as
+  logind during a flood of new PAM sessions, can get disconnected for
+  continuously having at least one fd "in flight" for too long;
+  dbus-daemon interprets that as a potential denial of service attack.
+  The workaround is to disable that check for uid 0 process such as
+  logind, with a message in the system log. The bug remains open while
+  we look for a more general solution.
+  (fd.o #95263, LP#1591411; Simon McVittie)
 
 • Don't run the test test-dbus-launch-x11.sh if X11 autolaunching
   was disabled at compile time. That test is not expected to work
