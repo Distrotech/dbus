@@ -34,6 +34,12 @@ NULL=
 : "${ci_test_fatal:=yes}"
 : "${ci_variant:=production}"
 
+maybe_fail_tests () {
+    if [ "$ci_test_fatal" = yes ]; then
+        exit 1
+    fi
+}
+
 NOCONFIGURE=1 ./autogen.sh
 
 srcdir="$(pwd)"
@@ -157,10 +163,9 @@ case "$ci_buildsys" in
             "$@"
 
         ${make}
-        [ "$ci_test" = no ] || ${make} check || [ "$ci_test_fatal" = no ]
+        [ "$ci_test" = no ] || ${make} check || maybe_fail_tests
         cat test/test-suite.log || :
-        [ "$ci_test" = no ] || ${make} distcheck || \
-            [ "$ci_test_fatal" = no ]
+        [ "$ci_test" = no ] || ${make} distcheck || maybe_fail_tests
 
         ${make} install DESTDIR=$(pwd)/DESTDIR
         ( cd DESTDIR && find . )
@@ -168,19 +173,19 @@ case "$ci_buildsys" in
         if [ "$ci_sudo" = yes ] && [ "$ci_test" = yes ]; then
             sudo ${make} install
             LD_LIBRARY_PATH=/usr/local/lib ${make} installcheck || \
-                [ "$ci_test_fatal" = no ]
+                maybe_fail_tests
             cat test/test-suite.log || :
 
             # re-run them with gnome-desktop-testing
             env LD_LIBRARY_PATH=/usr/local/lib \
             gnome-desktop-testing-runner -d /usr/local/share dbus/ || \
-                [ "$ci_test_fatal" = no ]
+                maybe_fail_tests
 
             # these tests benefit from being re-run as root
             sudo env LD_LIBRARY_PATH=/usr/local/lib \
             gnome-desktop-testing-runner -d /usr/local/share \
                 dbus/test-uid-permissions_with_config.test || \
-                [ "$ci_test_fatal" = no ]
+                maybe_fail_tests
         fi
         ;;
 
@@ -209,7 +214,7 @@ case "$ci_buildsys" in
         # The test coverage for OOM-safety is too verbose to be useful on
         # travis-ci.
         export DBUS_TEST_MALLOC_FAILURES=0
-        [ "$ci_test" = no ] || ctest -VV || [ "$ci_test_fatal" = no ]
+        [ "$ci_test" = no ] || ctest -VV || maybe_fail_tests
         ${make} install DESTDIR=$(pwd)/DESTDIR
         ( cd DESTDIR && find . )
         ;;
