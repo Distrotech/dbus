@@ -1,58 +1,45 @@
+# Copyright © 2015-2016 Collabora Ltd.
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 sudo: required
 dist: trusty
 language: c
-install:
-  # travis-ci has a sources list for Chrome which doesn't support i386
-  - ": | sudo tee /etc/apt/sources.list.d/google-chrome.list"
-  - test "$dbus_ci_host" != mingw || sudo dpkg --add-architecture i386
-  - sudo apt-get -qq -y update
-  - >
-    test "$dbus_ci_host" != mingw || sudo apt-get -qq -y install
-    binutils-mingw-w64-i686 g++-mingw-w64-i686 wine:i386
-  - sudo apt-get -qq -y build-dep dbus
-  - >
-    sudo apt-get -qq -y install
-    automake
-    autotools-dev
-    debhelper
-    dh-autoreconf
-    doxygen
-    dpkg-dev
-    gnome-desktop-testing
-    libapparmor-dev
-    libaudit-dev
-    libcap-ng-dev
-    libexpat-dev
-    libglib2.0-dev
-    libselinux1-dev
-    libx11-dev
-    python
-    python-dbus
-    python-gi
-    valgrind
-    xauth
-    xmlto
-    xsltproc
-    xvfb
-  # Ubuntu 14.04's autoconf-archive is too old
-  - >
-    wget
-    http://snapshot.debian.org/archive/debian/20160905T163745Z/pool/main/a/autoconf-archive/autoconf-archive_20160320-1_all.deb
-  - 'sudo dpkg -i autoconf-archive_*_all.deb'
-  - 'rm autoconf-archive_*_all.deb'
 script:
+  - ./tools/ci-install.sh
   # python-dbus and python-gi aren't available to Travis's version of
   # Python in /opt, which it uses as a default
-  - PYTHON=/usr/bin/python dbus_ci_parallel=2 dbus_ci_sudo=yes ./tools/ci-build.sh
+  - PYTHON=/usr/bin/python ci_parallel=2 ci_sudo=yes ./tools/ci-build.sh
 
 env:
-  - dbus_ci_variant=production
-  - dbus_ci_variant=debug
-  - dbus_ci_variant=reduced
-  - dbus_ci_variant=legacy
-  - dbus_ci_buildsys=cmake
-  - dbus_ci_host=mingw
-  - dbus_ci_host=mingw dbus_ci_variant=debug
-  - dbus_ci_host=mingw dbus_ci_buildsys=cmake
+  - ci_variant=production
+  - ci_variant=debug
+  - ci_variant=reduced
+  - ci_variant=legacy
+  - ci_buildsys=cmake
+  - ci_host=mingw
+  - ci_host=mingw ci_variant=debug
+  - ci_host=mingw ci_buildsys=cmake
+  - ci_docker=ubuntu:xenial ci_distro=ubuntu ci_suite=xenial
+  - ci_docker=debian:jessie-slim ci_distro=debian ci_suite=jessie
+  - ci_docker=debian:stretch-slim ci_distro=debian ci_suite=stretch
 
 # vim:set sw=2 sts=2 et:
