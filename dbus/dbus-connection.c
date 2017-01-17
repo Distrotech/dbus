@@ -2758,8 +2758,6 @@ _dbus_connection_last_unref (DBusConnection *connection)
   _dbus_hash_table_unref (connection->pending_replies);
   connection->pending_replies = NULL;
   
-  _dbus_list_clear (&connection->filter_list);
-  
   _dbus_list_foreach (&connection->outgoing_messages,
                       free_outgoing_message,
 		      connection);
