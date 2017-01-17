@@ -1029,7 +1029,9 @@ recover_unused_bytes (DBusTransport *transport)
         }
       
       _dbus_message_loader_get_buffer (transport->loader,
-                                       &buffer);
+                                       &buffer,
+                                       NULL,
+                                       NULL);
       
       orig_len = _dbus_string_get_length (buffer);
       
@@ -1061,7 +1063,9 @@ recover_unused_bytes (DBusTransport *transport)
       dbus_bool_t succeeded;
 
       _dbus_message_loader_get_buffer (transport->loader,
-                                       &buffer);
+                                       &buffer,
+                                       NULL,
+                                       NULL);
 
 #ifdef DBUS_ENABLE_VERBOSE_MODE
       orig_len = _dbus_string_get_length (buffer);

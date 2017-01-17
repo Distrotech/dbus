@@ -796,7 +796,9 @@ do_reading (DBusTransport *transport)
       if (bytes_read > 0)
         {
           _dbus_message_loader_get_buffer (transport->loader,
-                                           &buffer);
+                                           &buffer,
+                                           NULL,
+                                           NULL);
 
           if (!_dbus_auth_decode_data (transport->auth,
                                        &socket_transport->encoded_incoming,
@@ -819,11 +821,19 @@ do_reading (DBusTransport *transport)
     }
   else
     {
+      int max_to_read = DBUS_MAXIMUM_MESSAGE_LENGTH;
+      dbus_bool_t may_read_unix_fds = TRUE;
+
       _dbus_message_loader_get_buffer (transport->loader,
-                                       &buffer);
+                                       &buffer,
+                                       &max_to_read,
+                                       &may_read_unix_fds);
+
+      if (max_to_read > socket_transport->max_bytes_read_per_iteration)
+        max_to_read = socket_transport->max_bytes_read_per_iteration;
 
 #ifdef HAVE_UNIX_FD_PASSING
-      if (DBUS_TRANSPORT_CAN_SEND_UNIX_FD(transport))
+      if (DBUS_TRANSPORT_CAN_SEND_UNIX_FD(transport) && may_read_unix_fds)
         {
           int *fds;
           unsigned int n_fds;
@@ -838,7 +848,7 @@ do_reading (DBusTransport *transport)
 
           bytes_read = _dbus_read_socket_with_unix_fds(socket_transport->fd,
                                                        buffer,
-                                                       socket_transport->max_bytes_read_per_iteration,
+                                                       max_to_read,
                                                        fds, &n_fds);
           saved_errno = _dbus_save_socket_errno ();
 
@@ -851,7 +861,7 @@ do_reading (DBusTransport *transport)
 #endif
         {
           bytes_read = _dbus_read_socket (socket_transport->fd,
-                                          buffer, socket_transport->max_bytes_read_per_iteration);
+                                          buffer, max_to_read);
           saved_errno = _dbus_save_socket_errno ();
         }
 

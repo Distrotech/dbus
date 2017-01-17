@@ -4037,13 +4037,99 @@ _dbus_message_loader_unref (DBusMessageLoader *loader)
  */
 void
 _dbus_message_loader_get_buffer (DBusMessageLoader  *loader,
-                                 DBusString        **buffer)
+                                 DBusString        **buffer,
+                                 int                *max_to_read,
+                                 dbus_bool_t        *may_read_fds)
 {
   _dbus_assert (!loader->buffer_outstanding);
 
   *buffer = &loader->data;
 
   loader->buffer_outstanding = TRUE;
+
+  if (max_to_read != NULL)
+    {
+#ifdef HAVE_UNIX_FD_PASSING
+      int offset = 0;
+      int remain;
+      int byte_order;
+      int fields_array_len;
+      int header_len;
+      int body_len;
+#endif
+
+      *max_to_read = DBUS_MAXIMUM_MESSAGE_LENGTH;
+      *may_read_fds = TRUE;
+
+#ifdef HAVE_UNIX_FD_PASSING
+      /* If we aren't holding onto any fds, we can read as much as we want
+       * (fast path). */
+      if (loader->n_unix_fds == 0)
+        return;
+
+      /* Slow path: we have a message with some fds in it. We don't want
+       * to start on the next message until this one is out of the way;
+       * otherwise a legitimate sender can keep us processing messages
+       * containing fds, until we disconnect it for having had fds pending
+       * for too long, a limit that is in place to stop malicious senders
+       * from setting up recursive fd-passing that takes up our quota and
+       * will never go away. */
+
+      remain = _dbus_string_get_length (&loader->data);
+
+      while (remain > 0)
+        {
+          DBusValidity validity = DBUS_VALIDITY_UNKNOWN;
+          int needed;
+
+          /* If 0 < remain < DBUS_MINIMUM_HEADER_SIZE, then we've had at
+           * least the first byte of a message, but we don't know how
+           * much more to read. Only read the rest of the
+           * DBUS_MINIMUM_HEADER_SIZE for now; then we'll know. */
+          if (remain < DBUS_MINIMUM_HEADER_SIZE)
+            {
+              *max_to_read = DBUS_MINIMUM_HEADER_SIZE - remain;
+              *may_read_fds = FALSE;
+              return;
+            }
+
+          if (!_dbus_header_have_message_untrusted (loader->max_message_size,
+                                                    &validity,
+                                                    &byte_order,
+                                                    &fields_array_len,
+                                                    &header_len,
+                                                    &body_len,
+                                                    &loader->data,
+                                                    offset,
+                                                    remain))
+            {
+              /* If a message in the buffer is invalid, we're going to
+               * disconnect the sender anyway, so reading an arbitrary amount
+               * is fine. */
+              if (validity != DBUS_VALID)
+                return;
+
+              /* We have a partial message, with the
+               * DBUS_MINIMUM_HEADER_SIZE-byte fixed part of the header (which
+               * lets us work out how much more we need), but no more. Read
+               * the rest of the message. */
+              needed = header_len + body_len;
+              _dbus_assert (needed > remain);
+              *max_to_read = needed - remain;
+              *may_read_fds = FALSE;
+              return;
+            }
+
+          /* Skip over entire messages until we have less than a message
+           * remaining. */
+          needed = header_len + body_len;
+          _dbus_assert (needed > DBUS_MINIMUM_HEADER_SIZE);
+          _dbus_assert (remain >= needed);
+          remain -= needed;
+          offset += needed;
+        }
+#endif
+    }
 }
 
 /**
@@ -4865,7 +4951,7 @@ dbus_message_demarshal (const char *str,
   if (loader == NULL)
     return NULL;
 
-  _dbus_message_loader_get_buffer (loader, &buffer);
+  _dbus_message_loader_get_buffer (loader, &buffer, NULL, NULL);
 
   if (!_dbus_string_append_len (buffer, str, len))
     goto fail_oom;

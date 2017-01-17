@@ -73,7 +73,9 @@ void               _dbus_message_loader_unref                 (DBusMessageLoader
 
 DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_get_buffer            (DBusMessageLoader  *loader,
-                                                               DBusString        **buffer);
+                                                               DBusString        **buffer,
+                                                               int                *max_to_read,
+                                                               dbus_bool_t        *may_read_unix_fds);
 DBUS_PRIVATE_EXPORT
 void               _dbus_message_loader_return_buffer         (DBusMessageLoader  *loader,
                                                                DBusString         *buffer);
