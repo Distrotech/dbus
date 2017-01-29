@@ -109,6 +109,7 @@ if(DBUS_WITH_GLIB)
     add_test_executable(test-relay ${CMAKE_SOURCE_DIR}/../test/relay.c ${TEST_LIBRARIES})
     add_test_executable(test-syntax ${CMAKE_SOURCE_DIR}/../test/syntax.c ${TEST_LIBRARIES})
     add_test_executable(test-syslog ${CMAKE_SOURCE_DIR}/../test/internals/syslog.c ${TEST_LIBRARIES})
+    add_test_executable(test-uid-permissions ${CMAKE_SOURCE_DIR}/../test/uid-permissions.c ${TEST_LIBRARIES})
     add_helper_executable(manual-authz ${CMAKE_SOURCE_DIR}/../test/manual-authz.c ${TEST_LIBRARIES})
 endif()
 
