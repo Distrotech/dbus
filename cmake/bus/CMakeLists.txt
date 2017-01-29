@@ -94,7 +94,7 @@ target_link_libraries(dbus-daemon ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
 set_target_properties(dbus-daemon PROPERTIES OUTPUT_NAME ${DBUS_DAEMON_NAME})
 set_target_properties(dbus-daemon PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
 
-install_targets(/bin dbus-daemon)
+install(TARGETS dbus-daemon ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/session.conf DESTINATION share/dbus-1)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/legacy-config/session.conf DESTINATION etc/dbus-1)
 install(DIRECTORY DESTINATION share/dbus-1/session.d)
@@ -119,7 +119,7 @@ if (DBUS_SERVICE)
 	add_executable(dbus-service ${dbus_service_SOURCES} )
 	target_link_libraries(dbus-service ${DBUS_INTERNAL_LIBRARIES} ${XML_LIBRARY})
 	set_target_properties(dbus-service PROPERTIES COMPILE_FLAGS ${DBUS_INTERNAL_CLIENT_DEFINITIONS})
-	install_targets(/bin dbus-service )
+	install(TARGETS dbus-service ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif (DBUS_SERVICE)
 
 set(LAUNCH_HELPER_SOURCES ${XML_SOURCES}

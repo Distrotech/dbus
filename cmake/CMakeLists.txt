@@ -521,7 +521,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY
 
 if (WIN32)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dbus-env.bat.cmake ${CMAKE_BINARY_DIR}/bin/dbus-env.bat )
-install_files(/bin FILES ${CMAKE_BINARY_DIR}/bin/dbus-env.bat)
+    install(FILES ${CMAKE_BINARY_DIR}/bin/dbus-env.bat DESTINATION bin)
 endif()
 
 add_definitions(-DHAVE_CONFIG_H=1)

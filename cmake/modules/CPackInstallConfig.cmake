@@ -1,10 +1,10 @@
 
 if (DBUS_INSTALL_SYSTEM_LIBS)
 	if (MINGW)
-		install_files(/bin FILES ${LIBEXPAT_LIBRARIES})
 	else (MINGW)
 		INCLUDE(InstallRequiredSystemLibraries)
 	endif (MINGW)
+	install(FILES ${LIBEXPAT_LIBRARIES} DESTINATION bin)
 endif (DBUS_INSTALL_SYSTEM_LIBS)
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "D-BUS For Windows")
