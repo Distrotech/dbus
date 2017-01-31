@@ -584,7 +584,7 @@ cache_peer_loginfo_string (BusConnectionData *d,
   DBusString loginfo_buf;
   unsigned long uid;
   unsigned long pid;
-  char *windows_sid, *security_label;
+  char *windows_sid = NULL, *security_label = NULL;
   dbus_bool_t prev_added;
 
   if (!_dbus_string_init (&loginfo_buf))
@@ -630,6 +630,7 @@ cache_peer_loginfo_string (BusConnectionData *d,
       did_append = _dbus_string_append_printf (&loginfo_buf,
                                                "sid=\"%s\"", windows_sid);
       dbus_free (windows_sid);
+      windows_sid = NULL;
       if (!did_append)
         goto oom;
       else
@@ -649,6 +650,7 @@ cache_peer_loginfo_string (BusConnectionData *d,
       did_append = _dbus_string_append_printf (&loginfo_buf,
                                                "label=\"%s\"", security_label);
       dbus_free (security_label);
+      security_label = NULL;
       if (!did_append)
         goto oom;
       else
@@ -663,6 +665,11 @@ cache_peer_loginfo_string (BusConnectionData *d,
   return TRUE;
 oom:
    _dbus_string_free (&loginfo_buf);
+   if (security_label != NULL)
+     dbus_free (security_label);
+   if (windows_sid != NULL)
+     dbus_free (windows_sid);
+
    return FALSE;
 }
 
