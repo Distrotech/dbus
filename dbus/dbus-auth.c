@@ -1485,9 +1485,14 @@ send_rejected (DBusAuth *auth)
                             "REJECTED"))
     goto nomem;
 
-  i = 0;
-  while (all_mechanisms[i].mechanism != NULL)
+  for (i = 0; all_mechanisms[i].mechanism != NULL; i++)
     {
+      /* skip mechanisms that aren't allowed */
+      if (auth->allowed_mechs != NULL &&
+          !_dbus_string_array_contains ((const char**)auth->allowed_mechs,
+                                        all_mechanisms[i].mechanism))
+        continue;
+
       if (!_dbus_string_append (&command,
                                 " "))
         goto nomem;
@@ -1495,8 +1500,6 @@ send_rejected (DBusAuth *auth)
       if (!_dbus_string_append (&command,
                                 all_mechanisms[i].mechanism))
         goto nomem;
-      
-      ++i;
     }
   
   if (!_dbus_string_append (&command, "\r\n"))
