@@ -11,9 +11,9 @@ Enhancements:
 
 • Do the Travis-CI build in Docker containers for Ubuntu LTS, Debian
   stable and Debian testing in addition to the older Ubuntu that is
-  the default (Simon McVittie)
+  the default (fd.o #98889, Simon McVittie)
 
-• Avoid some deprecated CMake functions (Ralf Habacker)
+• Avoid some deprecated CMake functions (fd.o #99586, Ralf Habacker)
 
 • Silence many -Wswitch-enum and -Wswitch-default warnings
   (fd.o #98191; Thomas Zimmermann, Simon McVittie)
@@ -34,12 +34,13 @@ Fixes:
   (fd.o #95263, LP#1591411; Simon McVittie)
 
 • Do not require TMPDIR, TEMP or TMP to be set when cross-compiling
-  for Windows with CMake (Ralf Habacker)
+  for Windows with CMake (fd.o #99586, Ralf Habacker)
 
 • Do not set Unix-specific variables when targeting Windows
-  (Ralf Habacker)
+  (fd.o #99586, Ralf Habacker)
 
-• Install dbus-arch-deps.h correctly when using CMake (Ralf Habacker)
+• Install dbus-arch-deps.h correctly when using CMake
+  (fd.o #99586, Ralf Habacker)
 
 D-Bus 1.11.8 (2016-11-28)
 ==
