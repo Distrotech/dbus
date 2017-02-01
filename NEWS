@@ -1,7 +1,45 @@
-D-Bus 1.11.9 (UNRELEASED)
+D-Bus 1.11.10 (UNRELEASED)
 ==
 
-...
+Dependencies:
+
+• AppArmor support requires at least libapparmor 2.8.95, reduced
+  from 2.10 in previous versions. One test requires 2.10 and is
+  skipped if building with an older version.
+
+Enhancements:
+
+• Do the Travis-CI build in Docker containers for Ubuntu LTS, Debian
+  stable and Debian testing in addition to the older Ubuntu that is
+  the default (Simon McVittie)
+
+• Avoid some deprecated CMake functions (Ralf Habacker)
+
+• Silence many -Wswitch-enum and -Wswitch-default warnings
+  (fd.o #98191; Thomas Zimmermann, Simon McVittie)
+
+Fixes:
+
+• Fix the implementation of re-enabling a timeout so that its
+  countdown is restarted as intended, instead of continually
+  decreasing. (fd.o #95619; Michal Koutný, Simon McVittie)
+
+• When receiving a message with file descriptors, do not start reading
+  the beginning of the next message, so that only one such message
+  is processed at a time. In conjunction with the fix for #95619
+  this means that processes sending many file descriptors, such as
+  systemd-logind on a system that receives very rapid ssh connections,
+  are not treated as abusive and kicked off the bus. Revert the previous
+  workaround that special-cased uid 0.
+  (fd.o #95263, LP#1591411; Simon McVittie)
+
+• Do not require TMPDIR, TEMP or TMP to be set when cross-compiling
+  for Windows with CMake (Ralf Habacker)
+
+• Do not set Unix-specific variables when targeting Windows
+  (Ralf Habacker)
+
+• Install dbus-arch-deps.h correctly when using CMake (Ralf Habacker)
 
 D-Bus 1.11.8 (2016-11-28)
 ==
