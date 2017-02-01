@@ -1,6 +1,12 @@
 D-Bus 1.10.16 (UNRELEASED)
 ==
 
+Enhancements:
+
+• Do the Travis-CI build in Docker containers for Ubuntu LTS, Debian
+  stable and Debian testing in addition to the older Ubuntu that is
+  the default (fd.o #98889, Simon McVittie)
+
 Fixes:
 
 ...
