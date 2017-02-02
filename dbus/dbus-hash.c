@@ -941,7 +941,7 @@ rebuild_table (DBusHashTable *table)
     {
       /* overflow paranoia */
       if (table->n_buckets < _DBUS_INT_MAX / 4 &&
-          table->down_shift >= 0)
+          table->down_shift >= 2)
         new_buckets = table->n_buckets * 4;
       else
         return; /* can't grow anymore */
@@ -993,6 +993,7 @@ rebuild_table (DBusHashTable *table)
   
   _dbus_assert (table->lo_rebuild_size >= 0);
   _dbus_assert (table->hi_rebuild_size > table->lo_rebuild_size);
+  _dbus_assert (table->down_shift >= 0);
   _dbus_assert (table->mask != 0);
   /* the mask is essentially the max index */
   _dbus_assert (table->mask < table->n_buckets);
