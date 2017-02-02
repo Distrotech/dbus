@@ -92,6 +92,10 @@ const char*   _dbus_auth_get_guid_from_server(DBusAuth               *auth);
 
 void          _dbus_auth_set_unix_fd_possible(DBusAuth               *auth, dbus_bool_t b);
 dbus_bool_t   _dbus_auth_get_unix_fd_negotiated(DBusAuth             *auth);
+DBUS_PRIVATE_EXPORT
+dbus_bool_t   _dbus_auth_is_supported_mechanism(DBusString           *name);
+DBUS_PRIVATE_EXPORT
+dbus_bool_t   _dbus_auth_dump_supported_mechanisms(DBusString        *buffer);
 
 DBUS_END_DECLS
 

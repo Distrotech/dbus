@@ -37,6 +37,7 @@
 #include "apparmor.h"
 #include "audit.h"
 #include "dir-watch.h"
+#include <dbus/dbus-auth.h>
 #include <dbus/dbus-list.h>
 #include <dbus/dbus-hash.h>
 #include <dbus/dbus-credentials.h>
@@ -429,6 +430,26 @@ process_config_first_time_only (BusContext       *context,
       link = _dbus_list_get_first_link (auth_mechanisms_list);
       while (link != NULL)
         {
+          DBusString name;
+          _dbus_string_init_const (&name, link->data);
+          if (!_dbus_auth_is_supported_mechanism (&name))
+            {
+              DBusString list;
+              if (!_dbus_string_init (&list))
+                goto oom;
+
+              if (!_dbus_auth_dump_supported_mechanisms (&list))
+                {
+                  _dbus_string_free (&list);
+                  goto oom;
+                }
+              dbus_set_error (error, DBUS_ERROR_FAILED,
+                              "Unsupported auth mechanism \"%s\" in bus config file detected. Supported mechanisms are \"%s\".",
+                              link->data,
+                              _dbus_string_get_const_data (&list));
+              _dbus_string_free (&list);
+              goto failed;
+            }
           auth_mechanisms[i] = _dbus_strdup (link->data);
           if (auth_mechanisms[i] == NULL)
             goto oom;

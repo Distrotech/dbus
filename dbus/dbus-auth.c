@@ -2837,6 +2837,45 @@ _dbus_auth_get_unix_fd_negotiated(DBusAuth *auth)
   return auth->unix_fd_negotiated;
 }
 
+/**
+ * Queries whether the given auth mechanism is supported.
+ *
+ * @param auth the auth mechanism to query for
+ * @returns #TRUE when auth mechanism is supported
+ */
+dbus_bool_t
+_dbus_auth_is_supported_mechanism (DBusString *name)
+{
+  _dbus_assert (name != NULL);
+
+  return find_mech (name, NULL) != NULL;
+}
+
+/**
+ * Return a human-readable string containing all supported auth mechanisms.
+ *
+ * @param string to hold the supported auth mechanisms
+ * @returns #FALSE on oom
+ */
+dbus_bool_t
+_dbus_auth_dump_supported_mechanisms (DBusString *buffer)
+{
+  unsigned int i;
+  _dbus_assert (buffer != NULL);
+
+  for (i = 0; all_mechanisms[i].mechanism != NULL; i++)
+    {
+      if (i > 0)
+        {
+          if (!_dbus_string_append (buffer, ", "))
+            return FALSE;
+        }
+      if (!_dbus_string_append (buffer, all_mechanisms[i].mechanism))
+        return FALSE;
+    }
+  return TRUE;
+}
+
 /** @} */
 
 /* tests in dbus-auth-util.c */
