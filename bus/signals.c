@@ -2562,7 +2562,9 @@ test_equality (void)
       _dbus_assert (second_str != NULL);
       _dbus_assert (strcmp (first_str, second_str) == 0);
       first_reparsed = check_parse (TRUE, first_str);
+      _dbus_assert (first_reparsed != NULL);
       second_reparsed = check_parse (TRUE, second_str);
+      _dbus_assert (second_reparsed != NULL);
       _dbus_assert (match_rule_equal (first, first_reparsed));
       _dbus_assert (match_rule_equal (second, second_reparsed));
       bus_match_rule_unref (first_reparsed);
@@ -2581,6 +2583,7 @@ test_equality (void)
           if (i != j)
             {
               second = check_parse (TRUE, equality_tests[j].second);
+              _dbus_assert (second != NULL);
 
               if (match_rule_equal (first, second))
                 {
