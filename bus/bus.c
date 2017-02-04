@@ -445,7 +445,7 @@ process_config_first_time_only (BusContext       *context,
                 }
               dbus_set_error (error, DBUS_ERROR_FAILED,
                               "Unsupported auth mechanism \"%s\" in bus config file detected. Supported mechanisms are \"%s\".",
-                              link->data,
+                              (char*)link->data,
                               _dbus_string_get_const_data (&list));
               _dbus_string_free (&list);
               goto failed;
