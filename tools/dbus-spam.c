@@ -179,6 +179,17 @@ dbus_test_tool_spam (int argc, char **argv)
     {
       const char *arg = argv[i];
 
+      if (payload != NULL &&
+          (strstr (arg, "--payload=") == arg ||
+           strcmp (arg, "--stdin") == 0 ||
+           strcmp (arg, "--message-stdin") == 0 ||
+           strcmp (arg, "--random-size") == 0))
+        {
+          fprintf (stderr, "At most one of --payload, --stdin, --message-stdin "
+                           "and --random-size may be specified\n\n");
+          usage (2);
+        }
+
       if (strcmp (arg, "--system") == 0)
         {
           type = DBUS_BUS_SYSTEM;
