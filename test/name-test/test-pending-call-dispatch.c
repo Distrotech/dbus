@@ -28,7 +28,12 @@ _run_iteration (DBusConnection *conn)
                                          "org.freedesktop.TestSuite",
                                          "Echo");
 
-  dbus_message_append_args (method, DBUS_TYPE_STRING, &echo, NULL);
+  if (!dbus_message_append_args (method, DBUS_TYPE_STRING, &echo, NULL))
+    {
+      fprintf (stderr, "Bail out! Failed to append arguments: OOM\n");
+      exit (1);
+    }
+
   dbus_connection_send_with_reply (conn, method, &echo_pending, -1);
   dbus_message_unref (method);
   
