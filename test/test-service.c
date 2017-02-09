@@ -92,9 +92,8 @@ check_hello_from_self_reply (DBusPendingCall *pcall,
       
       dbus_message_unref (echo_reply);
     }
-  else if (type == DBUS_MESSAGE_TYPE_ERROR)
+  else if (dbus_set_error_from_message (&error, reply))
     {
-      dbus_set_error_from_message (&error, reply);
       printf ("Error type in reply: %s\n", error.message);
 
       if (strcmp (error.name, DBUS_ERROR_NO_MEMORY) != 0)
