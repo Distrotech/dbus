@@ -25,13 +25,19 @@ test_command_line_internal (dbus_bool_t should_work,
   DBusList *list = NULL, *node;
   DBusError error;
 
-  _dbus_list_append (&list, (char *)arg1);
+  if (!_dbus_list_append (&list, (char *)arg1))
+    return FALSE;
+
   do
     {
       tmp = va_arg (var_args, char *);
       if (!tmp)
         break;
-      _dbus_list_append (&list, tmp);
+      if (!_dbus_list_append (&list, tmp))
+        {
+          _dbus_list_clear (&list);
+          return FALSE;
+        }
     } while (tmp);
 
   original_argc = _dbus_list_get_length (&list);
@@ -47,9 +53,14 @@ test_command_line_internal (dbus_bool_t should_work,
        i++, node = _dbus_list_get_next_link (&list, node))
     {
       original_argv[i] = node->data;
-      if (i > 0)
-        _dbus_string_append_byte (&str, ' ');
-      _dbus_string_append (&str, original_argv[i]);
+      if ((i > 0 && !_dbus_string_append_byte (&str, ' ')) ||
+          !_dbus_string_append (&str, original_argv[i]))
+        {
+          _dbus_list_clear (&list);
+          dbus_free (original_argv);
+          _dbus_string_free (&str);
+          return FALSE;
+        }
     }
   
   _dbus_list_clear (&list);
