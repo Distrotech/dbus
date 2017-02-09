@@ -479,6 +479,8 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
   /* Write the data one byte at a time */
 
   loader = _dbus_message_loader_new ();
+  if (loader == NULL)
+    goto failed;
 
   /* check some trivial loader functions */
   _dbus_message_loader_ref (loader);
@@ -490,8 +492,9 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
       DBusString *buffer;
 
       _dbus_message_loader_get_buffer (loader, &buffer, NULL, NULL);
-      _dbus_string_append_byte (buffer,
-                                _dbus_string_get_byte (data, i));
+      if (!_dbus_string_append_byte (buffer,
+                                     _dbus_string_get_byte (data, i)))
+        goto failed;
       _dbus_message_loader_return_buffer (loader, buffer);
     }
 
@@ -504,13 +507,16 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
   /* Write the data all at once */
 
   loader = _dbus_message_loader_new ();
+  if (loader == NULL)
+    goto failed;
 
   {
     DBusString *buffer;
 
     _dbus_message_loader_get_buffer (loader, &buffer, NULL, NULL);
-    _dbus_string_copy (data, 0, buffer,
-                       _dbus_string_get_length (buffer));
+    if (!_dbus_string_copy (data, 0, buffer,
+                            _dbus_string_get_length (buffer)))
+        goto failed;
     _dbus_message_loader_return_buffer (loader, buffer);
   }
 
@@ -523,6 +529,8 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
   /* Write the data 2 bytes at a time */
 
   loader = _dbus_message_loader_new ();
+  if (loader == NULL)
+    goto failed;
 
   len = _dbus_string_get_length (data);
   for (i = 0; i < len; i += 2)
@@ -530,11 +538,17 @@ dbus_internal_do_not_use_try_message_data (const DBusString    *data,
       DBusString *buffer;
 
       _dbus_message_loader_get_buffer (loader, &buffer, NULL, NULL);
-      _dbus_string_append_byte (buffer,
-                                _dbus_string_get_byte (data, i));
+      if (!_dbus_string_append_byte (buffer,
+                                     _dbus_string_get_byte (data, i)))
+        goto failed;
+
       if ((i+1) < len)
-        _dbus_string_append_byte (buffer,
-                                  _dbus_string_get_byte (data, i+1));
+        {
+          if (!_dbus_string_append_byte (buffer,
+                                         _dbus_string_get_byte (data, i+1)))
+            goto failed;
+        }
+
       _dbus_message_loader_return_buffer (loader, buffer);
     }
 
