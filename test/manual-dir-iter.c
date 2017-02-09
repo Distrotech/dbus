@@ -47,7 +47,9 @@ main (int    argc,
   if (!_dbus_string_init (&dirname))
       oom ("init dirname");
 
-  _dbus_string_append (&dirname, argv[1]);
+  if (!_dbus_string_append (&dirname, argv[1]))
+      oom ("append argv[1]");
+
   dir = _dbus_directory_open (&dirname, &tmp_error);
 
   if (dir == NULL)
