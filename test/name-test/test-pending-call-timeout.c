@@ -25,8 +25,13 @@ _method_call (DBusConnection *conn,
                                          "org.freedesktop.TestSuite",
                                          "DelayEcho");
 
-  dbus_message_append_args (method, DBUS_TYPE_STRING, &echo, NULL);
-  dbus_connection_send_with_reply (conn, method, &pending, timeout_milliseconds);
+  if (method == NULL ||
+      !dbus_message_append_args (method, DBUS_TYPE_STRING, &echo, NULL) ||
+      !dbus_connection_send_with_reply (conn, method, &pending, timeout_milliseconds))
+    {
+      printf ("Bail out! OOM when building and sending message ***\n");
+      exit (1);
+    }
   dbus_message_unref (method);
   
   /* block on the message */
