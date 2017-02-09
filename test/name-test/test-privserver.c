@@ -45,11 +45,20 @@ filter_session_message (DBusConnection     *connection,
                                    "GetPrivateAddress"))
     {
        DBusMessage *reply;
+
        reply = dbus_message_new_method_return (message);
-       dbus_message_append_args (reply, DBUS_TYPE_STRING, 
-                                 &(testdata->private_addr), DBUS_TYPE_INVALID);
-       dbus_connection_send (connection, reply, NULL);
+       if (reply == NULL)
+         die ("OOM");
+       if (!dbus_message_append_args (reply, DBUS_TYPE_STRING,
+                                      &(testdata->private_addr),
+                                      DBUS_TYPE_INVALID))
+         die ("OOM");
+
+       if (!dbus_connection_send (connection, reply, NULL))
+         die ("Error sending message");
+
        dbus_message_unref (reply);
+
        return DBUS_HANDLER_RESULT_HANDLED;
     }
   else if (dbus_message_is_method_call (message,
