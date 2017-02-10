@@ -22,6 +22,8 @@ set (dbusinclude_HEADERS
 	${DBUS_DIR}/dbus-syntax.h
 	${DBUS_DIR}/dbus-threads.h
 	${DBUS_DIR}/dbus-types.h
+)
+set (dbusinclude_ARCH_HEADERS
 	${CMAKE_CURRENT_BINARY_DIR}/dbus-arch-deps.h
 )
 
@@ -304,7 +306,12 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 endif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 
 install(TARGETS dbus-1 ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES ${dbusinclude_HEADERS} DESTINATION include/dbus)
+if(UNIX)
+    install(FILES ${dbusinclude_HEADERS} DESTINATION include/dbus-1.0/dbus)
+    install(FILES ${dbusinclude_ARCH_HEADERS} DESTINATION lib/dbus-1.0/include/dbus)
+else()
+    install(FILES ${dbusinclude_HEADERS} ${dbusinclude_ARCH_HEADERS} DESTINATION include/dbus)
+endif()
 
 ### Internal library, used for the daemon, tools and tests, compiled statically.
 
