@@ -58,6 +58,17 @@ usage (int ecode)
   exit (ecode);
 }
 
+/* Abort on any allocation failure; there is nothing else we can do. */
+static void
+handle_oom (dbus_bool_t success)
+{
+  if (!success)
+    {
+      fprintf (stderr, "%s: Ran out of memory\n", appname);
+      exit (1);
+    }
+}
+
 static void
 append_arg (DBusMessageIter *iter, int type, const char *value)
 {
@@ -70,68 +81,68 @@ append_arg (DBusMessageIter *iter, int type, const char *value)
   double d;
   unsigned char byte;
   dbus_bool_t v_BOOLEAN;
-  
-  /* FIXME - we are ignoring OOM returns on all these functions */
+  dbus_bool_t ret;
+
   switch (type)
     {
     case DBUS_TYPE_BYTE:
       byte = strtoul (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_BYTE, &byte);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_BYTE, &byte);
       break;
 
     case DBUS_TYPE_DOUBLE:
       d = strtod (value, NULL);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_DOUBLE, &d);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_DOUBLE, &d);
       break;
 
     case DBUS_TYPE_INT16:
       int16 = strtol (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_INT16, &int16);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_INT16, &int16);
       break;
 
     case DBUS_TYPE_UINT16:
       uint16 = strtoul (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_UINT16, &uint16);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_UINT16, &uint16);
       break;
 
     case DBUS_TYPE_INT32:
       int32 = strtol (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_INT32, &int32);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_INT32, &int32);
       break;
 
     case DBUS_TYPE_UINT32:
       uint32 = strtoul (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_UINT32, &uint32);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_UINT32, &uint32);
       break;
 
     case DBUS_TYPE_INT64:
       int64 = strtoll (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_INT64, &int64);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_INT64, &int64);
       break;
 
     case DBUS_TYPE_UINT64:
       uint64 = strtoull (value, NULL, 0);
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_UINT64, &uint64);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_UINT64, &uint64);
       break;
 
     case DBUS_TYPE_STRING:
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_STRING, &value);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_STRING, &value);
       break;
 
     case DBUS_TYPE_OBJECT_PATH:
-      dbus_message_iter_append_basic (iter, DBUS_TYPE_OBJECT_PATH, &value);
+      ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_OBJECT_PATH, &value);
       break;
 
     case DBUS_TYPE_BOOLEAN:
       if (strcmp (value, "true") == 0)
 	{
 	  v_BOOLEAN = TRUE;
-	  dbus_message_iter_append_basic (iter, DBUS_TYPE_BOOLEAN, &v_BOOLEAN);
+	  ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_BOOLEAN, &v_BOOLEAN);
 	}
       else if (strcmp (value, "false") == 0)
 	{
 	  v_BOOLEAN = FALSE;
-	  dbus_message_iter_append_basic (iter, DBUS_TYPE_BOOLEAN, &v_BOOLEAN);
+	  ret = dbus_message_iter_append_basic (iter, DBUS_TYPE_BOOLEAN, &v_BOOLEAN);
 	}
       else
 	{
@@ -144,6 +155,8 @@ append_arg (DBusMessageIter *iter, int type, const char *value)
       fprintf (stderr, "%s: Unsupported data type %c\n", appname, (char) type);
       exit (1);
     }
+
+  handle_oom (ret);
 }
 
 static void
@@ -151,6 +164,8 @@ append_array (DBusMessageIter *iter, int type, const char *value)
 {
   const char *val;
   char *dupval = strdup (value);
+
+  handle_oom (dupval != NULL);
 
   val = strtok (dupval, ",");
   while (val != NULL)
@@ -167,15 +182,17 @@ append_dict (DBusMessageIter *iter, int keytype, int valtype, const char *value)
   const char *val;
   char *dupval = strdup (value);
 
+  handle_oom (dupval != NULL);
+
   val = strtok (dupval, ",");
   while (val != NULL)
     {
       DBusMessageIter subiter;
       
-      dbus_message_iter_open_container (iter,
-					DBUS_TYPE_DICT_ENTRY,
-					NULL,
-					&subiter);
+      handle_oom (dbus_message_iter_open_container (iter,
+                                                    DBUS_TYPE_DICT_ENTRY,
+                                                    NULL,
+                                                    &subiter));
 
       append_arg (&subiter, keytype, val);
       val = strtok (NULL, ",");
@@ -186,7 +203,7 @@ append_dict (DBusMessageIter *iter, int keytype, int valtype, const char *value)
 	}
       append_arg (&subiter, valtype, val);
 
-      dbus_message_iter_close_container (iter, &subiter);
+      handle_oom (dbus_message_iter_close_container (iter, &subiter));
       val = strtok (NULL, ",");
     } 
   free (dupval);
@@ -418,6 +435,7 @@ main (int argc, char *argv[])
                                               path,
                                               name,
                                               last_dot + 1);
+      handle_oom (message != NULL);
       dbus_message_set_auto_start (message, TRUE);
     }
   else if (message_type == DBUS_MESSAGE_TYPE_SIGNAL)
@@ -434,6 +452,7 @@ main (int argc, char *argv[])
       *last_dot = '\0';
       
       message = dbus_message_new_signal (path, name, last_dot + 1);
+      handle_oom (message != NULL);
     }
   else
     {
@@ -520,10 +539,10 @@ main (int argc, char *argv[])
 	  sig[2] = secondary_type;
 	  sig[3] = DBUS_DICT_ENTRY_END_CHAR;
 	  sig[4] = '\0';
-	  dbus_message_iter_open_container (&iter,
-					    DBUS_TYPE_ARRAY,
-					    sig,
-					    &container_iter);
+          handle_oom (dbus_message_iter_open_container (&iter,
+                                                        DBUS_TYPE_ARRAY,
+                                                        sig,
+                                                        &container_iter));
 	  target_iter = &container_iter;
 	}
       else if (container_type != DBUS_TYPE_INVALID)
@@ -531,10 +550,10 @@ main (int argc, char *argv[])
 	  char sig[2];
 	  sig[0] = type2;
 	  sig[1] = '\0';
-	  dbus_message_iter_open_container (&iter,
-					    container_type,
-					    sig,
-					    &container_iter);
+          handle_oom (dbus_message_iter_open_container (&iter,
+                                                        container_type,
+                                                        sig,
+                                                        &container_iter));
 	  target_iter = &container_iter;
 	}
       else
@@ -553,8 +572,8 @@ main (int argc, char *argv[])
 
       if (container_type != DBUS_TYPE_INVALID)
 	{
-	  dbus_message_iter_close_container (&iter,
-					     &container_iter);
+          handle_oom (dbus_message_iter_close_container (&iter,
+                                                         &container_iter));
 	}
     }
 
