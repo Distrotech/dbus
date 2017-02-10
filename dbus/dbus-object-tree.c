@@ -2315,11 +2315,9 @@ object_tree_test_iteration (void *data)
 dbus_bool_t
 _dbus_object_tree_test (void)
 {
-  _dbus_test_oom_handling ("object tree",
-                           object_tree_test_iteration,
-                           NULL);
-
-  return TRUE;
+  return _dbus_test_oom_handling ("object tree",
+                                  object_tree_test_iteration,
+                                  NULL);
 }
 
 #endif /* !DOXYGEN_SHOULD_SKIP_THIS */
