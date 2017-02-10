@@ -635,3 +635,26 @@ add_custom_target(help-options
     cmake -LH 
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+#
+# create pkgconfig file
+#
+if(UNIX)
+    set(PLATFORM_LIBS pthread ${LIBRT})
+    include(FindPkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+        # convert lists of link libraries into -lstdc++ -lm etc..
+        foreach(LIB ${CMAKE_C_IMPLICIT_LINK_LIBRARIES} ${PLATFORM_LIBS})
+            set(LIBDBUS_LIBS "${LIBDBUS_LIBS} -l${LIB}")
+        endforeach()
+        set(bindir ${EXPANDED_BINDIR})
+        set(libdir ${EXPANDED_LIBDIR})
+        set(includedir ${EXPANDED_INCLUDEDIR})
+        set(sysconfdir ${EXPANDED_SYSCONFDIR})
+        set(datadir ${EXPANDED_DATADIR})
+        set(datarootdir ${EXPANDED_DATADIR})
+        set(dbus_daemondir ${DBUS_DAEMONDIR})
+        configure_file(../dbus-1.pc.in ${CMAKE_BINARY_DIR}/dbus-1.pc @ONLY)
+        install(FILES ${CMAKE_BINARY_DIR}/dbus-1.pc DESTINATION lib/pkgconfig)
+    endif()
+endif()
