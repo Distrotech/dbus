@@ -66,7 +66,7 @@ set(DBUS_PREFIX ${DBUS_INSTALL_DIR})
 
 set(prefix                   ${DBUS_INSTALL_DIR})
 set(exec_prefix              ${prefix})
-set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_FULL_LIBDIR}/dbus/machine-id)
+set(DBUS_MACHINE_UUID_FILE   ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/dbus/machine-id)
 set(DBUS_BINDIR              ${CMAKE_INSTALL_FULL_BINDIR})
 set(DBUS_DAEMONDIR           ${CMAKE_INSTALL_FULL_BINDIR})
 set(DBUS_LOCALSTATEDIR       ${CMAKE_INSTALL_FULL_LOCALSTATEDIR})
