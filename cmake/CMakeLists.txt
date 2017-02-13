@@ -47,6 +47,7 @@ TIMESTAMP(DBUS_BUILD_TIMESTAMP)
 
 ########### basic vars ###############
 
+include(GNUInstallDirs)
 
 if (DBUSDIR)
 	set(DBUS_INSTALL_DIR "${DBUSDIR}")
@@ -65,38 +66,32 @@ set(DBUS_PREFIX ${DBUS_INSTALL_DIR})
 
 set(prefix                   ${DBUS_INSTALL_DIR})
 set(exec_prefix              ${prefix})
-set(EXPANDED_LIBDIR          ${DBUS_INSTALL_DIR}/lib)
-set(EXPANDED_INCLUDEDIR      ${DBUS_INSTALL_DIR}/include)
-set(EXPANDED_BINDIR          ${DBUS_INSTALL_DIR}/bin)
-set(EXPANDED_SYSCONFDIR      ${DBUS_INSTALL_DIR}/etc)
-set(EXPANDED_LOCALSTATEDIR   ${DBUS_INSTALL_DIR}/var)
-set(EXPANDED_DATADIR         ${DBUS_INSTALL_DIR}/share)
-set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_DIR}/lib/dbus/machine-id)
-set(DBUS_BINDIR              ${EXPANDED_BINDIR})
-set(DBUS_DAEMONDIR           ${EXPANDED_BINDIR})
-set(DBUS_LOCALSTATEDIR       ${EXPANDED_LOCALSTATEDIR})
+set(DBUS_MACHINE_UUID_FILE   ${DBUS_INSTALL_FULL_LIBDIR}/dbus/machine-id)
+set(DBUS_BINDIR              ${CMAKE_INSTALL_FULL_BINDIR})
+set(DBUS_DAEMONDIR           ${CMAKE_INSTALL_FULL_BINDIR})
+set(DBUS_LOCALSTATEDIR       ${CMAKE_INSTALL_FULL_LOCALSTATEDIR})
 
 # On Windows this is relative to where we put the bus setup, in
 # ${datadir}/dbus-1. For simplicity, we only do this if
 # ${sysconfdir} = ${prefix}/etc and ${datadir} = ${prefix}/share.
 #
 # On Unix, or on Windows with weird install layouts, it's the absolute path.
-if(WIN32 AND ${EXPANDED_SYSCONFDIR} STREQUAL ${prefix}/etc AND ${EXPANDED_DATADIR} STREQUAL ${prefix}/share)
+if(WIN32 AND ${CMAKE_INSTALL_FULL_SYSCONFDIR} STREQUAL ${prefix}/etc AND ${CMAKE_INSTALL_FULL_DATADIR} STREQUAL ${prefix}/share)
 set(SYSCONFDIR_FROM_PKGDATADIR ../../etc)
 set(DATADIR_FROM_PKGSYSCONFDIR ../../share)
 else()
-set(SYSCONFDIR_FROM_PKGDATADIR ${EXPANDED_SYSCONFDIR})
-set(DATADIR_FROM_PKGSYSCONFDIR ${EXPANDED_DATADIR})
+set(SYSCONFDIR_FROM_PKGDATADIR ${CMAKE_INSTALL_FULL_SYSCONFDIR})
+set(DATADIR_FROM_PKGSYSCONFDIR ${CMAKE_INSTALL_FULL_DATADIR})
 endif()
 
 # used in the C code
-set(DBUS_LIBEXECDIR          ${EXPANDED_LIBDIR})
-set(DBUS_DATADIR             ${EXPANDED_DATADIR})
+set(DBUS_LIBEXECDIR          ${CMAKE_INSTALL_FULL_LIBEXECDIR})
+set(DBUS_DATADIR             ${CMAKE_INSTALL_FULL_DATADIR})
 
 #enable building of shared library
 SET(BUILD_SHARED_LIBS ON)
 
-set(INSTALL_TARGETS_DEFAULT_ARGS  RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+set(INSTALL_TARGETS_DEFAULT_ARGS  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if (CYGWIN)
    set (WIN32)
@@ -543,10 +538,10 @@ message("                  =============                                       "
 message("                                                                      ")
 message("        install prefix:           ${prefix}                           ")
 message("        install exec_prefix:      ${exec_prefix}                      ")
-message("        install libdir:           ${EXPANDED_LIBDIR}                  ")
-message("        install bindir:           ${EXPANDED_BINDIR}                  ")
-message("        install sysconfdir:       ${EXPANDED_SYSCONFDIR}              ")
-message("        install datadir:          ${EXPANDED_DATADIR}                 ")
+message("        install libdir:           ${CMAKE_INSTALL_FULL_LIBDIR}        ")
+message("        install bindir:           ${CMAKE_INSTALL_FULL_BINDIR}        ")
+message("        install sysconfdir:       ${CMAKE_INSTALL_FULL_SYSCONFDIR}    ")
+message("        install datadir:          ${CMAKE_INSTALL_FULL_DATADIR}       ")
 message("        source code location:     ${DBUS_SOURCE_DIR}                  ")
 message("        build dir:                ${CMAKE_BINARY_DIR}                 ")
 message("        c compiler:               ${C_COMPILER}                       ")
@@ -651,6 +646,6 @@ if(UNIX)
         set(datarootdir ${EXPANDED_DATADIR})
         set(dbus_daemondir ${DBUS_DAEMONDIR})
         configure_file(../dbus-1.pc.in ${CMAKE_BINARY_DIR}/dbus-1.pc @ONLY)
-        install(FILES ${CMAKE_BINARY_DIR}/dbus-1.pc DESTINATION lib/pkgconfig)
+        install(FILES ${CMAKE_BINARY_DIR}/dbus-1.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
     endif()
 endif()
