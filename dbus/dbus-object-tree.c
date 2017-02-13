@@ -1609,6 +1609,8 @@ static DecomposePathTest decompose_tests[] = {
   { "/foo/bar/this/is/longer", { "foo", "bar", "this", "is", "longer", NULL } }
 };
 
+/* Return TRUE on success, FALSE on OOM, die with an assertion failure
+ * on failure. */
 static dbus_bool_t
 run_decompose_tests (void)
 {
@@ -1668,6 +1670,8 @@ find_subtree_registered_or_unregistered (DBusObjectTree *tree,
   return find_subtree_recurse (tree->root, path, FALSE, NULL, NULL);
 }
 
+/* Returns TRUE if the right thing happens, but the right thing might
+ * be OOM. */
 static dbus_bool_t
 object_tree_test_iteration (void *data)
 {
@@ -1693,7 +1697,7 @@ object_tree_test_iteration (void *data)
   dbus_bool_t exact_match;
 
   if (!run_decompose_tests ())
-    return FALSE;
+    return TRUE; /* OOM is OK */
   
   tree = NULL;
 
