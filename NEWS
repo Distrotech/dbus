@@ -61,15 +61,20 @@ Fixes:
 • Improve argument validation for `dbus-test-tool spam`
   (ffd.o #99693, Coverity #54759; Philip Withnall)
 
+• Don't shift by a negative integer if a hash table becomes monstrously
+  large (fd.o #99641, Coverity #54682; Philip Withnall)
+
 • Don't leak LSM label if dbus-daemon runs out of memory when dealing with
   a new connection (fd.o #99612, Coverity #141058; Philip Withnall)
 
 • Remove an unnecessary NULL check
   (fd.o #99642, Coverity #141062; Philip Withnall)
 
-• Improve error handling in unit tests
-  (fd.o #99643, #99694, #99712, Coverity #54701, #54714, #54724, #54726,
-  #54822, #54823, #54824, #54825; Philip Withnall)
+• Improve error handling in unit tests and dbus-send
+  (fd.o #99643, #99694, #99712, #99722, #99723, #99724, #99759, #99793,
+  Coverity #54688, #54692, #54693, #54697, #54701, #54710, #54714, #54715,
+  #54718, #54721, #54724, #54726, #54730, #54740, #54822, #54823, #54824,
+  #54825; Philip Withnall)
 
 • Do not print verbose messages' timestamps to stderr if the actual message
   has been redirected to the Windows debug port (fd.o #99749, Ralf Habacker)
