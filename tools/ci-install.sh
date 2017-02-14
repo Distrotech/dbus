@@ -145,7 +145,7 @@ case "$ci_distro" in
         case "$ci_suite" in
             (trusty|jessie)
                 # Ubuntu 14.04's autoconf-archive is too old
-                wget http://snapshot.debian.org/archive/debian/20160905T163745Z/pool/main/a/autoconf-archive/autoconf-archive_20160320-1_all.deb
+                wget http://archive.ubuntu.com/ubuntu/pool/universe/a/autoconf-archive/autoconf-archive_20160320-1_all.deb
                 $sudo dpkg -i autoconf-archive_*_all.deb
                 rm autoconf-archive_*_all.deb
                 ;;
