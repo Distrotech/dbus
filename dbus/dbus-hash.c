@@ -724,9 +724,8 @@ _dbus_hash_iter_get_string_key (DBusHashIter *iter)
  * because create_if_not_found was #FALSE and the entry
  * did not exist.
  *
- * If create_if_not_found is #TRUE, the hash
- * table takes ownership of the key that's passed in (either using it to create
- * the entry, or freeing it immediately).
+ * If create_if_not_found is #TRUE and the entry is created, the hash
+ * table takes ownership of the key that's passed in.
  *
  * For a hash table of type #DBUS_HASH_INT, cast the int
  * key to the key parameter using #_DBUS_INT_TO_POINTER().
@@ -870,8 +869,6 @@ find_generic_function (DBusHashTable        *table,
 
           if (preallocated)
             _dbus_hash_table_free_preallocated_entry (table, preallocated);
-          if (create_if_not_found && table->free_key_function)
-            (* table->free_key_function) (key);
           
           return entry;
         }
@@ -1558,19 +1555,6 @@ count_entries (DBusHashTable *table)
   return count;
 }
 
-static inline void *
-steal (void *ptr)
-{
-  /* @ptr is passed in as void* to avoid casting in the call */
-  void **_ptr = (void **) ptr;
-  void *val;
-
-  val = *_ptr;
-  *_ptr = NULL;
-
-  return val;
-}
-
 /**
  * @ingroup DBusHashTableInternals
  * Unit test for DBusHashTable
@@ -1587,8 +1571,6 @@ _dbus_hash_test (void)
 #define N_HASH_KEYS 5000
   char **keys;
   dbus_bool_t ret = FALSE;
-  char *str_key = NULL;
-  char *str_value = NULL;
 
   keys = dbus_new (char *, N_HASH_KEYS);
   if (keys == NULL)
@@ -1635,51 +1617,51 @@ _dbus_hash_test (void)
   i = 0;
   while (i < 3000)
     {
-      const void *out_value;
+      void *value;
+      char *key;
 
-      str_key = _dbus_strdup (keys[i]);
-      if (str_key == NULL)
+      key = _dbus_strdup (keys[i]);
+      if (key == NULL)
         goto out;
-      str_value = _dbus_strdup ("Value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Value!");
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_table_insert_string (table1,
-                                           steal (&str_key),
-                                           steal (&str_value)))
+                                           key, value))
         goto out;
 
-      str_value = _dbus_strdup (keys[i]);
-      if (str_value == NULL)
+      value = _dbus_strdup (keys[i]);
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_table_insert_int (table2,
-                                        i, steal (&str_value)))
+                                        i, value))
         goto out;
 
-      str_value = _dbus_strdup (keys[i]);
-      if (str_value == NULL)
+      value = _dbus_strdup (keys[i]);
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_table_insert_uintptr (table3,
-                                            i, steal (&str_value)))
+                                          i, value))
         goto out;
 
       _dbus_assert (count_entries (table1) == i + 1);
       _dbus_assert (count_entries (table2) == i + 1);
       _dbus_assert (count_entries (table3) == i + 1);
 
-      out_value = _dbus_hash_table_lookup_string (table1, keys[i]);
-      _dbus_assert (out_value != NULL);
-      _dbus_assert (strcmp (out_value, "Value!") == 0);
+      value = _dbus_hash_table_lookup_string (table1, keys[i]);
+      _dbus_assert (value != NULL);
+      _dbus_assert (strcmp (value, "Value!") == 0);
 
-      out_value = _dbus_hash_table_lookup_int (table2, i);
-      _dbus_assert (out_value != NULL);
-      _dbus_assert (strcmp (out_value, keys[i]) == 0);
+      value = _dbus_hash_table_lookup_int (table2, i);
+      _dbus_assert (value != NULL);
+      _dbus_assert (strcmp (value, keys[i]) == 0);
 
-      out_value = _dbus_hash_table_lookup_uintptr (table3, i);
-      _dbus_assert (out_value != NULL);
-      _dbus_assert (strcmp (out_value, keys[i]) == 0);
+      value = _dbus_hash_table_lookup_uintptr (table3, i);
+      _dbus_assert (value != NULL);
+      _dbus_assert (strcmp (value, keys[i]) == 0);
 
       ++i;
     }
@@ -1720,38 +1702,40 @@ _dbus_hash_test (void)
                                  dbus_free, dbus_free);
   if (table1 == NULL)
     goto out;
-
+  
   table2 = _dbus_hash_table_new (DBUS_HASH_INT,
                                  NULL, dbus_free);
   if (table2 == NULL)
     goto out;
-
+  
   i = 0;
   while (i < 5000)
     {
-      str_key = _dbus_strdup (keys[i]);
-      if (str_key == NULL)
+      char *key;
+      void *value;      
+      
+      key = _dbus_strdup (keys[i]);
+      if (key == NULL)
         goto out;
-      str_value = _dbus_strdup ("Value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Value!");
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_table_insert_string (table1,
-                                           steal (&str_key),
-                                           steal (&str_value)))
+                                           key, value))
         goto out;
 
-      str_value = _dbus_strdup (keys[i]);
-      if (str_value == NULL)
+      value = _dbus_strdup (keys[i]);
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_table_insert_int (table2,
-                                        i, steal (&str_value)))
+                                        i, value))
         goto out;
-
+      
       _dbus_assert (count_entries (table1) == i + 1);
       _dbus_assert (count_entries (table2) == i + 1);
-
+      
       ++i;
     }
 
@@ -1759,22 +1743,22 @@ _dbus_hash_test (void)
   while (_dbus_hash_iter_next (&iter))
     {
       const char *key;
-      const void *value;
+      void *value;
 
       key = _dbus_hash_iter_get_string_key (&iter);
       value = _dbus_hash_iter_get_value (&iter);
 
       _dbus_assert (_dbus_hash_table_lookup_string (table1, key) == value);
 
-      str_value = _dbus_strdup ("Different value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Different value!");
+      if (value == NULL)
         goto out;
+      
+      _dbus_hash_iter_set_value (&iter, value);
 
-      value = str_value;
-      _dbus_hash_iter_set_value (&iter, steal (&str_value));
       _dbus_assert (_dbus_hash_table_lookup_string (table1, key) == value);
     }
-
+  
   _dbus_hash_iter_init (table1, &iter);
   while (_dbus_hash_iter_next (&iter))
     {
@@ -1787,19 +1771,19 @@ _dbus_hash_test (void)
   while (_dbus_hash_iter_next (&iter))
     {
       int key;
-      const void *value;
+      void *value;
 
       key = _dbus_hash_iter_get_int_key (&iter);
       value = _dbus_hash_iter_get_value (&iter);
 
       _dbus_assert (_dbus_hash_table_lookup_int (table2, key) == value);
 
-      str_value = _dbus_strdup ("Different value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Different value!");
+      if (value == NULL)
         goto out;
+      
+      _dbus_hash_iter_set_value (&iter, value);
 
-      value = str_value;
-      _dbus_hash_iter_set_value (&iter, steal (&str_value));
       _dbus_assert (_dbus_hash_table_lookup_int (table2, key) == value);
     }
 
@@ -1818,38 +1802,42 @@ _dbus_hash_test (void)
   i = 0;
   while (i < 1000)
     {
-      str_key = _dbus_strdup (keys[i]);
-      if (str_key == NULL)
+      char *key;
+      void *value;
+            
+      key = _dbus_strdup (keys[i]);
+      if (key == NULL)
         goto out;
 
-      str_value = _dbus_strdup ("Value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Value!");
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_table_insert_string (table1,
-                                           steal (&str_key),
-                                           steal (&str_value)))
+                                           key, value))
         goto out;
-
+      
       ++i;
     }
 
   --i;
   while (i >= 0)
     {
-      str_key = _dbus_strdup (keys[i]);
-      if (str_key == NULL)
+      char *key;
+      void *value;      
+      
+      key = _dbus_strdup (keys[i]);
+      if (key == NULL)
         goto out;
-      str_value = _dbus_strdup ("Value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Value!");
+      if (value == NULL)
         goto out;
 
       if (!_dbus_hash_table_remove_string (table1, keys[i]))
         goto out;
-
+      
       if (!_dbus_hash_table_insert_string (table1,
-                                           steal (&str_key),
-                                           steal (&str_value)))
+                                           key, value))
         goto out;
 
       if (!_dbus_hash_table_remove_string (table1, keys[i]))
@@ -1872,62 +1860,63 @@ _dbus_hash_test (void)
                                  dbus_free, dbus_free);
   if (table1 == NULL)
     goto out;
-
+  
   table2 = _dbus_hash_table_new (DBUS_HASH_INT,
                                  NULL, dbus_free);
   if (table2 == NULL)
     goto out;
-
+  
   i = 0;
   while (i < 3000)
     {
-      const void *out_value;
+      void *value;
+      char *key;
 
-      str_key = _dbus_strdup (keys[i]);
-      if (str_key == NULL)
+      key = _dbus_strdup (keys[i]);
+      if (key == NULL)
         goto out;
-      str_value = _dbus_strdup ("Value!");
-      if (str_value == NULL)
+      value = _dbus_strdup ("Value!");
+      if (value == NULL)
         goto out;
-
+      
       if (!_dbus_hash_iter_lookup (table1,
-                                   steal (&str_key), TRUE, &iter))
+                                   key, TRUE, &iter))
         goto out;
       _dbus_assert (_dbus_hash_iter_get_value (&iter) == NULL);
-      _dbus_hash_iter_set_value (&iter, steal (&str_value));
+      _dbus_hash_iter_set_value (&iter, value);
 
-      str_value = _dbus_strdup (keys[i]);
-      if (str_value == NULL)
+      value = _dbus_strdup (keys[i]);
+      if (value == NULL)
         goto out;
 
       if (!_dbus_hash_iter_lookup (table2,
                                    _DBUS_INT_TO_POINTER (i), TRUE, &iter))
         goto out;
       _dbus_assert (_dbus_hash_iter_get_value (&iter) == NULL);
-      _dbus_hash_iter_set_value (&iter, steal (&str_value));
-
+      _dbus_hash_iter_set_value (&iter, value); 
+      
       _dbus_assert (count_entries (table1) == i + 1);
       _dbus_assert (count_entries (table2) == i + 1);
 
       if (!_dbus_hash_iter_lookup (table1, keys[i], FALSE, &iter))
         goto out;
-
-      out_value = _dbus_hash_iter_get_value (&iter);
-      _dbus_assert (out_value != NULL);
-      _dbus_assert (strcmp (out_value, "Value!") == 0);
+      
+      value = _dbus_hash_iter_get_value (&iter);
+      _dbus_assert (value != NULL);
+      _dbus_assert (strcmp (value, "Value!") == 0);
 
       /* Iterate just to be sure it works, though
        * it's a stupid thing to do
        */
       while (_dbus_hash_iter_next (&iter))
         ;
-
+      
       if (!_dbus_hash_iter_lookup (table2, _DBUS_INT_TO_POINTER (i), FALSE, &iter))
         goto out;
 
-      out_value = _dbus_hash_iter_get_value (&iter);
-      _dbus_assert (out_value != NULL);
-      _dbus_assert (strcmp (out_value, keys[i]) == 0);
+      value = _dbus_hash_iter_get_value (&iter);
+      _dbus_assert (value != NULL);
+      _dbus_assert (strcmp (value, keys[i]) == 0);
 
       /* Iterate just to be sure it works, though
        * it's a stupid thing to do
@@ -1965,9 +1954,6 @@ _dbus_hash_test (void)
     dbus_free (keys[i]);
 
   dbus_free (keys);
-
-  dbus_free (str_key);
-  dbus_free (str_value);
   
   return ret;
 }
