@@ -580,6 +580,7 @@ clean-local:
 			rm -f "$${F%.in}"; \
 		done; \
 	fi
+	rm -fr ./XDG_RUNTIME_DIR ./installable
 
 imported_data = \
 	data/valid-config-files/session.conf \
@@ -589,8 +590,6 @@ imported_data = \
 noinst_DATA = $(imported_data)
 CLEANFILES += \
 	$(noinst_DATA) \
-	XDG_RUNTIME_DIR \
-	installable \
 	$(NULL)
 
 data/valid-config-files/session.conf: $(top_builddir)/bus/session.conf
