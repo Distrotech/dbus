@@ -2953,7 +2953,7 @@ _dbus_get_real_time (long *tv_sec,
  * @returns #TRUE on success
  */
 dbus_bool_t
-_dbus_create_directory (const DBusString *filename,
+_dbus_ensure_directory (const DBusString *filename,
                         DBusError        *error)
 {
   const char *filename_c;
@@ -2967,6 +2967,35 @@ _dbus_create_directory (const DBusString *filename,
       if (errno == EEXIST)
         return TRUE;
 
+      dbus_set_error (error, DBUS_ERROR_FAILED,
+                      "Failed to create directory %s: %s\n",
+                      filename_c, _dbus_strerror (errno));
+      return FALSE;
+    }
+  else
+    return TRUE;
+}
+
+/**
+ * Creates a directory. Unlike _dbus_ensure_directory(), this only succeeds
+ * if the directory is genuinely newly-created.
+ *
+ * @param filename directory filename
+ * @param error initialized error object
+ * @returns #TRUE on success
+ */
+dbus_bool_t
+_dbus_create_directory (const DBusString *filename,
+                        DBusError        *error)
+{
+  const char *filename_c;
+
+  _DBUS_ASSERT_ERROR_IS_CLEAR (error);
+
+  filename_c = _dbus_string_get_const_data (filename);
+
+  if (mkdir (filename_c, 0700) < 0)
+    {
       dbus_set_error (error, DBUS_ERROR_FAILED,
                       "Failed to create directory %s: %s\n",
                       filename_c, _dbus_strerror (errno));
