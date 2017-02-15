@@ -172,7 +172,7 @@ main (int argc, char **argv)
   test_command_line ("/opt/gnome/bin/service-start", NULL);
   test_command_line ("grep", "-l", "-r", "-i", "'whatever'", "files*.c", NULL);
   test_command_line ("/home/boston/johnp/devel-local/dbus/test/test-segfault", NULL);
-  test_command_line ("ls", "-l", "-a", "--colors", _dbus_get_tmpdir(), NULL);
+  test_command_line ("ls", "-l", "-a", "--colors", NULL);
   test_command_line ("rsync-to-server", NULL);
   test_command_line ("test-segfault", "--no-segfault", NULL);
   test_command_line ("evolution", "mailto:pepe@cuco.com", NULL);
