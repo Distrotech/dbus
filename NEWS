@@ -30,6 +30,23 @@ Enhancements:
 
 Fixes:
 
+• Prevent symlink attacks in the nonce-tcp transport on Unix that could
+  allow an attacker to overwrite a file named "nonce", in a directory
+  that the user running dbus-daemon can write, with a random value
+  known only to the user running dbus-daemon. This is unlikely to be
+  exploitable in practice, particularly since the nonce-tcp transport
+  is really only useful on Windows.
+
+  On Unix systems we strongly recommend using only the unix: and systemd:
+  transports, together with EXTERNAL authentication. These are the only
+  transports and authentication mechanisms enabled by default.
+
+  (fd.o #99828, Simon McVittie)
+
+• Avoid symlink attacks in the "embedded tests", which are not enabled
+  by default and should never be enabled in production builds of dbus.
+  (fd.o #99828, Simon McVittie)
+
 • Fix the implementation of re-enabling a timeout so that its
   countdown is restarted as intended, instead of continually
   decreasing. (fd.o #95619; Michal Koutný, Simon McVittie)

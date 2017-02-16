@@ -2441,21 +2441,8 @@ out:
 static dbus_bool_t
 init_service_reload_test (DBusString *dir)
 {
-  DBusStat stat_buf;
-
-  if (!_dbus_stat (dir, &stat_buf, NULL))
-    {
-      if (!_dbus_create_directory (dir, NULL))
-        return FALSE;
-    }
-  else
-    {
-      if (!test_remove_directory (dir))
-        return FALSE;
-
-      if (!_dbus_create_directory (dir, NULL))
-        return FALSE;
-    }
+  if (!_dbus_create_directory (dir, NULL))
+    return FALSE;
 
   /* Create one initial file */
   if (!test_create_service_file (dir, SERVICE_FILE_1, SERVICE_NAME_1, "exec-1"))
@@ -2642,6 +2629,9 @@ bus_activation_service_reload_test (const DBusString *test_data_dir)
     {
       /* Do nothing? */
     }
+
+  if (!cleanup_service_reload_test (&directory))
+    goto out;
 
   /* Do OOM tests */
   if (!init_service_reload_test (&directory))

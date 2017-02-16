@@ -807,7 +807,7 @@ _dbus_keyring_new_for_credentials (DBusCredentials  *credentials,
    * unless someone else manages to create it
    */
   dbus_error_init (&tmp_error);
-  if (!_dbus_create_directory (&keyring->directory,
+  if (!_dbus_ensure_directory (&keyring->directory,
                                &tmp_error))
     {
       _dbus_verbose ("Creating keyring directory: %s\n",

@@ -412,6 +412,9 @@ DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_create_directory        (const DBusString *filename,
                                               DBusError        *error);
 DBUS_PRIVATE_EXPORT
+dbus_bool_t    _dbus_ensure_directory        (const DBusString *filename,
+                                              DBusError        *error);
+DBUS_PRIVATE_EXPORT
 dbus_bool_t    _dbus_delete_directory        (const DBusString *filename,
 					      DBusError        *error);
 
