@@ -1,5 +1,11 @@
-D-Bus 1.10.16 (UNRELEASED)
+D-Bus 1.10.16 (2017-02-16)
 ==
+
+The “super digging powers” release.
+
+The fixes in this release are arguably security fixes, but if they
+affect you, please take this opportunity to rethink how you are
+configuring dbus.
 
 Enhancements:
 
@@ -9,7 +15,22 @@ Enhancements:
 
 Fixes:
 
-...
+• Prevent symlink attacks in the nonce-tcp transport on Unix that could
+  allow an attacker to overwrite a file named "nonce", in a directory
+  that the user running dbus-daemon can write, with a random value
+  known only to the user running dbus-daemon. This is unlikely to be
+  exploitable in practice, particularly since the nonce-tcp transport
+  is really only useful on Windows.
+
+  On Unix systems we strongly recommend using only the unix: and systemd:
+  transports, together with EXTERNAL authentication. These are the only
+  transports and authentication mechanisms enabled by default,
+
+  (fd.o #99828, Simon McVittie)
+
+• Avoid symlink attacks in the "embedded tests", which are not enabled
+  by default and should never be enabled in production builds of dbus.
+  (fd.o #99828, Simon McVittie)
 
 D-Bus 1.10.14 (2016-11-28)
 ==
