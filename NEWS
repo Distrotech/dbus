@@ -29,7 +29,7 @@ Fixes:
 
   On Unix systems we strongly recommend using only the unix: and systemd:
   transports, together with EXTERNAL authentication. These are the only
-  transports and authentication mechanisms enabled by default,
+  transports and authentication mechanisms enabled by default.
 
   (fd.o #99828, Simon McVittie)
 
